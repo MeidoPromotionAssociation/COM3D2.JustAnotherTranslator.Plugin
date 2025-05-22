@@ -14,6 +14,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<string> TargetLanguage;
     public static ConfigEntry<bool> EnableTextTranslation;
     public static ConfigEntry<bool> EnableUITranslation;
+    public static ConfigEntry<MaidNameStyleEnum> MaidNameStyle;
     public static ConfigEntry<bool> EnableTextureReplace;
     public static ConfigEntry<LogLevel> LogLevelConfig;
     public static ConfigEntry<int> TextureCacheSize;
@@ -43,6 +44,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string TargetLanguePath;
     public static string TranslationTextPath;
     public static string TranslationTexturePath;
+
+    public enum MaidNameStyleEnum
+    {
+        JpStyle,
+        EnStyle
+    }
+
 
     private void Awake()
     {
@@ -74,6 +82,11 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "EnableTextureReplace/启用贴图替换",
             true,
             "Enable Texture Replace/启用贴图替换");
+
+        MaidNameStyle = Config.Bind("General",
+            "MaidNameStyle/女仆名字样式",
+            MaidNameStyleEnum.JpStyle,
+            "Maid Name Style, JpStyle is family name first and given name last, English style is opposite, cannot change at runtime/女仆名字样式，日式姓前名后，英式相反。无法在运行时更改");
 
         LogLevelConfig = Config.Bind("General",
             "LogLevel/日志级别",

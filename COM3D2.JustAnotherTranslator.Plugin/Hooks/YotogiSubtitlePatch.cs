@@ -40,9 +40,9 @@ public static class YotogiSubtitlePatch
             // 为每个Maid启动监听协程（如果尚未启动）
             YotogiSubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
-            LogManager.Debug("TagTalk_Postfix tag_data voiceId: " + voiceId);
-            LogManager.Debug("TagTalk_Postfix tag_data name: " + tag_data.GetTagProperty("name").AsString());
-            LogManager.Debug("TagTalk_Postfix speakingMaid: " + speakingMaid.status.fullNameJpStyle);
+            LogManager.Debug($"TagTalk_Postfix tag_data voiceId: {voiceId}");
+            LogManager.Debug($"TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
+            LogManager.Debug($"TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
         }
     }
 

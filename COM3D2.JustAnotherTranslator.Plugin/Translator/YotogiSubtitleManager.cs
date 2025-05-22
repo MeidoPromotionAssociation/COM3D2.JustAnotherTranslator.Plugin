@@ -212,7 +212,7 @@ public static class YotogiSubtitleManager
             
             // 创建字幕并显示
             ShowSubtitle(text, maid);
-            LogManager.Debug($"重新显示字幕: {maid.status.fullNameJpStyle} - {text}");
+            LogManager.Debug($"重新显示字幕: {MaidInfo.GetMaidFullName(maid)} - {text}");
         }
         
         LogManager.Info("所有字幕配置已更新/All subtitle configs updated");
@@ -225,7 +225,7 @@ public static class YotogiSubtitleManager
         if (string.IsNullOrEmpty(text) || maid == null)
             return;
 
-        var speakerName = maid.status.fullNameJpStyle;
+        var speakerName = MaidInfo.GetMaidFullName(maid);
 
         // 使用浮动字幕显示，自动避免重叠
         SubtitleManager.ShowFloatingSubtitle(
@@ -244,7 +244,7 @@ public static class YotogiSubtitleManager
         if (maid is null)
             return;
 
-        var speakerName = maid.status.fullNameJpStyle;
+        var speakerName = MaidInfo.GetMaidFullName(maid);
         SubtitleManager.HideSubtitle(SubtitleManager.GetSpeakerSubtitleId(speakerName));
 
         LogManager.Debug($"Hiding subtitle for {speakerName}");
@@ -265,7 +265,7 @@ public static class YotogiSubtitleManager
         var coroutineId = CoroutineManager.LaunchCoroutine(MonitorMaidVoicePlayback(maid));
         MaidMonitorCoroutineIds[maid] = coroutineId;
 
-        LogManager.Debug($"Started monitoring coroutine for Maid: {maid.status.fullNameJpStyle}, ID: {coroutineId}");
+        LogManager.Debug($"Started monitoring coroutine for Maid: {MaidInfo.GetMaidFullName(maid)}, ID: {coroutineId}");
     }
 
     // 停止Maid监听协程
@@ -279,7 +279,7 @@ public static class YotogiSubtitleManager
 
         MaidMonitorCoroutineIds.Remove(maid);
 
-        LogManager.Debug($"Stopped monitoring coroutine for Maid: {maid.status.fullNameJpStyle}");
+        LogManager.Debug($"Stopped monitoring coroutine for Maid: {MaidInfo.GetMaidFullName(maid)}");
     }
 
     // 监控Maid语音播放状态的协程
@@ -288,7 +288,7 @@ public static class YotogiSubtitleManager
         var foundText = false;
         var lastPlayingVoiceId = string.Empty;
 
-        LogManager.Debug($"MonitorMaidVoicePlayback started for: {maid.status.fullNameJpStyle}");
+        LogManager.Debug($"MonitorMaidVoicePlayback started for: {MaidInfo.GetMaidFullName(maid)}");
 
         while (maid.Visible)
         {
@@ -312,7 +312,7 @@ public static class YotogiSubtitleManager
                     if (!string.IsNullOrEmpty(lastPlayingVoiceId))
                         LogManager.Debug(
                             $"Voice changed from {lastPlayingVoiceId} to {currentVoiceId}, hiding previous subtitle");
-                    LogManager.Debug($"Maid {maid.status.fullNameJpStyle} is now playing new voice: {currentVoiceId}");
+                    LogManager.Debug($"Maid {MaidInfo.GetMaidFullName(maid)} is now playing new voice: {currentVoiceId}");
                 }
 
                 // 只有未找到文本时才尝试查找和显示
@@ -374,7 +374,7 @@ public static class YotogiSubtitleManager
             UpdateSubtitleConfig();
         }
 
-        LogManager.Debug($"MonitorMaidVoicePlayback ended for Maid {maid.status.fullNameJpStyle}");
+        LogManager.Debug($"MonitorMaidVoicePlayback ended for Maid {MaidInfo.GetMaidFullName(maid)}");
     }
 
     // 清理所有协程和资源

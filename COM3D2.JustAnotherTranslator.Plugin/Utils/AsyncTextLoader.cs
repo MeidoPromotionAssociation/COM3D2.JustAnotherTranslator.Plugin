@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace COM3D2.JustAnotherTranslator.Plugin;
@@ -14,7 +15,8 @@ namespace COM3D2.JustAnotherTranslator.Plugin;
 public class AsyncTextLoader
 {
     // 加载完成委托
-    public delegate void CompletionCallback(Dictionary<string, string> result, int totalEntries, int totalFiles,
+    public delegate void CompletionCallback(Dictionary<string, string> result, Dictionary<Regex, string> resultRegex,
+        int totalEntries, int totalFiles,
         long elapsedMilliseconds);
 
     // 加载进度委托
@@ -90,6 +92,7 @@ public class AsyncTextLoader
         sw.Start();
 
         var translationDict = new Dictionary<string, string>();
+        var regexTranslationDict = new Dictionary<Regex, string>();
         var totalFiles = 0;
         var totalEntries = 0;
         var filesProcessed = 0;
@@ -102,7 +105,7 @@ public class AsyncTextLoader
                     "Translation directory not found/未找到翻译目录: " + _translationPath);
 
                 // 调用完成回调，传递空字典
-                _completionCallback?.Invoke(translationDict, 0, 0, 0);
+                _completionCallback?.Invoke(translationDict, regexTranslationDict, 0, 0, 0);
                 return;
             }
 
@@ -142,7 +145,7 @@ public class AsyncTextLoader
                     break;
                 }
 
-                var entriesInFile = ProcessTranslationFile(file, translationDict);
+                var entriesInFile = ProcessTranslationFile(file, translationDict, regexTranslationDict);
                 totalEntries += entriesInFile;
                 filesProcessed++;
 
@@ -156,14 +159,16 @@ public class AsyncTextLoader
                 $"Total loaded {totalEntries} translations from {filesProcessed} files, cost {sw.ElapsedMilliseconds} ms/总共从 {filesProcessed} 个文件中加载了 {totalEntries} 条翻译，耗时 {sw.ElapsedMilliseconds} 毫秒");
 
             // 调用完成回调
-            _completionCallback?.Invoke(translationDict, totalEntries, filesProcessed, sw.ElapsedMilliseconds);
+            _completionCallback?.Invoke(translationDict, regexTranslationDict, totalEntries, filesProcessed,
+                sw.ElapsedMilliseconds);
         }
         catch (Exception e)
         {
             LogManager.Error("Error loading translation files/加载翻译文件时出错: " + e.Message);
 
             // 调用完成回调，传递当前已加载的字典
-            _completionCallback?.Invoke(translationDict, totalEntries, filesProcessed, sw.ElapsedMilliseconds);
+            _completionCallback?.Invoke(translationDict, regexTranslationDict, totalEntries, filesProcessed,
+                sw.ElapsedMilliseconds);
         }
     }
 
@@ -172,8 +177,10 @@ public class AsyncTextLoader
     /// </summary>
     /// <param name="filePath">文件路径</param>
     /// <param name="translationDict">翻译字典</param>
+    /// <param name="regexTranslationDict">正则表达式翻译字典</param>
     /// <returns>处理的条目数</returns>
-    private int ProcessTranslationFile(string filePath, Dictionary<string, string> translationDict)
+    private int ProcessTranslationFile(string filePath, Dictionary<string, string> translationDict,
+        Dictionary<Regex, string> regexTranslationDict)
     {
         var entriesCount = 0;
 
@@ -196,7 +203,7 @@ public class AsyncTextLoader
                     if (_cancelRequested)
                         break;
 
-                    if (ProcessTranslationLine(line, translationDict))
+                    if (ProcessTranslationLine(line, translationDict, regexTranslationDict))
                         entriesCount++;
                 }
             }
@@ -215,10 +222,12 @@ public class AsyncTextLoader
     /// </summary>
     /// <param name="line">文本行</param>
     /// <param name="translationDict">翻译字典</param>
+    /// <param name="regexTranslationDict">正则表达式翻译字典</param>
     /// <returns>是否成功处理</returns>
-    private bool ProcessTranslationLine(string line, Dictionary<string, string> translationDict)
+    private bool ProcessTranslationLine(string line, Dictionary<string, string> translationDict,
+        Dictionary<Regex, string> regexTranslationDict)
     {
-        if (string.IsNullOrEmpty(line) || line.StartsWith("#"))
+        if (string.IsNullOrEmpty(line) || line.StartsWith(";"))
             return false;
 
         var parts = line.Split(new[] { '\t' }, 2);
@@ -232,7 +241,14 @@ public class AsyncTextLoader
             return false;
 
 
-        translationDict[original] = translation;
+        if (line.StartsWith("$"))
+        {
+            regexTranslationDict[new Regex(original.Substring(1), RegexOptions.Compiled)] = translation;
+        }
+        else
+        {
+            translationDict[original] = translation;
+        }
 
         return true;
     }

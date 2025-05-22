@@ -1,9 +1,12 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
@@ -20,6 +23,9 @@ public static class TextTranslator
 
     // 翻译字典，存储原文和翻译的映射关系
     public static Dictionary<string, string> TranslationDict = new();
+
+    // 正则表达式翻译字典
+    public static Dictionary<Regex, string> RegexTranslationDict = new();
 
     private static Harmony _textTranslatePatch;
 
@@ -116,7 +122,7 @@ public static class TextTranslator
     }
 
     // 加载完成回调
-    private static void OnLoadingComplete(Dictionary<string, string> result, int totalEntries, int totalFiles,
+    private static void OnLoadingComplete(Dictionary<string, string> result, Dictionary<Regex, string> regexResult, int totalEntries, int totalFiles,
         long elapsedMilliseconds)
     {
         // 更新状态
@@ -127,6 +133,7 @@ public static class TextTranslator
 
         // 更新翻译字典
         TranslationDict = result;
+        RegexTranslationDict = regexResult;
 
         LogManager.Info(
             $"Asynchronous translation loading complete: {totalEntries} entries from {totalFiles} files, cost {elapsedMilliseconds} ms/异步翻译加载完成: 从 {totalFiles} 个文件中加载了 {totalEntries} 条翻译，耗时 {elapsedMilliseconds} 毫秒");
@@ -235,7 +242,7 @@ public static class TextTranslator
     // 处理单行翻译文本
     private static bool ProcessTranslationLine(string line)
     {
-        if (string.IsNullOrEmpty(line) || line.StartsWith("#"))
+        if (string.IsNullOrEmpty(line) || line.StartsWith(";"))
             return false;
 
         var parts = line.Split(new[] { '\t' }, 2);
@@ -248,7 +255,16 @@ public static class TextTranslator
         if (string.IsNullOrEmpty(original) || string.IsNullOrEmpty(translation))
             return false;
 
-        TranslationDict[original] = translation;
+        if (line.StartsWith("$"))
+        {
+            RegexTranslationDict[new Regex(original.Substring(1), RegexOptions.Compiled)] = translation;
+        }
+        else
+        {
+            TranslationDict[original] = translation;
+        }
+
+
         return true;
     }
 
@@ -282,8 +298,56 @@ public static class TextTranslator
             return true;
         }
 
-        LogManager.Debug("No translation found: " + original);
-
+        // 尝试使用正则表达式匹配
+        // 为了保持兼容 Template 方法是从 CM3D2.YATranslator 移植的
+        foreach (var keyValuePair in RegexTranslationDict)
+        {
+            var regex = keyValuePair.Key;
+            var template = keyValuePair.Value;
+            
+            var match = regex.Match(original);
+            if (!match.Success)
+                continue;
+                
+            // 输出匹配到的捕获组信息，帮助调试
+            LogManager.Debug($"Regex matched with {match.Groups.Count} groups");
+            foreach (string groupName in regex.GetGroupNames())
+            {
+                if (groupName == "0") continue; // 跳过整个匹配
+                LogManager.Debug($"Group {groupName}: '{match.Groups[groupName].Value}'");
+            }
+            
+            translated = template.Template(s =>
+            {
+                string capturedString;
+                if (int.TryParse(s, out int index) && index < match.Groups.Count)
+                    capturedString = match.Groups[index].Value;
+                else
+                    capturedString = match.Groups[s].Value;
+                
+                LogManager.Debug($"Template placeholder ${s} => '{capturedString}'");
+                    
+                if (TranslationDict.TryGetValue(capturedString, out string groupTranslation))
+                {
+                    LogManager.Debug($"Found translation for '{capturedString}' => '{groupTranslation}'");
+                    return groupTranslation;
+                }
+                else
+                {
+                    return capturedString;
+                }
+            });
+            
+            LogManager.Debug($"Regex translated text: {translated}");
+            translated = XUATInterop.MarkTranslated(translated);
+            return true;
+        }
+        
         return false;
     }
+
+
+
+
+
 }

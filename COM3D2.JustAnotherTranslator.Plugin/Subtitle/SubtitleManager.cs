@@ -247,7 +247,7 @@ public static class SubtitleManager
         // 1. 向下查找（优先）
         foreach (var range in activePositions)
         {
-            if (range.End + 0.02f < basePos) continue; // 跳过在基准位置之上的
+            if (range.End + 0.01f < basePos) continue; // 跳过在基准位置之上的
             if (basePos + normalizedSubtitleHeight <= range.Start)
             {
                 resultPos = basePos;
@@ -255,7 +255,7 @@ public static class SubtitleManager
                 break;
             }
 
-            basePos = range.End + 0.02f;
+            basePos = range.End + 0.01f;
             if (basePos > 0.99f - normalizedSubtitleHeight) break;
         }
 
@@ -268,7 +268,7 @@ public static class SubtitleManager
             {
                 var range = activePositions[i];
                 if (range.Start - normalizedSubtitleHeight > basePos) continue; // 跳过在基准位置之下的
-                var tryPos = range.Start - normalizedSubtitleHeight - 0.02f;
+                var tryPos = range.Start - normalizedSubtitleHeight - 0.01f;
                 if (tryPos >= 0.01f && tryPos + normalizedSubtitleHeight <= range.Start)
                 {
                     resultPos = tryPos;

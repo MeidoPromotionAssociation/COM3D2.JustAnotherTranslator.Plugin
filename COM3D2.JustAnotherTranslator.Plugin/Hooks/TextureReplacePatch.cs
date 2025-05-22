@@ -102,7 +102,7 @@ public static class TextureReplacePatch
             tex2d.LoadImage(EmptyBytes);
             tex2d.LoadImage(newTexture);
             // add JAT_ prefix to avoid infinite loop
-            tex2d.name = $"i18n_{tex2d}";
+            tex2d.name = $"JAT_{tex2d}";
             LogManager.Debug($"Texture replaced: {tex.name}");
         }
         else
@@ -139,7 +139,7 @@ public static class TextureReplacePatch
             tex2d.LoadImage(EmptyBytes);
             tex2d.LoadImage(newTexture);
             // add JAT_ prefix to avoid infinite loop
-            tex2d.name = $"i18n_{tex2d}";
+            tex2d.name = $"JAT_{tex2d}";
             LogManager.Debug($"Texture replaced: {tex.name}");
         }
         else
@@ -159,7 +159,7 @@ public static class TextureReplacePatch
         LogManager.Debug("SetSprite called: " + value?.name);
 
         if (value is null || value.texture is null || string.IsNullOrEmpty(value.texture.name) ||
-            value.texture.name.StartsWith("i18n_"))
+            value.texture.name.StartsWith("JAT_"))
             return;
 
         byte[] newTexture = null;

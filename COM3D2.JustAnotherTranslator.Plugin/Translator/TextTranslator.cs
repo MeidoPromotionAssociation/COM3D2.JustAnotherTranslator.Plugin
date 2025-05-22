@@ -1,8 +1,6 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -122,7 +120,8 @@ public static class TextTranslator
     }
 
     // 加载完成回调
-    private static void OnLoadingComplete(Dictionary<string, string> result, Dictionary<Regex, string> regexResult, int totalEntries, int totalFiles,
+    private static void OnLoadingComplete(Dictionary<string, string> result, Dictionary<Regex, string> regexResult,
+        int totalEntries, int totalFiles,
         long elapsedMilliseconds)
     {
         // 更新状态
@@ -256,13 +255,9 @@ public static class TextTranslator
             return false;
 
         if (line.StartsWith("$"))
-        {
             RegexTranslationDict[new Regex(original.Substring(1), RegexOptions.Compiled)] = translation;
-        }
         else
-        {
             TranslationDict[original] = translation;
-        }
 
 
         return true;
@@ -304,50 +299,43 @@ public static class TextTranslator
         {
             var regex = keyValuePair.Key;
             var template = keyValuePair.Value;
-            
+
             var match = regex.Match(original);
             if (!match.Success)
                 continue;
-                
+
             // 输出匹配到的捕获组信息，帮助调试
             LogManager.Debug($"Regex matched with {match.Groups.Count} groups");
-            foreach (string groupName in regex.GetGroupNames())
+            foreach (var groupName in regex.GetGroupNames())
             {
                 if (groupName == "0") continue; // 跳过整个匹配
                 LogManager.Debug($"Group {groupName}: '{match.Groups[groupName].Value}'");
             }
-            
+
             translated = template.Template(s =>
             {
                 string capturedString;
-                if (int.TryParse(s, out int index) && index < match.Groups.Count)
+                if (int.TryParse(s, out var index) && index < match.Groups.Count)
                     capturedString = match.Groups[index].Value;
                 else
                     capturedString = match.Groups[s].Value;
-                
+
                 LogManager.Debug($"Template placeholder ${s} => '{capturedString}'");
-                    
-                if (TranslationDict.TryGetValue(capturedString, out string groupTranslation))
+
+                if (TranslationDict.TryGetValue(capturedString, out var groupTranslation))
                 {
                     LogManager.Debug($"Found translation for '{capturedString}' => '{groupTranslation}'");
                     return groupTranslation;
                 }
-                else
-                {
-                    return capturedString;
-                }
+
+                return capturedString;
             });
-            
+
             LogManager.Debug($"Regex translated text: {translated}");
             translated = XUATInterop.MarkTranslated(translated);
             return true;
         }
-        
+
         return false;
     }
-
-
-
-
-
 }

@@ -25,11 +25,11 @@ public class SubtitleComponent : MonoBehaviour
     // 当前协程
     private Coroutine _currentAnimation;
 
-    // 字幕文本组件
-    private Text _textComponent;
-
     // 字幕描边组件
     private Outline _outline;
+
+    // 字幕文本组件
+    private Text _textComponent;
 
     /// <summary>
     ///     初始化字幕组件
@@ -156,7 +156,6 @@ public class SubtitleComponent : MonoBehaviour
     /// <param name="duration">显示时长（秒），0表示一直显示直到手动隐藏</param>
     /// <param name="speakerName">说话者名称，会以不同颜色显示在文本前</param>
     /// <param name="speakerColor">说话者颜色，需要是 ColorUtility.ToHtmlStringRGB(color)</param>
-    ///
     public void Show(string text, float duration, string speakerName, string speakerColor, bool EnableSpeakerName)
     {
         // 如果有正在进行的动画，停止它
@@ -169,9 +168,7 @@ public class SubtitleComponent : MonoBehaviour
         var displayText = text;
         // 设置文本，无需处理 XUAT 互操作以及翻译，因为获取时以及被翻译了
         if (!string.IsNullOrEmpty(speakerName) && EnableSpeakerName)
-        {
             displayText = $"<color=#{speakerColor}>{speakerName}</color>: {text}";
-        }
 
         _textComponent.text = displayText;
 
@@ -332,11 +329,11 @@ public class SubtitleComponent : MonoBehaviour
 [Serializable]
 public class SubtitleConfig
 {
-    // 字体
-    public Font Font { get; set; }
-
     // 是否启用说话人名字显示
     public bool EnableSpeakerName = true;
+
+    // 字体
+    public Font Font { get; set; }
 
     // 字体大小
     public int FontSize { get; set; } = 24;

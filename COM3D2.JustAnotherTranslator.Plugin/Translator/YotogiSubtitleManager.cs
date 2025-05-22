@@ -185,20 +185,14 @@ public static class YotogiSubtitleManager
 
         // 首先隐藏所有字幕
         SubtitleManager.HideAllSubtitles();
-        
+
         // 存储当前显示的字幕信息，用于后续重新显示
         var activeSubtitles = new Dictionary<Maid, string>();
         foreach (var pair in MaidMonitorCoroutineIds)
-        {
             if (pair.Key != null && CurrentSpeaker == pair.Key && !string.IsNullOrEmpty(CurrentVoiceId))
-            {
                 if (VoiceIdToTextMap.TryGetValue(CurrentVoiceId, out var text) && !string.IsNullOrEmpty(text))
-                {
                     activeSubtitles[pair.Key] = text;
-                }
-            }
-        }
-        
+
         // 销毁所有字幕组件，强制重新创建
         SubtitleManager.DestroyAllSubtitles();
 
@@ -209,12 +203,12 @@ public static class YotogiSubtitleManager
         {
             var maid = pair.Key;
             var text = pair.Value;
-            
+
             // 创建字幕并显示
             ShowSubtitle(text, maid);
             LogManager.Debug($"重新显示字幕: {MaidInfo.GetMaidFullName(maid)} - {text}");
         }
-        
+
         LogManager.Info("所有字幕配置已更新/All subtitle configs updated");
     }
 
@@ -312,7 +306,8 @@ public static class YotogiSubtitleManager
                     if (!string.IsNullOrEmpty(lastPlayingVoiceId))
                         LogManager.Debug(
                             $"Voice changed from {lastPlayingVoiceId} to {currentVoiceId}, hiding previous subtitle");
-                    LogManager.Debug($"Maid {MaidInfo.GetMaidFullName(maid)} is now playing new voice: {currentVoiceId}");
+                    LogManager.Debug(
+                        $"Maid {MaidInfo.GetMaidFullName(maid)} is now playing new voice: {currentVoiceId}");
                 }
 
                 // 只有未找到文本时才尝试查找和显示

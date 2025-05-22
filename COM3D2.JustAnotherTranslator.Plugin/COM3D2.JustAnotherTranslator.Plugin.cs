@@ -11,6 +11,12 @@ namespace COM3D2.JustAnotherTranslator.Plugin;
 [BepInPlugin("COM3D2.JustAnotherTranslator.Plugin", "COM3D2.JustAnotherTranslator.Plugin", "1.0.0")]
 public class JustAnotherTranslator : BaseUnityPlugin
 {
+    public enum MaidNameStyleEnum
+    {
+        JpStyle,
+        EnStyle
+    }
+
     public static ConfigEntry<string> TargetLanguage;
     public static ConfigEntry<bool> EnableTextTranslation;
     public static ConfigEntry<bool> EnableUITranslation;
@@ -44,12 +50,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string TargetLanguePath;
     public static string TranslationTextPath;
     public static string TranslationTexturePath;
-
-    public enum MaidNameStyleEnum
-    {
-        JpStyle,
-        EnStyle
-    }
 
 
     private void Awake()

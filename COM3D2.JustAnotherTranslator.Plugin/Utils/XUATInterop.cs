@@ -22,8 +22,8 @@ public static class XUATInterop
     private static bool _initialized;
 
     /// <summary>
-    /// XUAT 用来标记已翻译的特殊字符，可以提前检查
-    /// 初始化时会从插件实际获取，安全起见设置默认值
+    ///     XUAT 用来标记已翻译的特殊字符，可以提前检查
+    ///     初始化时会从插件实际获取，安全起见设置默认值
     /// </summary>
     public static string XuatSpicalMaker = "\u180e";
 
@@ -59,11 +59,10 @@ public static class XUATInterop
         }
 
         // 通过反射获取 LanguageHelper.MogolianVowelSeparatorString 字段值
-        var mogolianVowelSeparatorStringField = langHelper.GetField("MogolianVowelSeparatorString", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+        var mogolianVowelSeparatorStringField = langHelper.GetField("MogolianVowelSeparatorString",
+            BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
         if (mogolianVowelSeparatorStringField != null)
-        {
             XuatSpicalMaker = (string)mogolianVowelSeparatorStringField.GetValue(null);
-        }
 
         // 获取MakeRedirected方法
         var makeRedirectedMethod = AccessTools.Method(langHelper, "MakeRedirected");

@@ -242,13 +242,9 @@ public class AsyncTextLoader
 
 
         if (line.StartsWith("$"))
-        {
             regexTranslationDict[new Regex(original.Substring(1), RegexOptions.Compiled)] = translation;
-        }
         else
-        {
             translationDict[original] = translation;
-        }
 
         return true;
     }

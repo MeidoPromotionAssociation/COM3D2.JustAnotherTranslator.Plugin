@@ -248,8 +248,8 @@ public static class TextTranslator
         if (parts.Length != 2)
             return false;
 
-        var original = parts[0];
-        var translation = parts[1];
+        var original = parts[0].Unescape();
+        var translation = parts[1].Unescape();
 
         if (string.IsNullOrEmpty(original) || string.IsNullOrEmpty(translation))
             return false;
@@ -290,6 +290,16 @@ public static class TextTranslator
         {
             LogManager.Debug("Translated text: " + upperValue);
             translated = XUATInterop.MarkTranslated(upperValue);
+            return true;
+        }
+
+        // 尝试去除换行符和空格后进行翻译
+        // 然而我们确实会导致换行符丢失
+        if (TranslationDict.TryGetValue(original.Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(),
+                out var lowerValue))
+        {
+            LogManager.Debug("Translated text: " + lowerValue);
+            translated = XUATInterop.MarkTranslated(lowerValue);
             return true;
         }
 

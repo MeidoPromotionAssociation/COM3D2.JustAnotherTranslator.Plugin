@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 namespace COM3D2.JustAnotherTranslator.Plugin;
 
@@ -234,8 +235,8 @@ public class AsyncTextLoader
         if (parts.Length != 2)
             return false;
 
-        var original = parts[0];
-        var translation = parts[1];
+        var original = parts[0].Unescape();
+        var translation = parts[1].Unescape();
 
         if (string.IsNullOrEmpty(original) || string.IsNullOrEmpty(translation))
             return false;

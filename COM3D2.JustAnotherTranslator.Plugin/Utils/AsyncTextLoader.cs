@@ -235,6 +235,7 @@ public class AsyncTextLoader
         if (parts.Length != 2)
             return false;
 
+        // Unescape 将字符串中的转义序列转换为对应的实际字符
         var original = parts[0].Unescape();
         var translation = parts[1].Unescape();
 

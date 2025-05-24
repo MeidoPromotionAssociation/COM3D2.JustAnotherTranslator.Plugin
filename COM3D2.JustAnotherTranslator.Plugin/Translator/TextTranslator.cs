@@ -286,16 +286,8 @@ public static class TextTranslator
 
         // KISS did something in cm3d2.dll
         // it seems [HF] will become [hf]
-        if (TranslationDict.TryGetValue(original.ToUpper(), out var upperValue))
-        {
-            LogManager.Debug("Translated text: " + upperValue);
-            translated = XUATInterop.MarkTranslated(upperValue);
-            return true;
-        }
-
-        // 尝试去除换行符和空格后进行翻译
-        // 然而我们确实会导致换行符丢失
-        if (TranslationDict.TryGetValue(original.Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(),
+        // 尝试去除换行符和空格后进行翻译，现有翻译的原文均无换行符
+        if (TranslationDict.TryGetValue(original.ToUpper().Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(),
                 out var lowerValue))
         {
             LogManager.Debug("Translated text: " + lowerValue);

@@ -140,57 +140,15 @@ public static class SubtitleManager
         // 如果提供了配置，尝试调整垂直位置
         var newConfig = config;
         if (config != null && verticalOffset != 0f)
+        {
             // 创建配置副本以避免修改原始配置
-            newConfig = new SubtitleConfig
-            {
-                Font = config.Font,
-                FontSize = config.FontSize,
-                FontStyle = config.FontStyle,
-                TextColor = config.TextColor,
-                BackgroundColor = config.BackgroundColor,
-                VerticalPosition = config.VerticalPosition + verticalOffset, // 添加垂直偏移
-                Height = config.Height,
-                EnableAnimation = config.EnableAnimation,
-                FadeInDuration = config.FadeInDuration,
-                FadeOutDuration = config.FadeOutDuration
-            };
+            newConfig = config;
+            newConfig.VerticalPosition = config.VerticalPosition + verticalOffset;
+        }
 
         // 显示字幕
         ShowSubtitle(subtitleId, text, speakerName, duration, newConfig);
     }
-
-    /// <summary>
-    ///     获取说话者的专属颜色
-    /// </summary>
-    /// <param name="speakerName">说话者名称</param>
-    /// <returns>专属颜色</returns>
-    private static Color GetSpeakerColor(string speakerName)
-    {
-        // 如果已经为此说话者分配了颜色，则直接返回
-        if (SpeakerColors.TryGetValue(speakerName, out var color))
-            return color;
-
-        // 基于说话者名称生成稳定的哈希值
-        var hash = speakerName.GetHashCode();
-
-        // 使用哈希值生成颜色，确保相同名称总是获得相同颜色
-        var random = new Random(hash);
-
-        // 生成偏亮的颜色
-        color = new Color(
-            0.5f + (float)random.NextDouble() * 0.5f, // 0.5-1.0 范围
-            0.5f + (float)random.NextDouble() * 0.5f,
-            0.5f + (float)random.NextDouble() * 0.5f
-        );
-
-        // 保存到缓存
-        SpeakerColors[speakerName] = color;
-
-        LogManager.Debug($"Created Color R:{color.r:F2} G:{color.g:F2} B:{color.b:F2} for {speakerName}");
-
-        return color;
-    }
-
 
     /// <summary>
     ///     显示浮动字幕，自动避免重叠
@@ -317,7 +275,6 @@ public static class SubtitleManager
         subtitle.UpdateConfig(config);
     }
 
-
     /// <summary>
     ///     更新所有字幕的配置
     /// </summary>
@@ -352,6 +309,38 @@ public static class SubtitleManager
         Subtitles.Clear();
 
         LogManager.Debug("All subtitles destroyed");
+    }
+
+    /// <summary>
+    ///     获取说话者的专属颜色
+    /// </summary>
+    /// <param name="speakerName">说话者名称</param>
+    /// <returns>专属颜色</returns>
+    private static Color GetSpeakerColor(string speakerName)
+    {
+        // 如果已经为此说话者分配了颜色，则直接返回
+        if (SpeakerColors.TryGetValue(speakerName, out var color))
+            return color;
+
+        // 基于说话者名称生成稳定的哈希值
+        var hash = speakerName.GetHashCode();
+
+        // 使用哈希值生成颜色，确保相同名称总是获得相同颜色
+        var random = new Random(hash);
+
+        // 生成偏亮的颜色
+        color = new Color(
+            0.5f + (float)random.NextDouble() * 0.5f, // 0.5-1.0 范围
+            0.5f + (float)random.NextDouble() * 0.5f,
+            0.5f + (float)random.NextDouble() * 0.5f
+        );
+
+        // 保存到缓存
+        SpeakerColors[speakerName] = color;
+
+        LogManager.Debug($"Created Color R:{color.r:F2} G:{color.g:F2} B:{color.b:F2} for {speakerName}");
+
+        return color;
     }
 
     // .NET Framework 3.5 不支持 ValueTuple

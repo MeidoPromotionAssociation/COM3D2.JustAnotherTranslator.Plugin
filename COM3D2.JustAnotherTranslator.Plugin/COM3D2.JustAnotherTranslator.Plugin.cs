@@ -17,11 +17,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
         EnStyle
     }
 
+    public static bool IsVrMode;
+
     public static ConfigEntry<string> TargetLanguage;
     public static ConfigEntry<bool> EnableTextTranslation;
     public static ConfigEntry<bool> EnableUITranslation;
-    public static ConfigEntry<MaidNameStyleEnum> MaidNameStyle;
     public static ConfigEntry<bool> EnableTextureReplace;
+    public static ConfigEntry<MaidNameStyleEnum> MaidNameStyle;
     public static ConfigEntry<LogLevel> LogLevelConfig;
     public static ConfigEntry<int> TextureCacheSize;
     public static ConfigEntry<bool> EnableAsyncLoading;
@@ -45,6 +47,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> YotogiSubtitleOutlineOpacity;
     public static ConfigEntry<float> YotogiSubtitleOutlineWidth;
 
+    // VR悬浮字幕相关配置
+    public static ConfigEntry<int> VRSubtitleMode;
+    public static ConfigEntry<float> VRSubtitleDistance;
+    public static ConfigEntry<float> VRSubtitleVerticalOffset;
+    public static ConfigEntry<float> VRSubtitleHorizontalOffset;
+    public static ConfigEntry<float> VRSubtitleWidth;
+
     // translation folder path
     public static readonly string TranslationRootPath = Paths.BepInExRootPath + "/JustAnotherTranslator";
     public static string TargetLanguePath;
@@ -56,6 +65,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
     {
         // Initialize our LogManager with the BepInEx logger
         LogManager.Initialize(Logger);
+
+        IsVrMode = Environment.CommandLine.ToLower().Contains("/vr");
 
         # region GeneralSettings
 
@@ -195,6 +206,36 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         # endregion
 
+        # region VRSubtitleSettings
+
+        // VR悬浮字幕相关配置
+        VRSubtitleMode = Config.Bind("YotogiSubtitle",
+            "VRSubtitleMode/VR字幕模式",
+            1,
+            "VR Subtitle Mode: 0=On Control tablet, 1=Floating in world space following head movement/VR字幕模式：0=字幕在控制平板上，1=跟随头部运动的世界空间悬浮字幕");
+
+        VRSubtitleDistance = Config.Bind("YotogiSubtitle",
+            "VRSubtitleDistance/VR字幕距离",
+            2f,
+            "VR Floating Subtitle Distance in meters/VR悬浮字幕距离（米）");
+
+        VRSubtitleVerticalOffset = Config.Bind("YotogiSubtitle",
+            "VRSubtitleVerticalOffset/VR字幕垂直偏移",
+            -15f,
+            "VR Floating Subtitle Vertical Offset in degrees (relative to center of view)/VR悬浮字幕垂直偏移（度，相对于视线中心）");
+
+        VRSubtitleHorizontalOffset = Config.Bind("YotogiSubtitle",
+            "VRSubtitleHorizontalOffset/VR字幕水平偏移",
+            0f,
+            "VR Floating Subtitle Horizontal Offset in degrees (relative to center of view)/VR悬浮字幕水平偏移（度，相对于视线中心）");
+
+        VRSubtitleWidth = Config.Bind("YotogiSubtitle",
+            "VRSubtitleWidth/VR字幕宽度",
+            1f,
+            "VR Floating Subtitle Width in meters/VR悬浮字幕宽度（米）");
+
+        # endregion
+
 
         // Create translation folder
         try
@@ -256,6 +297,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         RegisterGeneralConfigEvents();
         // 注册夜伽字幕配置变更事件
         RegisterYotogiSubtitleConfigEvents();
+        // 注册VR字幕配置变更事件
+        RegisterVRSubtitleConfigEvents();
     }
 
 
@@ -397,7 +440,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
     }
-
 
     /// <summary>
     ///     注册字幕配置变更事件
@@ -576,6 +618,62 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle outline width changed/夜伽字幕描边宽度已更改");
+                YotogiSubtitleManager.UpdateSubtitleConfig();
+            }
+        };
+    }
+
+    /// <summary>
+    ///     注册VR字幕配置变更事件
+    /// </summary>
+    private void RegisterVRSubtitleConfigEvents()
+    {
+        // 注册VR字幕模式变更事件
+        VRSubtitleMode.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle VR mode changed/夜伽字幕VR模式已更改");
+                YotogiSubtitleManager.UpdateSubtitleConfig();
+            }
+        };
+
+        // 注册VR字幕距离变更事件
+        VRSubtitleDistance.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle VR distance changed/夜伽字幕VR距离已更改");
+                YotogiSubtitleManager.UpdateSubtitleConfig();
+            }
+        };
+
+        // 注册VR字幕垂直偏移变更事件
+        VRSubtitleVerticalOffset.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle VR vertical offset changed/夜伽字幕VR垂直偏移已更改");
+                YotogiSubtitleManager.UpdateSubtitleConfig();
+            }
+        };
+
+        // 注册VR字幕水平偏移变更事件
+        VRSubtitleHorizontalOffset.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle VR horizontal offset changed/夜伽字幕VR水平偏移已更改");
+                YotogiSubtitleManager.UpdateSubtitleConfig();
+            }
+        };
+
+        // 注册VR字幕宽度变更事件
+        VRSubtitleWidth.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle VR width changed/夜伽字幕VR宽度已更改");
                 YotogiSubtitleManager.UpdateSubtitleConfig();
             }
         };

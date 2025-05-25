@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -339,5 +340,46 @@ public static class TextTranslator
         }
 
         return false;
+    }
+
+
+    /// <summary>
+    ///     检查字符串是否为数字（包含小数点）
+    ///     应当比直接 decimal.TryParse 和正则表达式更快
+    /// </summary>
+    /// <param name="text">要检查的字符串</param>
+    /// <returns>如果字符串是数字，则返回 true；否则返回 false</returns>
+    public static bool IsNumeric(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return false;
+
+        // 特殊情况优化：短数字直接检查
+        if (text.Length <= 8)
+        {
+            var hasDecimalPoint = false;
+            for (var i = 0; i < text.Length; i++)
+            {
+                var c = text[i];
+                if (i == 0 && c == '-') continue;
+                if (c == '.' || c == ',')
+                {
+                    if (hasDecimalPoint) return false;
+                    hasDecimalPoint = true;
+                }
+                else if (c < '0' || c > '9')
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        // 长字符串回退到 decimal.TryParse
+        return decimal.TryParse(text,
+            NumberStyles.Any,
+            CultureInfo.InvariantCulture,
+            out _);
     }
 }

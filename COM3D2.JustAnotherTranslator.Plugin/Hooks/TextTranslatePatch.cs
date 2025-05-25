@@ -13,6 +13,9 @@ public static class TextTranslatePatch
     [HarmonyPostfix]
     private static void KagScriptGetTextPatch(ref string __result)
     {
+        if (string.IsNullOrEmpty(__result) || TextTranslator.IsNumeric(__result))
+            return;
+
         LogManager.Debug("KagScript GetText called: " + __result);
 
         string translated;
@@ -24,6 +27,9 @@ public static class TextTranslatePatch
     [HarmonyPrefix]
     private static void ReplaceCharaName(ref string text)
     {
+        if (string.IsNullOrEmpty(text) || TextTranslator.IsNumeric(text))
+            return;
+
         LogManager.Debug("ScriptManager ReplaceCharaName called: " + text);
 
         string translated;
@@ -35,13 +41,16 @@ public static class TextTranslatePatch
     [HarmonyPrefix]
     private static void UITextSetTextPatch(object __instance)
     {
+        LogManager.Debug($"Graphic SetVerticesDirty instance: {__instance}");
         if (__instance is Text)
         {
-            LogManager.Debug("Graphic SetVerticesDirty called: " + __instance);
-
             var traverse = Traverse.Create(__instance).Field("m_Text");
+            var text = traverse.GetValue() as string;
+            if (string.IsNullOrEmpty(text) || TextTranslator.IsNumeric(text))
+                return;
+            LogManager.Debug($"Graphic SetVerticesDirty called: {text}");
             string translated;
-            if (TextTranslator.GetTranslateText(traverse.GetValue() as string, out translated))
+            if (TextTranslator.GetTranslateText(text, out translated))
                 traverse.SetValue(translated);
         }
     }
@@ -51,22 +60,10 @@ public static class TextTranslatePatch
     // 这个方法将在 TextTranslate.Init() 中手动注册
     private static void NGUITextWrapTextPrefix(ref string text)
     {
+        if (string.IsNullOrEmpty(text) || TextTranslator.IsNumeric(text))
+            return;
+
         LogManager.Debug("NGUIText WrapText(string, out string) called: " + text);
-
-        string translated;
-        if (TextTranslator.GetTranslateText(text, out translated))
-        {
-            LogManager.Debug("NGUIText WrapText translated: " + translated);
-            text = translated;
-        }
-    }
-
-
-    // NGUI Text
-    // should be manual register
-    private static void NGUITextWrapTextWithBoolPrefix(ref string text)
-    {
-        LogManager.Debug("NGUIText WrapText(string, out string, bool) called: " + text);
 
         string translated;
         if (TextTranslator.GetTranslateText(text, out translated))

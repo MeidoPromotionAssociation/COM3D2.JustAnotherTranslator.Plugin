@@ -37,7 +37,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> YotogiSubtitleOpacity;
     public static ConfigEntry<string> YotogiSubtitleBackgroundColor;
     public static ConfigEntry<float> YotogiSubtitleBackgroundOpacity;
-    public static ConfigEntry<float> YotogiSubtitlePosition;
+    public static ConfigEntry<float> YotogiSubtitleVerticalPosition;
     public static ConfigEntry<float> YotogiSubtitleBackgroundHeight;
     public static ConfigEntry<bool> YotogiSubtitleAnimation;
     public static ConfigEntry<float> YotogiSubtitleFadeInDuration;
@@ -159,8 +159,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             0.1f,
             "Yotogi Subtitle Background Opacity (0-1)/夜伽字幕背景不透明度（0-1）");
 
-        YotogiSubtitlePosition = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitlePosition/夜伽字幕位置",
+        YotogiSubtitleVerticalPosition = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleVerticalPosition/夜伽字幕垂直位置",
             0.965f,
             "Yotogi Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/夜伽字幕垂直位置（0-1，0为底部，1为顶部）");
 
@@ -236,6 +236,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         # endregion
 
+
+        LogManager.Debug($"IsVrMode: {IsVrMode}, CommandLine: {Environment.CommandLine}");
 
         // Create translation folder
         try
@@ -533,7 +535,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕位置变更事件
-        YotogiSubtitlePosition.SettingChanged += (sender, args) =>
+        YotogiSubtitleVerticalPosition.SettingChanged += (sender, args) =>
         {
             if (EnableYotogiSubtitle.Value)
             {

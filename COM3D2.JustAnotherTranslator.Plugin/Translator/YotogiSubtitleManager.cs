@@ -77,18 +77,24 @@ public static class YotogiSubtitleManager
         _subtitleConfig = new SubtitleConfig
         {
             EnableSpeakerName = JustAnotherTranslator.EnableYotogiSubtitleSpeakerName.Value,
+
             Font = font,
             FontSize = JustAnotherTranslator.YotogiSubtitleFontSize.Value,
             TextColor = textColor,
             BackgroundColor = backgroundColor,
-            VerticalPosition = JustAnotherTranslator.YotogiSubtitlePosition.Value,
-            Height = JustAnotherTranslator.YotogiSubtitleBackgroundHeight.Value,
+            VerticalPosition = JustAnotherTranslator.YotogiSubtitleVerticalPosition.Value,
+            BackgroundHeight = JustAnotherTranslator.YotogiSubtitleBackgroundHeight.Value,
             EnableAnimation = JustAnotherTranslator.YotogiSubtitleAnimation.Value,
             FadeInDuration = JustAnotherTranslator.YotogiSubtitleFadeInDuration.Value,
             FadeOutDuration = JustAnotherTranslator.YotogiSubtitleFadeOutDuration.Value,
             EnableOutline = JustAnotherTranslator.EnableYotogiSubtitleOutline.Value,
             OutlineColor = outlineColor,
-            OutlineWidth = JustAnotherTranslator.YotogiSubtitleOutlineWidth.Value
+            OutlineWidth = JustAnotherTranslator.YotogiSubtitleOutlineWidth.Value,
+
+            VRSubtitleMode = JustAnotherTranslator.VRSubtitleMode.Value,
+            VRSubtitleDistance = JustAnotherTranslator.VRSubtitleDistance.Value,
+            VRSubtitleHorizontalOffset = JustAnotherTranslator.VRSubtitleHorizontalOffset.Value,
+            VRSubtitleWidth = JustAnotherTranslator.VRSubtitleWidth.Value
         };
 
         # endregion
@@ -171,8 +177,8 @@ public static class YotogiSubtitleManager
             FontSize = JustAnotherTranslator.YotogiSubtitleFontSize.Value,
             TextColor = textColor,
             BackgroundColor = backgroundColor,
-            VerticalPosition = JustAnotherTranslator.YotogiSubtitlePosition.Value,
-            Height = JustAnotherTranslator.YotogiSubtitleBackgroundHeight.Value,
+            VerticalPosition = JustAnotherTranslator.YotogiSubtitleVerticalPosition.Value,
+            BackgroundHeight = JustAnotherTranslator.YotogiSubtitleBackgroundHeight.Value,
             EnableAnimation = JustAnotherTranslator.YotogiSubtitleAnimation.Value,
             FadeInDuration = JustAnotherTranslator.YotogiSubtitleFadeInDuration.Value,
             FadeOutDuration = JustAnotherTranslator.YotogiSubtitleFadeOutDuration.Value,

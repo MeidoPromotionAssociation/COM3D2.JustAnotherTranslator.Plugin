@@ -162,7 +162,7 @@ public static class SubtitleManager
         var newConfig = baseConfig;
 
         // 计算此字幕应该放置的位置，避免与其他活动字幕重叠
-        newConfig.VerticalPosition = CalculateNonOverlappingPosition(speakerName, newConfig.Height);
+        newConfig.VerticalPosition = CalculateNonOverlappingPosition(speakerName, newConfig.BackgroundHeight);
 
         // 显示字幕
         ShowSubtitle(subtitleId, text, speakerName, duration, newConfig);
@@ -196,7 +196,7 @@ public static class SubtitleManager
 
         // 计算基准位置
         var normalizedSubtitleHeight = subtitleHeight / Screen.height;
-        var basePos = Mathf.Clamp(JustAnotherTranslator.YotogiSubtitlePosition.Value, 0.01f,
+        var basePos = Mathf.Clamp(JustAnotherTranslator.YotogiSubtitleVerticalPosition.Value, 0.01f,
             0.99f - normalizedSubtitleHeight);
 
         var found = false;
@@ -220,7 +220,7 @@ public static class SubtitleManager
         if (!found)
         {
             // 2. 向上查找
-            basePos = Mathf.Clamp(JustAnotherTranslator.YotogiSubtitlePosition.Value, 0.01f,
+            basePos = Mathf.Clamp(JustAnotherTranslator.YotogiSubtitleVerticalPosition.Value, 0.01f,
                 0.99f - normalizedSubtitleHeight);
             for (var i = activePositions.Count - 1; i >= 0; i--)
             {

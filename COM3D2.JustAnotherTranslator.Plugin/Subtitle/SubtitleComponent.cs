@@ -49,7 +49,7 @@ public class SubtitleComponent : MonoBehaviour
             return;
 
         // 只在VR悬浮字幕模式下执行
-        if (_config.VrSubtitleMode == 1)
+        if (_config.VRSubtitleMode == 1)
         {
             // 将字幕放置在相机前方固定距离处
             var cameraForward = _vrCamera.forward;
@@ -57,16 +57,16 @@ public class SubtitleComponent : MonoBehaviour
             var cameraUp = _vrCamera.up;
 
             // 应用垂直偏移（以角度为单位）
-            var verticalRotation = Quaternion.AngleAxis(_config.VrSubtitleVerticalOffset, cameraRight);
+            var verticalRotation = Quaternion.AngleAxis(_config.VRSubtitleVerticalOffset, cameraRight);
 
             // 应用水平偏移（以角度为单位）
-            var horizontalRotation = Quaternion.AngleAxis(_config.VrSubtitleHorizontalOffset, cameraUp);
+            var horizontalRotation = Quaternion.AngleAxis(_config.VRSubtitleHorizontalOffset, cameraUp);
 
             // 组合旋转
             var direction = horizontalRotation * verticalRotation * cameraForward;
 
             // 计算最终位置
-            var targetPosition = _vrCamera.position + direction * _config.VrSubtitleDistance;
+            var targetPosition = _vrCamera.position + direction * _config.VRSubtitleDistance;
 
             // 应用到字幕容器
             _vrSubtitleContainer.transform.position = targetPosition;
@@ -92,27 +92,20 @@ public class SubtitleComponent : MonoBehaviour
         ApplyConfig();
 
         // 如果是VR模式且启用了悬浮字幕，查找VR相机
-        if (JustAnotherTranslator.IsVrMode && _config.VrSubtitleMode == 1)
-            try
+        if (JustAnotherTranslator.IsVrMode && _config.VRSubtitleMode == 1)
+        {
+            // 尝试查找VR相机
+            var cameraObject = GameObject.Find("Main Camera (head)");
+            if (cameraObject is null)
             {
-                // 尝试查找主相机
-                _vrCamera = Camera.main.transform;
-                if (_vrCamera is null)
-                {
-                    // 尝试查找VR相机
-                    var cameraObject = GameObject.Find("Main Camera (head)");
-                    if (cameraObject != null) _vrCamera = cameraObject.transform;
-                }
+                LogManager.Warning(
+                    "VR camera Main Camera (head) not found, head tracking will not work/找不到 VR 相机 Main Camera (head)，头部字幕跟踪将无法工作");
+                return;
+            }
 
-                if (_vrCamera == null)
-                    LogManager.Warning("VR camera not found, head tracking will not work/找不到VR相机，头部跟踪将无法工作");
-                else
-                    LogManager.Debug("VR camera found, head tracking enabled/找到VR相机，头部跟踪已启用");
-            }
-            catch (Exception e)
-            {
-                LogManager.Error($"Failed to find VR camera: {e.Message}/查找VR相机失败: {e.Message}");
-            }
+            _vrCamera = cameraObject.transform;
+            LogManager.Debug("VR camera found, subtitle head tracking enabled/找到VR相机，头部字幕跟踪已启用");
+        }
     }
 
     /// <summary>
@@ -134,10 +127,11 @@ public class SubtitleComponent : MonoBehaviour
             // 在 VR 模式中原有 UI 会被放到一个悬浮平板电脑上
             // 所以需要挂载到 SystemUI Root 下，见 OvrTablet
             var canvasObj = new GameObject("JAT_SubtitleCanvas_VR");
+            LogManager.Debug($"VR mode detected, _config.VRSubtitleMode: {_config.VRSubtitleMode}");
             {
-                if (_config.VrSubtitleMode == 0) // 平板上的字幕
+                if (_config.VRSubtitleMode == 0) // 平板上的字幕
                 {
-                    var systemUI = GameObject.Find("SystemUI Root").transform.Find("SystemUI Root");
+                    var systemUI = GameObject.Find("SystemUI Root");
                     if (systemUI is null)
                     {
                         LogManager.Warning(
@@ -147,10 +141,11 @@ public class SubtitleComponent : MonoBehaviour
                     else
                     {
                         canvasObj.transform.SetParent(systemUI.transform, false);
+                        canvasObj.layer = systemUI.layer;
                     }
 
                     _canvas = canvasObj.AddComponent<Canvas>();
-                    _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+                    _canvas.renderMode = RenderMode.WorldSpace;
                     _canvas.sortingOrder = 9999; // 确保在最上层显示
                 }
                 else // 跟随头部的悬浮字幕
@@ -179,12 +174,13 @@ public class SubtitleComponent : MonoBehaviour
         // 设置背景位置和大小
         var backgroundRect = _backgroundImage.rectTransform;
 
-        if (isVrMode && _config.VrSubtitleMode == 1) // VR悬浮字幕模式
+        if (isVrMode && _config.VRSubtitleMode == 1) // VR悬浮字幕模式
         {
             backgroundRect.anchorMin = new Vector2(0.5f, 0.5f);
             backgroundRect.anchorMax = new Vector2(0.5f, 0.5f);
             backgroundRect.pivot = new Vector2(0.5f, 0.5f);
-            backgroundRect.sizeDelta = new Vector2(_config.VrSubtitleWidth * 1000, _config.Height); // 调整大小以适应VR视野
+            backgroundRect.sizeDelta =
+                new Vector2(_config.VRSubtitleWidth * 1000, _config.BackgroundHeight); // 调整大小以适应VR视野
         }
         else // 普通字幕模式
         {
@@ -222,19 +218,21 @@ public class SubtitleComponent : MonoBehaviour
         _outline = _textComponent.gameObject.AddComponent<Outline>();
         _outline.enabled = false;
 
-        // 创建VR悬浮字幕容器（如果需要）
-        if (isVrMode && _config.VrSubtitleMode == 1)
+        // 创建VR悬浮字幕容器
+        if (isVrMode && _config.VRSubtitleMode == 1)
         {
             _vrSubtitleContainer = _canvas.gameObject;
 
             // 设置字幕位置，放在相机前方并偏移
-            _vrSubtitleContainer.transform.localPosition = new Vector3(0f, _config.VrSubtitleVerticalOffset / 50f,
-                _config.VrSubtitleDistance);
+            _vrSubtitleContainer.transform.localPosition = new Vector3(0f, _config.VRSubtitleVerticalOffset / 50f,
+                _config.VRSubtitleDistance);
             _vrSubtitleContainer.transform.localRotation = Quaternion.identity;
 
             // 设置世界空间画布的大小
             _canvas.GetComponent<RectTransform>().sizeDelta =
-                new Vector2(_config.VrSubtitleWidth * 1000, _config.Height * 2);
+                new Vector2(_config.VRSubtitleWidth * 1000, _config.BackgroundHeight * 2);
+
+            LogManager.Debug("VR subtitle container created/VR悬浮字幕容器已创建");
         }
 
         LogManager.Debug("Subtitle UI created/字幕UI已创建");
@@ -247,7 +245,7 @@ public class SubtitleComponent : MonoBehaviour
     {
         if (_config == null)
         {
-            LogManager.Warning("Subtitle config is null/字幕配置为空");
+            LogManager.Warning("Subtitle config is null, cannot apply/字幕配置为空，无法应用");
             return;
         }
 
@@ -264,7 +262,7 @@ public class SubtitleComponent : MonoBehaviour
         var backgroundRect = _backgroundImage.rectTransform;
         backgroundRect.anchorMin = new Vector2(0, _config.VerticalPosition);
         backgroundRect.anchorMax = new Vector2(1, _config.VerticalPosition);
-        backgroundRect.sizeDelta = new Vector2(0, _config.Height);
+        backgroundRect.sizeDelta = new Vector2(0, _config.BackgroundHeight);
 
         // 应用描边效果
         if (_config.EnableOutline)
@@ -451,7 +449,7 @@ public class SubtitleComponent : MonoBehaviour
     /// </summary>
     public float GetHeight()
     {
-        return _config.Height;
+        return _config.BackgroundHeight;
     }
 }
 
@@ -482,8 +480,8 @@ public class SubtitleConfig
     // 垂直位置（0-1，0表示底部，1表示顶部）
     public float VerticalPosition { get; set; }
 
-    // 高度
-    public float Height { get; set; } = 100;
+    // 背景高度
+    public float BackgroundHeight { get; set; } = 100;
 
     // 是否启用动画效果
     public bool EnableAnimation { get; set; } = true;
@@ -504,17 +502,17 @@ public class SubtitleConfig
     public float OutlineWidth { get; set; } = 1f;
 
     // VR模式字幕类型：0=平板上的字幕，1=跟随头部的悬浮字幕
-    public int VrSubtitleMode { get; set; } = 0;
+    public int VRSubtitleMode { get; set; } = 0;
 
     // VR悬浮字幕距离（米）
-    public float VrSubtitleDistance { get; set; } = 2f;
+    public float VRSubtitleDistance { get; set; } = 2f;
 
     // VR悬浮字幕垂直偏移（度，相对于视线中心）
-    public float VrSubtitleVerticalOffset { get; set; } = -15f;
+    public float VRSubtitleVerticalOffset { get; set; } = -15f;
 
     // VR悬浮字幕水平偏移（度，相对于视线中心）
-    public float VrSubtitleHorizontalOffset { get; set; } = 0f;
+    public float VRSubtitleHorizontalOffset { get; set; } = 0f;
 
     // VR悬浮字幕宽度（米）
-    public float VrSubtitleWidth { get; set; } = 1f;
+    public float VRSubtitleWidth { get; set; } = 1f;
 }

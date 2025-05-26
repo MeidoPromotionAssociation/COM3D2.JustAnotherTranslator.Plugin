@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.IO;
 using BepInEx;
 using BepInEx.Configuration;
@@ -13,14 +14,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
 {
     public enum MaidNameStyleEnum
     {
-        JpStyle,
-        EnStyle
+        [Description("JpStyle/日式")] JpStyle,
+        [Description("EnStyle/英式")] EnStyle,
     }
 
     public enum VRSubtitleModeEnum
     {
-        InSpace,
-        OnTablet
+        [Description("InSpac/空间字幕")] InSpace,
+        [Description("OnTablet/平板字幕")] OnTablet,
     }
 
     public static bool IsVrMode;
@@ -218,7 +219,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         VRSubtitleMode = Config.Bind("VRSubtitle",
             "VRSubtitleMode/VR字幕模式",
             VRSubtitleModeEnum.InSpace,
-            "VR Subtitle Mode: InSpace=On Control tablet, OnTablet=Floating in world space following head movement, Both=Both/VR字幕模式：InSpace=字幕在控制平板上，OnTablet=跟随头部运动的世界空间悬浮字幕，Both=同时显示");
+            "VR Subtitle Mode: InSpace=On Control tablet, OnTablet=Floating in world space following head movement/VR字幕模式：InSpace=字幕在控制平板上，OnTablet=跟随头部运动的世界空间悬浮字幕");
 
         VRSubtitleDistance = Config.Bind("VRSubtitle",
             "VRSubtitleDistance/VR字幕距离",

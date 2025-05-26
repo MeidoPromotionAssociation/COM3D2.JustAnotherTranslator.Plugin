@@ -15,13 +15,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public enum MaidNameStyleEnum
     {
         [Description("JpStyle/日式")] JpStyle,
-        [Description("EnStyle/英式")] EnStyle,
+        [Description("EnStyle/英式")] EnStyle
     }
 
     public enum VRSubtitleModeEnum
     {
         [Description("InSpac/空间字幕")] InSpace,
-        [Description("OnTablet/平板字幕")] OnTablet,
+        [Description("OnTablet/平板字幕")] OnTablet
     }
 
     public static bool IsVrMode;

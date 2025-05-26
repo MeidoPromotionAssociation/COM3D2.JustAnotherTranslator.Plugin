@@ -223,12 +223,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         VRSubtitleDistance = Config.Bind("VRSubtitle",
             "VRSubtitleDistance/VR字幕距离",
-            2f,
+            1f,
             "VR Floating Subtitle Distance in meters/VR悬浮字幕距离（米）");
 
         VRSubtitleVerticalOffset = Config.Bind("VRSubtitle",
             "VRSubtitleVerticalOffset/VR字幕垂直偏移",
-            -15f,
+            35f,
             "VR Floating Subtitle Vertical Offset in degrees (relative to center of view)/VR悬浮字幕垂直偏移（度，相对于视线中心）");
 
         VRSubtitleHorizontalOffset = Config.Bind("VRSubtitle",

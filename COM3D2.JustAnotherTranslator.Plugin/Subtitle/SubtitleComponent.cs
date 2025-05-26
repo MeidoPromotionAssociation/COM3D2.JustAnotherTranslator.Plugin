@@ -10,6 +10,9 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 /// </summary>
 public class SubtitleComponent : MonoBehaviour
 {
+    // 字幕跟随平滑度
+    private readonly float _followSmoothness = 5.0f;
+
     // 字幕背景图像组件
     private Image _backgroundImage;
 
@@ -25,6 +28,9 @@ public class SubtitleComponent : MonoBehaviour
     // 当前动画协程
     private Coroutine _currentAnimation;
 
+    // 是否初始化完成
+    private bool _initialized;
+
     // 字幕描边组件
     private Outline _outline;
 
@@ -34,17 +40,11 @@ public class SubtitleComponent : MonoBehaviour
     // VR头部位置参考，用于跟随头部运动
     private Transform _vrHeadTransform;
 
-    // VR悬浮字幕容器
-    private GameObject _vrSubtitleContainer;
-
-    // 字幕跟随平滑度
-    private float _followSmoothness = 5.0f;
-
     // 世界空间VR字幕
     private RectTransform _vrSpaceCanvasRect;
 
-    // 是否初始化完成
-    private bool _initialized = false;
+    // VR悬浮字幕容器
+    private GameObject _vrSubtitleContainer;
 
     /// <summary>
     ///     每帧更新，用于VR模式下跟随头部运动
@@ -56,22 +56,20 @@ public class SubtitleComponent : MonoBehaviour
             return;
 
         if (_vrHeadTransform is null || !_initialized || !gameObject.activeSelf)
-        {
             return;
-        }
 
         // 计算目标位置（基于头部位置和配置的偏移）
-        Vector3 headForward = _vrHeadTransform.forward;
-        Vector3 headUp = _vrHeadTransform.up;
-        Vector3 headRight = _vrHeadTransform.right;
+        var headForward = _vrHeadTransform.forward;
+        var headUp = _vrHeadTransform.up;
+        var headRight = _vrHeadTransform.right;
 
         // 应用偏移角度（水平和垂直）
-        Quaternion verticalRotation = Quaternion.AngleAxis(_config.VRSubtitleVerticalOffset, headRight);
-        Quaternion horizontalRotation = Quaternion.AngleAxis(_config.VRSubtitleHorizontalOffset, headUp);
-        Vector3 offsetDirection = horizontalRotation * verticalRotation * headForward;
+        var verticalRotation = Quaternion.AngleAxis(_config.VRSubtitleVerticalOffset, headRight);
+        var horizontalRotation = Quaternion.AngleAxis(_config.VRSubtitleHorizontalOffset, headUp);
+        var offsetDirection = horizontalRotation * verticalRotation * headForward;
 
         // 计算最终位置（头部位置 + 偏移方向 * 距离）
-        Vector3 targetPosition = _vrHeadTransform.position + offsetDirection * _config.VRSubtitleDistance;
+        var targetPosition = _vrHeadTransform.position + offsetDirection * _config.VRSubtitleDistance;
 
         // 平滑跟随
         _vrSubtitleContainer.transform.position = Vector3.Lerp(
@@ -110,46 +108,34 @@ public class SubtitleComponent : MonoBehaviour
         // 如果是VR模式且启用了悬浮字幕，获取OvrMgr的EyeAnchor
         if (JustAnotherTranslator.IsVrMode &&
             _config.VRSubtitleMode is JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
-        {
             // 延迟初始化VR相关组件，因为GameMain.Instance.OvrMgr可能还未初始化
             StartCoroutine(InitVRComponents());
-        }
         else
-        {
             _initialized = true;
-        }
     }
 
 
     /// <summary>
-    /// 延迟初始化VR组件
+    ///     初始化VR空间字幕组件
     /// </summary>
     private IEnumerator InitVRComponents()
     {
-        // 等待GameMain.Instance和OvrMgr初始化
-        int attempts = 0;
-        while (attempts < 30) // 最多尝试30帧
+        // 查找 OvrMgr 的 EyeAnchor
+        if (GameMain.Instance is not null && GameMain.Instance.OvrMgr is not null)
         {
-            if (GameMain.Instance is not null && GameMain.Instance.OvrMgr is not null)
+            _vrHeadTransform = GameMain.Instance.OvrMgr.EyeAnchor;
+            if (_vrHeadTransform is not null)
             {
-                _vrHeadTransform = GameMain.Instance.OvrMgr.EyeAnchor;
-                if (_vrHeadTransform is not null)
-                {
-                    LogManager.Debug(
-                        $"VR head transform (EyeAnchor) found at attempt {attempts}, subtitle head tracking enabled");
-                    _initialized = true;
-                    break;
-                }
+                LogManager.Debug("VR head transform (EyeAnchor) found, subtitle head tracking enabled");
+                _initialized = true;
+                yield break;
             }
-
-            attempts++;
-            yield return null;
         }
 
         if (_vrHeadTransform is null)
         {
             // 如果无法通过GameMain.Instance.OvrMgr获取，尝试直接查找OvrMgr
-            OvrMgr ovrMgr = FindObjectOfType<OvrMgr>();
+            var ovrMgr = FindObjectOfType<OvrMgr>();
             if (ovrMgr is not null && ovrMgr.EyeAnchor is not null)
             {
                 _vrHeadTransform = ovrMgr.EyeAnchor;
@@ -175,7 +161,7 @@ public class SubtitleComponent : MonoBehaviour
         canvasObj.transform.SetParent(transform, false);
         _canvas = canvasObj.AddComponent<Canvas>();
         _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        _canvas.sortingOrder = 9999; // 确保在最上层显示
+        _canvas.sortingOrder = 32767; // 确保在最上层显示
 
         // 添加画布缩放器
         _canvasScaler = _canvas.gameObject.AddComponent<CanvasScaler>();
@@ -242,7 +228,7 @@ public class SubtitleComponent : MonoBehaviour
             var ovrTablet = FindObjectOfType<OvrTablet>();
             if (ovrTablet is not null)
             {
-                Transform screenTransform = ovrTablet.transform.Find("Screen");
+                var screenTransform = ovrTablet.transform.Find("Screen");
                 if (screenTransform is null)
                 {
                     LogManager.Warning(
@@ -258,7 +244,11 @@ public class SubtitleComponent : MonoBehaviour
 
             _canvas = canvasObj.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.WorldSpace;
-            _canvas.sortingOrder = 9999; // 确保在最上层显示
+            _canvas.sortingOrder = 32767; // 确保在最上层显示
+
+            _canvas.transform.localPosition = Vector3.zero;
+            _canvas.transform.localRotation = Quaternion.identity;
+            _canvas.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
 
             // 添加画布缩放器
             _canvasScaler = _canvas.gameObject.AddComponent<CanvasScaler>();
@@ -320,12 +310,12 @@ public class SubtitleComponent : MonoBehaviour
             canvasObj.transform.SetParent(_vrSubtitleContainer.transform, false);
             _canvas = canvasObj.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.WorldSpace;
-            _canvas.sortingOrder = 9999; // 确保在最上层显示
+            _canvas.sortingOrder = 32767; // 确保在最上层显示
 
             // 设置Canvas尺寸，使其在世界空间中有合适的大小
             _vrSpaceCanvasRect = _canvas.GetComponent<RectTransform>();
             _vrSpaceCanvasRect.sizeDelta = new Vector2(_config.VRSubtitleWidth * 1000, 300);
-            _vrSubtitleContainer.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f); //TODO 调整为合适的世界空间尺寸
+            _vrSubtitleContainer.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
 
             // 添加画布缩放器
             _canvasScaler = _canvas.gameObject.AddComponent<CanvasScaler>();
@@ -376,7 +366,7 @@ public class SubtitleComponent : MonoBehaviour
             _outline = _textComponent.gameObject.AddComponent<Outline>();
             _outline.enabled = false;
 
-            LogManager.Debug("VR subtitle container created/VR悬浮字幕容器已创建");
+            LogManager.Debug("VR subtitle container created");
         }
         else
         {
@@ -441,12 +431,9 @@ public class SubtitleComponent : MonoBehaviour
             _currentAnimation = null;
         }
 
-        var displayText = text;
-        // 设置文本，无需处理 XUAT 互操作以及翻译，因为获取时以及被翻译了
-        if (!string.IsNullOrEmpty(speakerName) && EnableSpeakerName)
-            displayText = $"<color=#{speakerColor}>{speakerName}</color>: {text}";
+        // 设置文本内容
+        SetText(text, speakerName, speakerColor, EnableSpeakerName);
 
-        _textComponent.text = displayText;
 
         // 显示字幕
         gameObject.SetActive(true);
@@ -471,6 +458,24 @@ public class SubtitleComponent : MonoBehaviour
 
         LogManager.Debug($"Showing subtitle: {text}");
     }
+
+    /// <summary>
+    ///     设置文本内容
+    /// </summary>
+    /// <param name="text">字幕文本</param>
+    /// <param name="speakerName">说话者名称</param>
+    /// <param name="speakerColor">说话者颜色</param>
+    /// <param name="EnableSpeakerName">是否启用说话者名称显示</param>
+    private void SetText(string text, string speakerName, string speakerColor, bool EnableSpeakerName)
+    {
+        var displayText = text;
+        // 设置文本，无需处理 XUAT 互操作以及翻译，因为获取时已经被翻译了
+        if (!string.IsNullOrEmpty(speakerName) && EnableSpeakerName)
+            displayText = $"<color=#{speakerColor}>{speakerName}</color>: {text}";
+
+        _textComponent.text = displayText;
+    }
+
 
     /// <summary>
     ///     隐藏字幕

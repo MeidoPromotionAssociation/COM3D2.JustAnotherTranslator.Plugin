@@ -17,6 +17,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
         EnStyle
     }
 
+    public enum VRSubtitleModeEnum
+    {
+        InSpace,
+        OnTablet
+    }
+
     public static bool IsVrMode;
 
     public static ConfigEntry<string> TargetLanguage;
@@ -47,8 +53,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> YotogiSubtitleOutlineOpacity;
     public static ConfigEntry<float> YotogiSubtitleOutlineWidth;
 
-    // VR悬浮字幕相关配置
-    public static ConfigEntry<int> VRSubtitleMode;
+    // VR字幕相关配置
+    public static ConfigEntry<VRSubtitleModeEnum> VRSubtitleMode;
     public static ConfigEntry<float> VRSubtitleDistance;
     public static ConfigEntry<float> VRSubtitleVerticalOffset;
     public static ConfigEntry<float> VRSubtitleHorizontalOffset;
@@ -209,27 +215,27 @@ public class JustAnotherTranslator : BaseUnityPlugin
         # region VRSubtitleSettings
 
         // VR悬浮字幕相关配置
-        VRSubtitleMode = Config.Bind("YotogiSubtitle",
+        VRSubtitleMode = Config.Bind("VRSubtitle",
             "VRSubtitleMode/VR字幕模式",
-            1,
-            "VR Subtitle Mode: 0=On Control tablet, 1=Floating in world space following head movement/VR字幕模式：0=字幕在控制平板上，1=跟随头部运动的世界空间悬浮字幕");
+            VRSubtitleModeEnum.InSpace,
+            "VR Subtitle Mode: InSpace=On Control tablet, OnTablet=Floating in world space following head movement, Both=Both/VR字幕模式：InSpace=字幕在控制平板上，OnTablet=跟随头部运动的世界空间悬浮字幕，Both=同时显示");
 
-        VRSubtitleDistance = Config.Bind("YotogiSubtitle",
+        VRSubtitleDistance = Config.Bind("VRSubtitle",
             "VRSubtitleDistance/VR字幕距离",
             2f,
             "VR Floating Subtitle Distance in meters/VR悬浮字幕距离（米）");
 
-        VRSubtitleVerticalOffset = Config.Bind("YotogiSubtitle",
+        VRSubtitleVerticalOffset = Config.Bind("VRSubtitle",
             "VRSubtitleVerticalOffset/VR字幕垂直偏移",
             -15f,
             "VR Floating Subtitle Vertical Offset in degrees (relative to center of view)/VR悬浮字幕垂直偏移（度，相对于视线中心）");
 
-        VRSubtitleHorizontalOffset = Config.Bind("YotogiSubtitle",
+        VRSubtitleHorizontalOffset = Config.Bind("VRSubtitle",
             "VRSubtitleHorizontalOffset/VR字幕水平偏移",
             0f,
             "VR Floating Subtitle Horizontal Offset in degrees (relative to center of view)/VR悬浮字幕水平偏移（度，相对于视线中心）");
 
-        VRSubtitleWidth = Config.Bind("YotogiSubtitle",
+        VRSubtitleWidth = Config.Bind("VRSubtitle",
             "VRSubtitleWidth/VR字幕宽度",
             1f,
             "VR Floating Subtitle Width in meters/VR悬浮字幕宽度（米）");

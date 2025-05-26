@@ -47,6 +47,7 @@ public static class YotogiSubtitlePatch
     }
 
 
+    // 在脚本段落结束时，获取文本
     [HarmonyPatch(typeof(YotogiKagManager), "TagHitRet")]
     [HarmonyPrefix]
     public static void HitRet_Prefix(YotogiKagManager __instance)

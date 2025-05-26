@@ -34,7 +34,7 @@ public static class SubtitleManager
         if (!SpeakerSubtitleIds.TryGetValue(speakerName, out var id))
         {
             // 为说话者创建新的字幕ID
-            id = $"Subtitle_JustAnotherTranslator_SubtitleFor{speakerName}_{_subtitleIdCounter++}";
+            id = $"Subtitle_JustAnotherTranslator_Subtitle_For_{speakerName}_{_subtitleIdCounter++}";
             SpeakerSubtitleIds[speakerName] = id;
         }
 
@@ -185,7 +185,16 @@ public static class SubtitleManager
                 var height = subtitle.GetHeight();
 
                 // 归一化为 0-1 范围内的屏幕位置
-                var normalizedHeight = height / Screen.height;
+                float normalizedHeight;
+
+                // 判断是否为VR模式
+                if (JustAnotherTranslator.IsVrMode &&
+                    JustAnotherTranslator.VRSubtitleMode.Value == JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
+                    // VR空间模式使用固定的归一化高度
+                    normalizedHeight = 0.1f; // 在VR空间中使用固定的垂直间距
+                else
+                    // 普通模式使用屏幕高度
+                    normalizedHeight = height / Screen.height;
 
                 // 添加到活动位置列表
                 activePositions.Add(new VerticalRange(position, position + normalizedHeight));
@@ -195,7 +204,17 @@ public static class SubtitleManager
         activePositions.Sort((a, b) => a.Start.CompareTo(b.Start));
 
         // 计算基准位置
-        var normalizedSubtitleHeight = subtitleHeight / Screen.height;
+        float normalizedSubtitleHeight;
+
+        // 判断是否为VR模式
+        if (JustAnotherTranslator.IsVrMode &&
+            JustAnotherTranslator.VRSubtitleMode.Value == JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
+            // VR空间模式使用固定的归一化高度
+            normalizedSubtitleHeight = 0.1f;
+        else
+            // 普通模式使用屏幕高度
+            normalizedSubtitleHeight = subtitleHeight / Screen.height;
+
         var basePos = Mathf.Clamp(JustAnotherTranslator.YotogiSubtitleVerticalPosition.Value, 0.01f,
             0.99f - normalizedSubtitleHeight);
 

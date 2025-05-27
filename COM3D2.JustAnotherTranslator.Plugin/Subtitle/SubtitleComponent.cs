@@ -311,6 +311,7 @@ public class SubtitleComponent : MonoBehaviour
             _canvas = canvasObj.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.WorldSpace;
             _canvas.sortingOrder = 32767; // 确保在最上层显示
+            _canvas.overrideSorting = true; // 确保覆盖所有其他排序
 
             // 设置Canvas尺寸，使其在世界空间中有合适的大小
             _vrSpaceCanvasRect = _canvas.GetComponent<RectTransform>();
@@ -324,7 +325,9 @@ public class SubtitleComponent : MonoBehaviour
             _canvasScaler.matchWidthOrHeight = 0.5f;
 
             // 添加射线检测
-            _canvas.gameObject.AddComponent<GraphicRaycaster>();
+            var raycaster = _canvas.gameObject.AddComponent<GraphicRaycaster>();
+            raycaster.blockingObjects = GraphicRaycaster.BlockingObjects.None; // 不阻挡任何对象
+            raycaster.ignoreReversedGraphics = false; // 不忽略反向图形
 
             // 创建背景面板
             var backgroundObj = new GameObject("JAT_SubtitleBackground");

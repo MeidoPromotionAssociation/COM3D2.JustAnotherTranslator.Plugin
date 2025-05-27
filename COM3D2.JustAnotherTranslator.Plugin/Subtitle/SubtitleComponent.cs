@@ -474,6 +474,26 @@ public class SubtitleComponent : MonoBehaviour
             displayText = $"<color=#{speakerColor}>{speakerName}</color>: {text}";
 
         _textComponent.text = displayText;
+        
+        // 动态调整背景大小以适应文本高度
+        if (_textComponent != null && !string.IsNullOrEmpty(_textComponent.text) && _backgroundImage != null)
+        {
+            // 获取文本内容的预计高度
+            var textGenerator = _textComponent.cachedTextGenerator;
+            if (textGenerator.characterCountVisible == 0)
+                _textComponent.cachedTextGenerator.Populate(_textComponent.text, _textComponent.GetGenerationSettings(_textComponent.rectTransform.rect.size));
+
+            // 计算实际行数与高度
+            float textHeight = textGenerator.lineCount * _textComponent.fontSize;
+            
+            // 只有当文本高度超过原始背景高度时才调整背景
+            if (textHeight + 10 > _config.BackgroundHeight)
+            {
+                // 调整背景尺寸
+                var backgroundRect = _backgroundImage.rectTransform;
+                backgroundRect.sizeDelta = new Vector2(backgroundRect.sizeDelta.x, textHeight + 10); // 文本高度 + 边距
+            }
+        }
     }
 
 

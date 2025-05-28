@@ -31,7 +31,8 @@ public static class PrivateMaidTouchSubtitlePatch
             LogManager.Debug($"PrivateMaidTouchKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
             LogManager.Debug(
                 $"PrivateMaidTouchKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
-            LogManager.Debug($"PrivateMaidTouchKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
+            LogManager.Debug(
+                $"PrivateMaidTouchKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
         }
     }
 

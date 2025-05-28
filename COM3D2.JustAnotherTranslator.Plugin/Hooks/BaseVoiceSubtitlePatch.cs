@@ -27,13 +27,9 @@ public static class BaseVoiceSubtitlePatch
         // voiceId + .ogg 既是音频文件，支持按音频文件名进行翻译
         var voiceId = tag_data.GetTagProperty("voice").AsString();
 
-        if (!string.IsNullOrEmpty(voiceId))
-        {
-            SubtitleManager.CurrentVoiceId = voiceId;
-
-            // 无法从游戏本身获取文本，因此无论如何都需要从翻译获取
-            // 交由 Maid启动监听协程尝试从翻译获取
-        }
+        if (!string.IsNullOrEmpty(voiceId)) SubtitleManager.CurrentVoiceId = voiceId;
+        // 无法从游戏本身获取文本，因此无论如何都需要从翻译获取
+        // 交由 Maid启动监听协程尝试从翻译获取
         var speakingMaid = __instance.GetMaidAndMan(tag_data);
 
         LogManager.Debug(

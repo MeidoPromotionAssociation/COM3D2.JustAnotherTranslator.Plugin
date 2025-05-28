@@ -27,7 +27,7 @@ public static class CoroutineManager
     // 初始化
     private static void Initialize()
     {
-        if (_instance == null)
+        if (_instance is null)
         {
             _instance = new GameObject("JATCoroutineManager");
             Object.DontDestroyOnLoad(_instance);
@@ -52,7 +52,7 @@ public static class CoroutineManager
     /// <param name="id">协程的唯一标识符</param>
     public static void StopCoroutine(string id)
     {
-        if (_runner != null && !string.IsNullOrEmpty(id)) _runner.StopCoroutineById(id);
+        if (_runner is not null && !string.IsNullOrEmpty(id)) _runner.StopCoroutineById(id);
     }
 
     /// <summary>
@@ -60,7 +60,7 @@ public static class CoroutineManager
     /// </summary>
     public static void StopAllCoroutines()
     {
-        if (_runner != null) _runner.StopAllCoroutines();
+        if (_runner is not null) _runner.StopAllCoroutines();
     }
 
     /// <summary>

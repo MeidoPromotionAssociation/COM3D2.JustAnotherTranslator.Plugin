@@ -2,10 +2,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using BepInEx.Logging;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
+using MaidCafe;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -15,7 +17,6 @@ public static class SubtitleManager
 {
     private const string FallbackSubtitleId = "Subtitle_JustAnotherTranslator_YotogiSubtitle";
     private const float SubtitleDuration = 0f;
-    private static Harmony _yotogiSubtitlePatch;
     private static bool _initialized;
     private static SubtitleConfig _subtitleConfig;
 
@@ -31,6 +32,18 @@ public static class SubtitleManager
     // 当前正在播放的语音ID
     public static string CurrentVoiceId;
 
+    private static Harmony _yotogiSubtitlePatch;
+
+    private static Harmony _advSubtitlePatch;
+
+    private static Harmony _baseVoiceSubtitlePatch;
+
+    private static Harmony _debugPatch;
+
+    private static Harmony _privateMaidTouchSubtitlePatch;
+
+    private static Harmony _vrTouchSubtitlePatch;
+
     public static void Init()
     {
         if (_initialized) return;
@@ -38,15 +51,25 @@ public static class SubtitleManager
         // 从插件配置中获取字幕配置
         GetConfigFromPluginConfig();
 
-        // 创建 Harmony 实例
-        _yotogiSubtitlePatch = Harmony.CreateAndPatchAll(typeof(YotogiSubtitlePatch));
+        // 基础字幕补丁
+        if (JustAnotherTranslator.EnableBaseSubtitle.Value)
+        {
+            _baseVoiceSubtitlePatch = Harmony.CreateAndPatchAll(typeof(BaseVoiceSubtitlePatch));
+            _privateMaidTouchSubtitlePatch = Harmony.CreateAndPatchAll(typeof(PrivateMaidTouchSubtitlePatch));
+            _vrTouchSubtitlePatch = Harmony.CreateAndPatchAll(typeof(VRTouchSubtitlePatch));
+        }
 
-        //TODO test
-        Harmony.CreateAndPatchAll(typeof(AdvSubtitlePatch));
-        Harmony.CreateAndPatchAll(typeof(BaseVoiceSubtitlePatch));
-        Harmony.CreateAndPatchAll(typeof(DebugPatch));
-        Harmony.CreateAndPatchAll(typeof(PrivateMaidTouchSubtitlePatch));
-        Harmony.CreateAndPatchAll(typeof(VRTouchSubtitlePatch));
+        // Yotogi 字幕补丁
+        if (JustAnotherTranslator.EnableYotogiSubtitle.Value)
+            _yotogiSubtitlePatch = Harmony.CreateAndPatchAll(typeof(YotogiSubtitlePatch));
+
+        // ADV 字幕补丁
+        // ADV 模式自带字幕，因此非 VR 模式下几乎没有意义
+        if (JustAnotherTranslator.IsVrMode && JustAnotherTranslator.EnableAdvSubtitle.Value)
+            _advSubtitlePatch = Harmony.CreateAndPatchAll(typeof(AdvSubtitlePatch));
+
+        if (JustAnotherTranslator.LogLevelConfig.Value >= LogLevel.Debug)
+            _debugPatch = Harmony.CreateAndPatchAll(typeof(DebugPatch));
 
         SceneManager.sceneUnloaded += OnSceneChange;
 
@@ -57,11 +80,18 @@ public static class SubtitleManager
     {
         if (!_initialized) return;
 
-        if (_yotogiSubtitlePatch != null)
-        {
-            _yotogiSubtitlePatch.UnpatchSelf();
-            _yotogiSubtitlePatch = null;
-        }
+        _yotogiSubtitlePatch?.UnpatchSelf();
+        _yotogiSubtitlePatch = null;
+        _advSubtitlePatch?.UnpatchSelf();
+        _advSubtitlePatch = null;
+        _baseVoiceSubtitlePatch?.UnpatchSelf();
+        _baseVoiceSubtitlePatch = null;
+        _debugPatch?.UnpatchSelf();
+        _debugPatch = null;
+        _privateMaidTouchSubtitlePatch?.UnpatchSelf();
+        _privateMaidTouchSubtitlePatch = null;
+        _vrTouchSubtitlePatch?.UnpatchSelf();
+        _vrTouchSubtitlePatch = null;
 
         _subtitleConfig = null;
 
@@ -92,7 +122,7 @@ public static class SubtitleManager
         // 存储当前显示的字幕信息，用于后续重新显示
         var activeSubtitles = new Dictionary<Maid, string>();
         foreach (var pair in MaidMonitorCoroutineIds)
-            if (pair.Key != null && CurrentSpeaker == pair.Key && !string.IsNullOrEmpty(CurrentVoiceId))
+            if (pair.Key is not null && CurrentSpeaker == pair.Key && !string.IsNullOrEmpty(CurrentVoiceId))
                 if (VoiceIdToTextMap.TryGetValue(CurrentVoiceId, out var text) && !string.IsNullOrEmpty(text))
                     activeSubtitles[pair.Key] = text;
 
@@ -119,7 +149,7 @@ public static class SubtitleManager
     // 显示字幕
     private static void ShowSubtitle(string text, Maid maid)
     {
-        if (string.IsNullOrEmpty(text) || maid == null)
+        if (string.IsNullOrEmpty(text) || maid is null)
             return;
 
         var speakerName = MaidInfo.GetMaidFullName(maid);
@@ -153,6 +183,16 @@ public static class SubtitleManager
     {
         if (maid is null)
             return;
+
+        // MaidCafe 模式游戏自带字幕，且由于其脚本编写是一整个音频文件，通过 wait 等待播放，因此无法简单可靠获取文本，应当交由游戏自行处理
+        // 见 stream001_movie_0001.ks
+        // 见 SetStreamingMessageText(LocalizationString value)
+        if (MaidCafeManagerHelper.IsStreamingPart())
+        {
+            LogManager.Debug("MaidCafe mode detected, skipping subtitle display");
+            StopMaidMonitoringCoroutine(maid);
+            return;
+        }
 
         // 如果已经有协程在运行，则不再创建新的协程
         if (MaidMonitorCoroutineIds.ContainsKey(maid) && !string.IsNullOrEmpty(MaidMonitorCoroutineIds[maid]))
@@ -192,11 +232,11 @@ public static class SubtitleManager
             // 检查maid和AudioMan是否为null
             if (maid.AudioMan is null)
             {
-                LogManager.Debug($"Maid AudioMan is null, waiting...");
+                LogManager.Debug("Maid AudioMan is null, waiting...");
                 yield return new WaitForSeconds(0.1f);
                 continue;
             }
-            
+
             var isPlaying = maid.AudioMan.isPlay();
             var currentFileName = maid.AudioMan.FileName;
             var currentVoiceId = !string.IsNullOrEmpty(currentFileName)
@@ -228,7 +268,8 @@ public static class SubtitleManager
                     if (!string.IsNullOrEmpty(currentVoiceId) && VoiceIdToTextMap.ContainsKey(currentVoiceId))
                     {
                         var text = VoiceIdToTextMap[currentVoiceId];
-                        LogManager.Debug($"Found text for voice {currentVoiceId}: {text}, showing subtitle (form text cache)");
+                        LogManager.Debug(
+                            $"Found text for voice {currentVoiceId}: {text}, showing subtitle (form text cache)");
 
                         // 显示字幕
                         ShowSubtitle(text, maid);
@@ -238,7 +279,8 @@ public static class SubtitleManager
                     else if (TextTranslator.GetTranslateText(currentVoiceId, out var translateText))
                     {
                         VoiceIdToTextMap[currentVoiceId] = translateText;
-                        LogManager.Debug($"Found text for voice {currentVoiceId}: {translateText}, showing subtitle (form text translator)");
+                        LogManager.Debug(
+                            $"Found text for voice {currentVoiceId}: {translateText}, showing subtitle (form text translator)");
                         ShowSubtitle(translateText, maid);
                         foundText = true;
                     }
@@ -282,10 +324,8 @@ public static class SubtitleManager
         // Maid不可见或为null，停止协程
         if (maid is null || !maid.Visible)
         {
-            if (maid is not null)
-            {
-                HideSubtitle(maid);
-            }
+            if (maid is not null) HideSubtitle(maid);
+
             MaidMonitorCoroutineIds.Remove(maid);
             // 重新创建字幕以重新排序
             UpdateSubtitleConfig();
@@ -382,7 +422,6 @@ public static class SubtitleManager
             VRSubtitleWidth = JustAnotherTranslator.VRSubtitleWidth.Value
         };
     }
-
 
 
     private static void OnSceneChange(Scene scene)

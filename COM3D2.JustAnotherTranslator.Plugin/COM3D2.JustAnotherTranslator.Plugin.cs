@@ -35,8 +35,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<int> TextureCacheSize;
     public static ConfigEntry<bool> EnableAsyncLoading;
 
-    // 字幕相关配置
+
+    // 字幕启用相关配置
+    public static ConfigEntry<bool> EnableBaseSubtitle;
     public static ConfigEntry<bool> EnableYotogiSubtitle;
+    public static ConfigEntry<bool> EnableAdvSubtitle;
+
+    // 字幕相关配置
     public static ConfigEntry<bool> EnableYotogiSubtitleSpeakerName;
     public static ConfigEntry<string> YotogiSubtitleFont;
     public static ConfigEntry<int> YotogiSubtitleFontSize;
@@ -70,6 +75,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     private void Awake()
     {
+        Logger.LogInfo("COM3D2.JustAnotherTranslator.Plugin is loading/COM3D2.JustAnotherTranslator.Plugin 正在载入");
+        Logger.LogInfo(
+            "Get update or report bug/获取更新或报告bug: https://github.com/90135/COM3D2.JustAnotherTranslator.Plugin");
+
         // Initialize our LogManager with the BepInEx logger
         LogManager.Initialize(Logger);
 
@@ -106,6 +115,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             MaidNameStyleEnum.JpStyle,
             "Maid Name Style, JpStyle is family name first and given name last, English style is opposite, cannot change at runtime/女仆名字样式，日式姓前名后，英式相反。无法在运行时更改");
 
+        // 声明后才能使用日志
         LogLevelConfig = Config.Bind("General",
             "LogLevel/日志级别",
             LogLevel.Info,
@@ -120,6 +130,25 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "EnableAsyncLoading/启用异步加载",
             true,
             "Enable Async Loading, load translation files in background thread/启用异步加载，在后台线程中加载翻译文件");
+
+        # endregion
+
+        # region SubtitleEnableSettings
+
+        EnableBaseSubtitle = Config.Bind("Subtitle",
+            "EnableBaseSubtitle/启用基础字幕",
+            true,
+            "Enable Base Subtitle, usually Karaoke, Casino, etc Some voices are matched by audio file name, so may not be displayed if text translation is not enabled/启用基础字幕，通常是卡拉OK、赌场等字幕。部分语音按音频文件名匹配，因此未启用文本翻译时可能无法显示");
+
+        EnableYotogiSubtitle = Config.Bind("Subtitle",
+            "EnableYotogiSubtitle/启用夜伽字幕",
+            true,
+            "Enable Yotogi Subtitle/启用夜伽字幕");
+
+        EnableAdvSubtitle = Config.Bind("Subtitle",
+            "EnableADVSubtitle/启用ADV字幕",
+            true,
+            "Enable ADV subtitles. Since ADV scenes have their own subtitles, this setting is only useful in VR mode and is invalid in non-VR mode./启用ADV字幕，由于 ADV 场景自带字幕，因此仅在 VR 模式下有用，非 VR 模式此设置无效");
 
         # endregion
 

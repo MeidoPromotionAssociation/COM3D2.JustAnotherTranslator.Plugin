@@ -44,7 +44,8 @@ public static class YotogiSubtitlePatch
             SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
             LogManager.Debug($"YotogiKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
-            LogManager.Debug($"YotogiKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
+            LogManager.Debug(
+                $"YotogiKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
             LogManager.Debug($"YotogiKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
         }
     }
@@ -57,9 +58,12 @@ public static class YotogiSubtitlePatch
     {
         var text = __instance.kag_.GetText();
         LogManager.Debug($"YotogiKagManager_HitRet_Prefix called with text: {text}");
-        LogManager.Debug($"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentLabel(): {__instance.kag_.GetCurrentLabel()}");
-        LogManager.Debug($"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentFileName(): {__instance.kag_.GetCurrentFileName()}");
-        LogManager.Debug($"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentLine(): {__instance.kag_.GetCurrentLine()}");
+        LogManager.Debug(
+            $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentLabel(): {__instance.kag_.GetCurrentLabel()}");
+        LogManager.Debug(
+            $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentFileName(): {__instance.kag_.GetCurrentFileName()}");
+        LogManager.Debug(
+            $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentLine(): {__instance.kag_.GetCurrentLine()}");
         if (!string.IsNullOrEmpty(text))
         {
             if (SubtitleManager.CurrentSpeaker is null)

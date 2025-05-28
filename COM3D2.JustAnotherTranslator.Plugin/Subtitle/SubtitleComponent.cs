@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -473,8 +474,12 @@ public class SubtitleComponent : MonoBehaviour
     {
         var displayText = text;
         // 设置文本，无需处理 XUAT 互操作以及翻译，因为获取时已经被翻译了
+        // 但人名需要被翻译
         if (!string.IsNullOrEmpty(speakerName) && EnableSpeakerName)
-            displayText = $"<color=#{speakerColor}>{speakerName}</color>: {text}";
+        {
+            TextTranslator.GetTranslateText(speakerName, out var translatedSpeakerName);
+            displayText = $"<color=#{speakerColor}>{translatedSpeakerName}</color>: {text}";
+        }
 
         _textComponent.text = displayText;
 

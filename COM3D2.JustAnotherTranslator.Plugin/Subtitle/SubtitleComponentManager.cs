@@ -7,7 +7,7 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 /// <summary>
 ///     字幕管理器，用于创建和管理字幕组件
 /// </summary>
-public static class SubtitleManager
+public static class SubtitleComponentManager
 {
     // 字幕组件字典，键为字幕ID
     private static readonly Dictionary<string, SubtitleComponent> Subtitles = new();

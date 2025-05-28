@@ -8,11 +8,10 @@ using UnityEngine.UI;
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
 
 // <summary>
-// 用于替换贴图的Harmony补丁
-// 部分代码来自 https://github.com/Pain-Brioche/COM3D2.i18nEx
-// COM3D2.i18nEx 基于 MIT 许可证，协议开源，作者为 ghorsington、Pain-Brioche
+//      用于替换贴图的Harmony补丁
+//      部分代码来自 https://github.com/Pain-Brioche/COM3D2.i18nEx
+//      COM3D2.i18nEx 基于 MIT 许可证，协议开源，作者为 ghorsington、Pain-Brioche
 // </summary>
-
 public static class TextureReplacePatch
 {
     private static readonly byte[] EmptyBytes = new byte[0];

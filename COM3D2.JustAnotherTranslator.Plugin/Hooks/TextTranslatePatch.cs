@@ -6,6 +6,9 @@ using UnityEngine.UI;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
 
+// <summary>
+//     用于翻译文本的 Harmony 补丁
+// </summary>
 public static class TextTranslatePatch
 {
     // ADV text

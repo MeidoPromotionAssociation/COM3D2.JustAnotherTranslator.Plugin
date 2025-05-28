@@ -7,10 +7,11 @@ using COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
-public static class YotogiSubtitleManager
+public static class SubtitleManager
 {
     private const string FallbackSubtitleId = "Subtitle_JustAnotherTranslator_YotogiSubtitle";
     private const float SubtitleDuration = 0f;
@@ -40,6 +41,15 @@ public static class YotogiSubtitleManager
         // 创建 Harmony 实例
         _yotogiSubtitlePatch = Harmony.CreateAndPatchAll(typeof(YotogiSubtitlePatch));
 
+        //TODO test
+        Harmony.CreateAndPatchAll(typeof(AdvSubtitlePatch));
+        Harmony.CreateAndPatchAll(typeof(BaseVoiceSubtitlePatch));
+        Harmony.CreateAndPatchAll(typeof(DebugPatch));
+        Harmony.CreateAndPatchAll(typeof(PrivateMaidTouchSubtitlePatch));
+        Harmony.CreateAndPatchAll(typeof(VRTouchSubtitlePatch));
+
+        SceneManager.sceneUnloaded += OnSceneChange;
+
         _initialized = true;
     }
 
@@ -55,7 +65,9 @@ public static class YotogiSubtitleManager
 
         _subtitleConfig = null;
 
-        SubtitleManager.DestroySubtitle(FallbackSubtitleId);
+        SubtitleComponentManager.DestroySubtitle(FallbackSubtitleId);
+
+        SceneManager.sceneUnloaded -= OnSceneChange;
 
         CleanupAllCoroutines();
 
@@ -75,7 +87,7 @@ public static class YotogiSubtitleManager
         GetConfigFromPluginConfig();
 
         // 首先隐藏所有字幕
-        SubtitleManager.HideAllSubtitles();
+        SubtitleComponentManager.HideAllSubtitles();
 
         // 存储当前显示的字幕信息，用于后续重新显示
         var activeSubtitles = new Dictionary<Maid, string>();
@@ -85,7 +97,7 @@ public static class YotogiSubtitleManager
                     activeSubtitles[pair.Key] = text;
 
         // 销毁所有字幕组件，强制重新创建
-        SubtitleManager.DestroyAllSubtitles();
+        SubtitleComponentManager.DestroyAllSubtitles();
 
         LogManager.Debug($"Recreate default subtitles: {FallbackSubtitleId}");
 
@@ -113,7 +125,7 @@ public static class YotogiSubtitleManager
         var speakerName = MaidInfo.GetMaidFullName(maid);
 
         // 使用浮动字幕显示，自动避免重叠
-        SubtitleManager.ShowFloatingSubtitle(
+        SubtitleComponentManager.ShowFloatingSubtitle(
             text,
             speakerName,
             SubtitleDuration,
@@ -130,7 +142,7 @@ public static class YotogiSubtitleManager
             return;
 
         var speakerName = MaidInfo.GetMaidFullName(maid);
-        SubtitleManager.HideSubtitle(SubtitleManager.GetSpeakerSubtitleId(speakerName));
+        SubtitleComponentManager.HideSubtitle(SubtitleComponentManager.GetSpeakerSubtitleId(speakerName));
 
         LogManager.Debug($"Hiding subtitle for {speakerName}");
     }
@@ -139,7 +151,7 @@ public static class YotogiSubtitleManager
     // 启动Maid监听协程
     public static void StartMaidMonitoringCoroutine(Maid maid)
     {
-        if (maid == null)
+        if (maid is null)
             return;
 
         // 如果已经有协程在运行，则不再创建新的协程
@@ -156,7 +168,7 @@ public static class YotogiSubtitleManager
     // 停止Maid监听协程
     public static void StopMaidMonitoringCoroutine(Maid maid)
     {
-        if (maid == null || !MaidMonitorCoroutineIds.ContainsKey(maid))
+        if (maid is null || !MaidMonitorCoroutineIds.ContainsKey(maid))
             return;
 
         var coroutineId = MaidMonitorCoroutineIds[maid];
@@ -175,8 +187,16 @@ public static class YotogiSubtitleManager
 
         LogManager.Debug($"MonitorMaidVoicePlayback started for: {MaidInfo.GetMaidFullName(maid)}");
 
-        while (maid.Visible)
+        while (maid is not null && maid.Visible)
         {
+            // 检查maid和AudioMan是否为null
+            if (maid.AudioMan is null)
+            {
+                LogManager.Debug($"Maid AudioMan is null, waiting...");
+                yield return new WaitForSeconds(0.1f);
+                continue;
+            }
+            
             var isPlaying = maid.AudioMan.isPlay();
             var currentFileName = maid.AudioMan.FileName;
             var currentVoiceId = !string.IsNullOrEmpty(currentFileName)
@@ -208,10 +228,18 @@ public static class YotogiSubtitleManager
                     if (!string.IsNullOrEmpty(currentVoiceId) && VoiceIdToTextMap.ContainsKey(currentVoiceId))
                     {
                         var text = VoiceIdToTextMap[currentVoiceId];
-                        LogManager.Debug($"Found text for voice {currentVoiceId}: {text}, showing subtitle");
+                        LogManager.Debug($"Found text for voice {currentVoiceId}: {text}, showing subtitle (form text cache)");
 
                         // 显示字幕
                         ShowSubtitle(text, maid);
+                        foundText = true;
+                    }
+                    // 尝试直接按 voiceId 获取翻译
+                    else if (TextTranslator.GetTranslateText(currentVoiceId, out var translateText))
+                    {
+                        VoiceIdToTextMap[currentVoiceId] = translateText;
+                        LogManager.Debug($"Found text for voice {currentVoiceId}: {translateText}, showing subtitle (form text translator)");
+                        ShowSubtitle(translateText, maid);
                         foundText = true;
                     }
                     else
@@ -251,10 +279,13 @@ public static class YotogiSubtitleManager
                 yield return new WaitForSeconds(0.1f);
         }
 
-        // Maid不可见，停止协程
-        if (!maid.Visible)
+        // Maid不可见或为null，停止协程
+        if (maid is null || !maid.Visible)
         {
-            HideSubtitle(maid);
+            if (maid is not null)
+            {
+                HideSubtitle(maid);
+            }
             MaidMonitorCoroutineIds.Remove(maid);
             // 重新创建字幕以重新排序
             UpdateSubtitleConfig();
@@ -268,9 +299,11 @@ public static class YotogiSubtitleManager
     {
         foreach (var pair in MaidMonitorCoroutineIds)
         {
-            if (pair.Key != null) HideSubtitle(pair.Key);
+            if (pair.Key is not null)
+                HideSubtitle(pair.Key);
 
-            if (!string.IsNullOrEmpty(pair.Value)) CoroutineManager.StopCoroutine(pair.Value);
+            if (!string.IsNullOrEmpty(pair.Value))
+                CoroutineManager.StopCoroutine(pair.Value);
         }
 
         MaidMonitorCoroutineIds.Clear();
@@ -348,5 +381,13 @@ public static class YotogiSubtitleManager
             VRSubtitleHorizontalOffset = JustAnotherTranslator.VRSubtitleHorizontalOffset.Value,
             VRSubtitleWidth = JustAnotherTranslator.VRSubtitleWidth.Value
         };
+    }
+
+
+
+    private static void OnSceneChange(Scene scene)
+    {
+        LogManager.Debug("OnSceneChange called");
+        CleanupAllCoroutines();
     }
 }

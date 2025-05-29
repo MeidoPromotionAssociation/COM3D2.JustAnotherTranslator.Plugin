@@ -29,12 +29,12 @@ public static class SubtitleComponentManager
     public static string GetSpeakerSubtitleId(string speakerName)
     {
         if (string.IsNullOrEmpty(speakerName))
-            return "Subtitle_JustAnotherTranslator_DefaultSubtitle";
+            return "Subtitle_JAT_DefaultSubtitle";
 
         if (!SpeakerSubtitleIds.TryGetValue(speakerName, out var id))
         {
             // 为说话者创建新的字幕ID
-            id = $"Subtitle_JustAnotherTranslator_Subtitle_For_{speakerName}_{_subtitleIdCounter++}";
+            id = $"Subtitle_JAT_DefaultSubtitle_For_{speakerName}_{_subtitleIdCounter++}";
             SpeakerSubtitleIds[speakerName] = id;
         }
 
@@ -215,7 +215,9 @@ public static class SubtitleComponentManager
             // 普通模式使用屏幕高度
             normalizedSubtitleHeight = subtitleHeight / Screen.height;
 
-        var basePos = Mathf.Clamp(JustAnotherTranslator.YotogiSubtitleVerticalPosition.Value, 0.01f,
+        // 根据当前字幕类型选择相应的垂直位置
+        var basePos = Mathf.Clamp(
+            JustAnotherTranslator.GetSubtitleVerticalPosition(JustAnotherTranslator.SubtitleType.Value), 0.01f,
             0.99f - normalizedSubtitleHeight);
 
         var found = false;
@@ -239,7 +241,8 @@ public static class SubtitleComponentManager
         if (!found)
         {
             // 2. 向上查找
-            basePos = Mathf.Clamp(JustAnotherTranslator.YotogiSubtitleVerticalPosition.Value, 0.01f,
+            basePos = Mathf.Clamp(
+                JustAnotherTranslator.GetSubtitleVerticalPosition(JustAnotherTranslator.SubtitleType.Value), 0.01f,
                 0.99f - normalizedSubtitleHeight);
             for (var i = activePositions.Count - 1; i >= 0; i--)
             {
@@ -340,6 +343,9 @@ public static class SubtitleComponentManager
         // 如果已经为此说话者分配了颜色，则直接返回
         if (SpeakerColors.TryGetValue(speakerName, out var color))
             return color;
+
+        if (string.IsNullOrEmpty(speakerName))
+            speakerName = "Unknown";
 
         // 基于说话者名称生成稳定的哈希值
         var hash = speakerName.GetHashCode();

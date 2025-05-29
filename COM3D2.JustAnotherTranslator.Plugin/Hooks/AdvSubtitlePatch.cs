@@ -1,4 +1,4 @@
-﻿using COM3D2.JustAnotherTranslator.Plugin.Translator;
+using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
@@ -28,6 +28,9 @@ public static class AdvSubtitlePatch
             var voiceId = tag_data.GetTagProperty("voice").AsString();
             SubtitleManager.CurrentVoiceId = voiceId;
 
+            // 设置当前字幕类型为ADV
+            JustAnotherTranslator.SubtitleType.Value = JustAnotherTranslator.SubtitleTypeEnum.ADV;
+
             // 为每个Maid启动监听协程（如果尚未启动）
             SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
@@ -44,6 +47,9 @@ public static class AdvSubtitlePatch
     [HarmonyPrefix]
     public static void ADVKagManager_HitRet_Prefix(ADVKagManager __instance)
     {
+        // 设置当前字幕类型为ADV
+        JustAnotherTranslator.SubtitleType.Value = JustAnotherTranslator.SubtitleTypeEnum.ADV;
+
         var text = __instance.kag_.GetText();
         LogManager.Debug($"ADVKagManager_HitRet_Prefix called with text: {text}");
         LogManager.Debug(

@@ -92,16 +92,18 @@ public class SubtitleComponent : MonoBehaviour
     ///     初始化字幕组件
     /// </summary>
     /// <param name="config">字幕配置</param>
-    /// <param name="isVrMode">是否为VR模式</param>
     public void Initialize(SubtitleConfig config)
     {
-        _config = config;
+        _config = config ?? new SubtitleConfig();
 
-        // 创建字幕UI
-        if (JustAnotherTranslator.IsVrMode)
-            CreateVRSubtitleUI();
+        _config.SubtitleType = JustAnotherTranslator.SubtitleType.Value;
+
+        if (JustAnotherTranslator.IsVrMode && _config.VRSubtitleMode == JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
+            InitVRComponents();
         else
             CreateSubtitleUI();
+
+        gameObject.SetActive(false);
 
         // 应用配置
         ApplyConfig();
@@ -109,8 +111,8 @@ public class SubtitleComponent : MonoBehaviour
         // 如果是VR模式且启用了悬浮字幕，获取OvrMgr的EyeAnchor
         if (JustAnotherTranslator.IsVrMode &&
             _config.VRSubtitleMode is JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
-            // 延迟初始化VR相关组件，因为GameMain.Instance.OvrMgr可能还未初始化
-            StartCoroutine(InitVRComponents());
+            // 初始化VR相关组件
+            InitVRComponents();
         else
             _initialized = true;
     }
@@ -119,7 +121,7 @@ public class SubtitleComponent : MonoBehaviour
     /// <summary>
     ///     初始化VR空间字幕组件
     /// </summary>
-    private IEnumerator InitVRComponents()
+    private void InitVRComponents()
     {
         // 查找 OvrMgr 的 EyeAnchor
         if (GameMain.Instance is not null && GameMain.Instance.OvrMgr is not null)
@@ -129,7 +131,7 @@ public class SubtitleComponent : MonoBehaviour
             {
                 LogManager.Debug("VR head transform (EyeAnchor) found, subtitle head tracking enabled");
                 _initialized = true;
-                yield break;
+                return;
             }
         }
 
@@ -158,7 +160,7 @@ public class SubtitleComponent : MonoBehaviour
     private void CreateSubtitleUI()
     {
         // 创建画布
-        var canvasObj = new GameObject("JAT_SubtitleCanvas");
+        var canvasObj = new GameObject("Subtitle_JAT_SubtitleCanvas");
         canvasObj.transform.SetParent(transform, false);
         _canvas = canvasObj.AddComponent<Canvas>();
         _canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -171,7 +173,7 @@ public class SubtitleComponent : MonoBehaviour
         _canvasScaler.matchWidthOrHeight = 0.5f;
 
         // 创建背景面板
-        var backgroundObj = new GameObject("JAT_SubtitleBackground");
+        var backgroundObj = new GameObject("Subtitle_JAT_SubtitleBackground");
         backgroundObj.transform.SetParent(_canvas.transform, false);
         _backgroundImage = backgroundObj.AddComponent<Image>();
         _backgroundImage.color = new Color(0, 0, 0, 0.5f); // 半透明黑色背景
@@ -185,7 +187,7 @@ public class SubtitleComponent : MonoBehaviour
         backgroundRect.anchoredPosition = new Vector2(0, 0);
 
         // 创建文本对象
-        var textObj = new GameObject("JAT_SubtitleText");
+        var textObj = new GameObject("Subtitle_JAT_SubtitleText");
         textObj.transform.SetParent(backgroundRect, false);
         _textComponent = textObj.AddComponent<Text>();
 
@@ -224,7 +226,7 @@ public class SubtitleComponent : MonoBehaviour
         if (_config.VRSubtitleMode == JustAnotherTranslator.VRSubtitleModeEnum.OnTablet)
         {
             // 在 VR 模式中原有 UI 会被放到一个悬浮平板电脑上，见 OvrTablet
-            var canvasObj = new GameObject("JAT_SubtitleCanvas_VR_Tablet");
+            var canvasObj = new GameObject("Subtitle_JAT_SubtitleCanvas_VR_Tablet");
 
             var ovrTablet = FindObjectOfType<OvrTablet>();
             if (ovrTablet is not null)
@@ -258,21 +260,20 @@ public class SubtitleComponent : MonoBehaviour
             _canvasScaler.matchWidthOrHeight = 0.5f;
 
             // 创建背景面板
-            var backgroundObj = new GameObject("JAT_SubtitleBackground");
+            var backgroundObj = new GameObject("Subtitle_JAT_SubtitleBackground");
             backgroundObj.transform.SetParent(_canvas.transform, false);
             _backgroundImage = backgroundObj.AddComponent<Image>();
             _backgroundImage.color = new Color(0, 0, 0, 0.5f); // 半透明黑色背景
 
             // 设置背景位置和大小
             var backgroundRect = _backgroundImage.rectTransform;
-            backgroundRect.anchorMin = new Vector2(0, 0); // 左下角
-            backgroundRect.anchorMax = new Vector2(1, 0); // 右下角
+            backgroundRect.anchorMin = new Vector2(0, _config.VerticalPosition);
+            backgroundRect.anchorMax = new Vector2(1, _config.VerticalPosition);
             backgroundRect.pivot = new Vector2(0.5f, 0);
-            backgroundRect.sizeDelta = new Vector2(0, 100);
-            backgroundRect.anchoredPosition = new Vector2(0, 0);
+            backgroundRect.sizeDelta = new Vector2(0, _config.BackgroundHeight);
 
             // 创建文本对象
-            var textObj = new GameObject("JAT_SubtitleText");
+            var textObj = new GameObject("Subtitle_JAT_SubtitleText");
             textObj.transform.SetParent(backgroundRect, false);
             _textComponent = textObj.AddComponent<Text>();
 
@@ -303,11 +304,11 @@ public class SubtitleComponent : MonoBehaviour
         else if (_config.VRSubtitleMode == JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
         {
             // 创建一个容器来承载悬浮字幕
-            _vrSubtitleContainer = new GameObject("JAT_SubtitleContainer_VR_Space");
+            _vrSubtitleContainer = new GameObject("Subtitle_JAT_SubtitleContainer_VR_Space");
             _vrSubtitleContainer.transform.SetParent(transform, false);
 
             // 创建世界空间Canvas
-            var canvasObj = new GameObject("JAT_SubtitleCanvas_VR_Space");
+            var canvasObj = new GameObject("Subtitle_JAT_SubtitleCanvas_VR_Space");
             canvasObj.transform.SetParent(_vrSubtitleContainer.transform, false);
             _canvas = canvasObj.AddComponent<Canvas>();
             _canvas.renderMode = RenderMode.WorldSpace;
@@ -331,7 +332,7 @@ public class SubtitleComponent : MonoBehaviour
             raycaster.ignoreReversedGraphics = false; // 不忽略反向图形
 
             // 创建背景面板
-            var backgroundObj = new GameObject("JAT_SubtitleBackground");
+            var backgroundObj = new GameObject("Subtitle_JAT_SubtitleBackground");
             backgroundObj.transform.SetParent(_canvas.transform, false);
             _backgroundImage = backgroundObj.AddComponent<Image>();
             _backgroundImage.color = new Color(0, 0, 0, 0.5f); // 半透明黑色背景
@@ -345,7 +346,7 @@ public class SubtitleComponent : MonoBehaviour
             backgroundRect.anchoredPosition = new Vector2(0, 0);
 
             // 创建文本对象
-            var textObj = new GameObject("JAT_SubtitleText");
+            var textObj = new GameObject("Subtitle_JAT_SubtitleText");
             textObj.transform.SetParent(backgroundRect, false);
             _textComponent = textObj.AddComponent<Text>();
 
@@ -438,7 +439,6 @@ public class SubtitleComponent : MonoBehaviour
         // 设置文本内容
         SetText(text, speakerName, speakerColor, EnableSpeakerName);
 
-
         // 显示字幕
         gameObject.SetActive(true);
 
@@ -484,7 +484,7 @@ public class SubtitleComponent : MonoBehaviour
         _textComponent.text = displayText;
 
         // 动态调整背景大小以适应文本高度
-        if (_textComponent != null && !string.IsNullOrEmpty(_textComponent.text) && _backgroundImage != null)
+        if (_textComponent is not null && !string.IsNullOrEmpty(_textComponent.text) && _backgroundImage is not null)
         {
             // 获取文本内容的预计高度
             var textGenerator = _textComponent.cachedTextGenerator;
@@ -603,9 +603,14 @@ public class SubtitleComponent : MonoBehaviour
     /// <param name="config">新的配置</param>
     public void UpdateConfig(SubtitleConfig config)
     {
+        if (config is null)
+            return;
+
+        // 记录当前字幕类型
+        config.SubtitleType = JustAnotherTranslator.SubtitleType.Value;
+
         _config = config;
         ApplyConfig();
-        LogManager.Debug("Subtitle config updated");
     }
 
     /// <summary>
@@ -657,6 +662,10 @@ public class SubtitleConfig
 {
     // 是否启用说话人名字显示
     public bool EnableSpeakerName = true;
+
+    // 字幕类型
+    public JustAnotherTranslator.SubtitleTypeEnum SubtitleType { get; set; } =
+        JustAnotherTranslator.SubtitleTypeEnum.Base;
 
     // 字体
     public Font Font { get; set; }

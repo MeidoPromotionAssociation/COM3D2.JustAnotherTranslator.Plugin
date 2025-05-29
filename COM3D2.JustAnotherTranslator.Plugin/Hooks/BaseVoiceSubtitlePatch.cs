@@ -1,4 +1,4 @@
-﻿using COM3D2.JustAnotherTranslator.Plugin.Translator;
+using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
@@ -34,6 +34,9 @@ public static class BaseVoiceSubtitlePatch
 
         LogManager.Debug(
             $"BaseKagManager_TagPlayVoice_Prefix GetMaidAndMan speakingMaid: {speakingMaid.status.fullNameJpStyle}");
+
+        // 设置当前字幕类型为Base
+        JustAnotherTranslator.SubtitleType.Value = JustAnotherTranslator.SubtitleTypeEnum.Base;
 
         SubtitleManager.CurrentSpeaker = speakingMaid;
 

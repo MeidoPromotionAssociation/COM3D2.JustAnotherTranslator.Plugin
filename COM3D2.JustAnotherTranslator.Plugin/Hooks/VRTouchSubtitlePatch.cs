@@ -1,4 +1,4 @@
-﻿using COM3D2.JustAnotherTranslator.Plugin.Translator;
+using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
@@ -33,6 +33,9 @@ public static class VRTouchSubtitlePatch
             SubtitleManager.CurrentSpeaker = speakingMaid;
             var voiceId = tag_data.GetTagProperty("voice").AsString();
             SubtitleManager.CurrentVoiceId = voiceId;
+
+            // 设置当前字幕类型为Base
+            JustAnotherTranslator.SubtitleType.Value = JustAnotherTranslator.SubtitleTypeEnum.Base;
 
             // 为每个Maid启动监听协程（如果尚未启动）
             SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);

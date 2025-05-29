@@ -17,7 +17,7 @@ public static class SubtitleManager
     private const string FallbackSubtitleId = "Subtitle_JustAnotherTranslator_YotogiSubtitle";
     private const float SubtitleDuration = 0f;
     private static bool _initialized;
-    private static SubtitleConfig _subtitleConfig;
+    private static Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> _subtitleConfigs;
 
     // 存储每个Maid的监听协程ID
     private static readonly Dictionary<Maid, string> MaidMonitorCoroutineIds = new();
@@ -64,7 +64,7 @@ public static class SubtitleManager
 
         // ADV 字幕补丁
         // ADV 模式自带字幕，因此非 VR 模式下几乎没有意义
-        if (JustAnotherTranslator.IsVrMode && JustAnotherTranslator.EnableAdvSubtitle.Value)
+        if ((JustAnotherTranslator.IsVrMode && JustAnotherTranslator.EnableAdvSubtitle.Value) || JustAnotherTranslator.ForceEnableAdvSubtitle.Value)
             _advSubtitlePatch = Harmony.CreateAndPatchAll(typeof(AdvSubtitlePatch));
 
         if (JustAnotherTranslator.LogLevelConfig.Value >= LogLevel.Debug)
@@ -92,7 +92,7 @@ public static class SubtitleManager
         _vrTouchSubtitlePatch?.UnpatchSelf();
         _vrTouchSubtitlePatch = null;
 
-        _subtitleConfig = null;
+        _subtitleConfigs = null;
 
         SubtitleComponentManager.DestroySubtitle(FallbackSubtitleId);
 
@@ -158,7 +158,7 @@ public static class SubtitleManager
             text,
             speakerName,
             SubtitleDuration,
-            _subtitleConfig
+            _subtitleConfigs[JustAnotherTranslator.SubtitleType.Value]
         );
 
         LogManager.Debug($"Showing subtitle for {speakerName}: {text}");
@@ -355,71 +355,76 @@ public static class SubtitleManager
 
     /// <summary>
     ///     从插件配置中获取字幕配置
-    ///     储存于 _subtitleConfig
+    ///     储存于 _subtitleConfigs
     /// </summary>
     private static void GetConfigFromPluginConfig()
     {
-        Font font;
-        if (JustAnotherTranslator.YotogiSubtitleFont.Value == "Arial")
-            font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        else
-            try
-            {
-                font = Font.CreateDynamicFontFromOSFont(JustAnotherTranslator.YotogiSubtitleFont.Value,
-                    JustAnotherTranslator.YotogiSubtitleFontSize.Value);
-            }
-            catch (Exception e)
-            {
-                LogManager.Error($"Failed to create font/创建字体失败: {e.Message}");
-                font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-            }
+        _subtitleConfigs = new Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig>();
 
-        Color textColor;
-        if (ColorUtility.TryParseHtmlString(JustAnotherTranslator.YotogiSubtitleColor.Value, out var color))
-            textColor = color;
-        else
-            textColor = Color.white;
-        textColor.a = JustAnotherTranslator.YotogiSubtitleOpacity.Value;
-
-        Color backgroundColor;
-        if (ColorUtility.TryParseHtmlString(JustAnotherTranslator.YotogiSubtitleBackgroundColor.Value, out color))
-            backgroundColor = color;
-        else
-            backgroundColor = Color.black;
-        backgroundColor.a = JustAnotherTranslator.YotogiSubtitleBackgroundOpacity.Value;
-
-        Color outlineColor;
-        if (ColorUtility.TryParseHtmlString(JustAnotherTranslator.YotogiSubtitleOutlineColor.Value, out color))
-            outlineColor = color;
-        else
-            outlineColor = Color.black;
-        outlineColor.a = JustAnotherTranslator.YotogiSubtitleOutlineOpacity.Value;
-
-
-        // 应用配置到字幕配置
-        _subtitleConfig = new SubtitleConfig
+        foreach (JustAnotherTranslator.SubtitleTypeEnum type in Enum.GetValues(
+                     typeof(JustAnotherTranslator.SubtitleTypeEnum)))
         {
-            EnableSpeakerName = JustAnotherTranslator.EnableYotogiSubtitleSpeakerName.Value,
+            Font font;
+            if (JustAnotherTranslator.GetSubtitleFont(type) == "Arial")
+                font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            else
+                try
+                {
+                    font = Font.CreateDynamicFontFromOSFont(JustAnotherTranslator.GetSubtitleFont(type),
+                        JustAnotherTranslator.GetSubtitleFontSize(type));
+                }
+                catch (Exception e)
+                {
+                    LogManager.Error($"Failed to create font/创建字体失败: {e.Message}");
+                    font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+                }
 
-            Font = font,
-            FontSize = JustAnotherTranslator.YotogiSubtitleFontSize.Value,
-            TextColor = textColor,
-            BackgroundColor = backgroundColor,
-            VerticalPosition = JustAnotherTranslator.YotogiSubtitleVerticalPosition.Value,
-            BackgroundHeight = JustAnotherTranslator.YotogiSubtitleBackgroundHeight.Value,
-            EnableAnimation = JustAnotherTranslator.YotogiSubtitleAnimation.Value,
-            FadeInDuration = JustAnotherTranslator.YotogiSubtitleFadeInDuration.Value,
-            FadeOutDuration = JustAnotherTranslator.YotogiSubtitleFadeOutDuration.Value,
-            EnableOutline = JustAnotherTranslator.EnableYotogiSubtitleOutline.Value,
-            OutlineColor = outlineColor,
-            OutlineWidth = JustAnotherTranslator.YotogiSubtitleOutlineWidth.Value,
+            Color textColor;
+            if (ColorUtility.TryParseHtmlString(JustAnotherTranslator.GetSubtitleColor(type), out var color))
+                textColor = color;
+            else
+                textColor = Color.white;
+            textColor.a = JustAnotherTranslator.GetSubtitleOpacity(type);
 
-            VRSubtitleMode = JustAnotherTranslator.VRSubtitleMode.Value,
-            VRSubtitleDistance = JustAnotherTranslator.VRSubtitleDistance.Value,
-            VRSubtitleVerticalOffset = JustAnotherTranslator.VRSubtitleVerticalOffset.Value,
-            VRSubtitleHorizontalOffset = JustAnotherTranslator.VRSubtitleHorizontalOffset.Value,
-            VRSubtitleWidth = JustAnotherTranslator.VRSubtitleWidth.Value
-        };
+            Color backgroundColor;
+            if (ColorUtility.TryParseHtmlString(JustAnotherTranslator.GetSubtitleBackgroundColor(type), out color))
+                backgroundColor = color;
+            else
+                backgroundColor = Color.black;
+            backgroundColor.a = JustAnotherTranslator.GetSubtitleBackgroundOpacity(type);
+
+            Color outlineColor;
+            if (ColorUtility.TryParseHtmlString(JustAnotherTranslator.GetSubtitleOutlineColor(type), out color))
+                outlineColor = color;
+            else
+                outlineColor = Color.black;
+            outlineColor.a = JustAnotherTranslator.GetSubtitleOutlineOpacity(type);
+
+            // 应用配置到字幕配置
+            _subtitleConfigs[type] = new SubtitleConfig
+            {
+                EnableSpeakerName = JustAnotherTranslator.GetEnableSubtitleSpeakerName(type),
+
+                Font = font,
+                FontSize = JustAnotherTranslator.GetSubtitleFontSize(type),
+                TextColor = textColor,
+                BackgroundColor = backgroundColor,
+                VerticalPosition = JustAnotherTranslator.GetSubtitleVerticalPosition(type),
+                BackgroundHeight = JustAnotherTranslator.GetSubtitleBackgroundHeight(type),
+                EnableAnimation = JustAnotherTranslator.GetSubtitleAnimation(type),
+                FadeInDuration = JustAnotherTranslator.GetSubtitleFadeInDuration(type),
+                FadeOutDuration = JustAnotherTranslator.GetSubtitleFadeOutDuration(type),
+                EnableOutline = JustAnotherTranslator.GetEnableSubtitleOutline(type),
+                OutlineColor = outlineColor,
+                OutlineWidth = JustAnotherTranslator.GetSubtitleOutlineWidth(type),
+
+                VRSubtitleMode = JustAnotherTranslator.GetVRSubtitleMode(type),
+                VRSubtitleDistance = JustAnotherTranslator.GetVRSubtitleDistance(type),
+                VRSubtitleVerticalOffset = JustAnotherTranslator.GetVRSubtitleVerticalOffset(type),
+                VRSubtitleHorizontalOffset = JustAnotherTranslator.GetVRSubtitleHorizontalOffset(type),
+                VRSubtitleWidth = JustAnotherTranslator.GetVRSubtitleWidth(type)
+            };
+        }
     }
 
 

@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Reflection;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using UnityEngine.UI;
 
@@ -44,12 +45,14 @@ public static class TextTranslatePatch
     [HarmonyPrefix]
     private static void UITextSetTextPatch(object __instance)
     {
-        LogManager.Debug($"Graphic SetVerticesDirty instance: {__instance}");
+        // LogManager.Debug($"Graphic SetVerticesDirty instance: {__instance}");
         if (__instance is Text)
         {
             var traverse = Traverse.Create(__instance).Field("m_Text");
             var text = traverse.GetValue() as string;
             if (string.IsNullOrEmpty(text) || TextTranslator.IsNumeric(text))
+                return;
+            if (text.Contains(XUATInterop.XuatSpicalMaker))
                 return;
             LogManager.Debug($"Graphic SetVerticesDirty called: {text}");
             string translated;

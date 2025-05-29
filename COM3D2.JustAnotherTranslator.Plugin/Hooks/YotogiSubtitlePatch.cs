@@ -40,6 +40,9 @@ public static class YotogiSubtitlePatch
             SubtitleManager.CurrentSpeaker = speakingMaid;
             SubtitleManager.CurrentVoiceId = voiceId;
 
+            // 设置字幕类型为Yotogi
+            JustAnotherTranslator.SubtitleType.Value = JustAnotherTranslator.SubtitleTypeEnum.Yotogi;
+
             // 为每个Maid启动监听协程（如果尚未启动）
             SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 

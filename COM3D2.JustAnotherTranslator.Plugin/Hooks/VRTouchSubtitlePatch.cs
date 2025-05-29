@@ -3,7 +3,6 @@ using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
 
-
 // <summary>
 //      用于处理 VR 字幕的 Harmony 补丁
 //      见 VRTouchKagManager

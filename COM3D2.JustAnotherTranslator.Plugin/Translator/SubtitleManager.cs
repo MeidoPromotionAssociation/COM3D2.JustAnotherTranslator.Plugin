@@ -7,7 +7,6 @@ using COM3D2.JustAnotherTranslator.Plugin.Hooks;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
-using MaidCafe;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 

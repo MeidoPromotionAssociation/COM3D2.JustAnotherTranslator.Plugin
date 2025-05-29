@@ -17,21 +17,18 @@ public static class MaidCafeManagerHelper
     private static bool IsMaidCafeAvailable()
     {
         if (!_isMaidCafeAvailable.HasValue)
-        {
             try
             {
                 var type = AccessTools.TypeByName("MaidCafe.MaidCafeManager");
                 _isMaidCafeAvailable = type != null;
                 if (_isMaidCafeAvailable.Value)
-                {
                     _isStreamingPartProperty = AccessTools.Property(type, "isStreamingPart");
-                }
             }
             catch
             {
                 _isMaidCafeAvailable = false;
             }
-        }
+
         return _isMaidCafeAvailable.Value;
     }
 

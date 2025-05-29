@@ -479,8 +479,56 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
     }
 
+
+    private void RegisterEnagleSubtitleEvents()
+    {
+        EnableBaseSubtitle.SettingChanged += (sender, args) =>
+        {
+            if (EnableBaseSubtitle.Value)
+            {
+                LogManager.Info("Base Subtitle Enabled/基础字幕已启用");
+                SubtitleManager.Unload();
+                SubtitleManager.Init();
+            }
+            else
+            {
+                LogManager.Info("Base Subtitle Disabled/基础字幕已禁用");
+                SubtitleManager.Unload();
+            }
+        };
+        EnableYotogiSubtitle.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle Enabled/夜伽字幕已启用");
+                SubtitleManager.Unload();
+                SubtitleManager.Init();
+            }
+            else
+            {
+                LogManager.Info("Yotogi Subtitle Disabled/夜伽字幕已禁用");
+                SubtitleManager.Unload();
+            }
+        };
+
+        EnableAdvSubtitle.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("ADV Subtitle Enabled/ADV字幕已启用");
+                SubtitleManager.Unload();
+                SubtitleManager.Init();
+            }
+            else
+            {
+                LogManager.Info("ADV Subtitle Disabled/ADV字幕已禁用");
+                SubtitleManager.Unload();
+            }
+        };
+    }
+
     /// <summary>
-    ///     注册字幕配置变更事件
+    ///     注册夜伽字幕配置变更事件
     /// </summary>
     private void RegisterYotogiSubtitleConfigEvents()
     {

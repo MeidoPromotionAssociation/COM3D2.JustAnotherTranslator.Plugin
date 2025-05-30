@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Random = System.Random;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 
@@ -34,7 +33,7 @@ public static class SubtitleComponentManager
         if (!SpeakerSubtitleIds.TryGetValue(speakerName, out var id))
         {
             // 为说话者创建新的字幕ID
-            id = $"Subtitle_JAT_DefaultSubtitle_For_{speakerName}_{_subtitleIdCounter++}";
+            id = $"Subtitle_JAT_Subtitle_For_{speakerName}_{_subtitleIdCounter++}";
             SpeakerSubtitleIds[speakerName] = id;
         }
 
@@ -83,7 +82,7 @@ public static class SubtitleComponentManager
     {
         if (Subtitles.TryGetValue(id, out var subtitle)) return subtitle;
 
-        LogManager.Warning($"Subtitle with ID {id} not found");
+        LogManager.Debug($"Subtitle with ID {id} not found");
         return null;
     }
 
@@ -98,6 +97,7 @@ public static class SubtitleComponentManager
         var subtitle = GetSubtitle(id);
         if (subtitle is null)
             subtitle = CreateSubtitle(id, config);
+        else if (config != null) subtitle.UpdateConfig(config);
 
         return subtitle;
     }
@@ -115,39 +115,7 @@ public static class SubtitleComponentManager
     {
         var subtitle = GetOrCreateSubtitle(id, config);
 
-        // 获取说话者专属颜色
-        var speakerColor = string.IsNullOrEmpty(speakerName)
-            ? ColorUtility.ToHtmlStringRGB(new Color(1f, 0.6f, 0.2f))
-            : ColorUtility.ToHtmlStringRGB(GetSpeakerColor(speakerName));
-
-        subtitle.Show(text, duration, speakerName, speakerColor, config.EnableSpeakerName);
-    }
-
-    /// <summary>
-    ///     为特定说话者显示字幕
-    /// </summary>
-    /// <param name="text">字幕文本</param>
-    /// <param name="speakerName">说话者名称</param>
-    /// <param name="duration">显示时长（秒），0表示一直显示直到手动隐藏</param>
-    /// <param name="verticalOffset">垂直位置偏移，用于错开多个字幕</param>
-    /// <param name="config">字幕配置</param>
-    public static void ShowSpeakerSubtitle(string text, string speakerName, float duration, float verticalOffset,
-        SubtitleConfig config)
-    {
-        // 获取说话者专用字幕ID
-        var subtitleId = GetSpeakerSubtitleId(speakerName);
-
-        // 如果提供了配置，尝试调整垂直位置
-        var newConfig = config;
-        if (config != null && verticalOffset != 0f)
-        {
-            // 创建配置副本以避免修改原始配置
-            newConfig = config;
-            newConfig.VerticalPosition = config.VerticalPosition + verticalOffset;
-        }
-
-        // 显示字幕
-        ShowSubtitle(subtitleId, text, speakerName, duration, newConfig);
+        subtitle.ShowSubtitle(text, speakerName, duration);
     }
 
     /// <summary>
@@ -159,7 +127,7 @@ public static class SubtitleComponentManager
         var subtitleId = GetSpeakerSubtitleId(speakerName);
 
         // 创建新的配置，初始化和基本配置相同
-        var newConfig = baseConfig;
+        var newConfig = CloneConfig(baseConfig);
 
         // 计算此字幕应该放置的位置，避免与其他活动字幕重叠
         newConfig.VerticalPosition = CalculateNonOverlappingPosition(speakerName, newConfig.BackgroundHeight);
@@ -178,16 +146,17 @@ public static class SubtitleComponentManager
 
         // 遍历所有活动字幕
         foreach (var subtitle in Subtitles.Values)
-            if (subtitle.gameObject.activeSelf && subtitle.GetSubtitleId() != GetSpeakerSubtitleId(speakerName))
+            if (subtitle.gameObject.activeSelf && subtitle._speakerName != speakerName)
             {
                 // 获取此字幕占用的垂直空间
                 var position = subtitle.GetVerticalPosition();
                 var height = subtitle.GetHeight();
+                // TODO 重构多人字幕
+                // TODO 描边透明度消失了
+                // TODO 字体自定义消失了，策略里面也有，需要审查
 
                 // 归一化为 0-1 范围内的屏幕位置
                 float normalizedHeight;
-
-                // 判断是否为VR模式
                 if (JustAnotherTranslator.IsVrMode &&
                     JustAnotherTranslator.VRSubtitleMode.Value == JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
                     // VR空间模式使用固定的归一化高度
@@ -205,8 +174,6 @@ public static class SubtitleComponentManager
 
         // 计算基准位置
         float normalizedSubtitleHeight;
-
-        // 判断是否为VR模式
         if (JustAnotherTranslator.IsVrMode &&
             JustAnotherTranslator.VRSubtitleMode.Value == JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
             // VR空间模式使用固定的归一化高度
@@ -265,14 +232,10 @@ public static class SubtitleComponentManager
     /// <summary>
     ///     隐藏字幕
     /// </summary>
-    /// <param name="id">字幕ID</param>
     public static void HideSubtitle(string id)
     {
         var subtitle = GetSubtitle(id);
-        if (subtitle is null)
-            return;
-
-        subtitle.Hide();
+        subtitle?.HideSubtitle();
     }
 
     /// <summary>
@@ -280,45 +243,19 @@ public static class SubtitleComponentManager
     /// </summary>
     public static void HideAllSubtitles()
     {
-        foreach (var subtitle in Subtitles.Values) subtitle.Hide();
+        foreach (var subtitle in Subtitles.Values) subtitle.HideSubtitle();
     }
 
     /// <summary>
-    ///     更新某个字幕的配置
+    ///     销毁字幕
     /// </summary>
-    /// <param name="id">字幕ID</param>
-    /// <param name="config">新的配置</param>
-    public static void UpdateSubtitleConfig(string id, SubtitleConfig config)
-    {
-        var subtitle = GetSubtitle(id);
-        if (subtitle is null)
-            return;
-
-        subtitle.UpdateConfig(config);
-    }
-
-    /// <summary>
-    ///     更新所有字幕的配置
-    /// </summary>
-    public static void UpdateAllSubtitles(SubtitleConfig config)
-    {
-        foreach (var subtitle in Subtitles.Values) subtitle.UpdateConfig(config);
-
-        LogManager.Debug("All subtitles updated");
-    }
-
-    /// <summary>
-    ///     销毁某个字幕
-    /// </summary>
-    /// <param name="id">字幕ID</param>
     public static void DestroySubtitle(string id)
     {
-        if (Subtitles.TryGetValue(id, out var subtitle))
-        {
-            Object.Destroy(subtitle.gameObject);
-            Subtitles.Remove(id);
-            LogManager.Debug($"Destroyed subtitle with ID: {id}");
-        }
+        var subtitle = GetSubtitle(id);
+        if (subtitle is null) return;
+
+        Object.Destroy(subtitle.gameObject);
+        Subtitles.Remove(id);
     }
 
     /// <summary>
@@ -329,50 +266,81 @@ public static class SubtitleComponentManager
         foreach (var subtitle in Subtitles.Values) Object.Destroy(subtitle.gameObject);
 
         Subtitles.Clear();
-
-        LogManager.Debug("All subtitles destroyed");
     }
 
     /// <summary>
-    ///     获取说话者的专属颜色
+    ///     获取所有当前活跃的字幕组件
     /// </summary>
-    /// <param name="speakerName">说话者名称</param>
-    /// <returns>专属颜色</returns>
-    private static Color GetSpeakerColor(string speakerName)
+    /// <returns>字幕组件列表</returns>
+    public static IEnumerable<SubtitleComponent> GetAllSubtitles()
     {
-        // 如果已经为此说话者分配了颜色，则直接返回
-        if (SpeakerColors.TryGetValue(speakerName, out var color))
-            return color;
-
-        if (string.IsNullOrEmpty(speakerName))
-            speakerName = "Unknown";
-
-        // 基于说话者名称生成稳定的哈希值
-        var hash = speakerName.GetHashCode();
-
-        // 使用哈希值生成颜色，确保相同名称总是获得相同颜色
-        var random = new Random(hash);
-
-        // 生成偏亮的颜色
-        color = new Color(
-            0.5f + (float)random.NextDouble() * 0.5f, // 0.5-1.0 范围
-            0.5f + (float)random.NextDouble() * 0.5f,
-            0.5f + (float)random.NextDouble() * 0.5f
-        );
-
-        // 保存到缓存
-        SpeakerColors[speakerName] = color;
-
-        LogManager.Debug($"Created Color R:{color.r:F2} G:{color.g:F2} B:{color.b:F2} for {speakerName}");
-
-        return color;
+        return Subtitles.Values;
     }
 
-    // .NET Framework 3.5 不支持 ValueTuple
-    private struct VerticalRange
+    /// <summary>
+    ///     克隆字幕配置
+    /// </summary>
+    /// <param name="source">源配置</param>
+    /// <returns>新的配置副本</returns>
+    private static SubtitleConfig CloneConfig(SubtitleConfig source)
     {
-        public readonly float Start;
+        if (source == null)
+            return new SubtitleConfig();
+
+        // 创建配置副本
+        var clone = new SubtitleConfig
+        {
+            // 基本属性
+            SubtitleType = source.SubtitleType,
+            EnableSpeakerName = source.EnableSpeakerName,
+
+            // 文本样式
+            FontName = source.FontName,
+            FontSize = source.FontSize,
+            TextColor = source.TextColor,
+            TextAlignment = source.TextAlignment,
+
+            // 背景样式
+            BackgroundColor = source.BackgroundColor,
+            BackgroundOpacity = source.BackgroundOpacity,
+            BackgroundHeight = source.BackgroundHeight,
+            VerticalPosition = source.VerticalPosition,
+
+            // 动画
+            EnableAnimation = source.EnableAnimation,
+            FadeInDuration = source.FadeInDuration,
+            FadeOutDuration = source.FadeOutDuration,
+
+            // 描边
+            OutlineEnabled = source.OutlineEnabled,
+            OutlineColor = source.OutlineColor,
+            OutlineWidth = source.OutlineWidth,
+
+            // VR相关
+            VRSubtitleMode = source.VRSubtitleMode,
+            VRSubtitleDistance = source.VRSubtitleDistance,
+            VRSubtitleVerticalOffset = source.VRSubtitleVerticalOffset,
+            VRSubtitleHorizontalOffset = source.VRSubtitleHorizontalOffset,
+            VRSubtitleWidth = source.VRSubtitleWidth,
+            VRSubtitleScale = source.VRSubtitleScale,
+
+            // 参考分辨率
+            ReferenceWidth = source.ReferenceWidth,
+            ReferenceHeight = source.ReferenceHeight,
+            MatchWidthOrHeight = source.MatchWidthOrHeight
+        };
+
+        return clone;
+    }
+
+    /// <summary>
+    ///     表示一个垂直范围，用于计算字幕位置
+    ///     .NET Framework 3.5 不支持 ValueTuple
+    /// </summary>
+    private class VerticalRange
+    {
         public readonly float End;
+        public readonly float Start;
 
         public VerticalRange(float start, float end)
         {

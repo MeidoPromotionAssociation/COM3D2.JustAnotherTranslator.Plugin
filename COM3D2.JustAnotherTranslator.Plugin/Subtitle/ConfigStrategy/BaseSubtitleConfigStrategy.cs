@@ -36,14 +36,13 @@ public abstract class BaseSubtitleConfigStrategy : ISubtitleConfigStrategy
     {
         if (component._text is null)
         {
-            LogManager.Error("Subtitle text component is null");
+            LogManager.Error("Subtitle text component is null/字幕文本组件为空");
             return;
         }
 
         if (string.IsNullOrEmpty(text))
             return;
 
-        // 保存说话人名称
         component._speakerName = speakerName;
 
         // 停止正在运行的动画

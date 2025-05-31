@@ -13,8 +13,6 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
 public static class SubtitleManager
 {
-    private const string FallbackSubtitleId = "Subtitle_JustAnotherTranslator_YotogiSubtitle";
-    private const float SubtitleDuration = 0f;
     private static bool _initialized;
     private static Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> _subtitleConfigs;
 
@@ -93,8 +91,6 @@ public static class SubtitleManager
         _vrTouchSubtitlePatch = null;
 
         _subtitleConfigs = null;
-
-        SubtitleComponentManager.DestroySubtitle(FallbackSubtitleId);
 
         SceneManager.sceneUnloaded -= OnSceneChange;
 
@@ -502,12 +498,6 @@ public static class SubtitleManager
     {
         LogManager.Debug("OnSceneChange called");
         CleanupAllCoroutines();
-    }
-
-    // 获取默认字幕ID
-    private static string GetDefaultSubtitleId()
-    {
-        return FallbackSubtitleId;
     }
 
     // 将颜色字符串解析为Color对象

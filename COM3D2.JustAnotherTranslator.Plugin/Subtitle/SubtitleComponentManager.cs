@@ -17,9 +17,6 @@ public static class SubtitleComponentManager
     // 字幕ID计数器，用于为每个说话者生成唯一ID
     private static int _subtitleIdCounter;
 
-    // 存储说话者名称和对应的颜色缓存
-    private static readonly Dictionary<string, Color> SpeakerColors = new();
-
     /// <summary>
     ///     获取说话者专用的字幕ID
     /// </summary>

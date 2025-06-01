@@ -47,7 +47,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         ApplyConfig();
 
         gameObject.SetActive(false);
-        LogManager.Debug($"{GetType().Name}已初始化/{GetType().Name} initialized");
+        LogManager.Debug($"{GetType().Name} initialized");
     }
 
     /// <summary>

@@ -10,14 +10,14 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 public class SubtitleConfig
 {
     // 是否启用说话人名字显示
-    public bool EnableSpeakerName = true;
+    public bool EnableSpeakerName { get; set; }  = true;
 
     // 字幕类型
     public JustAnotherTranslator.SubtitleTypeEnum SubtitleType { get; set; } =
         JustAnotherTranslator.SubtitleTypeEnum.Base;
 
-    // 字体名称 (Unity内置字体资源路径)
-    public string FontName { get; set; } = "Arial.ttf";
+    // 字体名称
+    public Font Font { get; set; } = Resources.GetBuiltinResource<Font>("Arial.ttf");
 
     // 字体大小
     public int FontSize { get; set; } = 24;
@@ -31,14 +31,26 @@ public class SubtitleConfig
     // 背景颜色
     public Color BackgroundColor { get; set; } = new(0, 0, 0);
 
+    // 是否启用描边
+    public bool EnableOutline { get; set; }
+
+    // 描边颜色
+    public Color OutlineColor { get; set; } = Color.black;
+
+    // 描边粗细
+    public float OutlineWidth { get; set; } = 1f;
+
     // 背景不透明度（0-1）
     public float BackgroundOpacity { get; set; } = 0.5f;
 
     // 垂直位置（0-1，0表示底部，1表示顶部）
     public float VerticalPosition { get; set; } = 0.1f;
 
-    // 背景高度
-    public float BackgroundHeight { get; set; } = 100;
+    // 背景宽度百分比
+    public float BackgroundWidth { get; set; } = 1f;
+
+    // 背景高度百分比
+    public float BackgroundHeight { get; set; } = 0.1f;
 
     // 是否启用动画效果
     public bool EnableAnimation { get; set; } = true;
@@ -49,21 +61,12 @@ public class SubtitleConfig
     // 淡出时长（秒）
     public float FadeOutDuration { get; set; } = 0.5f;
 
-    // 是否启用描边
-    public bool OutlineEnabled { get; set; }
-
-    // 描边颜色
-    public Color OutlineColor { get; set; } = Color.black;
-
-    // 描边粗细
-    public float OutlineWidth { get; set; } = 1f;
-
     // VR模式字幕类型
     public JustAnotherTranslator.VRSubtitleModeEnum VRSubtitleMode { get; set; } =
         JustAnotherTranslator.VRSubtitleModeEnum.InSpace;
 
     // VR悬浮字幕距离（米）
-    public float VRSubtitleDistance { get; set; } = 2f;
+    public float VRSubtitleDistance { get; set; } = 1f;
 
     // VR悬浮字幕垂直偏移（度，相对于视线中心）
     public float VRSubtitleVerticalOffset { get; set; } = -15f;
@@ -71,108 +74,249 @@ public class SubtitleConfig
     // VR悬浮字幕水平偏移（度，相对于视线中心）
     public float VRSubtitleHorizontalOffset { get; set; }
 
-    // VR悬浮字幕宽度（米）
-    public float VRSubtitleWidth { get; set; } = 1f;
+    // VR悬浮字幕背景宽度（米）
+    public float VRSubtitleWidth { get; set; } = 0.2f;
 
-    // VR悬浮字幕缩放比例
-    public float VRSubtitleScale { get; set; } = 1f;
-
-    // 画布参考宽度
-    public float ReferenceWidth { get; set; } = 1920f;
-
-    // 画布参考高度
-    public float ReferenceHeight { get; set; } = 1080f;
-
-    // 画布匹配模式（0为宽度优先，1为高度优先，0.5为平衡）
-    public float MatchWidthOrHeight { get; set; } = 0.5f;
+    // VR悬浮字幕背景高度（米）
+    public float VRSubtitleHeight { get; set; } = 1f;
 
     /// <summary>
-    ///     创建默认配置
+    ///     从插件配置中创建字幕配置
     /// </summary>
-    /// <returns>默认字幕配置</returns>
-    public static SubtitleConfig CreateDefault()
+    public static SubtitleConfig CreateSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum subtitleType)
     {
-        return new SubtitleConfig();
-    }
-
-    /// <summary>
-    ///     创建指定类型的默认配置
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>特定类型的默认字幕配置</returns>
-    public static SubtitleConfig CreateDefault(JustAnotherTranslator.SubtitleTypeEnum type)
-    {
-        var config = new SubtitleConfig { SubtitleType = type };
-
-        // 根据类型调整默认配置
-        switch (type)
+        // 初始化字幕配置
+        var config = new SubtitleConfig
         {
-            case JustAnotherTranslator.SubtitleTypeEnum.Base:
-                config.VerticalPosition = 0.8f;
-                break;
-            case JustAnotherTranslator.SubtitleTypeEnum.Adv:
-                config.VerticalPosition = 0.1f;
-                break;
-            case JustAnotherTranslator.SubtitleTypeEnum.Yotogi:
-                config.VerticalPosition = 0.5f;
-                break;
-            case JustAnotherTranslator.SubtitleTypeEnum.Lyric:
-                config.VerticalPosition = 0.9f;
-                break;
-        }
+            SubtitleType = subtitleType,
+
+            // 是否启用说话人名称
+            EnableSpeakerName = GetSubtitleTypeConfig(
+                subtitleType,
+                () => JustAnotherTranslator.EnableBaseSubtitleSpeakerName.Value,
+                () => JustAnotherTranslator.EnableYotogiSubtitleSpeakerName.Value,
+                () => JustAnotherTranslator.EnableAdvSubtitleSpeakerName.Value,
+                () => JustAnotherTranslator.EnableLyricSubtitleSpeakerName.Value,
+                false),
+
+            // 字体
+            Font = GetSubtitleTypeConfig(
+                subtitleType,
+                () => GetFontByName(JustAnotherTranslator.BaseSubtitleFont.Value,
+                    JustAnotherTranslator.BaseSubtitleFontSize.Value),
+                () => GetFontByName(JustAnotherTranslator.YotogiSubtitleFont.Value,
+                    JustAnotherTranslator.YotogiSubtitleFontSize.Value),
+                () => GetFontByName(JustAnotherTranslator.AdvSubtitleFont.Value,
+                    JustAnotherTranslator.AdvSubtitleFontSize.Value),
+                () => GetFontByName(JustAnotherTranslator.LyricSubtitleFont.Value,
+                    JustAnotherTranslator.LyricSubtitleFontSize.Value),
+                null),
+
+            // 字体大小
+            FontSize = GetSubtitleTypeConfig(
+                subtitleType,
+                () => JustAnotherTranslator.BaseSubtitleFontSize.Value,
+                () => JustAnotherTranslator.YotogiSubtitleFontSize.Value,
+                () => JustAnotherTranslator.AdvSubtitleFontSize.Value,
+                () => JustAnotherTranslator.LyricSubtitleFontSize.Value,
+                24),
+
+            // 字体颜色
+            TextColor = GetSubtitleTypeConfig(
+                subtitleType,
+                () => ParseColor(JustAnotherTranslator.BaseSubtitleColor.Value, JustAnotherTranslator.BaseSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.YotogiSubtitleColor.Value, JustAnotherTranslator.YotogiSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.AdvSubtitleColor.Value, JustAnotherTranslator.AdvSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.LyricSubtitleColor.Value, JustAnotherTranslator.LyricSubtitleOpacity.Value),
+                Color.white),
+
+            // 背景颜色
+            BackgroundColor = GetSubtitleTypeConfig(
+                subtitleType,
+                () => ParseColor(JustAnotherTranslator.BaseSubtitleBackgroundColor.Value, JustAnotherTranslator.BaseSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.YotogiSubtitleBackgroundColor.Value, JustAnotherTranslator.YotogiSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.AdvSubtitleBackgroundColor.Value, JustAnotherTranslator.AdvSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.LyricSubtitleBackgroundColor.Value, JustAnotherTranslator.LyricSubtitleOpacity.Value),
+                new Color(0, 0, 0, 0.5f)),
+
+
+            // 是否启用描边
+            EnableOutline = GetSubtitleTypeConfig(
+                subtitleType,
+                () => JustAnotherTranslator.EnableBaseSubtitleOutline.Value,
+                () => JustAnotherTranslator.EnableYotogiSubtitleOutline.Value,
+                () => JustAnotherTranslator.EnableAdvSubtitleOutline.Value,
+                () => JustAnotherTranslator.EnableLyricSubtitleOutline.Value,
+                false),
+
+
+            // 背景宽度
+            BackgroundWidth = GetSubtitleTypeConfig(
+                subtitleType,
+                () => JustAnotherTranslator.BaseSubtitleBackgroundWidth.Value,
+                () => JustAnotherTranslator.YotogiSubtitleBackgroundWidth.Value,
+                () => JustAnotherTranslator.AdvSubtitleBackgroundWidth.Value,
+                () => JustAnotherTranslator.LyricSubtitleBackgroundWidth.Value,
+                1f),
+
+            // 背景高度
+            BackgroundHeight = GetSubtitleTypeConfig(
+                subtitleType,
+                () => JustAnotherTranslator.BaseSubtitleBackgroundHeight.Value,
+                () => JustAnotherTranslator.YotogiSubtitleBackgroundHeight.Value,
+                () => JustAnotherTranslator.AdvSubtitleBackgroundHeight.Value,
+                () => JustAnotherTranslator.LyricSubtitleBackgroundHeight.Value,
+                0.1f),
+
+            // 是否启用动画效果
+            EnableAnimation = GetSubtitleTypeConfig(
+                subtitleType,
+                () => JustAnotherTranslator.EnableBaseSubtitleAnimation.Value,
+                () => JustAnotherTranslator.EnableYotogiSubtitleAnimation.Value,
+                () => JustAnotherTranslator.EnableAdvSubtitleAnimation.Value,
+                () => JustAnotherTranslator.EnableLyricSubtitleAnimation.Value,
+                true),
+
+            // 淡入时长
+            FadeInDuration = GetSubtitleTypeConfig(
+                subtitleType,
+                () => JustAnotherTranslator.BaseSubtitleFadeInDuration.Value,
+                () => JustAnotherTranslator.YotogiSubtitleFadeInDuration.Value,
+                () => JustAnotherTranslator.AdvSubtitleFadeInDuration.Value,
+                () => JustAnotherTranslator.LyricSubtitleFadeInDuration.Value,
+                0.5f),
+
+            // 淡出时长
+            FadeOutDuration = GetSubtitleTypeConfig(
+                subtitleType,
+                () => JustAnotherTranslator.BaseSubtitleFadeOutDuration.Value,
+                () => JustAnotherTranslator.YotogiSubtitleFadeOutDuration.Value,
+                () => JustAnotherTranslator.AdvSubtitleFadeOutDuration.Value,
+                () => JustAnotherTranslator.LyricSubtitleFadeOutDuration.Value,
+                0.5f),
+
+            // VR 字幕模式
+            VRSubtitleMode = JustAnotherTranslator.VRSubtitleMode.Value,
+
+
+            // VR悬浮字幕距离（米）
+            VRSubtitleDistance = JustAnotherTranslator.VRSubtitleDistance.Value,
+
+
+            // VR悬浮字幕垂直偏移（度，相对于视线中心）
+            VRSubtitleVerticalOffset = JustAnotherTranslator.VRSubtitleVerticalOffset.Value,
+
+            // VR悬浮字幕水平偏移（度，相对于视线中心）
+            VRSubtitleHorizontalOffset = JustAnotherTranslator.VRSubtitleHorizontalOffset.Value,
+
+            // VR悬浮字幕背景宽度
+            VRSubtitleWidth = JustAnotherTranslator.VRSubtitleWidth.Value,
+
+            // VR悬浮字幕高度
+            VRSubtitleHeight = JustAnotherTranslator.VRSubtitleHeight.Value
+        };
 
         return config;
     }
 
     /// <summary>
-    ///     克隆当前配置
+    ///     获取指定字幕类型的配置值
     /// </summary>
-    /// <returns>当前配置的深度副本</returns>
-    public SubtitleConfig Clone()
+    private static T GetSubtitleTypeConfig<T>(
+        JustAnotherTranslator.SubtitleTypeEnum type,
+        Func<T> baseConfig,
+        Func<T> yotogiConfig,
+        Func<T> advConfig,
+        Func<T> lyricConfig,
+        T defaultValue)
     {
-        // 创建配置副本
-        var clone = new SubtitleConfig
+        return type switch
         {
-            // 基本属性
-            SubtitleType = SubtitleType,
-            EnableSpeakerName = EnableSpeakerName,
-
-            // 文本样式
-            FontName = FontName,
-            FontSize = FontSize,
-            TextColor = TextColor,
-            TextAlignment = TextAlignment,
-
-            // 背景样式
-            BackgroundColor = BackgroundColor,
-            BackgroundOpacity = BackgroundOpacity,
-            BackgroundHeight = BackgroundHeight,
-            VerticalPosition = VerticalPosition,
-
-            // 动画
-            EnableAnimation = EnableAnimation,
-            FadeInDuration = FadeInDuration,
-            FadeOutDuration = FadeOutDuration,
-
-            // 描边
-            OutlineEnabled = OutlineEnabled,
-            OutlineColor = OutlineColor,
-            OutlineWidth = OutlineWidth,
-
-            // VR相关
-            VRSubtitleMode = VRSubtitleMode,
-            VRSubtitleDistance = VRSubtitleDistance,
-            VRSubtitleVerticalOffset = VRSubtitleVerticalOffset,
-            VRSubtitleHorizontalOffset = VRSubtitleHorizontalOffset,
-            VRSubtitleWidth = VRSubtitleWidth,
-            VRSubtitleScale = VRSubtitleScale,
-
-            // 参考分辨率
-            ReferenceWidth = ReferenceWidth,
-            ReferenceHeight = ReferenceHeight,
-            MatchWidthOrHeight = MatchWidthOrHeight
+            JustAnotherTranslator.SubtitleTypeEnum.Base => baseConfig(),
+            JustAnotherTranslator.SubtitleTypeEnum.Yotogi => yotogiConfig(),
+            JustAnotherTranslator.SubtitleTypeEnum.Adv => advConfig(),
+            JustAnotherTranslator.SubtitleTypeEnum.Lyric => lyricConfig(),
+            _ => defaultValue
         };
+    }
 
-        return clone;
+    /// <summary>
+    ///     解析颜色字符串
+    /// </summary>
+    /// <param name="colorStr">颜色字符串</param>
+    /// <returns>颜色</returns>
+    private static Color ParseColor(string colorStr)
+    {
+        try
+        {
+            if (ColorUtility.TryParseHtmlString(colorStr, out var color))
+            {
+                return color;
+            }
+            LogManager.Warning($"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
+        }
+        catch
+        {
+            LogManager.Warning($"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
+        }
+
+        return Color.white;
+    }
+
+
+    /// <summary>
+    ///     解析颜色字符串
+    /// </summary>
+    /// <param name="colorStr">颜色字符串</param>
+    /// <param name="alpha">透明度</param>
+    /// <returns>颜色</returns>
+    private static Color ParseColor(string colorStr, float alpha)
+    {
+        try
+        {
+            if (ColorUtility.TryParseHtmlString(colorStr, out var color))
+            {
+                color.a = alpha;
+                return color;
+            }
+            LogManager.Warning($"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
+        }
+        catch
+        {
+            LogManager.Warning($"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
+        }
+
+        return Color.white;
+    }
+
+    /// <summary>
+    ///     获取字体
+    ///     如果字体不存在，使用默认字体
+    /// </summary>
+    /// <param name="name">字体名称</param>
+    /// <param name="size">字体大小</param>
+    /// <returns>字体</returns>
+    private static Font GetFontByName(string name, int size)
+    {
+        if (name == "Arial" || name == "Arial.ttf")
+        {
+            return Resources.GetBuiltinResource<Font>("Arial.ttf");
+        }
+        try
+        {
+            var font = Font.CreateDynamicFontFromOSFont(name, size);
+            if (font is null)
+            {
+                LogManager.Warning($"Failed to load font: {name}, using default font/无法加载字体：{name}。使用默认字体");
+                return Resources.GetBuiltinResource<Font>("Arial.ttf");
+            }
+
+            return font;
+        }
+        catch (Exception e)
+        {
+            LogManager.Warning($"Failed to load font: {name}, using default font{e.Message}/无法加载字体：{name}。使用默认字体");
+            return Resources.GetBuiltinResource<Font>("Arial.ttf");
+        }
     }
 }

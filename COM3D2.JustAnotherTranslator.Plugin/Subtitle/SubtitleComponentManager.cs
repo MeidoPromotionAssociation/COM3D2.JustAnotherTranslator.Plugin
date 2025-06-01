@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -17,13 +18,13 @@ public static class SubtitleComponentManager
     private static readonly Dictionary<string, ISubtitleComponent> SubtitleIdMap = new();
 
     // 是否已初始化
-    private static bool _initialized;
+    private static bool _initialized = false;
 
     // VR头部变换
-    private static Transform _vrHeadTransform;
+    private static Transform _vrHeadTransform = null;
 
     // 字幕配置字典
-    private static Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> _subtitleConfigs;
+    private static Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> _subtitleConfigs = new();
 
     /// <summary>
     ///     初始化字幕组件管理器
@@ -32,14 +33,18 @@ public static class SubtitleComponentManager
     {
         if (_initialized) return;
 
-        // 从插件配置中获取字幕配置
-        GetConfigFromPluginConfig();
+        // 初始化字幕配置字典
+        foreach (JustAnotherTranslator.SubtitleTypeEnum subtitleType in Enum.GetValues(typeof(JustAnotherTranslator.SubtitleTypeEnum)))
+        {
+            var config = SubtitleConfig.CreateSubtitleConfig(subtitleType);
+            _subtitleConfigs[subtitleType] = config;
+        }
 
         // 如果在VR模式下，初始化VR头部跟踪
         if (JustAnotherTranslator.IsVrMode) InitVRComponents();
 
         _initialized = true;
-        LogManager.Debug("字幕组件管理器已初始化/Subtitle component manager initialized");
+        LogManager.Debug("Subtitle component manager initialized");
     }
 
     /// <summary>
@@ -54,7 +59,7 @@ public static class SubtitleComponentManager
             if (_vrHeadTransform is not null)
             {
                 LogManager.Debug(
-                    "VR头部变换 (EyeAnchor) 已找到，字幕头部跟踪已启用/VR head transform (EyeAnchor) found, subtitle head tracking enabled");
+                    "VR head transform (EyeAnchor) found, subtitle head tracking enabled");
                 return;
             }
         }
@@ -65,7 +70,7 @@ public static class SubtitleComponentManager
         {
             _vrHeadTransform = ovrMgr.EyeAnchor;
             LogManager.Debug(
-                "通过FindObjectOfType<OvrMgr>()找到VR头部变换，字幕头部跟踪已启用/VR head transform found through FindObjectOfType<OvrMgr>(), subtitle head tracking enabled");
+                "VR head transform found through FindObjectOfType<OvrMgr>(), subtitle head tracking enabled");
         }
         else
         {
@@ -332,27 +337,6 @@ public static class SubtitleComponentManager
         return $"speaker_{speakerName}";
     }
 
-    /// <summary>
-    ///     从插件配置中获取字幕配置
-    /// </summary>
-    private static void GetConfigFromPluginConfig()
-    {
-        _subtitleConfigs = new Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig>
-        {
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base,
-                CreateSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum.Base)
-            },
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi,
-                CreateSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum.Yotogi)
-            },
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Adv,
-                CreateSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum.Adv)
-            }
-        };
-    }
 
     /// <summary>
     ///     获取当前字幕配置
@@ -373,134 +357,5 @@ public static class SubtitleComponentManager
     {
         if (!_initialized) Initialize();
         return _subtitleConfigs[type];
-    }
-
-    /// <summary>
-    ///     获取指定字幕类型的配置值
-    /// </summary>
-    private static T GetSubtitleTypeConfig<T>(
-        JustAnotherTranslator.SubtitleTypeEnum type,
-        Func<T> baseConfig,
-        Func<T> yotogiConfig,
-        Func<T> advConfig,
-        T defaultValue)
-    {
-        return type switch
-        {
-            JustAnotherTranslator.SubtitleTypeEnum.Base => baseConfig(),
-            JustAnotherTranslator.SubtitleTypeEnum.Yotogi => yotogiConfig(),
-            JustAnotherTranslator.SubtitleTypeEnum.Adv => advConfig(),
-            _ => defaultValue
-        };
-    }
-
-    /// <summary>
-    ///     从插件配置中创建字幕配置
-    /// </summary>
-    private static SubtitleConfig CreateSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum subtitleType)
-    {
-        // 初始化字幕配置
-        var config = new SubtitleConfig
-        {
-            SubtitleType = subtitleType,
-
-            // 基本设置
-            EnableSpeakerName = GetSubtitleTypeConfig(
-                subtitleType,
-                () => JustAnotherTranslator.EnableBaseSubtitleSpeakerName.Value,
-                () => JustAnotherTranslator.EnableYotogiSubtitleSpeakerName.Value,
-                () => JustAnotherTranslator.EnableAdvSubtitleSpeakerName.Value,
-                false),
-
-            // 文本样式
-            FontName = "Arial.ttf", // 使用Unity内置字体 //TODO 支持自定义字体
-            FontSize = GetSubtitleTypeConfig(
-                subtitleType,
-                () => JustAnotherTranslator.BaseSubtitleFontSize.Value,
-                () => JustAnotherTranslator.YotogiSubtitleFontSize.Value,
-                () => JustAnotherTranslator.AdvSubtitleFontSize.Value,
-                24),
-            TextColor = GetSubtitleTypeConfig(
-                subtitleType,
-                () => ParseColor(JustAnotherTranslator.BaseSubtitleTextColor.Value),
-                () => ParseColor(JustAnotherTranslator.YotogiSubtitleTextColor.Value),
-                () => ParseColor(JustAnotherTranslator.AdvSubtitleTextColor.Value),
-                Color.white),
-            SpeakerNameColor = GetSubtitleTypeConfig(
-                subtitleType,
-                () => ParseColor(JustAnotherTranslator.BaseSubtitleSpeakerNameColor.Value),
-                () => ParseColor(JustAnotherTranslator.YotogiSubtitleSpeakerNameColor.Value),
-                () => ParseColor(JustAnotherTranslator.AdvSubtitleSpeakerNameColor.Value),
-                Color.yellow),
-
-            // 背景样式
-            BackgroundColor = GetSubtitleTypeConfig(
-                subtitleType,
-                () => ParseColor(JustAnotherTranslator.BaseSubtitleBackgroundColor.Value),
-                () => ParseColor(JustAnotherTranslator.YotogiSubtitleBackgroundColor.Value),
-                () => ParseColor(JustAnotherTranslator.AdvSubtitleBackgroundColor.Value),
-                new Color(0, 0, 0, 0.5f)),
-
-            // 位置和大小
-            PositionX = GetSubtitleTypeConfig(
-                subtitleType,
-                () => JustAnotherTranslator.BaseSubtitlePositionX.Value,
-                () => JustAnotherTranslator.YotogiSubtitlePositionX.Value,
-                () => JustAnotherTranslator.AdvSubtitlePositionX.Value,
-                0),
-            PositionY = GetSubtitleTypeConfig(
-                subtitleType,
-                () => JustAnotherTranslator.BaseSubtitlePositionY.Value,
-                () => JustAnotherTranslator.YotogiSubtitlePositionY.Value,
-                () => JustAnotherTranslator.AdvSubtitlePositionY.Value,
-                100),
-            Width = GetSubtitleTypeConfig(
-                subtitleType,
-                () => JustAnotherTranslator.BaseSubtitleWidth.Value,
-                () => JustAnotherTranslator.YotogiSubtitleWidth.Value,
-                () => JustAnotherTranslator.AdvSubtitleWidth.Value,
-                800),
-
-            // 描边设置
-            OutlineColor = Color.black,
-            OutlineWidth = 1f,
-
-            // VR相关设置
-            VRSubtitleType = JustAnotherTranslator.VRSubtitleType.Value,
-            VRDistance = JustAnotherTranslator.VRSubtitleDistance.Value,
-            VRTabletPositionX = JustAnotherTranslator.VRTabletPositionX.Value,
-            VRTabletPositionY = JustAnotherTranslator.VRTabletPositionY.Value,
-            VRTabletPositionZ = JustAnotherTranslator.VRTabletPositionZ.Value,
-            VRTabletRotationX = JustAnotherTranslator.VRTabletRotationX.Value,
-            VRTabletRotationY = JustAnotherTranslator.VRTabletRotationY.Value,
-            VRTabletRotationZ = JustAnotherTranslator.VRTabletRotationZ.Value
-        };
-
-        return config;
-    }
-
-    /// <summary>
-    ///     解析颜色字符串
-    /// </summary>
-    private static Color ParseColor(string colorStr)
-    {
-        try
-        {
-            var parts = colorStr.Split(',');
-            if (parts.Length >= 3)
-            {
-                var r = float.Parse(parts[0]) / 255f;
-                var g = float.Parse(parts[1]) / 255f;
-                var b = float.Parse(parts[2]) / 255f;
-                var a = parts.Length >= 4 ? float.Parse(parts[3]) / 255f : 1f;
-                return new Color(r, g, b, a);
-            }
-        }
-        catch
-        {
-            LogManager.Warning($"解析颜色失败: {colorStr}，使用默认颜色/Failed to parse color: {colorStr}, using default color");
-        }
-
-        return Color.white;
     }
 }

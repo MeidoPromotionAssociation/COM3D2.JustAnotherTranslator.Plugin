@@ -50,24 +50,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<bool> ForceEnableAdvSubtitle;
     public static ConfigEntry<bool> EnableLyricSubtitle;
 
-    // 夜伽字幕相关配置
-    public static ConfigEntry<bool> EnableYotogiSubtitleSpeakerName;
-    public static ConfigEntry<string> YotogiSubtitleFont;
-    public static ConfigEntry<int> YotogiSubtitleFontSize;
-    public static ConfigEntry<string> YotogiSubtitleColor;
-    public static ConfigEntry<float> YotogiSubtitleOpacity;
-    public static ConfigEntry<string> YotogiSubtitleBackgroundColor;
-    public static ConfigEntry<float> YotogiSubtitleBackgroundOpacity;
-    public static ConfigEntry<float> YotogiSubtitleVerticalPosition;
-    public static ConfigEntry<float> YotogiSubtitleBackgroundHeight;
-    public static ConfigEntry<bool> YotogiSubtitleAnimation;
-    public static ConfigEntry<float> YotogiSubtitleFadeInDuration;
-    public static ConfigEntry<float> YotogiSubtitleFadeOutDuration;
-    public static ConfigEntry<bool> EnableYotogiSubtitleOutline;
-    public static ConfigEntry<string> YotogiSubtitleOutlineColor;
-    public static ConfigEntry<float> YotogiSubtitleOutlineOpacity;
-    public static ConfigEntry<float> YotogiSubtitleOutlineWidth;
-
     // 基础字幕相关配置
     public static ConfigEntry<bool> EnableBaseSubtitleSpeakerName;
     public static ConfigEntry<string> BaseSubtitleFont;
@@ -77,8 +59,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<string> BaseSubtitleBackgroundColor;
     public static ConfigEntry<float> BaseSubtitleBackgroundOpacity;
     public static ConfigEntry<float> BaseSubtitleVerticalPosition;
+    public static ConfigEntry<float> BaseSubtitleBackgroundWidth;
     public static ConfigEntry<float> BaseSubtitleBackgroundHeight;
-    public static ConfigEntry<bool> BaseSubtitleAnimation;
+    public static ConfigEntry<bool> EnableBaseSubtitleAnimation;
     public static ConfigEntry<float> BaseSubtitleFadeInDuration;
     public static ConfigEntry<float> BaseSubtitleFadeOutDuration;
     public static ConfigEntry<bool> EnableBaseSubtitleOutline;
@@ -86,12 +69,24 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> BaseSubtitleOutlineOpacity;
     public static ConfigEntry<float> BaseSubtitleOutlineWidth;
 
-    // VR字幕相关配置
-    public static ConfigEntry<VRSubtitleModeEnum> VRSubtitleMode;
-    public static ConfigEntry<float> VRSubtitleDistance;
-    public static ConfigEntry<float> VRSubtitleVerticalOffset;
-    public static ConfigEntry<float> VRSubtitleHorizontalOffset;
-    public static ConfigEntry<float> VRSubtitleWidth;
+    // 夜伽字幕相关配置
+    public static ConfigEntry<bool> EnableYotogiSubtitleSpeakerName;
+    public static ConfigEntry<string> YotogiSubtitleFont;
+    public static ConfigEntry<int> YotogiSubtitleFontSize;
+    public static ConfigEntry<string> YotogiSubtitleColor;
+    public static ConfigEntry<float> YotogiSubtitleOpacity;
+    public static ConfigEntry<string> YotogiSubtitleBackgroundColor;
+    public static ConfigEntry<float> YotogiSubtitleBackgroundOpacity;
+    public static ConfigEntry<float> YotogiSubtitleVerticalPosition;
+    public static ConfigEntry<float> YotogiSubtitleBackgroundWidth;
+    public static ConfigEntry<float> YotogiSubtitleBackgroundHeight;
+    public static ConfigEntry<bool> EnableYotogiSubtitleAnimation;
+    public static ConfigEntry<float> YotogiSubtitleFadeInDuration;
+    public static ConfigEntry<float> YotogiSubtitleFadeOutDuration;
+    public static ConfigEntry<bool> EnableYotogiSubtitleOutline;
+    public static ConfigEntry<string> YotogiSubtitleOutlineColor;
+    public static ConfigEntry<float> YotogiSubtitleOutlineOpacity;
+    public static ConfigEntry<float> YotogiSubtitleOutlineWidth;
 
     // ADV字幕相关配置
     public static ConfigEntry<bool> EnableAdvSubtitleSpeakerName;
@@ -102,14 +97,42 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<string> AdvSubtitleBackgroundColor;
     public static ConfigEntry<float> AdvSubtitleBackgroundOpacity;
     public static ConfigEntry<float> AdvSubtitleVerticalPosition;
+    public static ConfigEntry<float> AdvSubtitleBackgroundWidth;
     public static ConfigEntry<float> AdvSubtitleBackgroundHeight;
-    public static ConfigEntry<bool> AdvSubtitleAnimation;
+    public static ConfigEntry<bool> EnableAdvSubtitleAnimation;
     public static ConfigEntry<float> AdvSubtitleFadeInDuration;
     public static ConfigEntry<float> AdvSubtitleFadeOutDuration;
     public static ConfigEntry<bool> EnableAdvSubtitleOutline;
     public static ConfigEntry<string> AdvSubtitleOutlineColor;
     public static ConfigEntry<float> AdvSubtitleOutlineOpacity;
     public static ConfigEntry<float> AdvSubtitleOutlineWidth;
+
+    // 歌词字幕相关配置
+    public static ConfigEntry<bool> EnableLyricSubtitleSpeakerName;
+    public static ConfigEntry<string> LyricSubtitleFont;
+    public static ConfigEntry<int> LyricSubtitleFontSize;
+    public static ConfigEntry<string> LyricSubtitleColor;
+    public static ConfigEntry<float> LyricSubtitleOpacity;
+    public static ConfigEntry<string> LyricSubtitleBackgroundColor;
+    public static ConfigEntry<float> LyricSubtitleBackgroundOpacity;
+    public static ConfigEntry<float> LyricSubtitleVerticalPosition;
+    public static ConfigEntry<float> LyricSubtitleBackgroundWidth;
+    public static ConfigEntry<float> LyricSubtitleBackgroundHeight;
+    public static ConfigEntry<bool> EnableLyricSubtitleAnimation;
+    public static ConfigEntry<float> LyricSubtitleFadeInDuration;
+    public static ConfigEntry<float> LyricSubtitleFadeOutDuration;
+    public static ConfigEntry<bool> EnableLyricSubtitleOutline;
+    public static ConfigEntry<string> LyricSubtitleOutlineColor;
+    public static ConfigEntry<float> LyricSubtitleOutlineOpacity;
+    public static ConfigEntry<float> LyricSubtitleOutlineWidth;
+
+    // VR字幕相关配置
+    public static ConfigEntry<VRSubtitleModeEnum> VRSubtitleMode;
+    public static ConfigEntry<float> VRSubtitleDistance;
+    public static ConfigEntry<float> VRSubtitleVerticalOffset;
+    public static ConfigEntry<float> VRSubtitleHorizontalOffset;
+    public static ConfigEntry<float> VRSubtitleWidth;
+    public static ConfigEntry<float> VRSubtitleHeight;
 
     // translation folder path
     public static readonly string TranslationRootPath = Paths.BepInExRootPath + "/JustAnotherTranslator";
@@ -209,96 +232,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         # endregion
 
-        # region YotogiSubtitleSettings
-
-        // 夜伽字幕相关配置
-        EnableYotogiSubtitle = Config.Bind("YotogiSubtitle",
-            "EnableYotogiSubtitle/启用夜伽字幕",
-            true,
-            "Enable Yotogi Subtitle/启用夜伽字幕");
-
-        EnableYotogiSubtitleSpeakerName = Config.Bind("YotogiSubtitle",
-            "EnableYotogiSubtitleSpeakerName/启用夜伽字幕显示说话人名",
-            true,
-            "Enable Yotogi Subtitle Speaker Name/启用夜伽字幕显示说话人名");
-
-        YotogiSubtitleFont = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleFont/夜伽字幕字体",
-            "Arial",
-            "Yotogi Subtitle Font, need to already installed the font on the system/夜伽字幕字体，需要已经安装在系统中的字体");
-
-        YotogiSubtitleFontSize = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleFontSize/夜伽字幕字体大小",
-            24,
-            "Yotogi Subtitle Font Size/夜伽字幕字体大小");
-
-        YotogiSubtitleColor = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleColor/夜伽字幕颜色",
-            "#FFFFFF",
-            "Yotogi Subtitle Color, use hex color code/夜伽字幕颜色，使用十六进制颜色代码");
-
-        YotogiSubtitleOpacity = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleOpacity/夜伽字幕不透明度",
-            1f,
-            "Yotogi Subtitle Opacity (0-1)/夜伽字幕不透明度（0-1）");
-
-        YotogiSubtitleBackgroundColor = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleBackgroundColor/夜伽字幕背景颜色",
-            "#000000",
-            "Yotogi Subtitle Background Color, use hex color code/夜伽字幕背景颜色，使用十六进制颜色代码");
-
-        YotogiSubtitleBackgroundOpacity = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleBackgroundOpacity/夜伽字幕背景不透明度",
-            0.1f,
-            "Yotogi Subtitle Background Opacity (0-1)/夜伽字幕背景不透明度（0-1）");
-
-        YotogiSubtitleVerticalPosition = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleVerticalPosition/夜伽字幕垂直位置",
-            0.965f,
-            "Yotogi Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/夜伽字幕垂直位置（0-1，0为底部，1为顶部）");
-
-        YotogiSubtitleBackgroundHeight = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleBackgroundHeight/夜伽字幕背景高度",
-            40f,
-            "Yotogi Subtitle Background Height in pixels/夜伽背景幕高度（像素）");
-
-        YotogiSubtitleAnimation = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleAnimation/夜伽字幕动画",
-            true,
-            "Enable Yotogi Subtitle Animation/启用夜伽字幕动画");
-
-        YotogiSubtitleFadeInDuration = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleFadeInDuration/夜伽字幕淡入时长",
-            0.5f,
-            "Yotogi Subtitle Fade In Duration in seconds/夜伽字幕淡入时长（秒）");
-
-        YotogiSubtitleFadeOutDuration = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleFadeOutDuration/夜伽字幕淡出时长",
-            0.5f,
-            "Yotogi Subtitle Fade Out Duration in seconds/夜伽字幕淡出时长（秒）");
-
-        EnableYotogiSubtitleOutline = Config.Bind("YotogiSubtitle",
-            "EnableYotogiSubtitleOutline/启用夜伽字幕描边",
-            true,
-            "Enable Yotogi Subtitle Outline/启用夜伽字幕描边");
-
-        YotogiSubtitleOutlineColor = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleOutlineColor/夜伽字幕描边颜色",
-            "#000000",
-            "Yotogi Subtitle Outline Color, use hex color code/夜伽字幕描边颜色，使用十六进制颜色代码");
-
-        YotogiSubtitleOutlineOpacity = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleOutlineOpacity/夜伽字幕描边不透明度",
-            0.5f,
-            "Yotogi Subtitle Outline Opacity (0-1)/夜伽字幕描边不透明度（0-1）");
-
-        YotogiSubtitleOutlineWidth = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleOutlineWidth/夜伽字幕描边宽度",
-            1f,
-            "Yotogi Subtitle Outline Width in pixels/夜伽字幕描边宽度（像素）");
-
-        # endregion
-
         # region BaseSubtitleSettings
 
         // 基础字幕相关配置
@@ -347,12 +280,17 @@ public class JustAnotherTranslator : BaseUnityPlugin
             0.965f,
             "Base Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/基础字幕垂直位置（0-1，0为底部，1为顶部）");
 
+        BaseSubtitleBackgroundWidth = Config.Bind("BaseSubtitle",
+            "BaseSubtitleBackgroundWidth/基础字幕背景宽度",
+            1f,
+            "Base Subtitle Background Width in percent/基础背景幕宽度（百分比）");
+
         BaseSubtitleBackgroundHeight = Config.Bind("BaseSubtitle",
             "BaseSubtitleBackgroundHeight/基础字幕背景高度",
-            40f,
-            "Base Subtitle Background Height in pixels/基础背景幕高度（像素）");
+            0.08f,
+            "Base Subtitle Background Height in percent/基础背景幕高度（百分比）");
 
-        BaseSubtitleAnimation = Config.Bind("BaseSubtitle",
+        EnableBaseSubtitleAnimation = Config.Bind("BaseSubtitle",
             "BaseSubtitleAnimation/基础字幕动画",
             true,
             "Enable Base Subtitle Animation/启用基础字幕动画");
@@ -389,33 +327,98 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         # endregion
 
-        # region VRSubtitleSettings
+        # region YotogiSubtitleSettings
 
-        // VR悬浮字幕相关配置
-        VRSubtitleMode = Config.Bind("VRSubtitle",
-            "VRSubtitleMode/VR字幕模式",
-            VRSubtitleModeEnum.InSpace,
-            "VR Subtitle Mode: InSpace=On Control tablet, OnTablet=Floating in world space following head movement/VR字幕模式：InSpace=字幕在控制平板上，OnTablet=跟随头部运动的世界空间悬浮字幕");
+        // 夜伽字幕相关配置
+        EnableYotogiSubtitle = Config.Bind("YotogiSubtitle",
+            "EnableYotogiSubtitle/启用夜伽字幕",
+            true,
+            "Enable Yotogi Subtitle/启用夜伽字幕");
 
-        VRSubtitleDistance = Config.Bind("VRSubtitle",
-            "VRSubtitleDistance/VR字幕距离",
+        EnableYotogiSubtitleSpeakerName = Config.Bind("YotogiSubtitle",
+            "EnableYotogiSubtitleSpeakerName/启用夜伽字幕显示说话人名",
+            true,
+            "Enable Yotogi Subtitle Speaker Name/启用夜伽字幕显示说话人名");
+
+        YotogiSubtitleFont = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleFont/夜伽字幕字体",
+            "Arial",
+            "Yotogi Subtitle Font, need to already installed the font on the system/夜伽字幕字体，需要已经安装在系统中的字体");
+
+        YotogiSubtitleFontSize = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleFontSize/夜伽字幕字体大小",
+            24,
+            "Yotogi Subtitle Font Size/夜伽字幕字体大小");
+
+        YotogiSubtitleColor = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleColor/夜伽字幕颜色",
+            "#FFFFFF",
+            "Yotogi Subtitle Color, use hex color code/夜伽字幕颜色，使用十六进制颜色代码");
+
+        YotogiSubtitleOpacity = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleOpacity/夜伽字幕不透明度",
             1f,
-            "VR Floating Subtitle Distance in meters/VR悬浮字幕距离（米）");
+            "Yotogi Subtitle Opacity (0-1)/夜伽字幕不透明度（0-1）");
 
-        VRSubtitleVerticalOffset = Config.Bind("VRSubtitle",
-            "VRSubtitleVerticalOffset/VR字幕垂直偏移",
-            35f,
-            "VR Floating Subtitle Vertical Offset in degrees (relative to center of view)/VR悬浮字幕垂直偏移（度，相对于视线中心）");
+        YotogiSubtitleBackgroundColor = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleBackgroundColor/夜伽字幕背景颜色",
+            "#000000",
+            "Yotogi Subtitle Background Color, use hex color code/夜伽字幕背景颜色，使用十六进制颜色代码");
 
-        VRSubtitleHorizontalOffset = Config.Bind("VRSubtitle",
-            "VRSubtitleHorizontalOffset/VR字幕水平偏移",
-            0f,
-            "VR Floating Subtitle Horizontal Offset in degrees (relative to center of view)/VR悬浮字幕水平偏移（度，相对于视线中心）");
+        YotogiSubtitleBackgroundOpacity = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleBackgroundOpacity/夜伽字幕背景不透明度",
+            0.1f,
+            "Yotogi Subtitle Background Opacity (0-1)/夜伽字幕背景不透明度（0-1）");
 
-        VRSubtitleWidth = Config.Bind("VRSubtitle",
-            "VRSubtitleWidth/VR字幕宽度",
+        YotogiSubtitleVerticalPosition = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleVerticalPosition/夜伽字幕垂直位置",
+            0.965f,
+            "Yotogi Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/夜伽字幕垂直位置（0-1，0为底部，1为顶部）");
+
+        YotogiSubtitleBackgroundWidth = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleBackgroundWidth/夜伽字幕背景宽度",
             1f,
-            "VR Floating Subtitle Width in meters/VR悬浮字幕宽度（米）");
+            "Yotogi Subtitle Background Width in percents/夜伽背景幕宽度（百分比）");
+
+        YotogiSubtitleBackgroundHeight = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleBackgroundHeight/夜伽字幕背景高度",
+            0.08f,
+            "Yotogi Subtitle Background Height in percents/夜伽背景幕高度（百分比）");
+
+        EnableYotogiSubtitleAnimation = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleAnimation/夜伽字幕动画",
+            true,
+            "Enable Yotogi Subtitle Animation/启用夜伽字幕动画");
+
+        YotogiSubtitleFadeInDuration = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleFadeInDuration/夜伽字幕淡入时长",
+            0.5f,
+            "Yotogi Subtitle Fade In Duration in seconds/夜伽字幕淡入时长（秒）");
+
+        YotogiSubtitleFadeOutDuration = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleFadeOutDuration/夜伽字幕淡出时长",
+            0.5f,
+            "Yotogi Subtitle Fade Out Duration in seconds/夜伽字幕淡出时长（秒）");
+
+        EnableYotogiSubtitleOutline = Config.Bind("YotogiSubtitle",
+            "EnableYotogiSubtitleOutline/启用夜伽字幕描边",
+            true,
+            "Enable Yotogi Subtitle Outline/启用夜伽字幕描边");
+
+        YotogiSubtitleOutlineColor = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleOutlineColor/夜伽字幕描边颜色",
+            "#000000",
+            "Yotogi Subtitle Outline Color, use hex color code/夜伽字幕描边颜色，使用十六进制颜色代码");
+
+        YotogiSubtitleOutlineOpacity = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleOutlineOpacity/夜伽字幕描边不透明度",
+            0.5f,
+            "Yotogi Subtitle Outline Opacity (0-1)/夜伽字幕描边不透明度（0-1）");
+
+        YotogiSubtitleOutlineWidth = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleOutlineWidth/夜伽字幕描边宽度",
+            1f,
+            "Yotogi Subtitle Outline Width in pixels/夜伽字幕描边宽度（像素）");
 
         # endregion
 
@@ -467,12 +470,17 @@ public class JustAnotherTranslator : BaseUnityPlugin
             0.965f,
             "ADV Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/ADV字幕垂直位置（0-1，0为底部，1为顶部）");
 
+        AdvSubtitleBackgroundWidth = Config.Bind("AdvSubtitle",
+            "AdvSubtitleBackgroundWidth/ADV字幕背景宽度",
+            1f,
+            "ADV Subtitle Background Width in percent/ADV背景幕宽度（百分比）");
+
         AdvSubtitleBackgroundHeight = Config.Bind("AdvSubtitle",
             "AdvSubtitleBackgroundHeight/ADV字幕背景高度",
-            40f,
-            "ADV Subtitle Background Height in pixels/ADV背景幕高度（像素）");
+            0.08f,
+            "ADV Subtitle Background Height in percent/ADV背景幕高度（百分比）");
 
-        AdvSubtitleAnimation = Config.Bind("AdvSubtitle",
+        EnableAdvSubtitleAnimation = Config.Bind("AdvSubtitle",
             "AdvSubtitleAnimation/ADV字幕动画",
             true,
             "Enable ADV Subtitle Animation/启用ADV字幕动画");
@@ -506,6 +514,136 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "AdvSubtitleOutlineWidth/ADV字幕描边宽度",
             1f,
             "ADV Subtitle Outline Width in pixels/ADV字幕描边宽度（像素）");
+
+        # endregion
+
+        # region LyricSubtitleSettings
+
+        // 歌词字幕相关配置
+        EnableLyricSubtitle = Config.Bind("LyricSubtitle",
+            "EnableLyricSubtitle/启用歌词字幕",
+            true,
+            "Enable Lyric Subtitle/启用歌词字幕");
+
+        EnableLyricSubtitleSpeakerName = Config.Bind("LyricSubtitle",
+            "EnableLyricSubtitleSpeakerName/启用歌词字幕显示说话人名",
+            true,
+            "Enable Lyric Subtitle Speaker Name/启用歌词字幕显示说话人名");
+
+        LyricSubtitleFont = Config.Bind("LyricSubtitle",
+            "LyricSubtitleFont/歌词字幕字体",
+            "Arial",
+            "Lyric Subtitle Font, need to already installed the font on the system/歌词字幕字体，需要已经安装在系统中的字体");
+
+        LyricSubtitleFontSize = Config.Bind("LyricSubtitle",
+            "LyricSubtitleFontSize/歌词字幕字体大小",
+            24,
+            "Lyric Subtitle Font Size/歌词字幕字体大小");
+
+        LyricSubtitleColor = Config.Bind("LyricSubtitle",
+            "LyricSubtitleColor/歌词字幕颜色",
+            "#FFFFFF",
+            "Lyric Subtitle Color, use hex color code/歌词字幕颜色，使用十六进制颜色代码");
+
+        LyricSubtitleOpacity = Config.Bind("LyricSubtitle",
+            "LyricSubtitleOpacity/歌词字幕不透明度",
+            1f,
+            "Lyric Subtitle Opacity (0-1)/歌词字幕不透明度（0-1）");
+
+        LyricSubtitleBackgroundColor = Config.Bind("LyricSubtitle",
+            "LyricSubtitleBackgroundColor/歌词字幕背景颜色",
+            "#000000",
+            "Lyric Subtitle Background Color, use hex color code/歌词字幕背景颜色，使用十六进制颜色代码");
+
+        LyricSubtitleBackgroundOpacity = Config.Bind("LyricSubtitle",
+            "LyricSubtitleBackgroundOpacity/歌词字幕背景不透明度",
+            0.1f,
+            "Lyric Subtitle Background Opacity (0-1)/歌词字幕背景不透明度（0-1）");
+
+        LyricSubtitleVerticalPosition = Config.Bind("LyricSubtitle",
+            "LyricSubtitleVerticalPosition/歌词字幕垂直位置",
+            0.965f,
+            "Lyric Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/歌词字幕垂直位置（0-1，0为底部，1为顶部）");
+
+        LyricSubtitleBackgroundWidth = Config.Bind("LyricSubtitle",
+            "LyricSubtitleBackgroundWidth/歌词字幕背景宽度",
+            0.6f,
+            "Lyric Subtitle Background Width in percent/歌词背景幕宽度（百分比）");
+
+        LyricSubtitleBackgroundHeight = Config.Bind("LyricSubtitle",
+            "LyricSubtitleBackgroundHeight/歌词字幕背景高度",
+            0.1f,
+            "Lyric Subtitle Background Height in percent/歌词背景幕高度（百分比）");
+
+        EnableLyricSubtitleAnimation = Config.Bind("LyricSubtitle",
+            "LyricSubtitleAnimation/歌词字幕动画",
+            true,
+            "Enable Lyric Subtitle Animation/启用歌词字幕动画");
+
+        LyricSubtitleFadeInDuration = Config.Bind("LyricSubtitle",
+            "LyricSubtitleFadeInDuration/歌词字幕淡入时长",
+            0.5f,
+            "Lyric Subtitle Fade In Duration in seconds/歌词字幕淡入时长（秒）");
+
+        LyricSubtitleFadeOutDuration = Config.Bind("LyricSubtitle",
+            "LyricSubtitleFadeOutDuration/歌词字幕淡出时长",
+            0.5f,
+            "Lyric Subtitle Fade Out Duration in seconds/歌词字幕淡出时长（秒）");
+
+        EnableLyricSubtitleOutline = Config.Bind("LyricSubtitle",
+            "EnableLyricSubtitleOutline/启用歌词字幕描边",
+            true,
+            "Enable Lyric Subtitle Outline/启用歌词字幕描边");
+
+        LyricSubtitleOutlineColor = Config.Bind("LyricSubtitle",
+            "LyricSubtitleOutlineColor/歌词字幕描边颜色",
+            "#000000",
+            "Lyric Subtitle Outline Color, use hex color code/歌词字幕描边颜色，使用十六进制颜色代码");
+
+        LyricSubtitleOutlineOpacity = Config.Bind("LyricSubtitle",
+            "LyricSubtitleOutlineOpacity/歌词字幕描边不透明度",
+            0.5f,
+            "Lyric Subtitle Outline Opacity (0-1)/歌词字幕描边不透明度（0-1）");
+
+        LyricSubtitleOutlineWidth = Config.Bind("LyricSubtitle",
+            "LyricSubtitleOutlineWidth/歌词字幕描边宽度",
+            1f,
+            "Lyric Subtitle Outline Width in pixels/歌词字幕描边宽度（像素）");
+
+        # endregion
+
+        # region VRSubtitleSettings
+
+        // VR悬浮字幕相关配置
+        VRSubtitleMode = Config.Bind("VRSubtitle",
+            "VRSubtitleMode/VR字幕模式",
+            VRSubtitleModeEnum.InSpace,
+            "VR Subtitle Mode: InSpace=On Control tablet, OnTablet=Floating in world space following head movement/VR字幕模式：InSpace=字幕在控制平板上，OnTablet=跟随头部运动的世界空间悬浮字幕");
+
+        VRSubtitleDistance = Config.Bind("VRSubtitle",
+            "VRSubtitleDistance/VR字幕距离",
+            1f,
+            "VR Floating Subtitle Distance in meters/VR悬浮字幕距离（米）");
+
+        VRSubtitleVerticalOffset = Config.Bind("VRSubtitle",
+            "VRSubtitleVerticalOffset/VR字幕垂直偏移",
+            35f,
+            "VR Floating Subtitle Vertical Offset in degrees (relative to center of view)/VR悬浮字幕垂直偏移（度，相对于视线中心）");
+
+        VRSubtitleHorizontalOffset = Config.Bind("VRSubtitle",
+            "VRSubtitleHorizontalOffset/VR字幕水平偏移",
+            0f,
+            "VR Floating Subtitle Horizontal Offset in degrees (relative to center of view)/VR悬浮字幕水平偏移（度，相对于视线中心）");
+
+        VRSubtitleWidth = Config.Bind("VRSubtitle",
+            "VRSubtitleWidth/VR字幕宽度",
+            1f,
+            "VR Floating Subtitle Width in meters/VR悬浮字幕宽度（米）");
+
+        VRSubtitleHeight = Config.Bind("VRSubtitle",
+            "VRSubtitleHeight/VR字幕高度",
+            0.2f,
+            "VR Floating Subtitle Height in meters/VR悬浮字幕高度（米）");
 
         # endregion
 
@@ -597,14 +735,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         // 注册一般配置变更事件
         RegisterGeneralConfigEvents();
-        // 注册夜伽字幕配置变更事件
-        RegisterYotogiSubtitleConfigEvents();
         // 注册基础字幕配置变更事件
         RegisterBaseSubtitleConfigEvents();
-        // 注册VR字幕配置变更事件
-        RegisterVRSubtitleConfigEvents();
+        // 注册夜伽字幕配置变更事件
+        RegisterYotogiSubtitleConfigEvents();
         // 注册ADV字幕配置变更事件
         RegisterAdvSubtitleConfigEvents();
+        // 注册VR字幕配置变更事件
+        RegisterVRSubtitleConfigEvents();
     }
 
     private void Start()
@@ -935,7 +1073,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕动画变更事件
-        YotogiSubtitleAnimation.SettingChanged += (sender, args) =>
+        EnableYotogiSubtitleAnimation.SettingChanged += (sender, args) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1116,7 +1254,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕动画变更事件
-        BaseSubtitleAnimation.SettingChanged += (sender, args) =>
+        EnableBaseSubtitleAnimation.SettingChanged += (sender, args) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1353,7 +1491,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕动画变更事件
-        AdvSubtitleAnimation.SettingChanged += (sender, args) =>
+        EnableAdvSubtitleAnimation.SettingChanged += (sender, args) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1422,410 +1560,4 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
     }
-
-    #region SubtitleHelperMethods
-
-    /// <summary>
-    ///     获取字幕字体
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>字体</returns>
-    public static string GetSubtitleFont(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleFont.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleFont.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleFont.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleFont.Value; // 暂时使用基础字幕的字体
-            default:
-                return BaseSubtitleFont.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕字体大小
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>字体大小</returns>
-    public static int GetSubtitleFontSize(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleFontSize.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleFontSize.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleFontSize.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleFontSize.Value; // 暂时使用基础字幕的字体大小
-            default:
-                return BaseSubtitleFontSize.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕颜色
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>颜色</returns>
-    public static string GetSubtitleColor(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleColor.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleColor.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleColor.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleColor.Value; // 暂时使用基础字幕的颜色
-            default:
-                return BaseSubtitleColor.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕不透明度
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>不透明度</returns>
-    public static float GetSubtitleOpacity(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleOpacity.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleOpacity.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleOpacity.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleOpacity.Value; // 暂时使用基础字幕的不透明度
-            default:
-                return BaseSubtitleOpacity.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕背景颜色
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>背景颜色</returns>
-    public static string GetSubtitleBackgroundColor(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleBackgroundColor.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleBackgroundColor.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleBackgroundColor.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleBackgroundColor.Value; // 暂时使用基础字幕的背景颜色
-            default:
-                return BaseSubtitleBackgroundColor.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕背景不透明度
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>背景不透明度</returns>
-    public static float GetSubtitleBackgroundOpacity(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleBackgroundOpacity.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleBackgroundOpacity.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleBackgroundOpacity.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleBackgroundOpacity.Value; // 暂时使用基础字幕的背景不透明度
-            default:
-                return BaseSubtitleBackgroundOpacity.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕垂直位置
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>垂直位置</returns>
-    public static float GetSubtitleVerticalPosition(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleVerticalPosition.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleVerticalPosition.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleVerticalPosition.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleVerticalPosition.Value; //TODO 暂时使用基础字幕的垂直位置
-            default:
-                return BaseSubtitleVerticalPosition.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕背景高度
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>背景高度</returns>
-    public static float GetSubtitleBackgroundHeight(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleBackgroundHeight.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleBackgroundHeight.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleBackgroundHeight.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleBackgroundHeight.Value; // 暂时使用基础字幕的背景高度
-            default:
-                return BaseSubtitleBackgroundHeight.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕动画
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>动画</returns>
-    public static bool GetSubtitleAnimation(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleAnimation.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleAnimation.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleAnimation.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleAnimation.Value; // 暂时使用基础字幕的动画
-            default:
-                return BaseSubtitleAnimation.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕淡入时长
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>淡入时长</returns>
-    public static float GetSubtitleFadeInDuration(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleFadeInDuration.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleFadeInDuration.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleFadeInDuration.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleFadeInDuration.Value; // 暂时使用基础字幕的淡入时长
-            default:
-                return BaseSubtitleFadeInDuration.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕淡出时长
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>淡出时长</returns>
-    public static float GetSubtitleFadeOutDuration(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleFadeOutDuration.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleFadeOutDuration.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleFadeOutDuration.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleFadeOutDuration.Value; // 暂时使用基础字幕的淡出时长
-            default:
-                return BaseSubtitleFadeOutDuration.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕描边
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>描边</returns>
-    public static bool GetEnableSubtitleOutline(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return EnableBaseSubtitleOutline.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return EnableYotogiSubtitleOutline.Value;
-            case SubtitleTypeEnum.Adv:
-                return EnableAdvSubtitleOutline.Value;
-            case SubtitleTypeEnum.Lyric:
-                return EnableBaseSubtitleOutline.Value; // 暂时使用基础字幕的描边
-            default:
-                return EnableBaseSubtitleOutline.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕描边颜色
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>描边颜色</returns>
-    public static string GetSubtitleOutlineColor(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleOutlineColor.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleOutlineColor.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleOutlineColor.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleOutlineColor.Value; // 暂时使用基础字幕的描边颜色
-            default:
-                return BaseSubtitleOutlineColor.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕描边不透明度
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>描边不透明度</returns>
-    public static float GetSubtitleOutlineOpacity(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleOutlineOpacity.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleOutlineOpacity.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleOutlineOpacity.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleOutlineOpacity.Value; // 暂时使用基础字幕的描边不透明度
-            default:
-                return BaseSubtitleOutlineOpacity.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕描边宽度
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>描边宽度</returns>
-    public static float GetSubtitleOutlineWidth(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return BaseSubtitleOutlineWidth.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return YotogiSubtitleOutlineWidth.Value;
-            case SubtitleTypeEnum.Adv:
-                return AdvSubtitleOutlineWidth.Value;
-            case SubtitleTypeEnum.Lyric:
-                return BaseSubtitleOutlineWidth.Value; // 暂时使用基础字幕的描边宽度
-            default:
-                return BaseSubtitleOutlineWidth.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取字幕说话人名
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>说话人名</returns>
-    public static bool GetEnableSubtitleSpeakerName(SubtitleTypeEnum type)
-    {
-        switch (type)
-        {
-            case SubtitleTypeEnum.Base:
-                return EnableBaseSubtitleSpeakerName.Value;
-            case SubtitleTypeEnum.Yotogi:
-                return EnableYotogiSubtitleSpeakerName.Value;
-            case SubtitleTypeEnum.Adv:
-                return EnableAdvSubtitleSpeakerName.Value;
-            case SubtitleTypeEnum.Lyric:
-                return EnableBaseSubtitleSpeakerName.Value; // 暂时使用基础字幕的说话人名
-            default:
-                return EnableBaseSubtitleSpeakerName.Value;
-        }
-    }
-
-    /// <summary>
-    ///     获取VR字幕模式
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>VR字幕模式</returns>
-    public static VRSubtitleModeEnum GetVRSubtitleMode(SubtitleTypeEnum type)
-    {
-        return VRSubtitleMode.Value;
-    }
-
-    /// <summary>
-    ///     获取VR字幕距离
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>VR字幕距离</returns>
-    public static float GetVRSubtitleDistance(SubtitleTypeEnum type)
-    {
-        return VRSubtitleDistance.Value;
-    }
-
-    /// <summary>
-    ///     获取VR字幕垂直偏移
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>VR字幕垂直偏移</returns>
-    public static float GetVRSubtitleVerticalOffset(SubtitleTypeEnum type)
-    {
-        return VRSubtitleVerticalOffset.Value;
-    }
-
-    /// <summary>
-    ///     获取VR字幕水平偏移
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>VR字幕水平偏移</returns>
-    public static float GetVRSubtitleHorizontalOffset(SubtitleTypeEnum type)
-    {
-        return VRSubtitleHorizontalOffset.Value;
-    }
-
-    /// <summary>
-    ///     获取VR字幕宽度
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>VR字幕宽度</returns>
-    public static float GetVRSubtitleWidth(SubtitleTypeEnum type)
-    {
-        return VRSubtitleWidth.Value;
-    }
-
-    #endregion SubtitleHelperMethods
 }

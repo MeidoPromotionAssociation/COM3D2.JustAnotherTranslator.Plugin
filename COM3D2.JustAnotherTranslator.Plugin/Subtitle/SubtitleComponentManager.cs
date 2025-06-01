@@ -12,10 +12,10 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 public static class SubtitleComponentManager
 {
     // 活动字幕组件列表
-    private static readonly List<ISubtitleComponent> SubtitleComponents = new();
+    private static readonly Dictionary<string ,ISubtitleComponent> SubtitleComponents = new(); // 字幕ID，字幕组件
 
     // 字幕ID映射，用于跟踪说话者与字幕组件的关系
-    private static readonly Dictionary<string, ISubtitleComponent> SubtitleIdMap = new();
+    private static readonly Dictionary<string, ISubtitleComponent> SubtitleIdMap = new(); // 说话者，字幕组件
 
     // 是否已初始化
     private static bool _initialized = false;
@@ -105,13 +105,13 @@ public static class SubtitleComponentManager
         if (JustAnotherTranslator.IsVrMode)
         {
             // VR模式下根据VR字幕类型创建不同组件
-            switch (config.VRSubtitleType)
+            switch (JustAnotherTranslator.VRSubtitleMode.Value)
             {
-                case JustAnotherTranslator.VRSubtitleTypeEnum.Space:
+                case JustAnotherTranslator.VRSubtitleModeEnum.InSpace:
                     component = gameObject.AddComponent<VRSpaceSubtitleComponent>();
                     LogManager.Debug("已创建VR空间字幕组件/Created VR space subtitle component");
                     break;
-                case JustAnotherTranslator.VRSubtitleTypeEnum.Tablet:
+                case JustAnotherTranslator.VRSubtitleModeEnum.OnTablet:
                     component = gameObject.AddComponent<VRTabletSubtitleComponent>();
                     LogManager.Debug("已创建VR平板字幕组件/Created VR tablet subtitle component");
                     break;

@@ -38,7 +38,8 @@ public static class VRTouchSubtitlePatch
             SubtitleManager.SetCurrentSpeaker(speakingMaid);
             SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
-            LogManager.Debug($"VRTouchKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
+            LogManager.Debug(
+                $"VRTouchKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
             LogManager.Debug($"VRTouchKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
             LogManager.Debug($"VRTouchKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
         }

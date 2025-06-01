@@ -52,6 +52,6 @@ public static class PrivateMaidTouchSubtitlePatch
             $"PrivateMaidTouchKagManager_HitRet_Prefix instance.kag_.GetCurrentLine(): {__instance.kag_.GetCurrentLine()}");
 
         SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Base);
-        SubtitleManager.SetVoiceTextMapping(text,"PrivateMaidTouchKagManager_HitRet_Prefix");
+        SubtitleManager.SetVoiceTextMapping(text, "PrivateMaidTouchKagManager_HitRet_Prefix");
     }
 }

@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 
@@ -13,7 +12,7 @@ public interface ISubtitleComponent
     /// </summary>
     /// <param name="config">字幕配置</param>
     void Initialize(SubtitleConfig config);
-    
+
     /// <summary>
     ///     显示字幕
     /// </summary>
@@ -21,47 +20,47 @@ public interface ISubtitleComponent
     /// <param name="speakerName">说话者名称，可为空</param>
     /// <param name="duration">显示持续时间，0表示持续显示</param>
     void ShowSubtitle(string text, string speakerName, float duration);
-    
+
     /// <summary>
     ///     隐藏字幕
     /// </summary>
     void HideSubtitle();
-    
+
     /// <summary>
     ///     更新字幕配置
     /// </summary>
     /// <param name="config">新的字幕配置</param>
     void UpdateConfig(SubtitleConfig config);
-    
+
     /// <summary>
     ///     获取当前字幕配置
     /// </summary>
     /// <returns>当前字幕配置</returns>
     SubtitleConfig GetConfig();
-    
+
     /// <summary>
     ///     获取当前显示的文本
     /// </summary>
     /// <returns>当前显示的文本</returns>
     string GetText();
-    
+
     /// <summary>
     ///     获取当前说话者名称
     /// </summary>
     /// <returns>当前说话者名称</returns>
     string GetSpeakerName();
-    
+
     /// <summary>
     ///     检查字幕是否可见
     /// </summary>
     /// <returns>字幕是否可见</returns>
     bool IsVisible();
-    
+
     /// <summary>
     ///     销毁字幕组件
     /// </summary>
     void Destroy();
-    
+
     /// <summary>
     ///     获取游戏对象
     /// </summary>

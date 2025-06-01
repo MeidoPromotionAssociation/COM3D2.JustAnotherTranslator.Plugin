@@ -134,10 +134,7 @@ public static class SubtitleManager
             _vrTouchSubtitlePatch
         };
 
-        foreach (var patch in patches)
-        {
-            patch?.UnpatchSelf();
-        }
+        foreach (var patch in patches) patch?.UnpatchSelf();
 
         _yotogiSubtitlePatch = null;
         _advSubtitlePatch = null;
@@ -222,10 +219,7 @@ public static class SubtitleManager
         // 清理所有Maid监听协程
         if (MaidMonitorCoroutineIds.Count > 0)
         {
-            foreach (var id in MaidMonitorCoroutineIds.Values)
-            {
-                CoroutineManager.StopCoroutine(id);
-            }
+            foreach (var id in MaidMonitorCoroutineIds.Values) CoroutineManager.StopCoroutine(id);
 
             MaidMonitorCoroutineIds.Clear();
         }
@@ -357,6 +351,7 @@ public static class SubtitleManager
 
 
     # region Setters
+
     /// <summary>
     ///     由声音 Patch 调用，用于设置文本和 voiceId 的映射
     /// </summary>
@@ -411,5 +406,6 @@ public static class SubtitleManager
     {
         SubtitleType = subtitleType;
     }
+
     # endregion
 }

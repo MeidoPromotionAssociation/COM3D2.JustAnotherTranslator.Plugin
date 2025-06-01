@@ -32,7 +32,8 @@ public static class AdvSubtitlePatch
             SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
             LogManager.Debug($"ADVKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
-            LogManager.Debug($"ADVKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
+            LogManager.Debug(
+                $"ADVKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
             LogManager.Debug($"ADVKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
         }
     }
@@ -53,6 +54,6 @@ public static class AdvSubtitlePatch
             $"ADVKagManager_HitRet_Prefix instance.kag_.GetCurrentLine(): {__instance.kag_.GetCurrentLine()}");
 
         SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Adv);
-        SubtitleManager.SetVoiceTextMapping(text,"ADVKagManager_HitRet_Prefix");
+        SubtitleManager.SetVoiceTextMapping(text, "ADVKagManager_HitRet_Prefix");
     }
 }

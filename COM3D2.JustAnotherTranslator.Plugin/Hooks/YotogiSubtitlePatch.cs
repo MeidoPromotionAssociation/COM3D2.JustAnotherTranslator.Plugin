@@ -43,7 +43,8 @@ public static class YotogiSubtitlePatch
             SubtitleManager.SetCurrentSpeaker(speakingMaid);
             SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
-            LogManager.Debug($"YotogiKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
+            LogManager.Debug(
+                $"YotogiKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
             LogManager.Debug($"YotogiKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
             LogManager.Debug($"YotogiKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
         }
@@ -65,6 +66,6 @@ public static class YotogiSubtitlePatch
             $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentLine(): {__instance.kag_.GetCurrentLine()}");
 
         SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Yotogi);
-        SubtitleManager.SetVoiceTextMapping(text,"YotogiKagManager_HitRet_Prefix");
+        SubtitleManager.SetVoiceTextMapping(text, "YotogiKagManager_HitRet_Prefix");
     }
 }

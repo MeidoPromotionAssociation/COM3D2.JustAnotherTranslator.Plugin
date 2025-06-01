@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 
@@ -12,16 +12,16 @@ public static class SubtitleComponentManager
 {
     // 活动字幕组件列表
     private static readonly List<ISubtitleComponent> SubtitleComponents = new();
-    
+
     // 字幕ID映射，用于跟踪说话者与字幕组件的关系
     private static readonly Dictionary<string, ISubtitleComponent> SubtitleIdMap = new();
 
     // 是否已初始化
     private static bool _initialized;
-    
+
     // VR头部变换
     private static Transform _vrHeadTransform;
-    
+
     // 字幕配置字典
     private static Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> _subtitleConfigs;
 
@@ -34,12 +34,9 @@ public static class SubtitleComponentManager
 
         // 从插件配置中获取字幕配置
         GetConfigFromPluginConfig();
-        
+
         // 如果在VR模式下，初始化VR头部跟踪
-        if (JustAnotherTranslator.IsVrMode)
-        {
-            InitVRComponents();
-        }
+        if (JustAnotherTranslator.IsVrMode) InitVRComponents();
 
         _initialized = true;
         LogManager.Debug("字幕组件管理器已初始化/Subtitle component manager initialized");
@@ -56,13 +53,14 @@ public static class SubtitleComponentManager
             _vrHeadTransform = GameMain.Instance.OvrMgr.EyeAnchor;
             if (_vrHeadTransform is not null)
             {
-                LogManager.Debug("VR头部变换 (EyeAnchor) 已找到，字幕头部跟踪已启用/VR head transform (EyeAnchor) found, subtitle head tracking enabled");
+                LogManager.Debug(
+                    "VR头部变换 (EyeAnchor) 已找到，字幕头部跟踪已启用/VR head transform (EyeAnchor) found, subtitle head tracking enabled");
                 return;
             }
         }
 
         // 如果无法通过GameMain.Instance.OvrMgr获取，尝试直接查找OvrMgr
-        var ovrMgr = UnityEngine.Object.FindObjectOfType<OvrMgr>();
+        var ovrMgr = Object.FindObjectOfType<OvrMgr>();
         if (ovrMgr is not null && ovrMgr.EyeAnchor is not null)
         {
             _vrHeadTransform = ovrMgr.EyeAnchor;
@@ -148,17 +146,10 @@ public static class SubtitleComponentManager
         // 从ID映射中移除
         var keysToRemove = new List<string>();
         foreach (var kvp in SubtitleIdMap)
-        {
             if (kvp.Value == component)
-            {
                 keysToRemove.Add(kvp.Key);
-            }
-        }
 
-        foreach (var key in keysToRemove)
-        {
-            SubtitleIdMap.Remove(key);
-        }
+        foreach (var key in keysToRemove) SubtitleIdMap.Remove(key);
 
         // 销毁组件
         component.Destroy();
@@ -171,10 +162,7 @@ public static class SubtitleComponentManager
     /// </summary>
     public static void DestroyAllSubtitleComponents()
     {
-        foreach (var component in SubtitleComponents)
-        {
-            component.Destroy();
-        }
+        foreach (var component in SubtitleComponents) component.Destroy();
 
         SubtitleComponents.Clear();
         SubtitleIdMap.Clear();
@@ -187,19 +175,16 @@ public static class SubtitleComponentManager
     public static void UpdateAllSubtitleConfigs()
     {
         if (!_initialized) Initialize();
-        
+
         // 获取当前字幕类型的配置
         var config = _subtitleConfigs[JustAnotherTranslator.SubtitleType.Value];
-        
+
         // 更新所有字幕组件的配置
-        foreach (var component in SubtitleComponents)
-        {
-            component.UpdateConfig(config);
-        }
-        
+        foreach (var component in SubtitleComponents) component.UpdateConfig(config);
+
         LogManager.Debug("所有字幕组件配置已更新/All subtitle component configs updated");
     }
-    
+
     /// <summary>
     ///     更新指定字幕组件的配置
     /// </summary>
@@ -208,7 +193,7 @@ public static class SubtitleComponentManager
     public static void UpdateSubtitleConfig(ISubtitleComponent component, SubtitleConfig config)
     {
         if (component is null) return;
-        
+
         component.UpdateConfig(config);
     }
 
@@ -220,7 +205,7 @@ public static class SubtitleComponentManager
     {
         return SubtitleComponents.Count;
     }
-    
+
     /// <summary>
     ///     获取所有字幕组件列表
     /// </summary>
@@ -229,7 +214,7 @@ public static class SubtitleComponentManager
     {
         return new List<ISubtitleComponent>(SubtitleComponents);
     }
-    
+
     /// <summary>
     ///     显示字幕
     /// </summary>
@@ -240,15 +225,15 @@ public static class SubtitleComponentManager
     {
         if (string.IsNullOrEmpty(text))
             return;
-            
+
         if (!_initialized) Initialize();
-        
+
         // 获取当前字幕类型的配置
         var config = _subtitleConfigs[JustAnotherTranslator.SubtitleType.Value];
-        
+
         // 生成字幕ID
         var subtitleId = GetSpeakerSubtitleId(speakerName);
-        
+
         // 查找是否已存在该ID的字幕组件
         if (!SubtitleIdMap.TryGetValue(subtitleId, out var subtitleComponent))
         {
@@ -256,13 +241,13 @@ public static class SubtitleComponentManager
             subtitleComponent = CreateSubtitleComponent(config);
             SubtitleIdMap[subtitleId] = subtitleComponent;
         }
-        
+
         // 显示字幕
         subtitleComponent.ShowSubtitle(text, speakerName, duration);
-        
+
         LogManager.Debug($"显示字幕：[{speakerName}] {text}/Showing subtitle: [{speakerName}] {text}");
     }
-    
+
     /// <summary>
     ///     为指定Maid显示字幕
     /// </summary>
@@ -273,11 +258,11 @@ public static class SubtitleComponentManager
     {
         if (string.IsNullOrEmpty(text) || maid is null)
             return;
-            
+
         var speakerName = MaidInfo.GetMaidFullName(maid);
         ShowSubtitle(text, speakerName, duration);
     }
-    
+
     /// <summary>
     ///     显示浮动字幕（向后兼容方法）
     /// </summary>
@@ -289,10 +274,10 @@ public static class SubtitleComponentManager
     {
         if (string.IsNullOrEmpty(text))
             return;
-            
+
         // 生成字幕ID
         var subtitleId = GetSpeakerSubtitleId(speakerName);
-        
+
         // 查找是否已存在该ID的字幕组件
         if (!SubtitleIdMap.TryGetValue(subtitleId, out var subtitleComponent))
         {
@@ -300,13 +285,13 @@ public static class SubtitleComponentManager
             subtitleComponent = CreateSubtitleComponent(config);
             SubtitleIdMap[subtitleId] = subtitleComponent;
         }
-        
+
         // 显示字幕
         subtitleComponent.ShowSubtitle(text, speakerName, duration);
-        
+
         LogManager.Debug($"显示浮动字幕：[{speakerName}] {text}/Showing floating subtitle: [{speakerName}] {text}");
     }
-    
+
     /// <summary>
     ///     隐藏字幕
     /// </summary>
@@ -315,14 +300,14 @@ public static class SubtitleComponentManager
     {
         if (string.IsNullOrEmpty(subtitleId))
             return;
-            
+
         if (SubtitleIdMap.TryGetValue(subtitleId, out var subtitleComponent))
         {
             subtitleComponent.HideSubtitle();
             LogManager.Debug($"隐藏字幕：{subtitleId}/Hiding subtitle: {subtitleId}");
         }
     }
-    
+
     /// <summary>
     ///     隐藏特定Maid的字幕
     /// </summary>
@@ -331,12 +316,12 @@ public static class SubtitleComponentManager
     {
         if (maid is null)
             return;
-            
+
         var speakerName = MaidInfo.GetMaidFullName(maid);
         var subtitleId = GetSpeakerSubtitleId(speakerName);
         HideSubtitle(subtitleId);
     }
-    
+
     /// <summary>
     ///     从说话者名称获取字幕ID
     /// </summary>
@@ -346,7 +331,7 @@ public static class SubtitleComponentManager
     {
         return $"speaker_{speakerName}";
     }
-    
+
     /// <summary>
     ///     从插件配置中获取字幕配置
     /// </summary>
@@ -368,7 +353,7 @@ public static class SubtitleComponentManager
             }
         };
     }
-    
+
     /// <summary>
     ///     获取当前字幕配置
     /// </summary>
@@ -378,7 +363,7 @@ public static class SubtitleComponentManager
         if (!_initialized) Initialize();
         return _subtitleConfigs[JustAnotherTranslator.SubtitleType.Value];
     }
-    
+
     /// <summary>
     ///     获取指定类型的字幕配置
     /// </summary>
@@ -389,7 +374,7 @@ public static class SubtitleComponentManager
         if (!_initialized) Initialize();
         return _subtitleConfigs[type];
     }
-    
+
     /// <summary>
     ///     获取指定字幕类型的配置值
     /// </summary>
@@ -479,7 +464,7 @@ public static class SubtitleComponentManager
             // 描边设置
             OutlineColor = Color.black,
             OutlineWidth = 1f,
-            
+
             // VR相关设置
             VRSubtitleType = JustAnotherTranslator.VRSubtitleType.Value,
             VRDistance = JustAnotherTranslator.VRSubtitleDistance.Value,

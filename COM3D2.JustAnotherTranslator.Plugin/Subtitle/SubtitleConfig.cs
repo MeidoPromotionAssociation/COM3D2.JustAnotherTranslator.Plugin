@@ -50,7 +50,7 @@ public class SubtitleConfig
     public float FadeOutDuration { get; set; } = 0.5f;
 
     // 是否启用描边
-    public bool OutlineEnabled { get; set; } = false;
+    public bool OutlineEnabled { get; set; }
 
     // 描边颜色
     public Color OutlineColor { get; set; } = Color.black;
@@ -69,7 +69,7 @@ public class SubtitleConfig
     public float VRSubtitleVerticalOffset { get; set; } = -15f;
 
     // VR悬浮字幕水平偏移（度，相对于视线中心）
-    public float VRSubtitleHorizontalOffset { get; set; } = 0f;
+    public float VRSubtitleHorizontalOffset { get; set; }
 
     // VR悬浮字幕宽度（米）
     public float VRSubtitleWidth { get; set; } = 1f;
@@ -134,43 +134,43 @@ public class SubtitleConfig
         var clone = new SubtitleConfig
         {
             // 基本属性
-            SubtitleType = this.SubtitleType,
-            EnableSpeakerName = this.EnableSpeakerName,
+            SubtitleType = SubtitleType,
+            EnableSpeakerName = EnableSpeakerName,
 
             // 文本样式
-            FontName = this.FontName,
-            FontSize = this.FontSize,
-            TextColor = this.TextColor,
-            TextAlignment = this.TextAlignment,
+            FontName = FontName,
+            FontSize = FontSize,
+            TextColor = TextColor,
+            TextAlignment = TextAlignment,
 
             // 背景样式
-            BackgroundColor = this.BackgroundColor,
-            BackgroundOpacity = this.BackgroundOpacity,
-            BackgroundHeight = this.BackgroundHeight,
-            VerticalPosition = this.VerticalPosition,
+            BackgroundColor = BackgroundColor,
+            BackgroundOpacity = BackgroundOpacity,
+            BackgroundHeight = BackgroundHeight,
+            VerticalPosition = VerticalPosition,
 
             // 动画
-            EnableAnimation = this.EnableAnimation,
-            FadeInDuration = this.FadeInDuration,
-            FadeOutDuration = this.FadeOutDuration,
+            EnableAnimation = EnableAnimation,
+            FadeInDuration = FadeInDuration,
+            FadeOutDuration = FadeOutDuration,
 
             // 描边
-            OutlineEnabled = this.OutlineEnabled,
-            OutlineColor = this.OutlineColor,
-            OutlineWidth = this.OutlineWidth,
+            OutlineEnabled = OutlineEnabled,
+            OutlineColor = OutlineColor,
+            OutlineWidth = OutlineWidth,
 
             // VR相关
-            VRSubtitleMode = this.VRSubtitleMode,
-            VRSubtitleDistance = this.VRSubtitleDistance,
-            VRSubtitleVerticalOffset = this.VRSubtitleVerticalOffset,
-            VRSubtitleHorizontalOffset = this.VRSubtitleHorizontalOffset,
-            VRSubtitleWidth = this.VRSubtitleWidth,
-            VRSubtitleScale = this.VRSubtitleScale,
+            VRSubtitleMode = VRSubtitleMode,
+            VRSubtitleDistance = VRSubtitleDistance,
+            VRSubtitleVerticalOffset = VRSubtitleVerticalOffset,
+            VRSubtitleHorizontalOffset = VRSubtitleHorizontalOffset,
+            VRSubtitleWidth = VRSubtitleWidth,
+            VRSubtitleScale = VRSubtitleScale,
 
             // 参考分辨率
-            ReferenceWidth = this.ReferenceWidth,
-            ReferenceHeight = this.ReferenceHeight,
-            MatchWidthOrHeight = this.MatchWidthOrHeight
+            ReferenceWidth = ReferenceWidth,
+            ReferenceHeight = ReferenceHeight,
+            MatchWidthOrHeight = MatchWidthOrHeight
         };
 
         return clone;

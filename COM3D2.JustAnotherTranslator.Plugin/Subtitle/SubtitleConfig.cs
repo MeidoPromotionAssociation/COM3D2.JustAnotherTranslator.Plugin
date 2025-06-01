@@ -110,7 +110,7 @@ public class SubtitleConfig
             case JustAnotherTranslator.SubtitleTypeEnum.Base:
                 config.VerticalPosition = 0.8f;
                 break;
-            case JustAnotherTranslator.SubtitleTypeEnum.ADV:
+            case JustAnotherTranslator.SubtitleTypeEnum.Adv:
                 config.VerticalPosition = 0.1f;
                 break;
             case JustAnotherTranslator.SubtitleTypeEnum.Yotogi:

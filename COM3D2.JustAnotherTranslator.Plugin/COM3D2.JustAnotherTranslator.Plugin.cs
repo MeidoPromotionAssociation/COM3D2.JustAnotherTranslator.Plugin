@@ -22,7 +22,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     {
         [Description("Base/基础字幕")] Base,
         [Description("Yotogi/夜伽字幕")] Yotogi,
-        [Description("ADV/ADV字幕")] ADV,
+        [Description("ADV/ADV字幕")] Adv,
         [Description("Lyric/歌词字幕")] Lyric
     }
 
@@ -1438,7 +1438,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleFont.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleFont.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleFont.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleFont.Value; // 暂时使用基础字幕的字体
@@ -1460,7 +1460,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleFontSize.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleFontSize.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleFontSize.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleFontSize.Value; // 暂时使用基础字幕的字体大小
@@ -1482,7 +1482,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleColor.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleColor.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleColor.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleColor.Value; // 暂时使用基础字幕的颜色
@@ -1504,7 +1504,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleOpacity.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleOpacity.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleOpacity.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleOpacity.Value; // 暂时使用基础字幕的不透明度
@@ -1526,7 +1526,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleBackgroundColor.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleBackgroundColor.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleBackgroundColor.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleBackgroundColor.Value; // 暂时使用基础字幕的背景颜色
@@ -1548,7 +1548,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleBackgroundOpacity.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleBackgroundOpacity.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleBackgroundOpacity.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleBackgroundOpacity.Value; // 暂时使用基础字幕的背景不透明度
@@ -1570,7 +1570,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleVerticalPosition.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleVerticalPosition.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleVerticalPosition.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleVerticalPosition.Value; //TODO 暂时使用基础字幕的垂直位置
@@ -1592,7 +1592,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleBackgroundHeight.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleBackgroundHeight.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleBackgroundHeight.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleBackgroundHeight.Value; // 暂时使用基础字幕的背景高度
@@ -1614,7 +1614,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleAnimation.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleAnimation.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleAnimation.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleAnimation.Value; // 暂时使用基础字幕的动画
@@ -1636,7 +1636,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleFadeInDuration.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleFadeInDuration.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleFadeInDuration.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleFadeInDuration.Value; // 暂时使用基础字幕的淡入时长
@@ -1658,7 +1658,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleFadeOutDuration.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleFadeOutDuration.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleFadeOutDuration.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleFadeOutDuration.Value; // 暂时使用基础字幕的淡出时长
@@ -1680,7 +1680,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return EnableBaseSubtitleOutline.Value;
             case SubtitleTypeEnum.Yotogi:
                 return EnableYotogiSubtitleOutline.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return EnableAdvSubtitleOutline.Value;
             case SubtitleTypeEnum.Lyric:
                 return EnableBaseSubtitleOutline.Value; // 暂时使用基础字幕的描边
@@ -1702,7 +1702,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleOutlineColor.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleOutlineColor.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleOutlineColor.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleOutlineColor.Value; // 暂时使用基础字幕的描边颜色
@@ -1724,7 +1724,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleOutlineOpacity.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleOutlineOpacity.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleOutlineOpacity.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleOutlineOpacity.Value; // 暂时使用基础字幕的描边不透明度
@@ -1746,7 +1746,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return BaseSubtitleOutlineWidth.Value;
             case SubtitleTypeEnum.Yotogi:
                 return YotogiSubtitleOutlineWidth.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return AdvSubtitleOutlineWidth.Value;
             case SubtitleTypeEnum.Lyric:
                 return BaseSubtitleOutlineWidth.Value; // 暂时使用基础字幕的描边宽度
@@ -1768,7 +1768,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 return EnableBaseSubtitleSpeakerName.Value;
             case SubtitleTypeEnum.Yotogi:
                 return EnableYotogiSubtitleSpeakerName.Value;
-            case SubtitleTypeEnum.ADV:
+            case SubtitleTypeEnum.Adv:
                 return EnableAdvSubtitleSpeakerName.Value;
             case SubtitleTypeEnum.Lyric:
                 return EnableBaseSubtitleSpeakerName.Value; // 暂时使用基础字幕的说话人名

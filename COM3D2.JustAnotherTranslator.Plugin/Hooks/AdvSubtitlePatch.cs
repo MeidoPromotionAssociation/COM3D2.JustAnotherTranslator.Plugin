@@ -24,19 +24,15 @@ public static class AdvSubtitlePatch
             if (speakingMaid is null)
                 return;
 
-            SubtitleManager.CurrentSpeaker = speakingMaid;
             var voiceId = tag_data.GetTagProperty("voice").AsString();
-            SubtitleManager.CurrentVoiceId = voiceId;
 
-            // 设置当前字幕类型为ADV
-            JustAnotherTranslator.SubtitleType.Value = JustAnotherTranslator.SubtitleTypeEnum.ADV;
-
-            // 为每个Maid启动监听协程（如果尚未启动）
+            SubtitleManager.SetCurrentSpeaker(speakingMaid);
+            SubtitleManager.SetCurrentVoiceId(voiceId);
+            SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Adv);
             SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
             LogManager.Debug($"ADVKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
-            LogManager.Debug(
-                $"ADVKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
+            LogManager.Debug($"ADVKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
             LogManager.Debug($"ADVKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
         }
     }
@@ -47,9 +43,6 @@ public static class AdvSubtitlePatch
     [HarmonyPrefix]
     public static void ADVKagManager_HitRet_Prefix(ADVKagManager __instance)
     {
-        // 设置当前字幕类型为ADV
-        JustAnotherTranslator.SubtitleType.Value = JustAnotherTranslator.SubtitleTypeEnum.ADV;
-
         var text = __instance.kag_.GetText();
         LogManager.Debug($"ADVKagManager_HitRet_Prefix called with text: {text}");
         LogManager.Debug(
@@ -58,18 +51,8 @@ public static class AdvSubtitlePatch
             $"ADVKagManager_HitRet_Prefix instance.kag_.GetCurrentFileName(): {__instance.kag_.GetCurrentFileName()}");
         LogManager.Debug(
             $"ADVKagManager_HitRet_Prefix instance.kag_.GetCurrentLine(): {__instance.kag_.GetCurrentLine()}");
-        if (!string.IsNullOrEmpty(text))
-        {
-            if (SubtitleManager.CurrentSpeaker is null)
-                return;
 
-            // 建立VoiceID和文本的映射关系
-            if (!string.IsNullOrEmpty(SubtitleManager.CurrentVoiceId))
-            {
-                SubtitleManager.VoiceIdToTextMap[SubtitleManager.CurrentVoiceId] = text;
-                LogManager.Debug(
-                    $"ADVKagManager_HitRet_Prefix Create a mapping: VoiceID={SubtitleManager.CurrentVoiceId}, Text={text}");
-            }
-        }
+        SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Adv);
+        SubtitleManager.SetVoiceTextMapping(text,"ADVKagManager_HitRet_Prefix");
     }
 }

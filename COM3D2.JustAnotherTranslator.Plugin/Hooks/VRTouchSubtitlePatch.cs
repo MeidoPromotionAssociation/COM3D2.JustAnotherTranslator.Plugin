@@ -13,6 +13,7 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
 //      ;@talk voice=S2_32080 name=[HF]
 //      ;さて……何を歌いましょうか。
 //      ;@hitret
+//      因此也依赖于 VoiceID 翻译
 // </summary>
 public static class VRTouchSubtitlePatch
 {
@@ -30,19 +31,15 @@ public static class VRTouchSubtitlePatch
             if (speakingMaid is null)
                 return;
 
-            SubtitleManager.CurrentSpeaker = speakingMaid;
             var voiceId = tag_data.GetTagProperty("voice").AsString();
-            SubtitleManager.CurrentVoiceId = voiceId;
 
-            // 设置当前字幕类型为Base
-            JustAnotherTranslator.SubtitleType.Value = JustAnotherTranslator.SubtitleTypeEnum.Base;
-
-            // 为每个Maid启动监听协程（如果尚未启动）
+            SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Base);
+            SubtitleManager.SetCurrentVoiceId(voiceId);
+            SubtitleManager.SetCurrentSpeaker(speakingMaid);
             SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
+            LogManager.Debug($"VRTouchKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
             LogManager.Debug($"VRTouchKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
-            LogManager.Debug(
-                $"VRTouchKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
             LogManager.Debug($"VRTouchKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
         }
     }

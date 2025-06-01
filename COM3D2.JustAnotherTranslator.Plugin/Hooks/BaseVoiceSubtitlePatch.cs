@@ -27,24 +27,20 @@ public static class BaseVoiceSubtitlePatch
         // voiceId + .ogg 既是音频文件，支持按音频文件名进行翻译
         var voiceId = tag_data.GetTagProperty("voice").AsString();
 
-        if (!string.IsNullOrEmpty(voiceId)) SubtitleManager.CurrentVoiceId = voiceId;
         // 无法从游戏本身获取文本，因此无论如何都需要从翻译获取
         // 交由 Maid启动监听协程尝试从翻译获取
+        // 原方法使用 GetMaidAndMan 获取 maid 对象，这里使用相同的方法
         var speakingMaid = __instance.GetMaidAndMan(tag_data);
 
-        LogManager.Debug(
-            $"BaseKagManager_TagPlayVoice_Prefix GetMaidAndMan speakingMaid: {speakingMaid.status.fullNameJpStyle}");
-
-        // 设置当前字幕类型为Base
-        JustAnotherTranslator.SubtitleType.Value = JustAnotherTranslator.SubtitleTypeEnum.Base;
-
-        SubtitleManager.CurrentSpeaker = speakingMaid;
-
-        // 为每个Maid启动监听协程（如果尚未启动）
+        SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Base);
+        SubtitleManager.SetCurrentVoiceId(voiceId);
+        SubtitleManager.SetCurrentSpeaker(speakingMaid);
         SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
-        LogManager.Debug($"BaseKagManager_TagPlayVoice_Prefix tag_data voiceId: {voiceId}");
         LogManager.Debug(
             $"BaseKagManager_TagPlayVoice_Prefix tag_data maid: {tag_data.GetTagProperty("maid").AsString()}");
+        LogManager.Debug(
+            $"BaseKagManager_TagPlayVoice_Prefix GetMaidAndMan speakingMaid: {speakingMaid.status.fullNameJpStyle}");
+        LogManager.Debug($"BaseKagManager_TagPlayVoice_Prefix tag_data voiceId: {voiceId}");
     }
 }

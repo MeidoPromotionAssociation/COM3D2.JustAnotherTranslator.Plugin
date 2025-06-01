@@ -11,10 +11,12 @@ using UnityEngine.SceneManagement;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
+/// <summary>
+///     字幕管理器，负责管理语音监控和补丁应用
+/// </summary>
 public static class SubtitleManager
 {
     private static bool _initialized;
-    private static Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> _subtitleConfigs;
 
     // 存储每个Maid的监听协程ID
     private static readonly Dictionary<Maid, string> MaidMonitorCoroutineIds = new();
@@ -28,25 +30,71 @@ public static class SubtitleManager
     // 当前正在播放的语音ID
     public static string CurrentVoiceId;
 
+    // 当前字幕类型
+    public static JustAnotherTranslator.SubtitleTypeEnum SubtitleType;
+
+    // 各种补丁实例
     private static Harmony _yotogiSubtitlePatch;
-
     private static Harmony _advSubtitlePatch;
-
     private static Harmony _baseVoiceSubtitlePatch;
-
     private static Harmony _debugPatch;
-
     private static Harmony _privateMaidTouchSubtitlePatch;
-
     private static Harmony _vrTouchSubtitlePatch;
 
+    /// <summary>
+    ///     初始化字幕管理器
+    /// </summary>
     public static void Init()
     {
         if (_initialized) return;
 
-        // 从插件配置中获取字幕配置
-        GetConfigFromPluginConfig();
+        // 初始化字幕组件管理器
+        SubtitleComponentManager.Initialize();
 
+        // 应用补丁
+        ApplySubtitlePatches();
+
+        // 注册场景变更事件
+        SceneManager.sceneUnloaded += OnSceneChange;
+
+        _initialized = true;
+    }
+
+    /// <summary>
+    ///     卸载字幕管理器
+    /// </summary>
+    public static void Unload()
+    {
+        if (!_initialized) return;
+
+        // 卸载字幕补丁
+        UnloadSubtitlePatches();
+
+        // 取消事件订阅
+        SceneManager.sceneUnloaded -= OnSceneChange;
+
+        // 清理资源
+        CleanResources();
+
+        _initialized = false;
+    }
+
+    /// <summary>
+    ///     场景切换时的处理
+    /// </summary>
+    private static void OnSceneChange(Scene scene)
+    {
+        LogManager.Debug($"Scene {scene.name} - {scene.buildIndex}, unloaded  cleaning up");
+
+        CleanResources();
+    }
+
+
+    /// <summary>
+    ///     应用字幕补丁
+    /// </summary>
+    private static void ApplySubtitlePatches()
+    {
         // 基础字幕补丁
         if (JustAnotherTranslator.EnableBaseSubtitle.Value)
         {
@@ -65,260 +113,64 @@ public static class SubtitleManager
             JustAnotherTranslator.ForceEnableAdvSubtitle.Value)
             _advSubtitlePatch = Harmony.CreateAndPatchAll(typeof(AdvSubtitlePatch));
 
+        // 调试补丁
         if (JustAnotherTranslator.LogLevelConfig.Value >= LogLevel.Debug)
             _debugPatch = Harmony.CreateAndPatchAll(typeof(DebugPatch));
-
-        SceneManager.sceneUnloaded += OnSceneChange;
-
-        _initialized = true;
-    }
-
-    public static void Unload()
-    {
-        if (!_initialized) return;
-
-        _yotogiSubtitlePatch?.UnpatchSelf();
-        _yotogiSubtitlePatch = null;
-        _advSubtitlePatch?.UnpatchSelf();
-        _advSubtitlePatch = null;
-        _baseVoiceSubtitlePatch?.UnpatchSelf();
-        _baseVoiceSubtitlePatch = null;
-        _debugPatch?.UnpatchSelf();
-        _debugPatch = null;
-        _privateMaidTouchSubtitlePatch?.UnpatchSelf();
-        _privateMaidTouchSubtitlePatch = null;
-        _vrTouchSubtitlePatch?.UnpatchSelf();
-        _vrTouchSubtitlePatch = null;
-
-        _subtitleConfigs = null;
-
-        SceneManager.sceneUnloaded -= OnSceneChange;
-
-        CleanupAllCoroutines();
-
-        _initialized = false;
     }
 
 
     /// <summary>
-    ///     更新字幕配置
+    ///     卸载字幕补丁
     /// </summary>
-    public static void UpdateSubtitleConfig()
+    private static void UnloadSubtitlePatches()
     {
-        // 如果尚未初始化，则先初始化
-        if (!_initialized) Init();
-
-        // 更新字幕配置
-        GetConfigFromPluginConfig();
-
-        // 更新所有字幕的配置（直接在组件上应用新配置）
-        foreach (var subtitle in SubtitleComponentManager.GetAllSubtitles())
+        var patches = new[]
         {
-            // 根据字幕类型获取对应的配置
-            var config = _subtitleConfigs[JustAnotherTranslator.SubtitleType.Value];
+            _yotogiSubtitlePatch,
+            _advSubtitlePatch,
+            _baseVoiceSubtitlePatch,
+            _debugPatch,
+            _privateMaidTouchSubtitlePatch,
+            _vrTouchSubtitlePatch
+        };
 
-            subtitle.UpdateConfig(config);
+        foreach (var patch in patches)
+        {
+            patch?.UnpatchSelf();
         }
 
-        LogManager.Info("All subtitle configs updated/所有字幕配置已更新");
+        _yotogiSubtitlePatch = null;
+        _advSubtitlePatch = null;
+        _baseVoiceSubtitlePatch = null;
+        _debugPatch = null;
+        _privateMaidTouchSubtitlePatch = null;
+        _vrTouchSubtitlePatch = null;
     }
 
 
-    // 显示字幕
-    private static void ShowSubtitle(string text, Maid maid)
+    /// <summary>
+    ///     清理资源
+    /// </summary>
+    private static void CleanResources()
     {
-        if (string.IsNullOrEmpty(text) || maid is null)
-            return;
+        // 清理所有 Maid 监听协程
+        CleanupAllMaidMonitorCoroutines();
 
-        var speakerName = MaidInfo.GetMaidFullName(maid);
+        // 销毁所有字幕
+        SubtitleComponentManager.DestroyAllSubtitleComponents();
 
-        // 获取对应字幕类型的配置
-        var config = _subtitleConfigs[JustAnotherTranslator.SubtitleType.Value];
+        // 清空映射
+        VoiceIdToTextMap.Clear();
 
-        SubtitleComponentManager.ShowFloatingSubtitle(text, speakerName, 0f, config);
-
-        LogManager.Debug($"Showing subtitle for {speakerName}: {text}");
+        // 重置状态
+        CurrentSpeaker = null;
+        CurrentVoiceId = null;
     }
 
 
-    // 隐藏字幕
-    private static void HideSubtitle(Maid maid)
-    {
-        if (maid is null)
-            return;
-
-        var speakerName = MaidInfo.GetMaidFullName(maid);
-        SubtitleComponentManager.HideSubtitle(SubtitleComponentManager.GetSpeakerSubtitleId(speakerName));
-
-        LogManager.Debug($"Hiding subtitle for {speakerName}");
-    }
-
-
-    // 从插件配置中获取字幕配置
-    private static void GetConfigFromPluginConfig()
-    {
-        _subtitleConfigs = new Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig>
-        {
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base,
-                CreateSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum.Base)
-            },
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi,
-                CreateSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum.Yotogi)
-            },
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.ADV,
-                CreateSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum.ADV)
-            }
-        };
-    }
-
-    // 从插件配置中创建字幕配置
-    private static SubtitleConfig CreateSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum subtitleType)
-    {
-        // 初始化字幕配置
-        var config = new SubtitleConfig
-        {
-            SubtitleType = subtitleType,
-
-            // 基本设置
-            EnableSpeakerName = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base =>
-                    JustAnotherTranslator.EnableBaseSubtitleSpeakerName.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => JustAnotherTranslator.EnableYotogiSubtitleSpeakerName
-                    .Value,
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => JustAnotherTranslator.EnableAdvSubtitleSpeakerName.Value,
-                _ => false
-            },
-
-            // 文本样式
-            FontName = "Arial.ttf", // 使用Unity内置字体 //TODO 支持自定义字体
-            FontSize = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base => JustAnotherTranslator.BaseSubtitleFontSize.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => JustAnotherTranslator.YotogiSubtitleFontSize.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => JustAnotherTranslator.AdvSubtitleFontSize.Value,
-                _ => 24
-            },
-            TextColor = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base =>
-                    ParseColor(JustAnotherTranslator.BaseSubtitleColor.Value),
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => ParseColor(JustAnotherTranslator.YotogiSubtitleColor
-                    .Value),
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => ParseColor(JustAnotherTranslator.AdvSubtitleColor.Value),
-                _ => Color.white
-            },
-            TextAlignment = TextAnchor.MiddleCenter,
-
-            // 背景样式
-            BackgroundColor = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base => ParseColor(JustAnotherTranslator
-                    .BaseSubtitleBackgroundColor.Value),
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => ParseColor(JustAnotherTranslator
-                    .YotogiSubtitleBackgroundColor.Value),
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => ParseColor(JustAnotherTranslator
-                    .AdvSubtitleBackgroundColor.Value),
-                _ => Color.black
-            },
-            BackgroundOpacity = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base =>
-                    JustAnotherTranslator.BaseSubtitleBackgroundOpacity.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => JustAnotherTranslator.YotogiSubtitleBackgroundOpacity
-                    .Value,
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => JustAnotherTranslator.AdvSubtitleBackgroundOpacity.Value,
-                _ => 0.5f
-            },
-            BackgroundHeight = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base => JustAnotherTranslator.BaseSubtitleBackgroundHeight.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => JustAnotherTranslator.YotogiSubtitleBackgroundHeight
-                    .Value,
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => JustAnotherTranslator.AdvSubtitleBackgroundHeight.Value,
-                _ => 0.1f
-            },
-            VerticalPosition = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base => JustAnotherTranslator.BaseSubtitleVerticalPosition.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => JustAnotherTranslator.YotogiSubtitleVerticalPosition
-                    .Value,
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => JustAnotherTranslator.AdvSubtitleVerticalPosition.Value,
-                _ => 0.85f
-            },
-
-            // 动画效果
-            EnableAnimation = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base => JustAnotherTranslator.BaseSubtitleAnimation.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => JustAnotherTranslator.YotogiSubtitleAnimation.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => JustAnotherTranslator.AdvSubtitleAnimation.Value,
-                _ => true
-            },
-            FadeInDuration = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base => JustAnotherTranslator.BaseSubtitleFadeInDuration.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => JustAnotherTranslator.YotogiSubtitleFadeInDuration
-                    .Value,
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => JustAnotherTranslator.AdvSubtitleFadeInDuration.Value,
-                _ => 0.3f
-            },
-            FadeOutDuration = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base => JustAnotherTranslator.BaseSubtitleFadeOutDuration.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => JustAnotherTranslator.YotogiSubtitleFadeOutDuration
-                    .Value,
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => JustAnotherTranslator.AdvSubtitleFadeOutDuration.Value,
-                _ => 0.3f
-            },
-
-            // 描边效果
-            OutlineEnabled = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base => JustAnotherTranslator.EnableBaseSubtitleOutline.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi =>
-                    JustAnotherTranslator.EnableYotogiSubtitleOutline.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => JustAnotherTranslator.EnableAdvSubtitleOutline.Value,
-                _ => true
-            },
-            OutlineColor = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base => ParseColor(JustAnotherTranslator.BaseSubtitleOutlineColor
-                    .Value),
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => ParseColor(JustAnotherTranslator
-                    .YotogiSubtitleOutlineColor.Value),
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => ParseColor(JustAnotherTranslator.AdvSubtitleOutlineColor
-                    .Value),
-                _ => Color.black
-            },
-            OutlineWidth = subtitleType switch
-            {
-                JustAnotherTranslator.SubtitleTypeEnum.Base => JustAnotherTranslator.BaseSubtitleOutlineWidth.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.Yotogi => JustAnotherTranslator.YotogiSubtitleOutlineWidth.Value,
-                JustAnotherTranslator.SubtitleTypeEnum.ADV => JustAnotherTranslator.AdvSubtitleOutlineWidth.Value,
-                _ => 2f
-            },
-
-            // VR相关设置
-            VRSubtitleMode = JustAnotherTranslator.VRSubtitleMode.Value,
-            VRSubtitleDistance = JustAnotherTranslator.VRSubtitleDistance.Value,
-            VRSubtitleVerticalOffset = JustAnotherTranslator.VRSubtitleVerticalOffset.Value,
-            VRSubtitleHorizontalOffset = JustAnotherTranslator.VRSubtitleHorizontalOffset.Value,
-            VRSubtitleWidth = JustAnotherTranslator.VRSubtitleWidth.Value,
-
-            // 参考分辨率
-            ReferenceWidth = 1920,
-            ReferenceHeight = 1080,
-            MatchWidthOrHeight = 0.5f
-        };
-
-        return config;
-    }
-
-    // 启动Maid监听协程
+    /// <summary>
+    ///     启动Maid监听协程
+    /// </summary>
     public static void StartMaidMonitoringCoroutine(Maid maid)
     {
         if (maid is null)
@@ -338,14 +190,16 @@ public static class SubtitleManager
         if (MaidMonitorCoroutineIds.ContainsKey(maid) && !string.IsNullOrEmpty(MaidMonitorCoroutineIds[maid]))
             return;
 
-        // 启动新的协程监控Maid的语音播放状态
+        // 启动新的协程监控 Maid 的语音播放状态
         var coroutineId = CoroutineManager.LaunchCoroutine(MonitorMaidVoicePlayback(maid));
         MaidMonitorCoroutineIds[maid] = coroutineId;
 
         LogManager.Debug($"Started monitoring coroutine for Maid: {MaidInfo.GetMaidFullName(maid)}, ID: {coroutineId}");
     }
 
-    // 停止Maid监听协程
+    /// <summary>
+    ///     停止某个 Maid 的监听协程
+    /// </summary>
     public static void StopMaidMonitoringCoroutine(Maid maid)
     {
         if (maid is null || !MaidMonitorCoroutineIds.ContainsKey(maid))
@@ -359,7 +213,28 @@ public static class SubtitleManager
         LogManager.Debug($"Stopped monitoring coroutine for Maid: {MaidInfo.GetMaidFullName(maid)}");
     }
 
-    // 监控Maid语音播放状态的协程
+
+    /// <summary>
+    ///     清理所有 Maid 监听协程
+    /// </summary>
+    private static void CleanupAllMaidMonitorCoroutines()
+    {
+        // 清理所有Maid监听协程
+        if (MaidMonitorCoroutineIds.Count > 0)
+        {
+            foreach (var id in MaidMonitorCoroutineIds.Values)
+            {
+                CoroutineManager.StopCoroutine(id);
+            }
+
+            MaidMonitorCoroutineIds.Clear();
+        }
+    }
+
+
+    /// <summary>
+    ///     监控 Maid 语音播放状态的协程
+    /// </summary>
     public static IEnumerator MonitorMaidVoicePlayback(Maid maid)
     {
         var foundText = false;
@@ -391,6 +266,8 @@ public static class SubtitleManager
             {
                 // 如果语音ID发生变化，重置foundText状态
                 if (voiceChanged)
+
+
                 {
                     foundText = false;
                     // 如果上一个语音还没结束就切换了，先隐藏之前的字幕
@@ -431,9 +308,12 @@ public static class SubtitleManager
                 }
             }
             else
+
             {
                 // 语音停止播放
                 // 语音可能重复播放，等待一段时间后再检查
+
+
                 if (foundText)
                 {
                     yield return new WaitForSeconds(0.1f);
@@ -453,6 +333,7 @@ public static class SubtitleManager
 
             // 更新上次播放的语音ID
             lastPlayingVoiceId = currentVoiceId;
+
 
             // 未找到文本时更快检查
             if (isPlaying && !foundText)
@@ -474,38 +355,61 @@ public static class SubtitleManager
         LogManager.Debug($"MonitorMaidVoicePlayback ended for Maid {MaidInfo.GetMaidFullName(maid)}");
     }
 
-    // 清理所有协程和资源
-    public static void CleanupAllCoroutines()
+
+    # region Setters
+    /// <summary>
+    ///     由声音 Patch 调用，用于设置文本和 voiceId 的映射
+    /// </summary>
+    public static void SetVoiceTextMapping(string voiceId, string text, string callBy)
     {
-        foreach (var pair in MaidMonitorCoroutineIds)
-        {
-            if (pair.Key is not null)
-                HideSubtitle(pair.Key);
+        if (string.IsNullOrEmpty(voiceId) || string.IsNullOrEmpty(text))
+            return;
 
-            if (!string.IsNullOrEmpty(pair.Value))
-                CoroutineManager.StopCoroutine(pair.Value);
-        }
+        // 直接更新映射
+        VoiceIdToTextMap[voiceId] = text;
 
-        MaidMonitorCoroutineIds.Clear();
-        VoiceIdToTextMap.Clear();
-        CurrentSpeaker = null;
-        CurrentVoiceId = null;
-
-        LogManager.Debug("All coroutines and resources cleaned up");
+        LogManager.Debug($"SetVoiceText called by {callBy}, create a mapping: voiceId={voiceId}, text={text}");
     }
 
-    private static void OnSceneChange(Scene scene)
+
+    /// <summary>
+    ///     由声音 Patch 调用，用于设置文本和 voiceId 的映射
+    ///     使用 CurrentVoiceId
+    /// </summary>
+    public static void SetVoiceTextMapping(string text, string callBy)
     {
-        LogManager.Debug("OnSceneChange called");
-        CleanupAllCoroutines();
+        if (string.IsNullOrEmpty(CurrentVoiceId) || string.IsNullOrEmpty(text))
+            return;
+
+        // 直接更新映射
+        VoiceIdToTextMap[CurrentVoiceId] = text;
+
+        LogManager.Debug($"SetVoiceText called by {callBy}, create a mapping: voiceId={CurrentVoiceId}, text={text}");
     }
 
-    // 将颜色字符串解析为Color对象
-    private static Color ParseColor(string colorString)
+    // <summary>
+    //     由声音 Patch 调用，用于设置当前 voiceId
+    // </summary>
+    public static void SetCurrentVoiceId(string voiceId)
     {
-        Color color;
-        if (ColorUtility.TryParseHtmlString(colorString, out color))
-            return color;
-        return Color.white; // 默认颜色
+        CurrentVoiceId = voiceId;
     }
+
+    // <summary>
+    //      由声音 Patch 调用，用于设置当前说话者
+    // </summary>
+    public static void SetCurrentSpeaker(Maid speakerMaid)
+    {
+        CurrentSpeaker = speakerMaid;
+    }
+
+
+    // <summary>
+    //     由声音 Patch 调用，用于设置当前字幕类型
+    // </summary>
+    public static void SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum subtitleType)
+    {
+        SubtitleType = subtitleType;
+    }
+    # endregion
 }

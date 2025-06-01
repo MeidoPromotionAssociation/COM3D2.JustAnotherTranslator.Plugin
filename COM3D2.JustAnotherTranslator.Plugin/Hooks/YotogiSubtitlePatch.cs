@@ -37,18 +37,14 @@ public static class YotogiSubtitlePatch
                 return;
 
             var voiceId = tag_data.GetTagProperty("voice").AsString();
-            SubtitleManager.CurrentSpeaker = speakingMaid;
-            SubtitleManager.CurrentVoiceId = voiceId;
 
-            // 设置字幕类型为Yotogi
-            JustAnotherTranslator.SubtitleType.Value = JustAnotherTranslator.SubtitleTypeEnum.Yotogi;
-
-            // 为每个Maid启动监听协程（如果尚未启动）
+            SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Yotogi);
+            SubtitleManager.SetCurrentVoiceId(voiceId);
+            SubtitleManager.SetCurrentSpeaker(speakingMaid);
             SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
+            LogManager.Debug($"YotogiKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
             LogManager.Debug($"YotogiKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
-            LogManager.Debug(
-                $"YotogiKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
             LogManager.Debug($"YotogiKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
         }
     }
@@ -67,18 +63,8 @@ public static class YotogiSubtitlePatch
             $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentFileName(): {__instance.kag_.GetCurrentFileName()}");
         LogManager.Debug(
             $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentLine(): {__instance.kag_.GetCurrentLine()}");
-        if (!string.IsNullOrEmpty(text))
-        {
-            if (SubtitleManager.CurrentSpeaker is null)
-                return;
 
-            // 建立VoiceID和文本的映射关系
-            if (!string.IsNullOrEmpty(SubtitleManager.CurrentVoiceId))
-            {
-                SubtitleManager.VoiceIdToTextMap[SubtitleManager.CurrentVoiceId] = text;
-                LogManager.Debug(
-                    $"YotogiKagManager_HitRet_Prefix Create a mapping: VoiceID={SubtitleManager.CurrentVoiceId}, Text={text}");
-            }
-        }
+        SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Yotogi);
+        SubtitleManager.SetVoiceTextMapping(text,"YotogiKagManager_HitRet_Prefix");
     }
 }

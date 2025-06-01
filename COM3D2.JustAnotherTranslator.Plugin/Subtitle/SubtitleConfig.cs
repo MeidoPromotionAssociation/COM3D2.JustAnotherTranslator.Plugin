@@ -85,4 +85,94 @@ public class SubtitleConfig
 
     // 画布匹配模式（0为宽度优先，1为高度优先，0.5为平衡）
     public float MatchWidthOrHeight { get; set; } = 0.5f;
+
+    /// <summary>
+    ///     创建默认配置
+    /// </summary>
+    /// <returns>默认字幕配置</returns>
+    public static SubtitleConfig CreateDefault()
+    {
+        return new SubtitleConfig();
+    }
+
+    /// <summary>
+    ///     创建指定类型的默认配置
+    /// </summary>
+    /// <param name="type">字幕类型</param>
+    /// <returns>特定类型的默认字幕配置</returns>
+    public static SubtitleConfig CreateDefault(JustAnotherTranslator.SubtitleTypeEnum type)
+    {
+        var config = new SubtitleConfig { SubtitleType = type };
+
+        // 根据类型调整默认配置
+        switch (type)
+        {
+            case JustAnotherTranslator.SubtitleTypeEnum.Base:
+                config.VerticalPosition = 0.8f;
+                break;
+            case JustAnotherTranslator.SubtitleTypeEnum.ADV:
+                config.VerticalPosition = 0.1f;
+                break;
+            case JustAnotherTranslator.SubtitleTypeEnum.Yotogi:
+                config.VerticalPosition = 0.5f;
+                break;
+            case JustAnotherTranslator.SubtitleTypeEnum.Lyric:
+                config.VerticalPosition = 0.9f;
+                break;
+        }
+
+        return config;
+    }
+
+    /// <summary>
+    ///     克隆当前配置
+    /// </summary>
+    /// <returns>当前配置的深度副本</returns>
+    public SubtitleConfig Clone()
+    {
+        // 创建配置副本
+        var clone = new SubtitleConfig
+        {
+            // 基本属性
+            SubtitleType = this.SubtitleType,
+            EnableSpeakerName = this.EnableSpeakerName,
+
+            // 文本样式
+            FontName = this.FontName,
+            FontSize = this.FontSize,
+            TextColor = this.TextColor,
+            TextAlignment = this.TextAlignment,
+
+            // 背景样式
+            BackgroundColor = this.BackgroundColor,
+            BackgroundOpacity = this.BackgroundOpacity,
+            BackgroundHeight = this.BackgroundHeight,
+            VerticalPosition = this.VerticalPosition,
+
+            // 动画
+            EnableAnimation = this.EnableAnimation,
+            FadeInDuration = this.FadeInDuration,
+            FadeOutDuration = this.FadeOutDuration,
+
+            // 描边
+            OutlineEnabled = this.OutlineEnabled,
+            OutlineColor = this.OutlineColor,
+            OutlineWidth = this.OutlineWidth,
+
+            // VR相关
+            VRSubtitleMode = this.VRSubtitleMode,
+            VRSubtitleDistance = this.VRSubtitleDistance,
+            VRSubtitleVerticalOffset = this.VRSubtitleVerticalOffset,
+            VRSubtitleHorizontalOffset = this.VRSubtitleHorizontalOffset,
+            VRSubtitleWidth = this.VRSubtitleWidth,
+            VRSubtitleScale = this.VRSubtitleScale,
+
+            // 参考分辨率
+            ReferenceWidth = this.ReferenceWidth,
+            ReferenceHeight = this.ReferenceHeight,
+            MatchWidthOrHeight = this.MatchWidthOrHeight
+        };
+
+        return clone;
+    }
 }

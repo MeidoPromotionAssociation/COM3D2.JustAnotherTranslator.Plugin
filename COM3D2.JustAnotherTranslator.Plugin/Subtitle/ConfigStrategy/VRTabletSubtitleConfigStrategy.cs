@@ -43,41 +43,48 @@ public class VRTabletSubtitleConfigStrategy : BaseSubtitleConfigStrategy
             canvasObj.transform.SetParent(component.transform, false);
         }
 
-        component._canvas = canvasObj.AddComponent<Canvas>();
-        component._canvas.renderMode = RenderMode.WorldSpace;
+        var canvas = canvasObj.AddComponent<Canvas>();
+        component.SetCanvas(canvas);
+        canvas.renderMode = RenderMode.WorldSpace;
 
         // 添加Canvas缩放器
-        component._canvasScaler = component._canvas.gameObject.AddComponent<CanvasScaler>();
-        component._canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        component._canvasScaler.referenceResolution = new Vector2(1920, 1080);
-        component._canvasScaler.matchWidthOrHeight = 0.5f;
+        var canvasScaler = canvas.gameObject.AddComponent<CanvasScaler>();
+        component.SetCanvasScaler(canvasScaler);
+        canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        canvasScaler.referenceResolution = new Vector2(1920, 1080);
+        canvasScaler.matchWidthOrHeight = 0.5f;
 
         // 添加CanvasGroup用于控制透明度
-        component._canvasGroup = component._canvas.gameObject.AddComponent<CanvasGroup>();
+        var canvasGroup = canvas.gameObject.AddComponent<CanvasGroup>();
+        component.SetCanvasGroup(canvasGroup);
 
         // 添加射线检测
-        var raycaster = component._canvas.gameObject.AddComponent<GraphicRaycaster>();
+        var raycaster = canvas.gameObject.AddComponent<GraphicRaycaster>();
 
         // 创建背景面板
         var backgroundObj = new GameObject("TabletSubtitleBackground");
-        backgroundObj.transform.SetParent(component._canvas.transform, false);
-        component._backgroundImage = backgroundObj.AddComponent<Image>();
-        component._backgroundImage.color = new Color(0, 0, 0, 0.5f);
+        backgroundObj.transform.SetParent(canvas.transform, false);
+        var backgroundImage = backgroundObj.AddComponent<Image>();
+        component.SetBackgroundImage(backgroundImage);
+        backgroundImage.color = new Color(0, 0, 0, 0.5f);
 
         // 设置背景位置和大小
-        component._backgroundRect = component._backgroundImage.rectTransform;
-        component._backgroundRect.anchorMin = new Vector2(0, 0);
-        component._backgroundRect.anchorMax = new Vector2(1, 1);
-        component._backgroundRect.pivot = new Vector2(0.5f, 0.5f);
-        component._backgroundRect.sizeDelta = Vector2.zero;
+        var backgroundRect = backgroundImage.rectTransform;
+        component.SetBackgroundRect(backgroundRect);
+        backgroundRect.anchorMin = new Vector2(0, 0);
+        backgroundRect.anchorMax = new Vector2(1, 1);
+        backgroundRect.pivot = new Vector2(0.5f, 0.5f);
+        backgroundRect.sizeDelta = Vector2.zero;
 
         // 创建文本对象
         var textObj = new GameObject("TabletSubtitleText");
-        textObj.transform.SetParent(component._backgroundRect, false);
-        component._text = textObj.AddComponent<Text>();
+        textObj.transform.SetParent(backgroundRect, false);
+        var text = textObj.AddComponent<Text>();
+        component.SetTextComponent(text);
 
         // 设置文本位置和大小
-        var textRect = component._text.rectTransform;
+        var textRect = text.rectTransform;
+        component.SetTextRect(textRect);
         textRect.anchorMin = new Vector2(0, 0);
         textRect.anchorMax = new Vector2(1, 1);
         textRect.pivot = new Vector2(0.5f, 0.5f);
@@ -85,12 +92,13 @@ public class VRTabletSubtitleConfigStrategy : BaseSubtitleConfigStrategy
         textRect.anchoredPosition = Vector2.zero;
 
         // 设置默认文本样式
-        component._text.alignment = TextAnchor.MiddleCenter;
-        component._text.horizontalOverflow = HorizontalWrapMode.Wrap;
-        component._text.verticalOverflow = VerticalWrapMode.Overflow;
+        text.alignment = TextAnchor.MiddleCenter;
+        text.horizontalOverflow = HorizontalWrapMode.Wrap;
+        text.verticalOverflow = VerticalWrapMode.Overflow;
 
         // 添加描边组件
-        component._outline = component._text.gameObject.AddComponent<Outline>();
+        var outline = text.gameObject.AddComponent<Outline>();
+        component.SetOutline(outline);
 
         LogManager.Debug("VR tablet subtitle UI created");
     }
@@ -101,7 +109,8 @@ public class VRTabletSubtitleConfigStrategy : BaseSubtitleConfigStrategy
     /// <param name="component">字幕组件</param>
     public override void ApplyConfig(SubtitleComponent component)
     {
-        if (component._config is null)
+        var config = component.GetConfig();
+        if (config is null)
         {
             LogManager.Warning("Cannot apply config, subtitle config is null");
             return;
@@ -110,30 +119,33 @@ public class VRTabletSubtitleConfigStrategy : BaseSubtitleConfigStrategy
         try
         {
             // 加载字体
-            var font = Resources.GetBuiltinResource<Font>(component._config.FontName);
+            var font = Resources.GetBuiltinResource<Font>(config.FontName);
             if (font is null)
             {
-                LogManager.Warning($"Font not found: {component._config.FontName}, using Arial instead");
+                LogManager.Warning($"Font not found: {config.FontName}, using Arial instead");
                 font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             }
 
             // 设置文本样式
-            component._text.font = font;
-            component._text.fontSize = component._config.FontSize;
-            component._text.color = component._config.TextColor;
-            component._text.alignment = component._config.TextAlignment;
+            var text = component.GetTextComponent();
+            text.font = font;
+            text.fontSize = config.FontSize;
+            text.color = config.TextColor;
+            text.alignment = config.TextAlignment;
 
             // 设置背景样式
-            var bgColor = component._config.BackgroundColor;
-            bgColor.a = component._config.BackgroundOpacity; // 设置不透明度
-            component._backgroundImage.color = bgColor;
+            var bgColor = config.BackgroundColor;
+            bgColor.a = config.BackgroundOpacity; // 设置不透明度
+            var backgroundImage = component.GetBackgroundImage();
+            backgroundImage.color = bgColor;
 
             // 设置描边
-            component._outline.enabled = component._config.OutlineEnabled;
-            component._outline.effectColor = component._config.OutlineColor;
-            component._outline.effectDistance = new Vector2(
-                component._config.OutlineWidth,
-                component._config.OutlineWidth);
+            var outline = component.GetOutline();
+            outline.enabled = config.OutlineEnabled;
+            outline.effectColor = config.OutlineColor;
+            outline.effectDistance = new Vector2(
+                config.OutlineWidth,
+                config.OutlineWidth);
 
             LogManager.Debug("VR tablet subtitle config applied");
         }

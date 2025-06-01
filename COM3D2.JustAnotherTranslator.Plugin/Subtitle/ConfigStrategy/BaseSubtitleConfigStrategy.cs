@@ -11,7 +11,7 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.ConfigStrategy;
 /// </summary>
 public abstract class BaseSubtitleConfigStrategy : ISubtitleConfigStrategy
 {
-    internal Dictionary<string, Color> SpeakerColors = new();
+    protected Dictionary<string, Color> SpeakerColors = new();
 
     /// <summary>
     ///     创建字幕UI
@@ -34,7 +34,8 @@ public abstract class BaseSubtitleConfigStrategy : ISubtitleConfigStrategy
     /// <param name="duration">显示持续时间，0 为一直显示</param>
     public virtual void HandleShowSubtitle(SubtitleComponent component, string text, string speakerName, float duration)
     {
-        if (component._text is null)
+        var textComponent = component.GetTextComponent();
+        if (textComponent is null)
         {
             LogManager.Error("Subtitle text component is null/字幕文本组件为空");
             return;
@@ -43,30 +44,26 @@ public abstract class BaseSubtitleConfigStrategy : ISubtitleConfigStrategy
         if (string.IsNullOrEmpty(text))
             return;
 
-        component._speakerName = speakerName;
-
         // 停止正在运行的动画
-        if (component._animationCoroutine != null)
-        {
-            component.StopCoroutine(component._animationCoroutine);
-            component._animationCoroutine = null;
-        }
+        component.StopCoroutine(component.StartFade(0, 0, 0));
 
         // 处理文本显示（包括说话者名称和颜色）
         SetText(component, text, speakerName);
 
         // 显示字幕
-        component.gameObject.SetActive(true);
+        component.SetActive(true);
+
+        // 获取配置
+        var config = component.GetConfig();
 
         // 动画处理
-        if (component._config.EnableAnimation && component._config.FadeInDuration > 0)
+        if (config.EnableAnimation && config.FadeInDuration > 0)
         {
             // 从透明开始
-            component._canvasGroup.alpha = 0;
+            component.SetCanvasGroupAlpha(0);
 
             // 启动淡入动画
-            component._animationCoroutine = component.StartCoroutine(
-                component.FadeCanvasAlpha(0, 1, component._config.FadeInDuration));
+            component.StartFade(0, 1, config.FadeInDuration);
 
             // 如果设置了持续时间，设置自动隐藏
             if (duration > 0) component.StartCoroutine(AutoHide(component, duration));
@@ -74,7 +71,7 @@ public abstract class BaseSubtitleConfigStrategy : ISubtitleConfigStrategy
         else
         {
             // 不使用动画，直接显示
-            component._canvasGroup.alpha = 1;
+            component.SetCanvasGroupAlpha(1);
 
             // 如果设置了持续时间，设置自动隐藏
             if (duration > 0) component.StartCoroutine(AutoHide(component, duration));
@@ -89,25 +86,20 @@ public abstract class BaseSubtitleConfigStrategy : ISubtitleConfigStrategy
     /// <param name="component">字幕组件</param>
     public virtual void HandleHideSubtitle(SubtitleComponent component)
     {
-        // 停止正在运行的动画
-        if (component._animationCoroutine != null)
-        {
-            component.StopCoroutine(component._animationCoroutine);
-            component._animationCoroutine = null;
-        }
-
+        var config = component.GetConfig();
+        
         // 如果启用了动画效果，播放淡出动画
-        if (component._config.EnableAnimation && component._config.FadeOutDuration > 0)
+        if (config.EnableAnimation && config.FadeOutDuration > 0)
             // 启动淡出动画
-            component._animationCoroutine = component.StartCoroutine(
-                component.FadeCanvasAlpha(component._canvasGroup.alpha, 0, component._config.FadeOutDuration,
-                    () => component.gameObject.SetActive(false)));
+            component.StartFade(
+                component.GetCanvasGroupAlpha(), 
+                0, 
+                config.FadeOutDuration,
+                () => component.SetActive(false)
+            );
         else
             // 不使用动画，直接隐藏
-            component.gameObject.SetActive(false);
-
-        // 清除说话人名称
-        if (component._speakerName != null) component._speakerName = string.Empty;
+            component.SetActive(false);
     }
 
     /// <summary>
@@ -118,11 +110,8 @@ public abstract class BaseSubtitleConfigStrategy : ISubtitleConfigStrategy
     public virtual void UpdateConfig(SubtitleComponent component, SubtitleConfig config)
     {
         // 保存当前文本内容
-        var currentText = component._text?.text ?? string.Empty;
-        var currentSpeakerName = component._speakerName ?? string.Empty;
-
-        // 更新配置
-        component._config = config;
+        var currentText = component.GetText();
+        var currentSpeakerName = component.GetSpeakerName();
 
         // 更新UI
         UpdateUI(component, currentText, currentSpeakerName);
@@ -141,8 +130,10 @@ public abstract class BaseSubtitleConfigStrategy : ISubtitleConfigStrategy
     /// </summary>
     protected virtual void SetText(SubtitleComponent component, string text, string speakerName)
     {
+        var config = component.GetConfig();
+        
         // 设置文本内容
-        if (component._config.EnableSpeakerName && !string.IsNullOrEmpty(speakerName))
+        if (config.EnableSpeakerName && !string.IsNullOrEmpty(speakerName))
         {
             // 获取说话者专属颜色
             var speakerColor = ColorUtility.ToHtmlStringRGB(GetSpeakerColor(speakerName));
@@ -153,30 +144,32 @@ public abstract class BaseSubtitleConfigStrategy : ISubtitleConfigStrategy
 
             // 设置文本内容
             // 无需处理 XUAT 互操作以及翻译，因为获取时已经被翻译了
-            component._text.text = $"<color=#{speakerColor}>{translatedSpeakerName}</color>: {text}";
+            component.SetText($"<color=#{speakerColor}>{translatedSpeakerName}</color>: {text}");
         }
         else
         {
-            component._text.text = text;
+            component.SetText(text);
         }
 
         // 动态调整背景大小以适应文本高度
-        if (!string.IsNullOrEmpty(component._text.text) && component._backgroundRect != null)
+        var textComponent = component.GetTextComponent();
+        var backgroundRect = component.GetBackgroundRect();
+        
+        if (textComponent != null && !string.IsNullOrEmpty(textComponent.text) && backgroundRect != null)
         {
             // 获取文本内容的预计高度
-            var textGenerator = component._text.cachedTextGenerator;
+            var textGenerator = textComponent.cachedTextGenerator;
             if (textGenerator.characterCountVisible == 0)
-                component._text.cachedTextGenerator.Populate(component._text.text,
-                    component._text.GetGenerationSettings(component._text.rectTransform.rect.size));
+                textComponent.cachedTextGenerator.Populate(textComponent.text,
+                    textComponent.GetGenerationSettings(textComponent.rectTransform.rect.size));
 
             // 计算实际行数与高度
-            float textHeight = textGenerator.lineCount * component._text.fontSize;
+            float textHeight = textGenerator.lineCount * textComponent.fontSize;
 
             // 只有当文本高度超过原始背景高度时才调整背景
-            if (textHeight + 10 > component._config.BackgroundHeight)
+            if (textHeight + 10 > config.BackgroundHeight)
                 // 调整背景尺寸
-                component._backgroundRect.sizeDelta =
-                    new Vector2(component._backgroundRect.sizeDelta.x, textHeight + 10); // 文本高度 + 边距
+                component.SetBackgroundSize(new Vector2(backgroundRect.sizeDelta.x, textHeight + 10)); // 文本高度 + 边距
         }
     }
 
@@ -185,46 +178,48 @@ public abstract class BaseSubtitleConfigStrategy : ISubtitleConfigStrategy
     /// </summary>
     protected IEnumerator AutoHide(SubtitleComponent component, float delay)
     {
+        var config = component.GetConfig();
+        
         // 等待指定时间
         yield return new WaitForSeconds(delay);
 
         // 如果启用了动画效果，播放淡出动画
-        if (component._config.EnableAnimation && component._config.FadeOutDuration > 0)
+        if (config.EnableAnimation && config.FadeOutDuration > 0)
         {
             // 启动淡出动画
-            if (component._animationCoroutine != null) component.StopCoroutine(component._animationCoroutine);
-
-            component._animationCoroutine = component.StartCoroutine(
-                component.FadeCanvasAlpha(1, 0, component._config.FadeOutDuration,
-                    () => component.gameObject.SetActive(false)));
+            component.StartFade(1, 0, config.FadeOutDuration, () => component.SetActive(false));
         }
         else
         {
             // 不使用动画，直接隐藏
-            component.gameObject.SetActive(false);
+            component.SetActive(false);
         }
     }
 
     /// <summary>
-    ///     获取说话者专属颜色
+    ///     获取说话者的专属颜色
     /// </summary>
-    protected virtual Color GetSpeakerColor(string speakerName)
+    protected Color GetSpeakerColor(string speakerName)
     {
         if (string.IsNullOrEmpty(speakerName))
-            return new Color(1f, 0.6f, 0.2f); // 默认橙色
+            return Color.white;
 
+        // 如果已经有颜色，直接返回
         if (SpeakerColors.TryGetValue(speakerName, out var color))
             return color;
 
-        // 为说话者生成一个唯一的颜色
+        // 为说话者生成一个固定的颜色（基于名称的哈希值，确保同一角色总是获得相同颜色）
         var random = new Random(speakerName.GetHashCode());
-        color = new Color(
-            0.5f + (float)random.NextDouble() * 0.5f, // 0.5-1.0 生成较亮的颜色
-            0.5f + (float)random.NextDouble() * 0.5f,
-            0.5f + (float)random.NextDouble() * 0.5f
-        );
+        // 生成明亮的颜色，避免太深或太浅
+        var h = (float)random.NextDouble(); // 色相
+        var s = 0.7f + (float)random.NextDouble() * 0.3f; // 饱和度（0.7-1.0，保证鲜艳）
+        var v = 0.8f + (float)random.NextDouble() * 0.2f; // 亮度（0.8-1.0，保证明亮）
 
-        SpeakerColors[speakerName] = color;
-        return color;
+        // 转换为RGB
+        Color newColor = Color.HSVToRGB(h, s, v);
+
+        // 存储并返回
+        SpeakerColors[speakerName] = newColor;
+        return newColor;
     }
 }

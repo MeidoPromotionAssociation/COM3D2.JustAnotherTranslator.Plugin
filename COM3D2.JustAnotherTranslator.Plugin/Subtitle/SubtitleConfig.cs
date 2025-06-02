@@ -9,90 +9,6 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 [Serializable]
 public class SubtitleConfig
 {
-    # region Config
-
-    // 字幕类型
-    public JustAnotherTranslator.SubtitleTypeEnum SubtitleType { get; set; } =
-        JustAnotherTranslator.SubtitleTypeEnum.Base;
-
-    // 是否启用说话人名字显示
-    public bool EnableSpeakerName { get; set; } = true;
-
-    // 字体名称
-    public Font Font { get; set; } = Resources.GetBuiltinResource<Font>("Arial.ttf");
-
-    // 字体大小
-    public int FontSize { get; set; } = 24;
-
-    // 文本对齐方式
-    public TextAnchor TextAlignment { get; set; } = TextAnchor.MiddleCenter;
-
-    // 文本颜色
-    public Color TextColor { get; set; } = Color.white;
-
-    // 背景颜色
-    public Color BackgroundColor { get; set; } = new(0, 0, 0);
-
-    // 是否启用描边
-    public bool EnableOutline { get; set; }
-
-    // 描边颜色
-    public Color OutlineColor { get; set; } = Color.black;
-
-    // 描边粗细
-    public float OutlineWidth { get; set; } = 1f;
-
-    // 背景不透明度（0-1）
-    public float BackgroundOpacity { get; set; } = 0.5f;
-
-    // 垂直位置（0-1，0表示底部，1表示顶部）
-    public float VerticalPosition { get; set; } = 0.1f;
-
-    // 背景宽度百分比
-    public float BackgroundWidth { get; set; } = 1f;
-
-    // 背景高度百分比
-    public float BackgroundHeight { get; set; } = 0.1f;
-
-    // 是否启用动画效果
-    public bool EnableAnimation { get; set; } = true;
-
-    // 淡入时长（秒）
-    public float FadeInDuration { get; set; } = 0.5f;
-
-    // 淡出时长（秒）
-    public float FadeOutDuration { get; set; } = 0.5f;
-
-    // VR模式字幕类型
-    public JustAnotherTranslator.VRSubtitleModeEnum VRSubtitleMode { get; set; } =
-        JustAnotherTranslator.VRSubtitleModeEnum.InSpace;
-
-    // VR悬浮字幕距离（米）
-    public float VRSubtitleDistance { get; set; } = 1f;
-
-    // VR悬浮字幕垂直偏移（度，相对于视线中心）
-    public float VRSubtitleVerticalOffset { get; set; } = -15f;
-
-    // VR悬浮字幕水平偏移（度，相对于视线中心）
-    public float VRSubtitleHorizontalOffset { get; set; }
-
-    // VR悬浮字幕背景宽度（米）
-    public float VRSubtitleWidth { get; set; } = 0.2f;
-
-    // VR悬浮字幕背景高度（米）
-    public float VRSubtitleHeight { get; set; } = 1f;
-
-    // 当前垂直位置
-    public float CurrentVerticalPosition { get; set; } = 0.1f;
-
-    # endregion
-
-
-
-
-
-
-
     /// <summary>
     ///     从插件配置中创建字幕配置
     /// </summary>
@@ -335,4 +251,82 @@ public class SubtitleConfig
             return Resources.GetBuiltinResource<Font>("Arial.ttf");
         }
     }
+
+    # region Config
+
+    // 字幕类型
+    public JustAnotherTranslator.SubtitleTypeEnum SubtitleType { get; set; } =
+        JustAnotherTranslator.SubtitleTypeEnum.Base;
+
+    // 是否启用说话人名字显示
+    public bool EnableSpeakerName { get; set; } = true;
+
+    // 字体名称
+    public Font Font { get; set; } = Resources.GetBuiltinResource<Font>("Arial.ttf");
+
+    // 字体大小
+    public int FontSize { get; set; } = 24;
+
+    // 文本对齐方式
+    public TextAnchor TextAlignment { get; set; } = TextAnchor.MiddleCenter;
+
+    // 文本颜色
+    public Color TextColor { get; set; } = Color.white;
+
+    // 背景颜色
+    public Color BackgroundColor { get; set; } = new(0, 0, 0);
+
+    // 是否启用描边
+    public bool EnableOutline { get; set; }
+
+    // 描边颜色
+    public Color OutlineColor { get; set; } = Color.black;
+
+    // 描边粗细
+    public float OutlineWidth { get; set; } = 1f;
+
+    // 背景不透明度（0-1）
+    public float BackgroundOpacity { get; set; } = 0.5f;
+
+    // 垂直位置（0-1，0表示底部，1表示顶部）
+    public float VerticalPosition { get; set; } = 0.1f;
+
+    // 背景宽度百分比
+    public float BackgroundWidth { get; set; } = 1f;
+
+    // 背景高度百分比
+    public float BackgroundHeight { get; set; } = 0.1f;
+
+    // 是否启用动画效果
+    public bool EnableAnimation { get; set; } = true;
+
+    // 淡入时长（秒）
+    public float FadeInDuration { get; set; } = 0.5f;
+
+    // 淡出时长（秒）
+    public float FadeOutDuration { get; set; } = 0.5f;
+
+    // VR模式字幕类型
+    public JustAnotherTranslator.VRSubtitleModeEnum VRSubtitleMode { get; set; } =
+        JustAnotherTranslator.VRSubtitleModeEnum.InSpace;
+
+    // VR悬浮字幕距离（米）
+    public float VRSubtitleDistance { get; set; } = 1f;
+
+    // VR悬浮字幕垂直偏移（度，相对于视线中心）
+    public float VRSubtitleVerticalOffset { get; set; } = -15f;
+
+    // VR悬浮字幕水平偏移（度，相对于视线中心）
+    public float VRSubtitleHorizontalOffset { get; set; }
+
+    // VR悬浮字幕背景宽度（米）
+    public float VRSubtitleWidth { get; set; } = 0.2f;
+
+    // VR悬浮字幕背景高度（米）
+    public float VRSubtitleHeight { get; set; } = 1f;
+
+    // 当前垂直位置
+    public float CurrentVerticalPosition { get; set; } = 0.1f;
+
+    # endregion
 }

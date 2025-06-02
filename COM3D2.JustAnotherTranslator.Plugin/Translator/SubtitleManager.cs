@@ -265,11 +265,9 @@ public static class SubtitleManager
                     foundText = false;
                     // 如果上一个语音还没结束就切换了
                     if (!string.IsNullOrEmpty(lastPlayingVoiceId))
-                    {
                         LogManager.Debug(
                             $"Voice changed from {lastPlayingVoiceId} to {currentVoiceId}");
-                        //SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
-                    }
+                    //SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
                     LogManager.Debug(
                         $"Maid {speakerName} is now playing new voice: {currentVoiceId}");
                 }
@@ -339,17 +337,22 @@ public static class SubtitleManager
                 yield return new WaitForSeconds(0.1f);
         }
 
-        // Maid不可见或为null，停止协程
-        if (maid is null || !maid.Visible)
-        {
-            if (maid is not null)
-            {
-                SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
-            }
 
+        if (maid is null)
+        {
+            SubtitleComponentManager.UpdateSubtitleConfigBySpeakerName(speakerName);
+            LogManager.Debug($"MonitorMaidVoicePlayback ended for Maid {MaidInfo.GetMaidFullName(maid)}");
+            yield break;
+        }
+
+        // Maid不可见或为null，停止协程
+        if (!maid.Visible)
+        {
+            SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
             MaidMonitorCoroutineIds.Remove(maid);
+
             // 重新创建字幕以重新排序
-            SubtitleComponentManager.UpdateSubtitleConfig();
+            SubtitleComponentManager.UpdateSubtitleConfigBySpeakerName(speakerName);
         }
 
         LogManager.Debug($"MonitorMaidVoicePlayback ended for Maid {MaidInfo.GetMaidFullName(maid)}");

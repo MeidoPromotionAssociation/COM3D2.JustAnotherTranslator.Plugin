@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -237,19 +238,10 @@ public static class SubtitleComponentManager
     }
 
     /// <summary>
-    ///     更新指定字幕组件的配置
+    ///     更新指定说话者的字幕配置
     /// </summary>
-    /// <param name="component">字幕组件</param>
-    /// <param name="config">新的字幕配置</param>
-    public static void UpdateSubtitleConfig(ISubtitleComponent component, SubtitleConfig config)
-    {
-        if (component is null) return;
-
-        component.UpdateConfig(config);
-    }
-
-
-    public static void UpdateSubtitleConfig(string speakerName)
+    /// <param name="speakerName">说话者名称</param>
+    public static void UpdateSubtitleConfigBySpeakerName(string speakerName)
     {
         var subtitleId = GetSpeakerSubtitleId(speakerName);
         if (SubtitleComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
@@ -261,8 +253,6 @@ public static class SubtitleComponentManager
             LogManager.Debug($"Update subtitle config: {subtitleId}");
         }
     }
-
-
 
     /// <summary>
     ///     销毁字幕组件

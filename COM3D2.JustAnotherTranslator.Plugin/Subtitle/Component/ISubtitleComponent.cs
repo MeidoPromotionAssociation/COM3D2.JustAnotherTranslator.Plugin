@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
+namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 
 /// <summary>
 ///     字幕组件接口，定义所有字幕组件必须实现的方法
@@ -25,6 +25,7 @@ public interface ISubtitleComponent
     ///     隐藏字幕
     /// </summary>
     void HideSubtitle();
+    // TODO 支持跳过动画
 
     /// <summary>
     ///     更新字幕配置

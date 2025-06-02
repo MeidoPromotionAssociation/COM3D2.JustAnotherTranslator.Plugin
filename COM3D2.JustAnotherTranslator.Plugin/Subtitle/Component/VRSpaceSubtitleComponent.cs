@@ -3,18 +3,25 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
+namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 
 /// <summary>
 ///     VR空间字幕组件，在VR游戏空间中显示字幕，跟随玩家视角
 /// </summary>
 public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 {
+    // 字幕跟随平滑度
+    protected readonly float _followSmoothness = 5.0f;
     private Coroutine _followHeadCoroutine;
 
-    // VR相关
-    private Transform _vrHeadTransform;
-    private Transform _vrSubtitleContainer;
+    // VR头部位置参考，用于跟随头部运动
+    protected Transform _vrHeadTransform;
+
+    // 世界空间VR字幕
+    protected RectTransform _vrSpaceCanvasRect;
+
+    // VR悬浮字幕容器
+    protected GameObject _vrSubtitleContainer;
 
     /// <summary>
     ///     初始化字幕组件
@@ -23,9 +30,6 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     public override void Initialize(SubtitleConfig config)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
-
-        // 查找VR头部变换
-        InitVRHeadTransform();
 
         // 创建UI
         CreateSubtitleUI();
@@ -37,25 +41,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         StartFollowHeadCoroutine();
 
         gameObject.SetActive(false);
-        LogManager.Debug("VR空间字幕组件已初始化/VR space subtitle component initialized");
-    }
-
-    /// <summary>
-    ///     初始化VR头部变换
-    /// </summary>
-    private void InitVRHeadTransform()
-    {
-        // 查找VR头部变换
-        var camera = Camera.main;
-        if (camera != null)
-        {
-            _vrHeadTransform = camera.transform;
-            LogManager.Debug("已找到VR头部变换/VR head transform found");
-        }
-        else
-        {
-            LogManager.Error("无法找到主相机，VR字幕将无法跟随头部/Cannot find main camera, VR subtitle will not follow head");
-        }
+        LogManager.Debug("VR space subtitle component initialized");
     }
 
     /// <summary>
@@ -63,95 +49,75 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     /// </summary>
     protected override void CreateSubtitleUI()
     {
-        // 创建VR字幕容器
-        var vrSubtitleObject = new GameObject("VRSubtitleContainer");
-        vrSubtitleObject.transform.SetParent(transform);
-        vrSubtitleObject.transform.localPosition = Vector3.zero;
-        vrSubtitleObject.transform.localRotation = Quaternion.identity;
-        vrSubtitleObject.transform.localScale = Vector3.one;
-        _vrSubtitleContainer = vrSubtitleObject.transform;
+        // 创建一个容器来承载悬浮字幕
+        _vrSubtitleContainer = new GameObject("Subtitle_JAT_SubtitleContainer_VR_Space");
+        _vrSubtitleContainer.transform.SetParent(transform, false);
 
-        // 创建Canvas
-        var canvasObject = new GameObject("SubtitleCanvas");
-        canvasObject.transform.SetParent(_vrSubtitleContainer);
-        canvasObject.transform.localPosition = Vector3.zero;
-        canvasObject.transform.localRotation = Quaternion.identity;
-        canvasObject.transform.localScale = Vector3.one;
-
-        _canvas = canvasObject.AddComponent<Canvas>();
+        // 创建世界空间Canvas
+        var canvasObj = new GameObject("Subtitle_JAT_SubtitleCanvas_VR_Space");
+        canvasObj.transform.SetParent(_vrSubtitleContainer.transform, false);
+        _canvas = canvasObj.AddComponent<Canvas>();
         _canvas.renderMode = RenderMode.WorldSpace;
-        _canvas.worldCamera = Camera.main;
+        _canvas.sortingOrder = 32767; // 确保在最上层显示
+        _canvas.overrideSorting = true; // 确保覆盖所有其他排序
 
-        _canvasScaler = canvasObject.AddComponent<CanvasScaler>();
-        _canvasScaler.dynamicPixelsPerUnit = 20;
+        // 设置Canvas尺寸，使其在世界空间中有合适的大小
+        _vrSpaceCanvasRect = _canvas.GetComponent<RectTransform>();
+        _vrSpaceCanvasRect.sizeDelta = new Vector2(_config.VRSubtitleWidth * 1000, 300);
+        _vrSubtitleContainer.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
 
-        _canvasGroup = canvasObject.AddComponent<CanvasGroup>();
+        // 添加画布缩放器
+        _canvasScaler = _canvas.gameObject.AddComponent<CanvasScaler>();
+        _canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        _canvasScaler.referenceResolution = new Vector2(1920, 1080);
+        _canvasScaler.matchWidthOrHeight = 0.5f;
 
-        var rectTransform = _canvas.GetComponent<RectTransform>();
-        rectTransform.sizeDelta = new Vector2(2, 1);
+        // 添加射线检测
+        var raycaster = _canvas.gameObject.AddComponent<GraphicRaycaster>();
+        raycaster.blockingObjects = GraphicRaycaster.BlockingObjects.None; // 不阻挡任何对象
+        raycaster.ignoreReversedGraphics = false; // 不忽略反向图形
 
-        // 创建背景
-        var backgroundObject = new GameObject("Background");
-        backgroundObject.transform.SetParent(_canvas.transform);
-        _backgroundRect = backgroundObject.AddComponent<RectTransform>();
-        _backgroundRect.anchorMin = new Vector2(0, 0);
-        _backgroundRect.anchorMax = new Vector2(1, 1);
-        _backgroundRect.pivot = new Vector2(0.5f, 0.5f);
-        _backgroundRect.sizeDelta = Vector2.zero;
-        _backgroundRect.localPosition = Vector3.zero;
+        // 创建背景面板
+        var backgroundObj = new GameObject("Subtitle_JAT_SubtitleBackground");
+        backgroundObj.transform.SetParent(_canvas.transform, false);
+        _backgroundImage = backgroundObj.AddComponent<Image>();
+        _backgroundImage.color = new Color(0, 0, 0, 0.5f); // 半透明黑色背景
 
-        _backgroundImage = backgroundObject.AddComponent<Image>();
-        _backgroundImage.color = _config.BackgroundColor;
+        // 设置背景位置和大小
+        var backgroundRect = _backgroundImage.rectTransform;
+        backgroundRect.anchorMin = new Vector2(0, 0);
+        backgroundRect.anchorMax = new Vector2(1, 0);
+        backgroundRect.pivot = new Vector2(0.5f, 0);
+        backgroundRect.sizeDelta = new Vector2(0, 100);
+        backgroundRect.anchoredPosition = new Vector2(0, 0);
 
-        // 创建说话者名称文本
-        var speakerObject = new GameObject("SpeakerName");
-        speakerObject.transform.SetParent(backgroundObject.transform);
-        _speakerTextRect = speakerObject.AddComponent<RectTransform>();
-        _speakerTextRect.anchorMin = new Vector2(0, 1);
-        _speakerTextRect.anchorMax = new Vector2(1, 1);
-        _speakerTextRect.pivot = new Vector2(0.5f, 1);
-        _speakerTextRect.sizeDelta = new Vector2(0, 0.2f);
-        _speakerTextRect.anchoredPosition = new Vector2(0, 0);
+        // 创建文本对象
+        var textObj = new GameObject("Subtitle_JAT_SubtitleText");
+        textObj.transform.SetParent(backgroundRect, false);
+        _text = textObj.AddComponent<Text>();
 
-        _speakerText = speakerObject.AddComponent<Text>();
-        _speakerText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        _speakerText.fontSize = _config.FontSize - 4; // 说话者名称字体略小
-        _speakerText.alignment = TextAnchor.MiddleCenter;
-        _speakerText.color = _config.SpeakerNameColor;
-        _speakerText.horizontalOverflow = HorizontalWrapMode.Overflow;
-        _speakerText.verticalOverflow = VerticalWrapMode.Overflow;
+        // 设置文本位置和大小
+        var textRect = _text.rectTransform;
+        textRect.anchorMin = new Vector2(0, 0);
+        textRect.anchorMax = new Vector2(1, 1);
+        textRect.pivot = new Vector2(0.5f, 0.5f);
+        textRect.sizeDelta = new Vector2(-40, -20); // 左右上下各留出10像素的边距
+        textRect.anchoredPosition = new Vector2(0, 0);
 
-        // 说话者名称描边
-        var speakerOutline = speakerObject.AddComponent<Outline>();
-        speakerOutline.effectColor = _config.OutlineColor;
-        speakerOutline.effectDistance = new Vector2(_config.OutlineWidth * 0.01f, _config.OutlineWidth * 0.01f);
-
-        // 创建正文文本
-        var textObject = new GameObject("Text");
-        textObject.transform.SetParent(backgroundObject.transform);
-        _textRect = textObject.AddComponent<RectTransform>();
-        _textRect.anchorMin = new Vector2(0, 0);
-        _textRect.anchorMax = new Vector2(1, 1);
-        _textRect.pivot = new Vector2(0.5f, 0.5f);
-        _textRect.sizeDelta = Vector2.zero;
-        _textRect.offsetMin = new Vector2(0.1f, 0.1f); // 左下边距
-        _textRect.offsetMax = new Vector2(-0.1f, _config.EnableSpeakerName ? -0.2f : -0.1f); // 右上边距
-
-        _text = textObject.AddComponent<Text>();
-        _text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        _text.fontSize = _config.FontSize;
+        // 设置默认文本样式
         _text.alignment = TextAnchor.MiddleCenter;
-        _text.color = _config.TextColor;
         _text.horizontalOverflow = HorizontalWrapMode.Wrap;
         _text.verticalOverflow = VerticalWrapMode.Overflow;
 
-        // 添加描边
-        _outline = textObject.AddComponent<Outline>();
-        _outline.effectColor = _config.OutlineColor;
-        _outline.effectDistance = new Vector2(_config.OutlineWidth * 0.01f, _config.OutlineWidth * 0.01f);
+        // 设置文本和背景不拦截点击事件
+        _text.raycastTarget = false;
+        _backgroundImage.raycastTarget = false;
 
-        // 设置活动状态
-        _speakerText.gameObject.SetActive(_config.EnableSpeakerName);
+        // 添加描边组件
+        _outline = _text.gameObject.AddComponent<Outline>();
+        _outline.enabled = false;
+
+        LogManager.Debug("VR subtitle container created");
     }
 
     /// <summary>
@@ -189,30 +155,41 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     /// </summary>
     private IEnumerator FollowHeadCoroutine()
     {
-        if (_vrHeadTransform == null || _vrSubtitleContainer == null)
-        {
-            LogManager.Error(
-                "VR头部变换或字幕容器为空，无法跟随头部/VR head transform or subtitle container is null, cannot follow head");
+        if (!JustAnotherTranslator.IsVrMode ||
+            _config.VRSubtitleMode != JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
             yield break;
-        }
+
+        if (_vrHeadTransform is null || !_initialized || !gameObject.activeSelf)
+            yield break;
 
         while (true)
         {
-            if (_vrHeadTransform != null && _vrSubtitleContainer != null)
-            {
-                // 设置位置为头部前方
-                var headPosition = _vrHeadTransform.position;
-                var headForward = _vrHeadTransform.forward;
-                var headUp = _vrHeadTransform.up;
+            // 计算目标位置（基于头部位置和配置的偏移）
+            var headForward = _vrHeadTransform.forward;
+            var headUp = _vrHeadTransform.up;
+            var headRight = _vrHeadTransform.right;
 
-                // 计算字幕位置（在头部前方固定距离）
-                var distance = _config.VRDistance;
-                var position = headPosition + headForward * distance;
+            // 应用偏移角度（水平和垂直）
+            var verticalRotation = Quaternion.AngleAxis(_config.VRSubtitleVerticalOffset, headRight);
+            var horizontalRotation = Quaternion.AngleAxis(_config.VRSubtitleHorizontalOffset, headUp);
+            var offsetDirection = horizontalRotation * verticalRotation * headForward;
 
-                // 更新位置和旋转
-                _vrSubtitleContainer.position = position;
-                _vrSubtitleContainer.rotation = Quaternion.LookRotation(headForward, headUp);
-            }
+            // 计算最终位置（头部位置 + 偏移方向 * 距离）
+            var targetPosition = _vrHeadTransform.position + offsetDirection * _config.VRSubtitleDistance;
+
+            // 平滑跟随
+            _vrSubtitleContainer.transform.position = Vector3.Lerp(
+                _vrSubtitleContainer.transform.position,
+                targetPosition,
+                Time.deltaTime * _followSmoothness
+            );
+
+            // 字幕始终面向用户
+            _vrSubtitleContainer.transform.rotation = Quaternion.Lerp(
+                _vrSubtitleContainer.transform.rotation,
+                Quaternion.LookRotation(_vrSubtitleContainer.transform.position - _vrHeadTransform.position),
+                Time.deltaTime * _followSmoothness
+            );
 
             yield return null;
         }

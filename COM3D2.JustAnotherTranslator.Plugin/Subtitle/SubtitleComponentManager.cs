@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -11,20 +10,18 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 /// </summary>
 public static class SubtitleComponentManager
 {
-    // 活动字幕组件列表
-    private static readonly Dictionary<string ,ISubtitleComponent> SubtitleComponents = new(); // 字幕ID，字幕组件
-
-    // 字幕ID映射，用于跟踪说话者与字幕组件的关系
-    private static readonly Dictionary<string, ISubtitleComponent> SubtitleIdMap = new(); // 说话者，字幕组件
-
     // 是否已初始化
-    private static bool _initialized = false;
+    private static bool _initialized;
 
     // VR头部变换
-    private static Transform _vrHeadTransform = null;
+    private static Transform _vrHeadTransform;
 
-    // 字幕配置字典
-    private static Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> _subtitleConfigs = new();
+    // 字幕ID映射，用于跟踪说话者与字幕组件的关系
+    private static readonly Dictionary<string, ISubtitleComponent> _subtitleComponentsMap = new(); // 说话者，字幕组件
+
+    // 所有种类字幕的配置字典
+    private static readonly Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> _subtitleConfigs = new();
+
 
     /// <summary>
     ///     初始化字幕组件管理器
@@ -34,13 +31,13 @@ public static class SubtitleComponentManager
         if (_initialized) return;
 
         // 初始化字幕配置字典
-        foreach (JustAnotherTranslator.SubtitleTypeEnum subtitleType in Enum.GetValues(typeof(JustAnotherTranslator.SubtitleTypeEnum)))
+        foreach (JustAnotherTranslator.SubtitleTypeEnum subtitleType in Enum.GetValues(
+                     typeof(JustAnotherTranslator.SubtitleTypeEnum)))
         {
             var config = SubtitleConfig.CreateSubtitleConfig(subtitleType);
             _subtitleConfigs[subtitleType] = config;
         }
 
-        // 如果在VR模式下，初始化VR头部跟踪
         if (JustAnotherTranslator.IsVrMode) InitVRComponents();
 
         _initialized = true;
@@ -52,6 +49,9 @@ public static class SubtitleComponentManager
     /// </summary>
     private static void InitVRComponents()
     {
+        if (_vrHeadTransform is not null)
+            return;
+
         // 查找 OvrMgr 的 EyeAnchor
         if (GameMain.Instance is not null && GameMain.Instance.OvrMgr is not null)
         {
@@ -80,114 +80,148 @@ public static class SubtitleComponentManager
     }
 
     /// <summary>
-    ///     获取VR头部变换
-    /// </summary>
-    /// <returns>VR头部变换</returns>
-    public static Transform GetVRHeadTransform()
-    {
-        return _vrHeadTransform;
-    }
-
-    /// <summary>
     ///     根据配置创建合适类型的字幕组件
     /// </summary>
+    /// <param name="speakerName">说话者名称</param>
     /// <param name="config">字幕配置</param>
     /// <returns>字幕组件</returns>
-    private static ISubtitleComponent CreateSubtitleComponent(SubtitleConfig config)
+    private static ISubtitleComponent CreateSubtitleComponent(string speakerName, SubtitleConfig config)
     {
-        if (!_initialized) Initialize();
+        if (!_initialized)
+            Initialize();
 
-        // 创建游戏对象
-        var gameObject = new GameObject("SubtitleComponent");
+        var gameObject = new GameObject(GetSpeakerSubtitleId(speakerName));
         ISubtitleComponent component;
 
-        // 根据配置类型创建不同的字幕组件
         if (JustAnotherTranslator.IsVrMode)
         {
-            // VR模式下根据VR字幕类型创建不同组件
             switch (JustAnotherTranslator.VRSubtitleMode.Value)
             {
                 case JustAnotherTranslator.VRSubtitleModeEnum.InSpace:
                     component = gameObject.AddComponent<VRSpaceSubtitleComponent>();
-                    LogManager.Debug("已创建VR空间字幕组件/Created VR space subtitle component");
+                    LogManager.Debug("Created VR space subtitle component");
                     break;
                 case JustAnotherTranslator.VRSubtitleModeEnum.OnTablet:
                     component = gameObject.AddComponent<VRTabletSubtitleComponent>();
-                    LogManager.Debug("已创建VR平板字幕组件/Created VR tablet subtitle component");
+                    LogManager.Debug("Created VR tablet subtitle component");
                     break;
                 default:
-                    component = gameObject.AddComponent<ScreenSubtitleComponent>();
-                    LogManager.Debug("已创建屏幕字幕组件(VR默认)/Created screen subtitle component (VR default)");
+                    component = gameObject.AddComponent<VRSpaceSubtitleComponent>();
+                    LogManager.Warning("Created VR space subtitle component, why? (default)");
                     break;
             }
         }
         else
         {
-            // 非VR模式只使用屏幕字幕
             component = gameObject.AddComponent<ScreenSubtitleComponent>();
-            LogManager.Debug("已创建屏幕字幕组件/Created screen subtitle component");
+            LogManager.Debug("Created screen subtitle component");
         }
 
-        // 初始化组件
         component.Initialize(config);
 
-        // 添加到活动组件列表
-        SubtitleComponents.Add(component);
+        _subtitleComponentsMap[GetSpeakerSubtitleId(speakerName)] = component;
 
         return component;
     }
 
     /// <summary>
-    ///     销毁字幕组件
+    ///     显示字幕
     /// </summary>
-    /// <param name="component">要销毁的字幕组件</param>
-    public static void DestroySubtitleComponent(ISubtitleComponent component)
+    /// <param name="text">字幕文本</param>
+    /// <param name="speakerName">说话者名称</param>
+    /// <param name="duration">显示时长，0为无限</param>
+    /// <param name="subtitleType">字幕类型</param>
+    public static void ShowSubtitle(string text, string speakerName, float duration,
+        JustAnotherTranslator.SubtitleTypeEnum subtitleType)
     {
-        if (component is null) return;
+        if (string.IsNullOrEmpty(text))
+            return;
 
-        // 从活动组件列表中移除
-        SubtitleComponents.Remove(component);
+        if (!_initialized)
+            Initialize();
 
-        // 从ID映射中移除
-        var keysToRemove = new List<string>();
-        foreach (var kvp in SubtitleIdMap)
-            if (kvp.Value == component)
-                keysToRemove.Add(kvp.Key);
+        var subtitleId = GetSpeakerSubtitleId(speakerName);
 
-        foreach (var key in keysToRemove) SubtitleIdMap.Remove(key);
+        if (!_subtitleComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
+        {
+            subtitleComponent = CreateSubtitleComponent(speakerName, GetSubtitleConfig(subtitleType));
+            _subtitleComponentsMap[subtitleId] = subtitleComponent;
+        }
 
-        // 销毁组件
-        component.Destroy();
+        // 显示字幕
+        subtitleComponent.ShowSubtitle(text, speakerName, duration);
 
-        LogManager.Debug("字幕组件已销毁/Subtitle component destroyed");
+        LogManager.Debug($"Showing subtitle: [{speakerName}] {text}");
     }
 
     /// <summary>
-    ///     销毁所有字幕组件
+    ///     隐藏特定 ID 的字幕
     /// </summary>
-    public static void DestroyAllSubtitleComponents()
+    /// <param name="subtitleId">字幕ID</param>
+    public static void HideSubtitleById(string subtitleId)
     {
-        foreach (var component in SubtitleComponents) component.Destroy();
+        if (string.IsNullOrEmpty(subtitleId))
+            return;
 
-        SubtitleComponents.Clear();
-        SubtitleIdMap.Clear();
-        LogManager.Debug("所有字幕组件已销毁/All subtitle components destroyed");
+        if (_subtitleComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
+        {
+            subtitleComponent.HideSubtitle();
+            LogManager.Debug($"Hiding subtitle: {subtitleId}");
+        }
     }
 
     /// <summary>
-    ///     更新所有字幕组件的配置
+    ///     隐藏特定 speakerName 的字幕
     /// </summary>
-    public static void UpdateAllSubtitleConfigs()
+    /// <param name="speakerName">说话者名称</param>
+    public static void HideSubtitleBySpeakerName(string speakerName)
+    {
+        var subtitleId = GetSpeakerSubtitleId(speakerName);
+        HideSubtitleById(subtitleId);
+    }
+
+    /// <summary>
+    ///     从说话者名称获取字幕ID
+    /// </summary>
+    /// <param name="speakerName">说话者名称</param>
+    /// <returns>字幕ID</returns>
+    public static string GetSpeakerSubtitleId(string speakerName)
+    {
+        if (string.IsNullOrEmpty(speakerName))
+            return "JAT_SubtitleComponent_For_Default";
+
+        return $"JAT_SubtitleComponent_For_{speakerName}";
+    }
+
+    /// <summary>
+    ///     获取指定类型的字幕配置
+    /// </summary>
+    /// <param name="type">字幕类型</param>
+    /// <returns>字幕配置</returns>
+    public static SubtitleConfig GetSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum type)
     {
         if (!_initialized) Initialize();
+        return _subtitleConfigs[type];
+    }
 
-        // 获取当前字幕类型的配置
-        var config = _subtitleConfigs[JustAnotherTranslator.SubtitleType.Value];
+    /// <summary>
+    ///     更新所有字幕配置
+    /// </summary>
+    public static void UpdateAllSubtitleConfig()
+    {
+        foreach (JustAnotherTranslator.SubtitleTypeEnum subtitleType in Enum.GetValues(
+                     typeof(JustAnotherTranslator.SubtitleTypeEnum)))
+        {
+            var config = SubtitleConfig.CreateSubtitleConfig(subtitleType);
+            _subtitleConfigs[subtitleType] = config;
+        }
 
-        // 更新所有字幕组件的配置
-        foreach (var component in SubtitleComponents) component.UpdateConfig(config);
+        foreach (var subtitleComponent in _subtitleComponentsMap.Values)
+        {
+            var oldConfig = subtitleComponent.GetConfig();
 
-        LogManager.Debug("所有字幕组件配置已更新/All subtitle component configs updated");
+            subtitleComponent.UpdateConfig(_subtitleConfigs[oldConfig.SubtitleType]);
+        }
     }
 
     /// <summary>
@@ -202,160 +236,41 @@ public static class SubtitleComponentManager
         component.UpdateConfig(config);
     }
 
-    /// <summary>
-    ///     获取活动字幕组件数量
-    /// </summary>
-    /// <returns>活动字幕组件数量</returns>
-    public static int GetActiveSubtitleComponentCount()
-    {
-        return SubtitleComponents.Count;
-    }
 
     /// <summary>
-    ///     获取所有字幕组件列表
+    ///     销毁字幕组件
     /// </summary>
-    /// <returns>字幕组件列表</returns>
-    public static List<ISubtitleComponent> GetAllSubtitles()
+    /// <param name="component">要销毁的字幕组件</param>
+    public static void DestroySubtitleComponent(ISubtitleComponent component)
     {
-        return new List<ISubtitleComponent>(SubtitleComponents);
-    }
-
-    /// <summary>
-    ///     显示字幕
-    /// </summary>
-    /// <param name="text">字幕文本</param>
-    /// <param name="speakerName">说话者名称</param>
-    /// <param name="duration">显示时长，0为无限</param>
-    public static void ShowSubtitle(string text, string speakerName, float duration = 0f)
-    {
-        if (string.IsNullOrEmpty(text))
+        if (component is null)
             return;
 
-        if (!_initialized) Initialize();
+        _subtitleComponentsMap.Remove(GetSpeakerSubtitleId(component.GetSpeakerName()));
 
-        // 获取当前字幕类型的配置
-        var config = _subtitleConfigs[JustAnotherTranslator.SubtitleType.Value];
+        component.Destroy();
 
-        // 生成字幕ID
-        var subtitleId = GetSpeakerSubtitleId(speakerName);
-
-        // 查找是否已存在该ID的字幕组件
-        if (!SubtitleIdMap.TryGetValue(subtitleId, out var subtitleComponent))
-        {
-            // 不存在则创建新组件
-            subtitleComponent = CreateSubtitleComponent(config);
-            SubtitleIdMap[subtitleId] = subtitleComponent;
-        }
-
-        // 显示字幕
-        subtitleComponent.ShowSubtitle(text, speakerName, duration);
-
-        LogManager.Debug($"显示字幕：[{speakerName}] {text}/Showing subtitle: [{speakerName}] {text}");
+        LogManager.Debug("Subtitle component destroyed");
     }
 
     /// <summary>
-    ///     为指定Maid显示字幕
+    ///     销毁所有字幕组件
     /// </summary>
-    /// <param name="text">字幕文本</param>
-    /// <param name="maid">Maid对象</param>
-    /// <param name="duration">显示时长，0为无限</param>
-    public static void ShowSubtitle(string text, Maid maid, float duration = 0f)
+    public static void DestroyAllSubtitleComponents()
     {
-        if (string.IsNullOrEmpty(text) || maid is null)
-            return;
+        foreach (var component in _subtitleComponentsMap.Values)
+            component.Destroy();
 
-        var speakerName = MaidInfo.GetMaidFullName(maid);
-        ShowSubtitle(text, speakerName, duration);
+        _subtitleComponentsMap.Clear();
+        LogManager.Debug("All subtitle components destroyed");
     }
 
     /// <summary>
-    ///     显示浮动字幕（向后兼容方法）
+    ///     获取VR头部变换
     /// </summary>
-    /// <param name="text">字幕文本</param>
-    /// <param name="speakerName">说话者名称</param>
-    /// <param name="duration">显示时长，0为无限</param>
-    /// <param name="config">字幕配置</param>
-    public static void ShowFloatingSubtitle(string text, string speakerName, float duration, SubtitleConfig config)
+    /// <returns>VR头部变换</returns>
+    public static Transform GetVRHeadTransform()
     {
-        if (string.IsNullOrEmpty(text))
-            return;
-
-        // 生成字幕ID
-        var subtitleId = GetSpeakerSubtitleId(speakerName);
-
-        // 查找是否已存在该ID的字幕组件
-        if (!SubtitleIdMap.TryGetValue(subtitleId, out var subtitleComponent))
-        {
-            // 不存在则创建新组件
-            subtitleComponent = CreateSubtitleComponent(config);
-            SubtitleIdMap[subtitleId] = subtitleComponent;
-        }
-
-        // 显示字幕
-        subtitleComponent.ShowSubtitle(text, speakerName, duration);
-
-        LogManager.Debug($"显示浮动字幕：[{speakerName}] {text}/Showing floating subtitle: [{speakerName}] {text}");
-    }
-
-    /// <summary>
-    ///     隐藏字幕
-    /// </summary>
-    /// <param name="subtitleId">字幕ID</param>
-    public static void HideSubtitle(string subtitleId)
-    {
-        if (string.IsNullOrEmpty(subtitleId))
-            return;
-
-        if (SubtitleIdMap.TryGetValue(subtitleId, out var subtitleComponent))
-        {
-            subtitleComponent.HideSubtitle();
-            LogManager.Debug($"隐藏字幕：{subtitleId}/Hiding subtitle: {subtitleId}");
-        }
-    }
-
-    /// <summary>
-    ///     隐藏特定Maid的字幕
-    /// </summary>
-    /// <param name="maid">Maid对象</param>
-    public static void HideSubtitle(Maid maid)
-    {
-        if (maid is null)
-            return;
-
-        var speakerName = MaidInfo.GetMaidFullName(maid);
-        var subtitleId = GetSpeakerSubtitleId(speakerName);
-        HideSubtitle(subtitleId);
-    }
-
-    /// <summary>
-    ///     从说话者名称获取字幕ID
-    /// </summary>
-    /// <param name="speakerName">说话者名称</param>
-    /// <returns>字幕ID</returns>
-    public static string GetSpeakerSubtitleId(string speakerName)
-    {
-        return $"speaker_{speakerName}";
-    }
-
-
-    /// <summary>
-    ///     获取当前字幕配置
-    /// </summary>
-    /// <returns>当前字幕配置</returns>
-    public static SubtitleConfig GetCurrentSubtitleConfig()
-    {
-        if (!_initialized) Initialize();
-        return _subtitleConfigs[JustAnotherTranslator.SubtitleType.Value];
-    }
-
-    /// <summary>
-    ///     获取指定类型的字幕配置
-    /// </summary>
-    /// <param name="type">字幕类型</param>
-    /// <returns>字幕配置</returns>
-    public static SubtitleConfig GetSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum type)
-    {
-        if (!_initialized) Initialize();
-        return _subtitleConfigs[type];
+        return _vrHeadTransform;
     }
 }

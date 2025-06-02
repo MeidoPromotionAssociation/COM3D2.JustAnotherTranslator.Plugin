@@ -4,6 +4,7 @@ using System.IO;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 
@@ -988,7 +989,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle Speaker Name Enabled/夜伽字幕显示演员名已启用");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -998,7 +999,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle font changed/夜伽字幕字体已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1008,7 +1009,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle font size changed/夜伽字幕字体大小已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1018,7 +1019,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle color changed/夜伽字幕颜色已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1028,7 +1029,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle opacity changed/夜伽字幕透明度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1038,7 +1039,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle background color changed/夜伽字幕背景颜色已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1048,7 +1049,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle background opacity changed/夜伽字幕背景不透明度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1058,7 +1059,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle position changed/夜伽字幕位置已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1068,7 +1069,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle height changed/夜伽字幕高度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1078,7 +1079,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle animation changed/夜伽字幕动画已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1088,7 +1089,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle fade in duration changed/夜伽字幕淡入时长已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1098,7 +1099,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle fade out duration changed/夜伽字幕淡出时长已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1108,7 +1109,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle outline changed/夜伽字幕描边已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1118,7 +1119,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle outline color changed/夜伽字幕描边颜色已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1128,7 +1129,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle outline opacity changed/夜伽字幕描边不透明度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1138,7 +1139,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle outline width changed/夜伽字幕描边宽度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
     }
@@ -1169,7 +1170,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle Speaker Name Enabled/基础字幕显示演员名已启用");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1179,7 +1180,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle font changed/基础字幕字体已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1189,7 +1190,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle font size changed/基础字幕字体大小已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1199,7 +1200,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle color changed/基础字幕颜色已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1209,7 +1210,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle opacity changed/基础字幕透明度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1219,7 +1220,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle background color changed/基础字幕背景颜色已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1229,7 +1230,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle background opacity changed/基础字幕背景不透明度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1239,7 +1240,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle position changed/基础字幕位置已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1249,7 +1250,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle height changed/基础字幕高度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1259,7 +1260,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle animation changed/基础字幕动画已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1269,7 +1270,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle fade in duration changed/基础字幕淡入时长已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1279,7 +1280,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle fade out duration changed/基础字幕淡出时长已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1289,7 +1290,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle outline changed/基础字幕描边已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1299,7 +1300,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle outline color changed/基础字幕描边颜色已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1309,7 +1310,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle outline opacity changed/基础字幕描边不透明度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1319,7 +1320,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle outline width changed/基础字幕描边宽度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
     }
@@ -1335,7 +1336,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle VR mode changed/夜伽字幕VR模式已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1345,7 +1346,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle VR distance changed/夜伽字幕VR距离已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1355,7 +1356,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle VR vertical offset changed/夜伽字幕VR垂直偏移已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1365,7 +1366,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle VR horizontal offset changed/夜伽字幕VR水平偏移已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1375,7 +1376,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableYotogiSubtitle.Value)
             {
                 LogManager.Info("Yotogi Subtitle VR width changed/夜伽字幕VR宽度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
     }
@@ -1406,7 +1407,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle Speaker Name Enabled/ADV字幕显示演员名已启用");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1416,7 +1417,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle font changed/ADV字幕字体已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1426,7 +1427,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle font size changed/ADV字幕字体大小已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1436,7 +1437,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle color changed/ADV字幕颜色已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1446,7 +1447,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle opacity changed/ADV字幕透明度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1456,7 +1457,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle background color changed/ADV字幕背景颜色已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1466,7 +1467,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle background opacity changed/ADV字幕背景不透明度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1476,7 +1477,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle position changed/ADV字幕位置已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1486,7 +1487,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle height changed/ADV字幕高度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1496,7 +1497,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle animation changed/ADV字幕动画已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1506,7 +1507,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle fade in duration changed/ADV字幕淡入时长已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1516,7 +1517,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle fade out duration changed/ADV字幕淡出时长已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1526,7 +1527,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle outline changed/ADV字幕描边已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1536,7 +1537,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle outline color changed/ADV字幕描边颜色已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1546,7 +1547,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle outline opacity changed/ADV字幕描边不透明度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
 
@@ -1556,7 +1557,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableAdvSubtitle.Value)
             {
                 LogManager.Info("Adv Subtitle outline width changed/ADV字幕描边宽度已更改");
-                SubtitleManager.UpdateSubtitleConfig();
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
     }

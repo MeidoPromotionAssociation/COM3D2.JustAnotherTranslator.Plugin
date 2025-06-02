@@ -235,6 +235,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         # region BaseSubtitleSettings
 
+        // TODO 添加字幕对齐方式设置
+        // TODO 字幕自动找位
+
         // 基础字幕相关配置
         EnableBaseSubtitle = Config.Bind("BaseSubtitle",
             "EnableBaseSubtitle/启用基础字幕",
@@ -278,18 +281,19 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         BaseSubtitleVerticalPosition = Config.Bind("BaseSubtitle",
             "BaseSubtitleVerticalPosition/基础字幕垂直位置",
-            0.965f,
-            "Base Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/基础字幕垂直位置（0-1，0为底部，1为顶部）");
+            0.97f,
+            "Base Subtitle Vertical Position (0 is bottom, 1 is top, note 0 and 1 will go out of screen)/基础字幕垂直位置（0为底部，1为顶部，注意 0 和 1 会超出屏幕）");
 
         BaseSubtitleBackgroundWidth = Config.Bind("BaseSubtitle",
             "BaseSubtitleBackgroundWidth/基础字幕背景宽度",
             1f,
-            "Base Subtitle Background Width in percent/基础背景幕宽度（百分比）");
+            "Base Subtitle Background Width, less than 1 is relative, otherwise is pixel/基础背景幕宽度，小于 1 时为相对比例反之为像素");
+        //TODO 其他字幕的描述和默认值
 
         BaseSubtitleBackgroundHeight = Config.Bind("BaseSubtitle",
             "BaseSubtitleBackgroundHeight/基础字幕背景高度",
-            0.08f,
-            "Base Subtitle Background Height in percent/基础背景幕高度（百分比）");
+            0.015f,
+            "Base Subtitle Background Height, less than 1 is relative, otherwise is pixel/基础背景幕高度，小于 1 时为相对比例反之为像素");
 
         EnableBaseSubtitleAnimation = Config.Bind("BaseSubtitle",
             "BaseSubtitleAnimation/基础字幕动画",
@@ -734,6 +738,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogManager.Info("Adv Subtitle Disabled/ADV字幕已禁用");
         }
 
+
+        //TODO 注册部分需要翻新
         // 注册一般配置变更事件
         RegisterGeneralConfigEvents();
         // 注册基础字幕配置变更事件

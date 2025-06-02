@@ -238,27 +238,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         TextComponent.text = displayText;
-
-        // 动态调整背景大小以适应文本高度
-        if (TextComponent is not null && !string.IsNullOrEmpty(TextComponent.text) && BackgroundImage is not null)
-        {
-            // 获取文本内容的预计高度
-            var textGenerator = TextComponent.cachedTextGenerator;
-            if (textGenerator.characterCountVisible == 0)
-                TextComponent.cachedTextGenerator.Populate(TextComponent.text,
-                    TextComponent.GetGenerationSettings(TextComponent.rectTransform.rect.size));
-
-            // 计算实际行数与高度
-            float textHeight = textGenerator.lineCount * TextComponent.fontSize;
-
-            // 只有当文本高度超过原始背景高度时才调整背景
-            if (textHeight + 10 > Config.BackgroundHeight)
-            {
-                // 调整背景尺寸
-                var backgroundRect = BackgroundImage.rectTransform;
-                backgroundRect.sizeDelta = new Vector2(backgroundRect.sizeDelta.x, textHeight + 10); // 文本高度 + 边距
-            }
-        }
     }
 
     /// <summary>
@@ -279,37 +258,57 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         // 应用文本组件配置
-        if (TextComponent is not  null)
+        if (TextComponent is not null)
         {
             // 设置字体
-            if (Config.Font is not  null)
+            if (Config.Font is not null)
                 TextComponent.font = Config.Font;
 
-            // 设置字体大小
             TextComponent.fontSize = Config.FontSize;
-
-            // 设置文本颜色
             TextComponent.color = Config.TextColor;
-
-            // 设置文本对齐方式
             TextComponent.alignment = Config.TextAlignment;
         }
 
-        // 应用背景图像配置
-        if (BackgroundImage is not  null)
+        // 应用背景配置
+        if (BackgroundImage is not null)
         {
-            // 设置背景颜色
+            // 设置背景颜色和透明度
             BackgroundImage.color = Config.BackgroundColor;
 
-            // 设置背景尺寸
+            // 设置背景大小
             var backgroundRect = BackgroundImage.rectTransform;
-            backgroundRect.sizeDelta = new Vector2(
-                backgroundRect.sizeDelta.x * Config.BackgroundWidth,
-                Config.BackgroundHeight);
+
+            // 计算高度 - 如果BackgroundHeight <= 1则作为百分比处理，否则作为绝对像素值
+            float height;
+            if (Config.BackgroundHeight <= 1.0f)
+            {
+                height = Screen.height * Config.BackgroundHeight;
+            }
+            else
+            {
+                height = Config.BackgroundHeight;
+            }
+
+            // 宽度设置 - 如果BackgroundWidth <= 1则作为百分比处理，否则作为绝对像素值
+            float width = Config.BackgroundWidth;
+            if (width <= 1.0f)
+            {
+                // 作为屏幕宽度的百分比，保持原来的锚点设置
+                backgroundRect.anchorMin = new Vector2((1 - width) / 2, Config.VerticalPosition);
+                backgroundRect.anchorMax = new Vector2((1 + width) / 2, Config.VerticalPosition);
+                backgroundRect.sizeDelta = new Vector2(0, height);
+            }
+            else
+            {
+                // 绝对像素宽度，需要调整锚点为中心
+                backgroundRect.anchorMin = new Vector2(0.5f, Config.VerticalPosition);
+                backgroundRect.anchorMax = new Vector2(0.5f, Config.VerticalPosition);
+                backgroundRect.sizeDelta = new Vector2(width, height);
+            }
         }
 
         // 应用描边配置
-        if (Outline is not  null)
+        if (Outline is not null)
         {
             // 设置描边是否启用
             Outline.enabled = Config.EnableOutline;
@@ -323,14 +322,14 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         // 应用画布配置
-        if (Canvas is not  null)
+        if (Canvas is not null)
         {
             // 根据字幕类型设置画布属性
             if (Config.SubtitleType == JustAnotherTranslator.SubtitleTypeEnum.Base)
             {
                 // 设置垂直位置
                 RectTransform rectTransform = Canvas.GetComponent<RectTransform>();
-                if (rectTransform is not  null)
+                if (rectTransform is not null)
                 {
                     // 0是底部，1是顶部，调整字幕的垂直位置
                     rectTransform.anchorMin = new Vector2(0.5f, Config.VerticalPosition);
@@ -341,7 +340,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         // 应用画布缩放器配置
-        if (CanvasScaler is not  null)
+        if (CanvasScaler is not null)
         {
             // 设置UI缩放模式和参考分辨率
             CanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
@@ -389,12 +388,51 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         textColor.a = alpha;
         TextComponent.color = textColor;
 
+        // 如果文本中包含带颜色的说话者名称，需要更新富文本中的颜色
+        if (TextComponent.text.Contains("<color="))
+        {
+            // 获取当前文本内容
+            string currentText = TextComponent.text;
+            
+            // 查找颜色标签的开始位置
+            int colorTagStart = currentText.IndexOf("<color=", StringComparison.Ordinal);
+            if (colorTagStart >= 0)
+            {
+                // 查找颜色值的开始和结束位置
+                int colorValueStart = currentText.IndexOf('#', colorTagStart);
+                int colorValueEnd = currentText.IndexOf('>', colorValueStart);
+                
+                if (colorValueStart >= 0 && colorValueEnd > colorValueStart)
+                {
+                    // 提取原始颜色值
+                    string originalColorValue = currentText.Substring(colorValueStart + 1, colorValueEnd - colorValueStart - 1);
+                    
+                    // 如果颜色值是6位的RGB格式，转换为带透明度的RGBA格式
+                    if (originalColorValue.Length == 6)
+                    {
+                        // 计算alpha值的十六进制表示（00-FF）
+                        byte alphaValue = (byte)(alpha * 255);
+                        string alphaHex = alphaValue.ToString("X2");
+                        
+                        // 创建新的颜色值，加入alpha通道
+                        string newColorValue = originalColorValue + alphaHex;
+                        
+                        // 替换原来的颜色值
+                        currentText = currentText.Substring(0, colorValueStart + 1) + newColorValue + 
+                                      currentText.Substring(colorValueEnd);
+                        
+                        // 更新文本内容
+                        TextComponent.text = currentText;
+                    }
+                }
+            }
+        }
+
         // 设置背景透明度
         var bgColor = BackgroundImage.color;
         bgColor.a = alpha * Config.BackgroundColor.a; // 保持背景的相对透明度
         BackgroundImage.color = bgColor;
     }
-
 
     /// <summary>
     ///     淡入动画

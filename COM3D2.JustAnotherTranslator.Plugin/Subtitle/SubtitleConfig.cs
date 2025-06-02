@@ -17,6 +17,7 @@ public class SubtitleConfig
         // 初始化字幕配置
         var config = new SubtitleConfig
         {
+            // 字幕类型
             SubtitleType = subtitleType,
 
             // 是否启用说话人名称
@@ -50,7 +51,10 @@ public class SubtitleConfig
                 () => JustAnotherTranslator.LyricSubtitleFontSize.Value,
                 24),
 
-            // 字体颜色
+            // 文本对齐方式
+            // TODO
+
+            // 文本颜色
             TextColor = GetSubtitleTypeConfig(
                 subtitleType,
                 () => ParseColor(JustAnotherTranslator.BaseSubtitleColor.Value,
@@ -67,15 +71,14 @@ public class SubtitleConfig
             BackgroundColor = GetSubtitleTypeConfig(
                 subtitleType,
                 () => ParseColor(JustAnotherTranslator.BaseSubtitleBackgroundColor.Value,
-                    JustAnotherTranslator.BaseSubtitleOpacity.Value),
+                    JustAnotherTranslator.BaseSubtitleBackgroundOpacity.Value),
                 () => ParseColor(JustAnotherTranslator.YotogiSubtitleBackgroundColor.Value,
-                    JustAnotherTranslator.YotogiSubtitleOpacity.Value),
+                    JustAnotherTranslator.YotogiSubtitleBackgroundOpacity.Value),
                 () => ParseColor(JustAnotherTranslator.AdvSubtitleBackgroundColor.Value,
-                    JustAnotherTranslator.AdvSubtitleOpacity.Value),
+                    JustAnotherTranslator.AdvSubtitleBackgroundOpacity.Value),
                 () => ParseColor(JustAnotherTranslator.LyricSubtitleBackgroundColor.Value,
-                    JustAnotherTranslator.LyricSubtitleOpacity.Value),
+                    JustAnotherTranslator.LyricSubtitleBackgroundOpacity.Value),
                 new Color(0, 0, 0, 0.5f)),
-
 
             // 是否启用描边
             EnableOutline = GetSubtitleTypeConfig(
@@ -86,6 +89,36 @@ public class SubtitleConfig
                 () => JustAnotherTranslator.EnableLyricSubtitleOutline.Value,
                 false),
 
+            // 描边颜色
+            OutlineColor = GetSubtitleTypeConfig(
+                subtitleType,
+                () => ParseColor(JustAnotherTranslator.BaseSubtitleOutlineColor.Value,
+                    JustAnotherTranslator.BaseSubtitleOutlineOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.YotogiSubtitleOutlineColor.Value,
+                    JustAnotherTranslator.YotogiSubtitleOutlineOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.AdvSubtitleOutlineColor.Value,
+                    JustAnotherTranslator.AdvSubtitleOutlineOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.LyricSubtitleOutlineColor.Value,
+                    JustAnotherTranslator.LyricSubtitleOutlineOpacity.Value),
+                Color.black),
+
+            // 描边粗细
+            OutlineWidth = GetSubtitleTypeConfig(
+                subtitleType,
+                () => JustAnotherTranslator.BaseSubtitleOutlineWidth.Value,
+                () => JustAnotherTranslator.YotogiSubtitleOutlineWidth.Value,
+                () => JustAnotherTranslator.AdvSubtitleOutlineWidth.Value,
+                () => JustAnotherTranslator.LyricSubtitleOutlineWidth.Value,
+                1f),
+
+            // 垂直位置
+            VerticalPosition = GetSubtitleTypeConfig(
+                subtitleType,
+                () => JustAnotherTranslator.BaseSubtitleVerticalPosition.Value,
+                () => JustAnotherTranslator.YotogiSubtitleVerticalPosition.Value,
+                () => JustAnotherTranslator.AdvSubtitleVerticalPosition.Value,
+                () => JustAnotherTranslator.LyricSubtitleVerticalPosition.Value,
+                1f),
 
             // 背景宽度
             BackgroundWidth = GetSubtitleTypeConfig(
@@ -135,10 +168,8 @@ public class SubtitleConfig
             // VR 字幕模式
             VRSubtitleMode = JustAnotherTranslator.VRSubtitleMode.Value,
 
-
             // VR悬浮字幕距离（米）
             VRSubtitleDistance = JustAnotherTranslator.VRSubtitleDistance.Value,
-
 
             // VR悬浮字幕垂直偏移（度，相对于视线中心）
             VRSubtitleVerticalOffset = JustAnotherTranslator.VRSubtitleVerticalOffset.Value,
@@ -261,7 +292,7 @@ public class SubtitleConfig
     // 是否启用说话人名字显示
     public bool EnableSpeakerName { get; set; } = true;
 
-    // 字体名称
+    // 字体
     public Font Font { get; set; } = Resources.GetBuiltinResource<Font>("Arial.ttf");
 
     // 字体大小
@@ -274,22 +305,19 @@ public class SubtitleConfig
     public Color TextColor { get; set; } = Color.white;
 
     // 背景颜色
-    public Color BackgroundColor { get; set; } = new(0, 0, 0);
+    public Color BackgroundColor { get; set; } = new(0, 0, 0, 0.1f);
 
     // 是否启用描边
     public bool EnableOutline { get; set; }
 
     // 描边颜色
-    public Color OutlineColor { get; set; } = Color.black;
+    public Color OutlineColor { get; set; } = new(0, 0, 0, 0.5f);
 
     // 描边粗细
     public float OutlineWidth { get; set; } = 1f;
 
-    // 背景不透明度（0-1）
-    public float BackgroundOpacity { get; set; } = 0.5f;
-
     // 垂直位置（0-1，0表示底部，1表示顶部）
-    public float VerticalPosition { get; set; } = 0.1f;
+    public float VerticalPosition { get; set; } = 1f;
 
     // 背景宽度百分比
     public float BackgroundWidth { get; set; } = 1f;
@@ -326,7 +354,7 @@ public class SubtitleConfig
     public float VRSubtitleHeight { get; set; } = 1f;
 
     // 当前垂直位置
-    public float CurrentVerticalPosition { get; set; } = 0.1f;
+    public float CurrentVerticalPosition { get; set; } = 1f;
 
     # endregion
 }

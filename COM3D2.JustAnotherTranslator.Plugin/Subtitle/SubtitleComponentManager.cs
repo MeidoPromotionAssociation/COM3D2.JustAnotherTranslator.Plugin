@@ -17,10 +17,10 @@ public static class SubtitleComponentManager
     private static Transform _vrHeadTransform;
 
     // 字幕ID映射，用于跟踪说话者与字幕组件的关系
-    private static readonly Dictionary<string, ISubtitleComponent> _subtitleComponentsMap = new(); // 说话者，字幕组件
+    private static readonly Dictionary<string, ISubtitleComponent> SubtitleComponentsMap = new(); // 说话者，字幕组件
 
     // 所有种类字幕的配置字典
-    private static readonly Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> _subtitleConfigs = new();
+    private static readonly Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> SubtitleConfigs = new();
 
 
     /// <summary>
@@ -35,7 +35,7 @@ public static class SubtitleComponentManager
                      typeof(JustAnotherTranslator.SubtitleTypeEnum)))
         {
             var config = SubtitleConfig.CreateSubtitleConfig(subtitleType);
-            _subtitleConfigs[subtitleType] = config;
+            SubtitleConfigs[subtitleType] = config;
         }
 
         if (JustAnotherTranslator.IsVrMode) InitVRComponents();
@@ -119,7 +119,7 @@ public static class SubtitleComponentManager
 
         component.Initialize(config);
 
-        _subtitleComponentsMap[GetSpeakerSubtitleId(speakerName)] = component;
+        SubtitleComponentsMap[GetSpeakerSubtitleId(speakerName)] = component;
 
         return component;
     }
@@ -142,13 +142,12 @@ public static class SubtitleComponentManager
 
         var subtitleId = GetSpeakerSubtitleId(speakerName);
 
-        if (!_subtitleComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
+        if (!SubtitleComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
         {
             subtitleComponent = CreateSubtitleComponent(speakerName, GetSubtitleConfig(subtitleType));
-            _subtitleComponentsMap[subtitleId] = subtitleComponent;
+            SubtitleComponentsMap[subtitleId] = subtitleComponent;
         }
 
-        // 显示字幕
         subtitleComponent.ShowSubtitle(text, speakerName, duration);
 
         LogManager.Debug($"Showing subtitle: [{speakerName}] {text}");
@@ -163,7 +162,7 @@ public static class SubtitleComponentManager
         if (string.IsNullOrEmpty(subtitleId))
             return;
 
-        if (_subtitleComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
+        if (SubtitleComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
         {
             subtitleComponent.HideSubtitle();
             LogManager.Debug($"Hiding subtitle: {subtitleId}");
@@ -201,7 +200,7 @@ public static class SubtitleComponentManager
     public static SubtitleConfig GetSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum type)
     {
         if (!_initialized) Initialize();
-        return _subtitleConfigs[type];
+        return SubtitleConfigs[type];
     }
 
     /// <summary>
@@ -213,14 +212,16 @@ public static class SubtitleComponentManager
                      typeof(JustAnotherTranslator.SubtitleTypeEnum)))
         {
             var config = SubtitleConfig.CreateSubtitleConfig(subtitleType);
-            _subtitleConfigs[subtitleType] = config;
+            SubtitleConfigs[subtitleType] = config;
         }
 
-        foreach (var subtitleComponent in _subtitleComponentsMap.Values)
+        foreach (var subtitleComponent in SubtitleComponentsMap.Values)
         {
             var oldConfig = subtitleComponent.GetConfig();
 
-            subtitleComponent.UpdateConfig(_subtitleConfigs[oldConfig.SubtitleType]);
+            subtitleComponent.UpdateConfig(SubtitleConfigs[oldConfig.SubtitleType]);
+
+            LogManager.Debug($"Update subtitle config: {subtitleComponent.GetSubtitleId()}");
         }
     }
 
@@ -237,6 +238,21 @@ public static class SubtitleComponentManager
     }
 
 
+    public static void UpdateSubtitleConfig(string speakerName)
+    {
+        var subtitleId = GetSpeakerSubtitleId(speakerName);
+        if (SubtitleComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
+        {
+            var oldConfig = subtitleComponent.GetConfig();
+
+            subtitleComponent.UpdateConfig(SubtitleConfigs[oldConfig.SubtitleType]);
+
+            LogManager.Debug($"Update subtitle config: {subtitleId}");
+        }
+    }
+
+
+
     /// <summary>
     ///     销毁字幕组件
     /// </summary>
@@ -246,7 +262,7 @@ public static class SubtitleComponentManager
         if (component is null)
             return;
 
-        _subtitleComponentsMap.Remove(GetSpeakerSubtitleId(component.GetSpeakerName()));
+        SubtitleComponentsMap.Remove(GetSpeakerSubtitleId(component.GetSpeakerName()));
 
         component.Destroy();
 
@@ -258,10 +274,10 @@ public static class SubtitleComponentManager
     /// </summary>
     public static void DestroyAllSubtitleComponents()
     {
-        foreach (var component in _subtitleComponentsMap.Values)
+        foreach (var component in SubtitleComponentsMap.Values)
             component.Destroy();
 
-        _subtitleComponentsMap.Clear();
+        SubtitleComponentsMap.Clear();
         LogManager.Debug("All subtitle components destroyed");
     }
 

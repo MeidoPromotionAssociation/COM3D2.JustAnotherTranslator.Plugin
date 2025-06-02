@@ -22,16 +22,16 @@ public static class SubtitleManager
     private static readonly Dictionary<Maid, string> MaidMonitorCoroutineIds = new();
 
     // 存储voiceId与文本的映射关系
-    public static readonly Dictionary<string, string> VoiceIdToTextMap = new();
+    private static readonly Dictionary<string, string> VoiceIdToTextMap = new();
 
     // 当前正在说话的角色
-    public static Maid CurrentSpeaker;
+    private static Maid _currentSpeaker;
 
     // 当前正在播放的语音ID
-    public static string CurrentVoiceId;
+    private static string _currentVoiceId;
 
     // 当前字幕类型
-    public static JustAnotherTranslator.SubtitleTypeEnum SubtitleType;
+    private static JustAnotherTranslator.SubtitleTypeEnum _currentSubtitleType;
 
     // 各种补丁实例
     private static Harmony _yotogiSubtitlePatch;
@@ -160,8 +160,8 @@ public static class SubtitleManager
         VoiceIdToTextMap.Clear();
 
         // 重置状态
-        CurrentSpeaker = null;
-        CurrentVoiceId = null;
+        _currentSpeaker = null;
+        _currentVoiceId = null;
     }
 
 
@@ -233,8 +233,9 @@ public static class SubtitleManager
     {
         var foundText = false;
         var lastPlayingVoiceId = string.Empty;
+        var speakerName = MaidInfo.GetMaidFullName(maid);
 
-        LogManager.Debug($"MonitorMaidVoicePlayback started for: {MaidInfo.GetMaidFullName(maid)}");
+        LogManager.Debug($"MonitorMaidVoicePlayback started for: {speakerName}");
 
         while (maid is not null && maid.Visible)
         {
@@ -260,16 +261,17 @@ public static class SubtitleManager
             {
                 // 如果语音ID发生变化，重置foundText状态
                 if (voiceChanged)
-
-
                 {
                     foundText = false;
-                    // 如果上一个语音还没结束就切换了，先隐藏之前的字幕
+                    // 如果上一个语音还没结束就切换了
                     if (!string.IsNullOrEmpty(lastPlayingVoiceId))
+                    {
                         LogManager.Debug(
-                            $"Voice changed from {lastPlayingVoiceId} to {currentVoiceId}, hiding previous subtitle");
+                            $"Voice changed from {lastPlayingVoiceId} to {currentVoiceId}");
+                        //SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
+                    }
                     LogManager.Debug(
-                        $"Maid {MaidInfo.GetMaidFullName(maid)} is now playing new voice: {currentVoiceId}");
+                        $"Maid {speakerName} is now playing new voice: {currentVoiceId}");
                 }
 
                 // 只有未找到文本时才尝试查找和显示
@@ -283,16 +285,17 @@ public static class SubtitleManager
                             $"Found text for voice {currentVoiceId}: {text}, showing subtitle (form text cache)");
 
                         // 显示字幕
-                        ShowSubtitle(text, maid);
+                        SubtitleComponentManager.ShowSubtitle(text, speakerName, 0, _currentSubtitleType);
                         foundText = true;
                     }
                     // 尝试直接按 voiceId 获取翻译
                     else if (TextTranslator.GetTranslateText(currentVoiceId, out var translateText))
                     {
                         VoiceIdToTextMap[currentVoiceId] = translateText;
+
                         LogManager.Debug(
                             $"Found text for voice {currentVoiceId}: {translateText}, showing subtitle (form text translator)");
-                        ShowSubtitle(translateText, maid);
+                        SubtitleComponentManager.ShowSubtitle(translateText, speakerName, 0, _currentSubtitleType);
                         foundText = true;
                     }
                     else
@@ -314,7 +317,7 @@ public static class SubtitleManager
                     if (currentVoiceId == lastPlayingVoiceId)
                     {
                         LogManager.Debug($"Voice {lastPlayingVoiceId} stopped playing, hiding subtitle");
-                        HideSubtitle(maid);
+                        SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
                         foundText = false;
                     }
                     else
@@ -339,11 +342,14 @@ public static class SubtitleManager
         // Maid不可见或为null，停止协程
         if (maid is null || !maid.Visible)
         {
-            if (maid is not null) HideSubtitle(maid);
+            if (maid is not null)
+            {
+                SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
+            }
 
             MaidMonitorCoroutineIds.Remove(maid);
             // 重新创建字幕以重新排序
-            UpdateSubtitleConfig();
+            SubtitleComponentManager.UpdateSubtitleConfig();
         }
 
         LogManager.Debug($"MonitorMaidVoicePlayback ended for Maid {MaidInfo.GetMaidFullName(maid)}");
@@ -373,13 +379,13 @@ public static class SubtitleManager
     /// </summary>
     public static void SetVoiceTextMapping(string text, string callBy)
     {
-        if (string.IsNullOrEmpty(CurrentVoiceId) || string.IsNullOrEmpty(text))
+        if (string.IsNullOrEmpty(_currentVoiceId) || string.IsNullOrEmpty(text))
             return;
 
         // 直接更新映射
-        VoiceIdToTextMap[CurrentVoiceId] = text;
+        VoiceIdToTextMap[_currentVoiceId] = text;
 
-        LogManager.Debug($"SetVoiceText called by {callBy}, create a mapping: voiceId={CurrentVoiceId}, text={text}");
+        LogManager.Debug($"SetVoiceText called by {callBy}, create a mapping: voiceId={_currentVoiceId}, text={text}");
     }
 
     // <summary>
@@ -387,7 +393,7 @@ public static class SubtitleManager
     // </summary>
     public static void SetCurrentVoiceId(string voiceId)
     {
-        CurrentVoiceId = voiceId;
+        _currentVoiceId = voiceId;
     }
 
     // <summary>
@@ -395,7 +401,7 @@ public static class SubtitleManager
     // </summary>
     public static void SetCurrentSpeaker(Maid speakerMaid)
     {
-        CurrentSpeaker = speakerMaid;
+        _currentSpeaker = speakerMaid;
     }
 
 
@@ -404,7 +410,7 @@ public static class SubtitleManager
     // </summary>
     public static void SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum subtitleType)
     {
-        SubtitleType = subtitleType;
+        _currentSubtitleType = subtitleType;
     }
 
     # endregion

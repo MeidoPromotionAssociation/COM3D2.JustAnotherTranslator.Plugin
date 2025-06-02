@@ -8,6 +8,9 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 /// <summary>
 ///     XUAT（XUnity.AutoTranslator）互操作类，用于与 XUAT 翻译器集成
+///     代码来自 https://github.com/Pain-Brioche/COM3D2.i18nEx
+///     COM3D2.i18nEx 基于 MIT 许可证，协议开源，作者为 ghorsington、Pain-Brioche
+///     参考 https://github.com/bbepis/XUnity.AutoTranslator/issues/215
 /// </summary>
 public static class XUATInterop
 {
@@ -28,7 +31,7 @@ public static class XUATInterop
     public static string XuatSpicalMaker = "\u180e";
 
     /// <summary>
-    ///     初始化XUAT互操作功能
+    ///     初始化 XUAT 互操作功能
     /// </summary>
     /// <returns>如果成功初始化返回true，否则返回false</returns>
     public static bool Initialize()
@@ -40,57 +43,67 @@ public static class XUATInterop
         // 标记为已初始化
         _initialized = true;
 
-        // 查找XUAT程序集
-        var xuatAssembly = AppDomain.CurrentDomain.GetAssemblies()
-            .FirstOrDefault(a => a.GetName().Name == "XUnity.AutoTranslator.Plugin.Core");
-        if (xuatAssembly == null)
+
+        try
         {
+            // 查找 XUAT 程序集
+            var xuatAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                .FirstOrDefault(a => a.GetName().Name == "XUnity.AutoTranslator.Plugin.Core");
+            if (xuatAssembly == null)
+            {
+                LogManager.Info(
+                    "No XUnity.AutoTranslator Plugin detected, skipping interop/未检测到 XUnity.AutoTranslator 插件，跳过互操作");
+                return false;
+            }
+
+            // 获取 LanguageHelper 类型
+            var langHelper = xuatAssembly.GetType("XUnity.AutoTranslator.Plugin.Core.Utilities.LanguageHelper");
+            if (langHelper == null)
+            {
+                LogManager.Warning(
+                    "Could not find LanguageHelper; skipping XUAT interop/无法找到 LanguageHelper，跳过 XUAT 互操作");
+                return false;
+            }
+
+            // 通过反射获取 LanguageHelper.MogolianVowelSeparatorString 字段值
+            var mogolianVowelSeparatorStringField = langHelper.GetField("MogolianVowelSeparatorString",
+                BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+            if (mogolianVowelSeparatorStringField != null)
+                XuatSpicalMaker = (string)mogolianVowelSeparatorStringField.GetValue(null);
+
+            // 获取 MakeRedirected 方法
+            var makeRedirectedMethod = AccessTools.Method(langHelper, "MakeRedirected");
+            if (makeRedirectedMethod == null)
+            {
+                LogManager.Warning(
+                    "Could not find LanguageHelper.MakeRedirected; skipping XUAT interop/无法找到 LanguageHelper.MakeRedirected，跳过 XUAT 互操作");
+                return false;
+            }
+
+            // 创建委托
+            _markTranslated = makeRedirectedMethod.CreateDelegate<MarkTranslatedDelegate>();
             LogManager.Info(
-                "No XUnity.AutoTranslator Plugin detected, skipping interop/未检测到 XUnity.AutoTranslator 插件，跳过互操作");
-            return false;
+                "Found XUnity.AutoTranslator Plugin; enabled interop(translated text will not be translated by XUAT again)/检测到 XUnity.AutoTranslator 插件，已启用互操作（已翻译的文本将不会被 XUAT 再次翻译）");
         }
-
-        // 获取LanguageHelper类型
-        var langHelper = xuatAssembly.GetType("XUnity.AutoTranslator.Plugin.Core.Utilities.LanguageHelper");
-        if (langHelper == null)
+        catch (Exception e)
         {
-            LogManager.Warning("Could not find LanguageHelper; skipping XUAT interop/无法找到 LanguageHelper，跳过 XUAT 互操作");
+            LogManager.Error("XUAT interop failed: " + e.Message);
             return false;
         }
-
-        // 通过反射获取 LanguageHelper.MogolianVowelSeparatorString 字段值
-        var mogolianVowelSeparatorStringField = langHelper.GetField("MogolianVowelSeparatorString",
-            BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
-        if (mogolianVowelSeparatorStringField != null)
-            XuatSpicalMaker = (string)mogolianVowelSeparatorStringField.GetValue(null);
-
-        // 获取MakeRedirected方法
-        var makeRedirectedMethod = AccessTools.Method(langHelper, "MakeRedirected");
-        if (makeRedirectedMethod == null)
-        {
-            LogManager.Warning(
-                "Could not find LanguageHelper.MakeRedirected; skipping XUAT interop/无法找到 LanguageHelper.MakeRedirected，跳过 XUAT 互操作");
-            return false;
-        }
-
-        // 创建委托
-        _markTranslated = makeRedirectedMethod.CreateDelegate<MarkTranslatedDelegate>();
-        LogManager.Info(
-            "Found XUnity.AutoTranslator Plugin; enabled interop(translated text will not be translated by XUAT again)/检测到 XUnity.AutoTranslator 插件，已启用互操作（已翻译的文本将不会被 XUAT 再次翻译）");
 
         return true;
     }
 
     /// <summary>
-    ///     标记文本为已翻译，防止XUAT重复翻译
+    ///     标记文本为已翻译，防止 XUAT 重复翻译
     ///     实际上只是检查是否有 \u180e，但是我们选择更安全的方式
     /// </summary>
     /// <param name="text">要标记的文本</param>
     /// <returns>标记后的文本</returns>
     public static string MarkTranslated(string text)
     {
-        // 如果初始化失败则返回原文本，否则调用XUAT的标记方法
-        // 需要使用标记后的文本，否则XUAT会重复翻译
+        // 如果初始化失败则返回原文本，否则调用 XUAT 的标记方法
+        // 需要使用标记后的文本，否则 XUAT 会重复翻译
         return !Initialize() ? text : _markTranslated(text);
     }
 

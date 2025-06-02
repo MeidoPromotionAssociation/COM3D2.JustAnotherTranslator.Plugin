@@ -10,7 +10,7 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 public class SubtitleConfig
 {
     // 是否启用说话人名字显示
-    public bool EnableSpeakerName { get; set; }  = true;
+    public bool EnableSpeakerName { get; set; } = true;
 
     // 字幕类型
     public JustAnotherTranslator.SubtitleTypeEnum SubtitleType { get; set; } =
@@ -124,19 +124,27 @@ public class SubtitleConfig
             // 字体颜色
             TextColor = GetSubtitleTypeConfig(
                 subtitleType,
-                () => ParseColor(JustAnotherTranslator.BaseSubtitleColor.Value, JustAnotherTranslator.BaseSubtitleOpacity.Value),
-                () => ParseColor(JustAnotherTranslator.YotogiSubtitleColor.Value, JustAnotherTranslator.YotogiSubtitleOpacity.Value),
-                () => ParseColor(JustAnotherTranslator.AdvSubtitleColor.Value, JustAnotherTranslator.AdvSubtitleOpacity.Value),
-                () => ParseColor(JustAnotherTranslator.LyricSubtitleColor.Value, JustAnotherTranslator.LyricSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.BaseSubtitleColor.Value,
+                    JustAnotherTranslator.BaseSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.YotogiSubtitleColor.Value,
+                    JustAnotherTranslator.YotogiSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.AdvSubtitleColor.Value,
+                    JustAnotherTranslator.AdvSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.LyricSubtitleColor.Value,
+                    JustAnotherTranslator.LyricSubtitleOpacity.Value),
                 Color.white),
 
             // 背景颜色
             BackgroundColor = GetSubtitleTypeConfig(
                 subtitleType,
-                () => ParseColor(JustAnotherTranslator.BaseSubtitleBackgroundColor.Value, JustAnotherTranslator.BaseSubtitleOpacity.Value),
-                () => ParseColor(JustAnotherTranslator.YotogiSubtitleBackgroundColor.Value, JustAnotherTranslator.YotogiSubtitleOpacity.Value),
-                () => ParseColor(JustAnotherTranslator.AdvSubtitleBackgroundColor.Value, JustAnotherTranslator.AdvSubtitleOpacity.Value),
-                () => ParseColor(JustAnotherTranslator.LyricSubtitleBackgroundColor.Value, JustAnotherTranslator.LyricSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.BaseSubtitleBackgroundColor.Value,
+                    JustAnotherTranslator.BaseSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.YotogiSubtitleBackgroundColor.Value,
+                    JustAnotherTranslator.YotogiSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.AdvSubtitleBackgroundColor.Value,
+                    JustAnotherTranslator.AdvSubtitleOpacity.Value),
+                () => ParseColor(JustAnotherTranslator.LyricSubtitleBackgroundColor.Value,
+                    JustAnotherTranslator.LyricSubtitleOpacity.Value),
                 new Color(0, 0, 0, 0.5f)),
 
 
@@ -249,10 +257,7 @@ public class SubtitleConfig
     {
         try
         {
-            if (ColorUtility.TryParseHtmlString(colorStr, out var color))
-            {
-                return color;
-            }
+            if (ColorUtility.TryParseHtmlString(colorStr, out var color)) return color;
             LogManager.Warning($"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
         }
         catch
@@ -279,6 +284,7 @@ public class SubtitleConfig
                 color.a = alpha;
                 return color;
             }
+
             LogManager.Warning($"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
         }
         catch
@@ -298,10 +304,7 @@ public class SubtitleConfig
     /// <returns>字体</returns>
     private static Font GetFontByName(string name, int size)
     {
-        if (name == "Arial" || name == "Arial.ttf")
-        {
-            return Resources.GetBuiltinResource<Font>("Arial.ttf");
-        }
+        if (name == "Arial" || name == "Arial.ttf") return Resources.GetBuiltinResource<Font>("Arial.ttf");
         try
         {
             var font = Font.CreateDynamicFontFromOSFont(name, size);

@@ -13,10 +13,10 @@ public static class SubtitleComponentManager
     // 是否已初始化
     private static bool _initialized;
 
-    // VR头部变换
+    // VR 头部变换
     private static Transform _vrHeadTransform;
 
-    // 字幕ID映射，用于跟踪说话者与字幕组件的关系
+    // 字幕 ID 映射，用于跟踪说话者与字幕组件的关系
     private static readonly Dictionary<string, ISubtitleComponent> SubtitleComponentsMap = new(); // 说话者，字幕组件
 
     // 所有种类字幕的配置字典
@@ -146,6 +146,17 @@ public static class SubtitleComponentManager
         {
             subtitleComponent = CreateSubtitleComponent(speakerName, GetSubtitleConfig(subtitleType));
             SubtitleComponentsMap[subtitleId] = subtitleComponent;
+        }
+        else
+        {
+            // 如果字幕类型不同，重新创建
+            if (subtitleComponent.GetConfig().SubtitleType != subtitleType)
+            {
+                subtitleComponent.Destroy();
+                SubtitleComponentsMap.Remove(subtitleId);
+                subtitleComponent = CreateSubtitleComponent(speakerName, GetSubtitleConfig(subtitleType));
+                SubtitleComponentsMap[subtitleId] = subtitleComponent;
+            }
         }
 
         subtitleComponent.ShowSubtitle(text, speakerName, duration);

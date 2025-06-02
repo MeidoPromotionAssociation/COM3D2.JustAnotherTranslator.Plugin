@@ -9,12 +9,14 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 [Serializable]
 public class SubtitleConfig
 {
-    // 是否启用说话人名字显示
-    public bool EnableSpeakerName { get; set; } = true;
+    # region Config
 
     // 字幕类型
     public JustAnotherTranslator.SubtitleTypeEnum SubtitleType { get; set; } =
         JustAnotherTranslator.SubtitleTypeEnum.Base;
+
+    // 是否启用说话人名字显示
+    public bool EnableSpeakerName { get; set; } = true;
 
     // 字体名称
     public Font Font { get; set; } = Resources.GetBuiltinResource<Font>("Arial.ttf");
@@ -79,6 +81,17 @@ public class SubtitleConfig
 
     // VR悬浮字幕背景高度（米）
     public float VRSubtitleHeight { get; set; } = 1f;
+
+    // 当前垂直位置
+    public float CurrentVerticalPosition { get; set; } = 0.1f;
+
+    # endregion
+
+
+
+
+
+
 
     /// <summary>
     ///     从插件配置中创建字幕配置

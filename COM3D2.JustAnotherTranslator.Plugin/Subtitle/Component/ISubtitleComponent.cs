@@ -51,6 +51,12 @@ public interface ISubtitleComponent
     string GetSpeakerName();
 
     /// <summary>
+    ///     获取字幕ID
+    /// </summary>
+    /// <returns>字幕ID</returns>
+    string GetSubtitleId();
+
+    /// <summary>
     ///     检查字幕是否可见
     /// </summary>
     /// <returns>字幕是否可见</returns>

@@ -60,7 +60,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     {
         if (string.IsNullOrEmpty(text))
         {
-            LogManager.Warning("字幕文本为空，不显示/Subtitle text is empty, not showing");
+            LogManager.Debug("Subtitle text is empty, not showing");
             return;
         }
 
@@ -144,6 +144,15 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         return _speakerName ?? string.Empty;
     }
 
+
+    /// <summary>
+    ///     获取当前字幕ID
+    /// </summary>
+    public string GetSubtitleId()
+    {
+        return GetGameObject().name;
+    }
+
     /// <summary>
     ///     检查字幕是否可见
     /// </summary>
@@ -161,7 +170,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         StopAnimation();
         DestroySubtitleUI();
         Destroy(gameObject);
-        LogManager.Debug($"{GetType().Name}已销毁/{GetType().Name} destroyed");
+        LogManager.Debug($"{GetType().Name} destroyed");
     }
 
     /// <summary>

@@ -12,46 +12,43 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 /// </summary>
 public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 {
-    // 动画协程
-    protected Coroutine _animationCoroutine;
-
     // 字幕背景图像组件
-    protected Image _backgroundImage;
+    protected Image BackgroundImage;
 
     // 字幕画布组件
-    protected Canvas _canvas;
+    protected Canvas Canvas;
 
     // 字幕画布缩放器组件
-    protected CanvasScaler _canvasScaler;
+    protected CanvasScaler CanvasScaler;
 
     // 字幕配置
-    protected SubtitleConfig _config;
+    protected SubtitleConfig Config;
 
     // 当前动画协程
-    protected Coroutine _currentAnimation;
-
-    // 是否初始化完成
-    protected bool _initialized;
+    protected Coroutine CurrentAnimation;
 
     // 字幕描边组件
-    protected Outline _outline;
+    protected Outline Outline;
 
     // 说话者名称
-    protected string _speakerName;
+    protected string SpeakerName;
 
     // 字幕文本组件
-    protected Text _text;
+    protected Text TextComponent;
 
     // 说话者文本颜色
     protected string SpeakerColor;
+
+    // 动画协程
+    protected Coroutine AnimationCoroutine;
 
     /// <summary>
     ///     初始化字幕组件
     /// </summary>
     /// <param name="config">字幕配置</param>
-    public virtual void Initialize(SubtitleConfig config)
+    public virtual void Init(SubtitleConfig config)
     {
-        _config = config ?? throw new ArgumentNullException(nameof(config));
+        Config = config ?? throw new ArgumentNullException(nameof(config));
 
         // 创建UI
         CreateSubtitleUI();
@@ -60,7 +57,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         ApplyConfig();
 
         gameObject.SetActive(false);
-        LogManager.Debug($"{GetType().Name} initialized");
+        LogManager.Debug($"{gameObject.name} initialized");
     }
 
     /// <summary>
@@ -72,26 +69,29 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     public virtual void ShowSubtitle(string text, string speakerName, float duration)
     {
         // 如果有正在进行的动画，停止它
-        if (_currentAnimation is not null)
+        if (CurrentAnimation is not null)
         {
-            StopCoroutine(_currentAnimation);
-            _currentAnimation = null;
+            StopCoroutine(CurrentAnimation);
+            CurrentAnimation = null;
         }
+
+        if (string.IsNullOrEmpty(SpeakerName))
+            SpeakerName = speakerName;
 
         if (string.IsNullOrEmpty(SpeakerColor))
             SpeakerColor = ColorUtility.ToHtmlStringRGB(GetSpeakerColor(speakerName));
 
         // 设置文本内容
-        SetText(text, speakerName, SpeakerColor, _config.EnableSpeakerName);
+        SetText(text, speakerName, SpeakerColor, Config.EnableSpeakerName);
 
         // 显示字幕
         gameObject.SetActive(true);
 
         // 如果启用了动画效果
-        if (_config.EnableAnimation)
+        if (Config.EnableAnimation)
         {
             // 开始淡入动画
-            _currentAnimation = StartCoroutine(FadeIn());
+            CurrentAnimation = StartCoroutine(FadeIn());
 
             // 如果设置了持续时间，则在指定时间后淡出
             if (duration > 0) StartCoroutine(AutoHide(duration));
@@ -112,22 +112,29 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <summary>
     ///     隐藏字幕
     /// </summary>
-    public virtual void HideSubtitle()
+    public virtual void HideSubtitle(bool skipAnimation = false)
     {
-        // 如果有正在进行的动画，停止它
-        if (_currentAnimation != null)
+        if (skipAnimation)
         {
-            StopCoroutine(_currentAnimation);
-            _currentAnimation = null;
+            gameObject.SetActive(false);
+            LogManager.Debug($"Hiding subtitle {gameObject.name}");
+            return;
+        }
+
+        // 如果有正在进行的动画，停止它
+        if (CurrentAnimation != null)
+        {
+            StopCoroutine(CurrentAnimation);
+            CurrentAnimation = null;
         }
 
         // 如果启用了动画效果
-        if (_config.EnableAnimation && gameObject.activeSelf)
-            _currentAnimation = StartCoroutine(FadeOut());
+        if (Config.EnableAnimation && gameObject.activeSelf)
+            CurrentAnimation = StartCoroutine(FadeOut());
         else
             gameObject.SetActive(false);
 
-        LogManager.Debug("Hiding subtitle");
+        LogManager.Debug($"Hiding subtitle {gameObject.name}");
     }
 
     /// <summary>
@@ -142,7 +149,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             return;
         }
 
-        _config = config;
+        Config = config;
         ApplyConfig();
     }
 
@@ -152,7 +159,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <returns>当前字幕配置</returns>
     public SubtitleConfig GetConfig()
     {
-        return _config;
+        return Config;
     }
 
     /// <summary>
@@ -161,7 +168,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <returns>当前显示的文本</returns>
     public string GetText()
     {
-        return _text?.text ?? string.Empty;
+        return TextComponent?.text ?? string.Empty;
     }
 
     /// <summary>
@@ -170,7 +177,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <returns>当前说话者名称</returns>
     public string GetSpeakerName()
     {
-        return _speakerName ?? string.Empty;
+        return SpeakerName ?? string.Empty;
     }
 
 
@@ -230,25 +237,25 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             displayText = $"<color=#{speakerColor}>{translatedSpeakerName}</color>: {text}";
         }
 
-        _text.text = displayText;
+        TextComponent.text = displayText;
 
         // 动态调整背景大小以适应文本高度
-        if (_text is not null && !string.IsNullOrEmpty(_text.text) && _backgroundImage is not null)
+        if (TextComponent is not null && !string.IsNullOrEmpty(TextComponent.text) && BackgroundImage is not null)
         {
             // 获取文本内容的预计高度
-            var textGenerator = _text.cachedTextGenerator;
+            var textGenerator = TextComponent.cachedTextGenerator;
             if (textGenerator.characterCountVisible == 0)
-                _text.cachedTextGenerator.Populate(_text.text,
-                    _text.GetGenerationSettings(_text.rectTransform.rect.size));
+                TextComponent.cachedTextGenerator.Populate(TextComponent.text,
+                    TextComponent.GetGenerationSettings(TextComponent.rectTransform.rect.size));
 
             // 计算实际行数与高度
-            float textHeight = textGenerator.lineCount * _text.fontSize;
+            float textHeight = textGenerator.lineCount * TextComponent.fontSize;
 
             // 只有当文本高度超过原始背景高度时才调整背景
-            if (textHeight + 10 > _config.BackgroundHeight)
+            if (textHeight + 10 > Config.BackgroundHeight)
             {
                 // 调整背景尺寸
-                var backgroundRect = _backgroundImage.rectTransform;
+                var backgroundRect = BackgroundImage.rectTransform;
                 backgroundRect.sizeDelta = new Vector2(backgroundRect.sizeDelta.x, textHeight + 10); // 文本高度 + 边距
             }
         }
@@ -264,8 +271,86 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// </summary>
     protected virtual void ApplyConfig()
     {
-        // TODO 应用配置
-        if (_config == null) LogManager.Warning("Subtitle config is null, cannot apply/字幕配置为空，无法应用");
+        // 检查配置是否为空
+        if (Config == null)
+        {
+            LogManager.Warning("Subtitle config is null, cannot apply/字幕配置为空，无法应用");
+            return;
+        }
+
+        // 应用文本组件配置
+        if (TextComponent is not  null)
+        {
+            // 设置字体
+            if (Config.Font is not  null)
+                TextComponent.font = Config.Font;
+
+            // 设置字体大小
+            TextComponent.fontSize = Config.FontSize;
+
+            // 设置文本颜色
+            TextComponent.color = Config.TextColor;
+
+            // 设置文本对齐方式
+            TextComponent.alignment = Config.TextAlignment;
+        }
+
+        // 应用背景图像配置
+        if (BackgroundImage is not  null)
+        {
+            // 设置背景颜色
+            BackgroundImage.color = Config.BackgroundColor;
+
+            // 设置背景尺寸
+            var backgroundRect = BackgroundImage.rectTransform;
+            backgroundRect.sizeDelta = new Vector2(
+                backgroundRect.sizeDelta.x * Config.BackgroundWidth,
+                Config.BackgroundHeight);
+        }
+
+        // 应用描边配置
+        if (Outline is not  null)
+        {
+            // 设置描边是否启用
+            Outline.enabled = Config.EnableOutline;
+
+            // 如果启用，设置描边颜色和宽度
+            if (Config.EnableOutline)
+            {
+                Outline.effectColor = Config.OutlineColor;
+                Outline.effectDistance = new Vector2(Config.OutlineWidth, Config.OutlineWidth);
+            }
+        }
+
+        // 应用画布配置
+        if (Canvas is not  null)
+        {
+            // 根据字幕类型设置画布属性
+            if (Config.SubtitleType == JustAnotherTranslator.SubtitleTypeEnum.Base)
+            {
+                // 设置垂直位置
+                RectTransform rectTransform = Canvas.GetComponent<RectTransform>();
+                if (rectTransform is not  null)
+                {
+                    // 0是底部，1是顶部，调整字幕的垂直位置
+                    rectTransform.anchorMin = new Vector2(0.5f, Config.VerticalPosition);
+                    rectTransform.anchorMax = new Vector2(0.5f, Config.VerticalPosition);
+                    rectTransform.pivot = new Vector2(0.5f, 0.5f);
+                }
+            }
+        }
+
+        // 应用画布缩放器配置
+        if (CanvasScaler is not  null)
+        {
+            // 设置UI缩放模式和参考分辨率
+            CanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            CanvasScaler.referenceResolution = new Vector2(1920, 1080);
+            CanvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            CanvasScaler.matchWidthOrHeight = 0.5f; // 0是宽度，1是高度，0.5是两者平衡
+        }
+
+        LogManager.Debug($"Applied subtitle config to {gameObject.name}");
     }
 
     /// <summary>
@@ -273,10 +358,10 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// </summary>
     protected virtual void StopAnimation()
     {
-        if (_animationCoroutine != null)
+        if (AnimationCoroutine != null)
         {
-            StopCoroutine(_animationCoroutine);
-            _animationCoroutine = null;
+            StopCoroutine(AnimationCoroutine);
+            AnimationCoroutine = null;
         }
     }
 
@@ -286,10 +371,10 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// </summary>
     protected virtual void DestroySubtitleUI()
     {
-        if (_canvas != null)
+        if (Canvas != null)
         {
-            Destroy(_canvas.gameObject);
-            _canvas = null;
+            Destroy(Canvas.gameObject);
+            Canvas = null;
         }
     }
 
@@ -300,14 +385,14 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     protected virtual void SetAlpha(float alpha)
     {
         // 设置文本透明度
-        var textColor = _text.color;
+        var textColor = TextComponent.color;
         textColor.a = alpha;
-        _text.color = textColor;
+        TextComponent.color = textColor;
 
         // 设置背景透明度
-        var bgColor = _backgroundImage.color;
-        bgColor.a = alpha * _config.BackgroundColor.a; // 保持背景的相对透明度
-        _backgroundImage.color = bgColor;
+        var bgColor = BackgroundImage.color;
+        bgColor.a = alpha * Config.BackgroundColor.a; // 保持背景的相对透明度
+        BackgroundImage.color = bgColor;
     }
 
 
@@ -319,16 +404,16 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         float time = 0;
         SetAlpha(0);
 
-        while (time < _config.FadeInDuration)
+        while (time < Config.FadeInDuration)
         {
             time += Time.deltaTime;
-            var alpha = Mathf.Clamp01(time / _config.FadeInDuration);
+            var alpha = Mathf.Clamp01(time / Config.FadeInDuration);
             SetAlpha(alpha);
             yield return null;
         }
 
         SetAlpha(1);
-        _currentAnimation = null;
+        CurrentAnimation = null;
     }
 
     /// <summary>
@@ -339,17 +424,17 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         float time = 0;
         SetAlpha(1);
 
-        while (time < _config.FadeOutDuration)
+        while (time < Config.FadeOutDuration)
         {
             time += Time.deltaTime;
-            var alpha = 1 - Mathf.Clamp01(time / _config.FadeOutDuration);
+            var alpha = 1 - Mathf.Clamp01(time / Config.FadeOutDuration);
             SetAlpha(alpha);
             yield return null;
         }
 
         SetAlpha(0);
         gameObject.SetActive(false);
-        _currentAnimation = null;
+        CurrentAnimation = null;
     }
 
     /// <summary>

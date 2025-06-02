@@ -150,7 +150,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         Logger.LogInfo(
             "Get update or report bug/获取更新或报告bug: https://github.com/90135/COM3D2.JustAnotherTranslator.Plugin");
 
-        // Initialize our LogManager with the BepInEx logger
+        // Init our LogManager with the BepInEx logger
         LogManager.Initialize(Logger);
 
         IsVrMode = Environment.CommandLine.ToLower().Contains("/vr");
@@ -673,7 +673,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 "Create translation folder failed, plugin may not work/创建翻译文件夹失败，插件可能无法运行: " + e.Message);
         }
 
-        // Initialize modules
+        // Init modules
         if (EnableTextTranslation.Value)
         {
             LogManager.Info("Text Translation Enabled/文本翻译已启用");
@@ -749,7 +749,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     private void Start()
     {
         if (EnableTextTranslation.Value)
-            // Initialize XUAT interop
+            // Init XUAT interop
             XUATInterop.Initialize();
     }
 

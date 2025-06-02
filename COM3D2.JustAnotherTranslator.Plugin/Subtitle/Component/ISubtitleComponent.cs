@@ -11,7 +11,7 @@ public interface ISubtitleComponent
     ///     初始化字幕组件
     /// </summary>
     /// <param name="config">字幕配置</param>
-    void Initialize(SubtitleConfig config);
+    void Init(SubtitleConfig config);
 
     /// <summary>
     ///     显示字幕
@@ -24,8 +24,7 @@ public interface ISubtitleComponent
     /// <summary>
     ///     隐藏字幕
     /// </summary>
-    void HideSubtitle();
-    // TODO 支持跳过动画
+    void HideSubtitle(bool skipAnimation = false);
 
     /// <summary>
     ///     更新字幕配置

@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 
@@ -14,11 +13,8 @@ public static class SubtitleComponentManager
     // 是否已初始化
     private static bool _initialized;
 
-    // VR 头部变换
-    private static Transform _vrHeadTransform;
-
     // 字幕 ID 映射，用于跟踪说话者与字幕组件的关系
-    private static readonly Dictionary<string, ISubtitleComponent> SubtitleComponentsMap = new(); // 说话者，字幕组件
+    private static readonly Dictionary<string, ISubtitleComponent> SubtitleIdComponentsMap = new(); // 字幕 ID，字幕组件
 
     // 所有种类字幕的配置字典
     private static readonly Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> SubtitleConfigs = new();
@@ -27,7 +23,7 @@ public static class SubtitleComponentManager
     /// <summary>
     ///     初始化字幕组件管理器
     /// </summary>
-    public static void Initialize()
+    public static void Init()
     {
         if (_initialized) return;
 
@@ -39,45 +35,8 @@ public static class SubtitleComponentManager
             SubtitleConfigs[subtitleType] = config;
         }
 
-        if (JustAnotherTranslator.IsVrMode) InitVRComponents();
-
         _initialized = true;
         LogManager.Debug("Subtitle component manager initialized");
-    }
-
-    /// <summary>
-    ///     初始化VR组件
-    /// </summary>
-    private static void InitVRComponents()
-    {
-        if (_vrHeadTransform is not null)
-            return;
-
-        // 查找 OvrMgr 的 EyeAnchor
-        if (GameMain.Instance is not null && GameMain.Instance.OvrMgr is not null)
-        {
-            _vrHeadTransform = GameMain.Instance.OvrMgr.EyeAnchor;
-            if (_vrHeadTransform is not null)
-            {
-                LogManager.Debug(
-                    "VR head transform (EyeAnchor) found, subtitle head tracking enabled");
-                return;
-            }
-        }
-
-        // 如果无法通过GameMain.Instance.OvrMgr获取，尝试直接查找OvrMgr
-        var ovrMgr = Object.FindObjectOfType<OvrMgr>();
-        if (ovrMgr is not null && ovrMgr.EyeAnchor is not null)
-        {
-            _vrHeadTransform = ovrMgr.EyeAnchor;
-            LogManager.Debug(
-                "VR head transform found through FindObjectOfType<OvrMgr>(), subtitle head tracking enabled");
-        }
-        else
-        {
-            LogManager.Warning(
-                "找不到VR头部变换，头部字幕跟踪将无法工作/VR head transform not found, head tracking will not work");
-        }
     }
 
     /// <summary>
@@ -89,7 +48,7 @@ public static class SubtitleComponentManager
     private static ISubtitleComponent CreateSubtitleComponent(string speakerName, SubtitleConfig config)
     {
         if (!_initialized)
-            Initialize();
+            Init();
 
         var gameObject = new GameObject(GetSpeakerSubtitleId(speakerName));
         ISubtitleComponent component;
@@ -118,9 +77,9 @@ public static class SubtitleComponentManager
             LogManager.Debug("Created screen subtitle component");
         }
 
-        component.Initialize(config);
+        component.Init(config);
 
-        SubtitleComponentsMap[GetSpeakerSubtitleId(speakerName)] = component;
+        SubtitleIdComponentsMap[GetSpeakerSubtitleId(speakerName)] = component;
 
         return component;
     }
@@ -139,14 +98,14 @@ public static class SubtitleComponentManager
             return;
 
         if (!_initialized)
-            Initialize();
+            Init();
 
         var subtitleId = GetSpeakerSubtitleId(speakerName);
 
-        if (!SubtitleComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
+        if (!SubtitleIdComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
         {
             subtitleComponent = CreateSubtitleComponent(speakerName, GetSubtitleConfig(subtitleType));
-            SubtitleComponentsMap[subtitleId] = subtitleComponent;
+            SubtitleIdComponentsMap[subtitleId] = subtitleComponent;
         }
         else
         {
@@ -154,9 +113,9 @@ public static class SubtitleComponentManager
             if (subtitleComponent.GetConfig().SubtitleType != subtitleType)
             {
                 subtitleComponent.Destroy();
-                SubtitleComponentsMap.Remove(subtitleId);
+                SubtitleIdComponentsMap.Remove(subtitleId);
                 subtitleComponent = CreateSubtitleComponent(speakerName, GetSubtitleConfig(subtitleType));
-                SubtitleComponentsMap[subtitleId] = subtitleComponent;
+                SubtitleIdComponentsMap[subtitleId] = subtitleComponent;
             }
         }
 
@@ -174,10 +133,9 @@ public static class SubtitleComponentManager
         if (string.IsNullOrEmpty(subtitleId))
             return;
 
-        if (SubtitleComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
+        if (SubtitleIdComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
         {
             subtitleComponent.HideSubtitle();
-            LogManager.Debug($"Hiding subtitle: {subtitleId}");
         }
     }
 
@@ -211,7 +169,7 @@ public static class SubtitleComponentManager
     /// <returns>字幕配置</returns>
     public static SubtitleConfig GetSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum type)
     {
-        if (!_initialized) Initialize();
+        if (!_initialized) Init();
         return SubtitleConfigs[type];
     }
 
@@ -227,7 +185,7 @@ public static class SubtitleComponentManager
             SubtitleConfigs[subtitleType] = config;
         }
 
-        foreach (var subtitleComponent in SubtitleComponentsMap.Values)
+        foreach (var subtitleComponent in SubtitleIdComponentsMap.Values)
         {
             var oldConfig = subtitleComponent.GetConfig();
 
@@ -244,7 +202,7 @@ public static class SubtitleComponentManager
     public static void UpdateSubtitleConfigBySpeakerName(string speakerName)
     {
         var subtitleId = GetSpeakerSubtitleId(speakerName);
-        if (SubtitleComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
+        if (SubtitleIdComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
         {
             var oldConfig = subtitleComponent.GetConfig();
 
@@ -263,7 +221,7 @@ public static class SubtitleComponentManager
         if (component is null)
             return;
 
-        SubtitleComponentsMap.Remove(GetSpeakerSubtitleId(component.GetSpeakerName()));
+        SubtitleIdComponentsMap.Remove(GetSpeakerSubtitleId(component.GetSpeakerName()));
 
         component.Destroy();
 
@@ -275,19 +233,10 @@ public static class SubtitleComponentManager
     /// </summary>
     public static void DestroyAllSubtitleComponents()
     {
-        foreach (var component in SubtitleComponentsMap.Values)
+        foreach (var component in SubtitleIdComponentsMap.Values)
             component.Destroy();
 
-        SubtitleComponentsMap.Clear();
+        SubtitleIdComponentsMap.Clear();
         LogManager.Debug("All subtitle components destroyed");
-    }
-
-    /// <summary>
-    ///     获取VR头部变换
-    /// </summary>
-    /// <returns>VR头部变换</returns>
-    public static Transform GetVRHeadTransform()
-    {
-        return _vrHeadTransform;
     }
 }

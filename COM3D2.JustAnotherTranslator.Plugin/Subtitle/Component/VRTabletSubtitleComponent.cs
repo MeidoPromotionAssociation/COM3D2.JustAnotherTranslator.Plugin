@@ -33,41 +33,41 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
             }
         }
 
-        _canvas = canvasObj.AddComponent<Canvas>();
-        _canvas.renderMode = RenderMode.WorldSpace;
-        _canvas.sortingOrder = 32767; // 确保在最上层显示
+        Canvas = canvasObj.AddComponent<Canvas>();
+        Canvas.renderMode = RenderMode.WorldSpace;
+        Canvas.sortingOrder = 32767; // 确保在最上层显示
 
-        _canvas.transform.localPosition = Vector3.zero;
-        _canvas.transform.localRotation = Quaternion.identity;
-        _canvas.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+        Canvas.transform.localPosition = Vector3.zero;
+        Canvas.transform.localRotation = Quaternion.identity;
+        Canvas.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
 
         // 添加画布缩放器
-        _canvasScaler = _canvas.gameObject.AddComponent<CanvasScaler>();
-        _canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        _canvasScaler.referenceResolution = new Vector2(1920, 1080);
-        _canvasScaler.matchWidthOrHeight = 0.5f;
+        CanvasScaler = Canvas.gameObject.AddComponent<CanvasScaler>();
+        CanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        CanvasScaler.referenceResolution = new Vector2(1920, 1080);
+        CanvasScaler.matchWidthOrHeight = 0.5f;
 
         // 创建背景面板
         var backgroundObj = new GameObject("JAT_Subtitle_SubtitleBackground");
-        backgroundObj.transform.SetParent(_canvas.transform, false);
-        _backgroundImage = backgroundObj.AddComponent<Image>();
-        _backgroundImage.color = new Color(0, 0, 0, 0.5f); // 半透明黑色背景
+        backgroundObj.transform.SetParent(Canvas.transform, false);
+        BackgroundImage = backgroundObj.AddComponent<Image>();
+        BackgroundImage.color = new Color(0, 0, 0, 0.5f); // 半透明黑色背景
 
         // 设置背景位置和大小
-        var backgroundRect = _backgroundImage.rectTransform;
-        backgroundRect.anchorMin = new Vector2(0, _config.VerticalPosition);
-        backgroundRect.anchorMax = new Vector2(1, _config.VerticalPosition);
+        var backgroundRect = BackgroundImage.rectTransform;
+        backgroundRect.anchorMin = new Vector2(0, Config.VerticalPosition);
+        backgroundRect.anchorMax = new Vector2(1, Config.VerticalPosition);
         backgroundRect.pivot = new Vector2(0.5f, 0);
-        backgroundRect.sizeDelta = new Vector2(0, _config.BackgroundHeight);
+        backgroundRect.sizeDelta = new Vector2(0, Config.BackgroundHeight);
 
 
         // 创建文本对象
         var textObj = new GameObject("JAT_Subtitle_SubtitleText");
         textObj.transform.SetParent(backgroundRect, false);
-        _text = textObj.AddComponent<Text>();
+        TextComponent = textObj.AddComponent<Text>();
 
         // 设置文本位置和大小
-        var textRect = _text.rectTransform;
+        var textRect = TextComponent.rectTransform;
         textRect.anchorMin = new Vector2(0, 0);
         textRect.anchorMax = new Vector2(1, 1);
         textRect.pivot = new Vector2(0.5f, 0.5f);
@@ -75,18 +75,18 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         textRect.anchoredPosition = new Vector2(0, 0);
 
         // 设置默认文本样式
-        _text.alignment = TextAnchor.MiddleCenter;
-        _text.horizontalOverflow = HorizontalWrapMode.Wrap;
-        _text.verticalOverflow = VerticalWrapMode.Overflow;
+        TextComponent.alignment = TextAnchor.MiddleCenter;
+        TextComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
+        TextComponent.verticalOverflow = VerticalWrapMode.Overflow;
 
         // 设置文本和背景不拦截点击事件
-        _text.raycastTarget = false;
-        _backgroundImage.raycastTarget = false;
+        TextComponent.raycastTarget = false;
+        BackgroundImage.raycastTarget = false;
 
         // 添加描边组件
-        _outline = _text.gameObject.AddComponent<Outline>();
-        _outline.enabled = false;
+        Outline = TextComponent.gameObject.AddComponent<Outline>();
+        Outline.enabled = false;
 
-        LogManager.Debug("VR Subtitle UI created");
+        LogManager.Debug("VRTabletSubtitleComponent Subtitle UI created");
     }
 }

@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
 
@@ -9,7 +10,12 @@ public static class DebugPatch
     [HarmonyPrefix]
     public static void KagScriptCallTag_Prefix(KagScript __instance)
     {
-        var currentFileName = __instance.GetCurrentFileName();
-        LogManager.Debug($"KagScriptCallTag currentFileName: {currentFileName}");
+        try
+        {
+            LogManager.Debug($"KagScriptCallTag currentFileName: {__instance.GetCurrentFileName()}");
+        }
+        catch
+        {
+        }
     }
 }

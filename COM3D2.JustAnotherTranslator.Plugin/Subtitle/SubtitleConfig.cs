@@ -186,8 +186,17 @@ public class SubtitleConfig
             // VR悬浮字幕背景宽度
             VRSubtitleWidth = JustAnotherTranslator.VRInSpaceSubtitleWidth.Value,
 
-            // VR悬浮字幕高度
-            VRSubtitleHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value
+            // VR悬浮字幕背景高度
+            VRSubtitleHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value,
+
+            // 水平内边距 (用于VR平板等)
+            HorizontalPadding = 10f,
+
+            // 文本内边距 (用于VR平板等)
+            TextPadding = 5f,
+
+            // 当前垂直位置
+            CurrentVerticalPosition = 1f
         };
 
         return config;
@@ -380,9 +389,21 @@ public class SubtitleConfig
     public float VRSubtitleWidth { get; set; } = 0.2f;
 
     // VR悬浮字幕背景高度（米）
-    public float VRSubtitleHeight { get; set; } = 1f;
+    public float VRSubtitleHeight { get; set; } = 0.1f;
 
-    // 当前垂直位置
+    // VR Tablet参考分辨率X
+    public float VRTabletReferenceResolutionX { get; set; } = 1920f;
+
+    // VR Tablet参考分辨率Y
+    public float VRTabletReferenceResolutionY { get; set; } = 1080f;
+
+    // 水平内边距
+    public float HorizontalPadding { get; set; } = 10f;
+
+    // 文本内边距
+    public float TextPadding { get; set; } = 5f;
+
+    // 当前垂直位置，由管理器计算得出
     public float CurrentVerticalPosition { get; set; } = 1f;
 
     # endregion

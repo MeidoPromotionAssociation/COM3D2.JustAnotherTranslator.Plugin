@@ -12,6 +12,9 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 /// </summary>
 public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 {
+    // 动画协程
+    protected Coroutine AnimationCoroutine;
+
     // 字幕背景图像组件
     protected Image BackgroundImage;
 
@@ -30,17 +33,14 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     // 字幕描边组件
     protected Outline Outline;
 
+    // 说话者文本颜色
+    protected string SpeakerColor;
+
     // 说话者名称
     protected string SpeakerName;
 
     // 字幕文本组件
     protected Text TextComponent;
-
-    // 说话者文本颜色
-    protected string SpeakerColor;
-
-    // 动画协程
-    protected Coroutine AnimationCoroutine;
 
     /// <summary>
     ///     初始化字幕组件
@@ -281,16 +281,12 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             // 计算高度 - 如果BackgroundHeight <= 1则作为百分比处理，否则作为绝对像素值
             float height;
             if (Config.BackgroundHeight <= 1.0f)
-            {
                 height = Screen.height * Config.BackgroundHeight;
-            }
             else
-            {
                 height = Config.BackgroundHeight;
-            }
 
             // 宽度设置 - 如果BackgroundWidth <= 1则作为百分比处理，否则作为绝对像素值
-            float width = Config.BackgroundWidth;
+            var width = Config.BackgroundWidth;
             if (width <= 1.0f)
             {
                 // 作为屏幕宽度的百分比，保持原来的锚点设置
@@ -323,12 +319,11 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 
         // 应用画布配置
         if (Canvas is not null)
-        {
             // 根据字幕类型设置画布属性
             if (Config.SubtitleType == JustAnotherTranslator.SubtitleTypeEnum.Base)
             {
                 // 设置垂直位置
-                RectTransform rectTransform = Canvas.GetComponent<RectTransform>();
+                var rectTransform = Canvas.GetComponent<RectTransform>();
                 if (rectTransform is not null)
                 {
                     // 0是底部，1是顶部，调整字幕的垂直位置
@@ -337,7 +332,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
                     rectTransform.pivot = new Vector2(0.5f, 0.5f);
                 }
             }
-        }
 
         // 应用画布缩放器配置
         if (CanvasScaler is not null)
@@ -392,35 +386,36 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         if (TextComponent.text.Contains("<color="))
         {
             // 获取当前文本内容
-            string currentText = TextComponent.text;
-            
+            var currentText = TextComponent.text;
+
             // 查找颜色标签的开始位置
-            int colorTagStart = currentText.IndexOf("<color=", StringComparison.Ordinal);
+            var colorTagStart = currentText.IndexOf("<color=", StringComparison.Ordinal);
             if (colorTagStart >= 0)
             {
                 // 查找颜色值的开始和结束位置
-                int colorValueStart = currentText.IndexOf('#', colorTagStart);
-                int colorValueEnd = currentText.IndexOf('>', colorValueStart);
-                
+                var colorValueStart = currentText.IndexOf('#', colorTagStart);
+                var colorValueEnd = currentText.IndexOf('>', colorValueStart);
+
                 if (colorValueStart >= 0 && colorValueEnd > colorValueStart)
                 {
                     // 提取原始颜色值
-                    string originalColorValue = currentText.Substring(colorValueStart + 1, colorValueEnd - colorValueStart - 1);
-                    
+                    var originalColorValue =
+                        currentText.Substring(colorValueStart + 1, colorValueEnd - colorValueStart - 1);
+
                     // 如果颜色值是6位的RGB格式，转换为带透明度的RGBA格式
                     if (originalColorValue.Length == 6)
                     {
                         // 计算alpha值的十六进制表示（00-FF）
-                        byte alphaValue = (byte)(alpha * 255);
-                        string alphaHex = alphaValue.ToString("X2");
-                        
+                        var alphaValue = (byte)(alpha * 255);
+                        var alphaHex = alphaValue.ToString("X2");
+
                         // 创建新的颜色值，加入alpha通道
-                        string newColorValue = originalColorValue + alphaHex;
-                        
+                        var newColorValue = originalColorValue + alphaHex;
+
                         // 替换原来的颜色值
-                        currentText = currentText.Substring(0, colorValueStart + 1) + newColorValue + 
+                        currentText = currentText.Substring(0, colorValueStart + 1) + newColorValue +
                                       currentText.Substring(colorValueEnd);
-                        
+
                         // 更新文本内容
                         TextComponent.text = currentText;
                     }

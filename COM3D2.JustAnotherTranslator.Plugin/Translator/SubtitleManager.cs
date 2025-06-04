@@ -237,106 +237,100 @@ public static class SubtitleManager
 
         LogManager.Debug($"MonitorMaidVoicePlayback started for: {speakerName}");
 
-        try
+        while (maid is not null && maid.Visible)
         {
-            while (maid is not null && maid.Visible)
+            // 检查maid和AudioMan是否为null
+            if (maid.AudioMan is null)
             {
-                // 检查maid和AudioMan是否为null
-                if (maid.AudioMan is null)
-                {
-                    LogManager.Debug("Maid AudioMan is null, waiting...");
-                    yield return new WaitForSeconds(0.1f);
-                    continue;
-                }
-
-                var isPlaying = maid.AudioMan.isPlay();
-                var currentFileName = maid.AudioMan.FileName;
-                var currentVoiceId = !string.IsNullOrEmpty(currentFileName)
-                    ? Path.GetFileNameWithoutExtension(currentFileName)
-                    : string.Empty;
-
-                // 检测语音切换
-                var voiceChanged = currentVoiceId != lastPlayingVoiceId;
-
-                // 检测播放状态变化
-                if (isPlaying)
-                {
-                    // 如果语音ID发生变化，重置foundText状态
-                    if (voiceChanged)
-                    {
-                        foundText = false;
-                        // 如果上一个语音还没结束就切换了
-                        if (!string.IsNullOrEmpty(lastPlayingVoiceId))
-                            LogManager.Debug(
-                                $"Voice changed from {lastPlayingVoiceId} to {currentVoiceId}");
-                        //SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
-                        LogManager.Debug(
-                            $"Maid {speakerName} is now playing new voice: {currentVoiceId}");
-                    }
-
-                    // 只有未找到文本时才尝试查找和显示
-                    if (!foundText)
-                    {
-                        // 检查是否有对应的文本
-                        if (!string.IsNullOrEmpty(currentVoiceId) && VoiceIdToTextMap.ContainsKey(currentVoiceId))
-                        {
-                            var text = VoiceIdToTextMap[currentVoiceId];
-                            LogManager.Debug(
-                                $"Found text for voice {currentVoiceId} -> {text}, showing subtitle (form text cache)");
-
-                            // 显示字幕
-                            SubtitleComponentManager.ShowSubtitle(text, speakerName, 0, _currentSubtitleType);
-                            foundText = true;
-                        }
-                        // 尝试直接按 voiceId 获取翻译
-                        else if (TextTranslator.GetTranslateText(currentVoiceId, out var translateText))
-                        {
-                            VoiceIdToTextMap[currentVoiceId] = translateText;
-
-                            LogManager.Debug(
-                                $"Found text for voice {currentVoiceId} -> {translateText}, showing subtitle (form text translator)");
-                            SubtitleComponentManager.ShowSubtitle(translateText, speakerName, 0, _currentSubtitleType);
-                            foundText = true;
-                        }
-                        else
-                        {
-                            LogManager.Debug($"No text found for voice {currentVoiceId}, waiting...");
-                        }
-                    }
-                }
-                else
-                {
-                    // 语音停止播放
-                    // 语音可能重复播放，等待一段时间后再检查
-                    if (foundText)
-                    {
-                        yield return new WaitForSeconds(0.1f);
-                        if (currentVoiceId == lastPlayingVoiceId)
-                        {
-                            LogManager.Debug($"Voice {lastPlayingVoiceId} stopped playing, hiding subtitle");
-                            SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
-                            foundText = false;
-                        }
-                        else
-                        {
-                            LogManager.Debug(
-                                $"Voice {lastPlayingVoiceId} stopped playing, but current voice is {currentVoiceId}, not hiding subtitle");
-                        }
-                    }
-                }
-
-                // 更新上次播放的语音ID
-                lastPlayingVoiceId = currentVoiceId;
-
-                // 未找到文本时更快检查
-                if (isPlaying && !foundText)
-                    yield return new WaitForSeconds(0.05f);
-                else
-                    yield return new WaitForSeconds(0.1f);
+                LogManager.Debug("Maid AudioMan is null, waiting...");
+                yield return new WaitForSeconds(0.1f);
+                continue;
             }
-        }
-        finally
-        {
+
+            var isPlaying = maid.AudioMan.isPlay();
+            var currentFileName = maid.AudioMan.FileName;
+            var currentVoiceId = !string.IsNullOrEmpty(currentFileName)
+                ? Path.GetFileNameWithoutExtension(currentFileName)
+                : string.Empty;
+
+            // 检测语音切换
+            var voiceChanged = currentVoiceId != lastPlayingVoiceId;
+
+            // 检测播放状态变化
+            if (isPlaying)
+            {
+                // 如果语音ID发生变化，重置foundText状态
+                if (voiceChanged)
+                {
+                    foundText = false;
+                    // 如果上一个语音还没结束就切换了
+                    if (!string.IsNullOrEmpty(lastPlayingVoiceId))
+                        LogManager.Debug(
+                            $"Voice changed from {lastPlayingVoiceId} to {currentVoiceId}");
+                    //SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
+                    LogManager.Debug(
+                        $"Maid {speakerName} is now playing new voice: {currentVoiceId}");
+                }
+
+                // 只有未找到文本时才尝试查找和显示
+                if (!foundText)
+                {
+                    // 检查是否有对应的文本
+                    if (!string.IsNullOrEmpty(currentVoiceId) && VoiceIdToTextMap.ContainsKey(currentVoiceId))
+                    {
+                        var text = VoiceIdToTextMap[currentVoiceId];
+                        LogManager.Debug(
+                            $"Found text for voice {currentVoiceId} -> {text}, showing subtitle (form text cache)");
+
+                        // 显示字幕
+                        SubtitleComponentManager.ShowSubtitle(text, speakerName, 0, _currentSubtitleType);
+                        foundText = true;
+                    }
+                    // 尝试直接按 voiceId 获取翻译
+                    else if (TextTranslator.GetTranslateText(currentVoiceId, out var translateText))
+                    {
+                        VoiceIdToTextMap[currentVoiceId] = translateText;
+
+                        LogManager.Debug(
+                            $"Found text for voice {currentVoiceId} -> {translateText}, showing subtitle (form text translator)");
+                        SubtitleComponentManager.ShowSubtitle(translateText, speakerName, 0, _currentSubtitleType);
+                        foundText = true;
+                    }
+                    else
+                    {
+                        LogManager.Debug($"No text found for voice {currentVoiceId}, waiting...");
+                    }
+                }
+            }
+            else
+            {
+                // 语音停止播放
+                // 语音可能重复播放，等待一段时间后再检查
+                if (foundText)
+                {
+                    yield return new WaitForSeconds(0.1f);
+                    if (currentVoiceId == lastPlayingVoiceId)
+                    {
+                        LogManager.Debug($"Voice {lastPlayingVoiceId} stopped playing, hiding subtitle");
+                        SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
+                        foundText = false;
+                    }
+                    else
+                    {
+                        LogManager.Debug(
+                            $"Voice {lastPlayingVoiceId} stopped playing, but current voice is {currentVoiceId}, not hiding subtitle");
+                    }
+                }
+            }
+
+            // 更新上次播放的语音ID
+            lastPlayingVoiceId = currentVoiceId;
+
+            // 未找到文本时更快检查
+            if (isPlaying && !foundText)
+                yield return new WaitForSeconds(0.05f);
+            else
+                yield return new WaitForSeconds(0.1f);
         }
 
 

@@ -1,5 +1,4 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
 

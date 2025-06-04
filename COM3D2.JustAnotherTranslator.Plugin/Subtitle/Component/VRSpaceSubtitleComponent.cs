@@ -1,8 +1,6 @@
-using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 
@@ -11,11 +9,11 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 /// </summary>
 public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 {
-    // 跟随头部的协程
-    private Coroutine _followHeadCoroutine;
-
     // 字幕跟随平滑度
     protected readonly float FollowSmoothness = 5.0f;
+
+    // 跟随头部的协程
+    private Coroutine _followHeadCoroutine;
 
     // VR头部位置参考，用于跟随头部运动
     protected Transform VRHeadTransform;
@@ -267,10 +265,8 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         if (Config == null) return;
 
         if (VrSpaceCanvasRect is not null)
-        {
             // 更新VR字幕画布尺寸
             VrSpaceCanvasRect.sizeDelta = new Vector2(Config.VRSubtitleWidth * 1000, 300);
-        }
 
         // 如果正在跟踪头部且配置更改，重启跟随头部协程以应用新配置
         if (_followHeadCoroutine != null)

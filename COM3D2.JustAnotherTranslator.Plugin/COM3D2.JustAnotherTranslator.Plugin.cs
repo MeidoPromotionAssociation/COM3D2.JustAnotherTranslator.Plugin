@@ -7,7 +7,6 @@ using BepInEx.Logging;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
-using UnityEngine;
 
 namespace COM3D2.JustAnotherTranslator.Plugin;
 
@@ -28,12 +27,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
         [Description("Lyric/歌词字幕")] Lyric
     }
 
-    public enum VRSubtitleModeEnum
-    {
-        [Description("InSpac/空间字幕")] InSpace,
-        [Description("OnTablet/平板字幕")] OnTablet
-    }
-
     public enum TextAnchorEnum
     {
         [Description("UpperLeft/左上")] UpperLeft,
@@ -44,7 +37,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
         [Description("MiddleRight/右中")] MiddleRight,
         [Description("LowerLeft/左下")] LowerLeft,
         [Description("LowerCenter/中下")] LowerCenter,
-        [Description("LowerRight/右下")] LowerRight,
+        [Description("LowerRight/右下")] LowerRight
+    }
+
+    public enum VRSubtitleModeEnum
+    {
+        [Description("InSpac/空间字幕")] InSpace,
+        [Description("OnTablet/平板字幕")] OnTablet
     }
 
 

@@ -134,9 +134,7 @@ public static class SubtitleComponentManager
             return;
 
         if (SubtitleIdComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
-        {
             subtitleComponent.HideSubtitle();
-        }
     }
 
     /// <summary>

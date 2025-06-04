@@ -333,25 +333,24 @@ public static class SubtitleManager
                 yield return new WaitForSeconds(0.1f);
         }
 
-
+        // Maid不可见或为null，停止协程
         if (maid is null)
         {
-            SubtitleComponentManager.UpdateSubtitleConfigBySpeakerName(speakerName);
-            LogManager.Debug($"MonitorMaidVoicePlayback ended for Maid {MaidInfo.GetMaidFullName(maid)}");
+            SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
+            // 销毁重新创建以重新排序
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
+            LogManager.Debug($"MonitorMaidVoicePlayback ended for Maid {speakerName}");
             yield break;
         }
 
-        // Maid不可见或为null，停止协程
         if (!maid.Visible)
         {
             SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
             MaidMonitorCoroutineIds.Remove(maid);
-
-            // 重新创建字幕以重新排序
             SubtitleComponentManager.UpdateSubtitleConfigBySpeakerName(speakerName);
         }
 
-        LogManager.Debug($"MonitorMaidVoicePlayback ended for Maid {MaidInfo.GetMaidFullName(maid)}");
+        LogManager.Debug($"MonitorMaidVoicePlayback ended for Maid {speakerName}");
     }
 
 

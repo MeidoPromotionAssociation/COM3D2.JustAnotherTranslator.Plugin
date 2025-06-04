@@ -52,7 +52,13 @@ public class SubtitleConfig
                 24),
 
             // 文本对齐方式
-            // TODO
+            TextAlignment = GetSubtitleTypeConfig(
+                subtitleType,
+                () => ConvertTextAnchorEnum(JustAnotherTranslator.BaseSubtitleTextAlignment.Value),
+                () => ConvertTextAnchorEnum(JustAnotherTranslator.YotogiSubtitleTextAlignment.Value),
+                () => ConvertTextAnchorEnum(JustAnotherTranslator.AdvSubtitleTextAlignment.Value),
+                () => ConvertTextAnchorEnum(JustAnotherTranslator.LyricSubtitleTextAlignment.Value),
+                ConvertTextAnchorEnum(JustAnotherTranslator.TextAnchorEnum.MiddleCenter)),
 
             // 文本颜色
             TextColor = GetSubtitleTypeConfig(
@@ -178,10 +184,10 @@ public class SubtitleConfig
             VRSubtitleHorizontalOffset = JustAnotherTranslator.VRSubtitleHorizontalOffset.Value,
 
             // VR悬浮字幕背景宽度
-            VRSubtitleWidth = JustAnotherTranslator.VRSubtitleWidth.Value,
+            VRSubtitleWidth = JustAnotherTranslator.VRInSpaceSubtitleWidth.Value,
 
             // VR悬浮字幕高度
-            VRSubtitleHeight = JustAnotherTranslator.VRSubtitleHeight.Value
+            VRSubtitleHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value
         };
 
         return config;
@@ -281,6 +287,29 @@ public class SubtitleConfig
             LogManager.Warning($"Failed to load font: {name}, using default font{e.Message}/无法加载字体：{name}。使用默认字体");
             return Resources.GetBuiltinResource<Font>("Arial.ttf");
         }
+    }
+
+    /// <summary>
+    ///     将TextAnchorEnum转换为TextAnchor
+    ///     只是为了安全性
+    /// </summary>
+    /// <param name="textAnchorEnum"></param>
+    /// <returns></returns>
+    private static TextAnchor ConvertTextAnchorEnum(JustAnotherTranslator.TextAnchorEnum textAnchorEnum)
+    {
+        return textAnchorEnum switch
+        {
+            JustAnotherTranslator.TextAnchorEnum.UpperLeft => TextAnchor.UpperLeft,
+            JustAnotherTranslator.TextAnchorEnum.UpperCenter => TextAnchor.UpperCenter,
+            JustAnotherTranslator.TextAnchorEnum.UpperRight => TextAnchor.UpperRight,
+            JustAnotherTranslator.TextAnchorEnum.MiddleLeft => TextAnchor.MiddleLeft,
+            JustAnotherTranslator.TextAnchorEnum.MiddleCenter => TextAnchor.MiddleCenter,
+            JustAnotherTranslator.TextAnchorEnum.MiddleRight => TextAnchor.MiddleRight,
+            JustAnotherTranslator.TextAnchorEnum.LowerLeft => TextAnchor.LowerLeft,
+            JustAnotherTranslator.TextAnchorEnum.LowerCenter => TextAnchor.LowerCenter,
+            JustAnotherTranslator.TextAnchorEnum.LowerRight => TextAnchor.LowerRight,
+            _ => TextAnchor.MiddleCenter
+        };
     }
 
     # region Config

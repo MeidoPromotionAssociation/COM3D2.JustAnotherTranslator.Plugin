@@ -7,6 +7,7 @@ using BepInEx.Logging;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
+using UnityEngine;
 
 namespace COM3D2.JustAnotherTranslator.Plugin;
 
@@ -33,6 +34,20 @@ public class JustAnotherTranslator : BaseUnityPlugin
         [Description("OnTablet/平板字幕")] OnTablet
     }
 
+    public enum TextAnchorEnum
+    {
+        [Description("UpperLeft/左上")] UpperLeft,
+        [Description("UpperCenter/中上")] UpperCenter,
+        [Description("UpperRight/右上")] UpperRight,
+        [Description("MiddleLeft/左中")] MiddleLeft,
+        [Description("MiddleCenter/中中")] MiddleCenter,
+        [Description("MiddleRight/右中")] MiddleRight,
+        [Description("LowerLeft/左下")] LowerLeft,
+        [Description("LowerCenter/中下")] LowerCenter,
+        [Description("LowerRight/右下")] LowerRight,
+    }
+
+
     public static bool IsVrMode;
 
     public static ConfigEntry<string> TargetLanguage;
@@ -53,6 +68,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     // 基础字幕相关配置
     public static ConfigEntry<bool> EnableBaseSubtitleSpeakerName;
+    public static ConfigEntry<TextAnchorEnum> BaseSubtitleTextAlignment;
     public static ConfigEntry<string> BaseSubtitleFont;
     public static ConfigEntry<int> BaseSubtitleFontSize;
     public static ConfigEntry<string> BaseSubtitleColor;
@@ -72,6 +88,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     // 夜伽字幕相关配置
     public static ConfigEntry<bool> EnableYotogiSubtitleSpeakerName;
+    public static ConfigEntry<TextAnchorEnum> YotogiSubtitleTextAlignment;
     public static ConfigEntry<string> YotogiSubtitleFont;
     public static ConfigEntry<int> YotogiSubtitleFontSize;
     public static ConfigEntry<string> YotogiSubtitleColor;
@@ -91,6 +108,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     // ADV字幕相关配置
     public static ConfigEntry<bool> EnableAdvSubtitleSpeakerName;
+    public static ConfigEntry<TextAnchorEnum> AdvSubtitleTextAlignment;
     public static ConfigEntry<string> AdvSubtitleFont;
     public static ConfigEntry<int> AdvSubtitleFontSize;
     public static ConfigEntry<string> AdvSubtitleColor;
@@ -110,6 +128,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     // 歌词字幕相关配置
     public static ConfigEntry<bool> EnableLyricSubtitleSpeakerName;
+    public static ConfigEntry<TextAnchorEnum> LyricSubtitleTextAlignment;
     public static ConfigEntry<string> LyricSubtitleFont;
     public static ConfigEntry<int> LyricSubtitleFontSize;
     public static ConfigEntry<string> LyricSubtitleColor;
@@ -132,17 +151,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> VRSubtitleDistance;
     public static ConfigEntry<float> VRSubtitleVerticalOffset;
     public static ConfigEntry<float> VRSubtitleHorizontalOffset;
-    public static ConfigEntry<float> VRSubtitleWidth;
-    public static ConfigEntry<float> VRSubtitleHeight;
+    public static ConfigEntry<float> VRInSpaceSubtitleWidth;
+    public static ConfigEntry<float> VRInSpaceSubtitleHeight;
 
     // translation folder path
     public static readonly string TranslationRootPath = Paths.BepInExRootPath + "/JustAnotherTranslator";
     public static string TargetLanguePath;
     public static string TranslationTextPath;
     public static string TranslationTexturePath;
-
-    // 字幕类型
-    public static ConfigEntry<SubtitleTypeEnum> SubtitleType;
 
     private void Awake()
     {
@@ -194,7 +210,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         TextureCacheSize = Config.Bind("General",
             "TextureCacheSize/贴图缓存大小",
-            20,
+            30,
             "Texture Cache Size, larger value will use more memory but improve performance/贴图缓存大小，较大的值会使用更多内存但提高性能");
 
         EnableAsyncLoading = Config.Bind("General",
@@ -235,15 +251,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         # region BaseSubtitleSettings
 
-        // TODO 添加字幕对齐方式设置
-        // TODO 字幕自动找位
-
         // 基础字幕相关配置
-        EnableBaseSubtitle = Config.Bind("BaseSubtitle",
-            "EnableBaseSubtitle/启用基础字幕",
-            true,
-            "Enable Base Subtitle/启用基础字幕");
-
         EnableBaseSubtitleSpeakerName = Config.Bind("BaseSubtitle",
             "EnableBaseSubtitleSpeakerName/启用基础字幕显示说话人名",
             true,
@@ -258,6 +266,11 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "BaseSubtitleFontSize/基础字幕字体大小",
             24,
             "Base Subtitle Font Size/基础字幕字体大小");
+
+        BaseSubtitleTextAlignment = Config.Bind("BaseSubtitle",
+            "BaseSubtitleTextAlignment/基础字幕文本对齐方式",
+            TextAnchorEnum.MiddleCenter,
+            "Base Subtitle Text Alignment/基础字幕文本对齐方式");
 
         BaseSubtitleColor = Config.Bind("BaseSubtitle",
             "BaseSubtitleColor/基础字幕颜色",
@@ -288,7 +301,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "BaseSubtitleBackgroundWidth/基础字幕背景宽度",
             1f,
             "Base Subtitle Background Width, less than 1 is relative, otherwise is pixel/基础背景幕宽度，小于 1 时为相对比例反之为像素");
-        //TODO 其他字幕的描述和默认值
 
         BaseSubtitleBackgroundHeight = Config.Bind("BaseSubtitle",
             "BaseSubtitleBackgroundHeight/基础字幕背景高度",
@@ -355,6 +367,11 @@ public class JustAnotherTranslator : BaseUnityPlugin
             24,
             "Yotogi Subtitle Font Size/夜伽字幕字体大小");
 
+        YotogiSubtitleTextAlignment = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleTextAlignment/夜伽字幕文本对齐",
+            TextAnchorEnum.MiddleCenter,
+            "Yotogi Subtitle Text Alignment/夜伽字幕文本对齐方式");
+
         YotogiSubtitleColor = Config.Bind("YotogiSubtitle",
             "YotogiSubtitleColor/夜伽字幕颜色",
             "#FFFFFF",
@@ -377,18 +394,19 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         YotogiSubtitleVerticalPosition = Config.Bind("YotogiSubtitle",
             "YotogiSubtitleVerticalPosition/夜伽字幕垂直位置",
-            0.965f,
+            0.97f,
             "Yotogi Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/夜伽字幕垂直位置（0-1，0为底部，1为顶部）");
 
         YotogiSubtitleBackgroundWidth = Config.Bind("YotogiSubtitle",
             "YotogiSubtitleBackgroundWidth/夜伽字幕背景宽度",
             1f,
-            "Yotogi Subtitle Background Width in percents/夜伽背景幕宽度（百分比）");
+            "Yotogi Subtitle Background Width, less than 1 is relative, otherwise is pixel/夜伽背景幕宽度，小于 1 时为相对比例反之为像素");
+
 
         YotogiSubtitleBackgroundHeight = Config.Bind("YotogiSubtitle",
             "YotogiSubtitleBackgroundHeight/夜伽字幕背景高度",
-            0.08f,
-            "Yotogi Subtitle Background Height in percents/夜伽背景幕高度（百分比）");
+            0.015f,
+            "Yotogi Subtitle Background Height, less than 1 is relative, otherwise is pixel/夜伽背景幕高度，小于 1 时为相对比例反之为像素");
 
         EnableYotogiSubtitleAnimation = Config.Bind("YotogiSubtitle",
             "YotogiSubtitleAnimation/夜伽字幕动画",
@@ -450,6 +468,11 @@ public class JustAnotherTranslator : BaseUnityPlugin
             24,
             "ADV Subtitle Font Size/ADV字幕字体大小");
 
+        AdvSubtitleTextAlignment = Config.Bind("AdvSubtitle",
+            "AdvSubtitleTextAlignment/ADV字幕文本对齐方式",
+            TextAnchorEnum.MiddleCenter,
+            "ADV Subtitle Text Alignment/ADV字幕文本对齐方式");
+
         AdvSubtitleColor = Config.Bind("AdvSubtitle",
             "AdvSubtitleColor/ADV字幕颜色",
             "#FFFFFF",
@@ -472,18 +495,19 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         AdvSubtitleVerticalPosition = Config.Bind("AdvSubtitle",
             "AdvSubtitleVerticalPosition/ADV字幕垂直位置",
-            0.965f,
+            0.97f,
             "ADV Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/ADV字幕垂直位置（0-1，0为底部，1为顶部）");
 
         AdvSubtitleBackgroundWidth = Config.Bind("AdvSubtitle",
             "AdvSubtitleBackgroundWidth/ADV字幕背景宽度",
             1f,
-            "ADV Subtitle Background Width in percent/ADV背景幕宽度（百分比）");
+            "Adv Subtitle Background Width, less than 1 is relative, otherwise is pixel/ADV背景幕宽度，小于 1 时为相对比例反之为像素");
+
 
         AdvSubtitleBackgroundHeight = Config.Bind("AdvSubtitle",
             "AdvSubtitleBackgroundHeight/ADV字幕背景高度",
-            0.08f,
-            "ADV Subtitle Background Height in percent/ADV背景幕高度（百分比）");
+            0.015f,
+            "Adv Subtitle Background Height, less than 1 is relative, otherwise is pixel/ADV背景幕高度，小于 1 时为相对比例反之为像素");
 
         EnableAdvSubtitleAnimation = Config.Bind("AdvSubtitle",
             "AdvSubtitleAnimation/ADV字幕动画",
@@ -545,6 +569,11 @@ public class JustAnotherTranslator : BaseUnityPlugin
             24,
             "Lyric Subtitle Font Size/歌词字幕字体大小");
 
+        LyricSubtitleTextAlignment = Config.Bind("LyricSubtitle",
+            "LyricSubtitleTextAlignment/歌词字幕文本对齐",
+            TextAnchorEnum.MiddleCenter,
+            "Lyric Subtitle Text Alignment/歌词字幕文本对齐方式");
+
         LyricSubtitleColor = Config.Bind("LyricSubtitle",
             "LyricSubtitleColor/歌词字幕颜色",
             "#FFFFFF",
@@ -567,18 +596,18 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         LyricSubtitleVerticalPosition = Config.Bind("LyricSubtitle",
             "LyricSubtitleVerticalPosition/歌词字幕垂直位置",
-            0.965f,
+            0.97f,
             "Lyric Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/歌词字幕垂直位置（0-1，0为底部，1为顶部）");
 
         LyricSubtitleBackgroundWidth = Config.Bind("LyricSubtitle",
             "LyricSubtitleBackgroundWidth/歌词字幕背景宽度",
             0.6f,
-            "Lyric Subtitle Background Width in percent/歌词背景幕宽度（百分比）");
+            "Lyric Subtitle Background Width, less than 1 is relative, otherwise is pixel/歌词背景幕宽度，小于 1 时为相对比例反之为像素");
 
         LyricSubtitleBackgroundHeight = Config.Bind("LyricSubtitle",
             "LyricSubtitleBackgroundHeight/歌词字幕背景高度",
-            0.1f,
-            "Lyric Subtitle Background Height in percent/歌词背景幕高度（百分比）");
+            0.015f,
+            "Lyric Subtitle Background Height, less than 1 is relative, otherwise is pixel/歌词背景幕高度，小于 1 时为相对比例反之为像素");
 
         EnableLyricSubtitleAnimation = Config.Bind("LyricSubtitle",
             "LyricSubtitleAnimation/歌词字幕动画",
@@ -640,24 +669,15 @@ public class JustAnotherTranslator : BaseUnityPlugin
             0f,
             "VR Floating Subtitle Horizontal Offset in degrees (relative to center of view)/VR悬浮字幕水平偏移（度，相对于视线中心）");
 
-        VRSubtitleWidth = Config.Bind("VRSubtitle",
-            "VRSubtitleWidth/VR字幕宽度",
+        VRInSpaceSubtitleWidth = Config.Bind("VRSubtitle",
+            "VRFloatingSubtitleWidth/VR悬浮字幕宽度",
             1f,
             "VR Floating Subtitle Width in meters/VR悬浮字幕宽度（米）");
 
-        VRSubtitleHeight = Config.Bind("VRSubtitle",
-            "VRSubtitleHeight/VR字幕高度",
+        VRInSpaceSubtitleHeight = Config.Bind("VRSubtitle",
+            "VRFloatingSubtitleHeight/VR悬浮字幕高度",
             0.2f,
             "VR Floating Subtitle Height in meters/VR悬浮字幕高度（米）");
-
-        # endregion
-
-        # region SubtitleTypeSettings
-
-        SubtitleType = Config.Bind("Subtitle",
-            "SubtitleType/字幕类型",
-            SubtitleTypeEnum.Base,
-            "Subtitle Type/字幕类型");
 
         # endregion
 
@@ -738,16 +758,18 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogManager.Info("Adv Subtitle Disabled/ADV字幕已禁用");
         }
 
-
-        //TODO 注册部分需要翻新
-        // 注册一般配置变更事件
+        // 注册通用变更事件
         RegisterGeneralConfigEvents();
+        // 注册字幕启用状态变更事件
+        RegisterEnableSubtitleEvents();
         // 注册基础字幕配置变更事件
         RegisterBaseSubtitleConfigEvents();
         // 注册夜伽字幕配置变更事件
         RegisterYotogiSubtitleConfigEvents();
         // 注册ADV字幕配置变更事件
         RegisterAdvSubtitleConfigEvents();
+        // 注册歌词字幕配置变更事件
+        RegisterLyricSubtitleConfigEvents();
         // 注册VR字幕配置变更事件
         RegisterVRSubtitleConfigEvents();
     }
@@ -767,8 +789,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
         SubtitleManager.Unload();
     }
 
+    # region ConfigEvents
+
     /// <summary>
-    ///     注册一般配置变更事件
+    ///     注册通用变更事件
     /// </summary>
     private void RegisterGeneralConfigEvents()
     {
@@ -855,6 +879,11 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
+        MaidNameStyle.SettingChanged += (sender, args) =>
+        {
+            LogManager.Info("Not Support change maid name style during runtime/不支持在运行时更改角色名字样式");
+        };
+
         // 注册日志级别变更事件
         LogLevelConfig.SettingChanged += (sender, args) =>
         {
@@ -891,6 +920,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
     }
 
+    /// <summary>
+    ///     注册字幕启用状态变更事件
+    /// </summary>
     private void RegisterEnableSubtitleEvents()
     {
         EnableBaseSubtitle.SettingChanged += (sender, args) =>
@@ -907,6 +939,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 SubtitleManager.Unload();
             }
         };
+
         EnableYotogiSubtitle.SettingChanged += (sender, args) =>
         {
             if (EnableYotogiSubtitle.Value)
@@ -942,13 +975,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableAdvSubtitle.Value)
             {
-                LogManager.Info("ADV Subtitle Enabled/ADV字幕已启用");
+                LogManager.Info("Force ADV Subtitle Enabled/强制ADV字幕已启用");
                 SubtitleManager.Unload();
                 SubtitleManager.Init();
             }
             else
             {
-                LogManager.Info("ADV Subtitle Disabled/ADV字幕已禁用");
+                LogManager.Info("Force ADV Subtitle Disabled/强制ADV字幕已禁用");
                 SubtitleManager.Unload();
             }
         };
@@ -970,212 +1003,16 @@ public class JustAnotherTranslator : BaseUnityPlugin
     }
 
     /// <summary>
-    ///     注册夜伽字幕配置变更事件
-    /// </summary>
-    private void RegisterYotogiSubtitleConfigEvents()
-    {
-        // 注册字幕启用状态变更事件
-        EnableYotogiSubtitle.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle Enabled/夜伽字幕已启用");
-                SubtitleManager.Init();
-            }
-            else
-            {
-                LogManager.Info("Yotogi Subtitle Disabled/夜伽字幕已禁用");
-                SubtitleManager.Unload();
-            }
-        };
-
-        // 注册字幕说话人名启用状态变更事件
-        EnableYotogiSubtitleSpeakerName.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle Speaker Name Enabled/夜伽字幕显示演员名已启用");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕字体变更事件
-        YotogiSubtitleFont.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle font changed/夜伽字幕字体已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕字体大小变更事件
-        YotogiSubtitleFontSize.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle font size changed/夜伽字幕字体大小已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕颜色变更事件
-        YotogiSubtitleColor.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle color changed/夜伽字幕颜色已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕透明度变更事件
-        YotogiSubtitleOpacity.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle opacity changed/夜伽字幕透明度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕背景颜色变更事件
-        YotogiSubtitleBackgroundColor.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle background color changed/夜伽字幕背景颜色已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕背景不透明度变更事件
-        YotogiSubtitleBackgroundOpacity.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle background opacity changed/夜伽字幕背景不透明度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕位置变更事件
-        YotogiSubtitleVerticalPosition.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle position changed/夜伽字幕位置已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕高度变更事件
-        YotogiSubtitleBackgroundHeight.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle height changed/夜伽字幕高度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕动画变更事件
-        EnableYotogiSubtitleAnimation.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle animation changed/夜伽字幕动画已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕淡入时长变更事件
-        YotogiSubtitleFadeInDuration.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle fade in duration changed/夜伽字幕淡入时长已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕淡出时长变更事件
-        YotogiSubtitleFadeOutDuration.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle fade out duration changed/夜伽字幕淡出时长已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕描边变更事件
-        EnableYotogiSubtitleOutline.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle outline changed/夜伽字幕描边已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕描边颜色变更事件
-        YotogiSubtitleOutlineColor.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle outline color changed/夜伽字幕描边颜色已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕描边不透明度变更事件
-        YotogiSubtitleOutlineOpacity.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle outline opacity changed/夜伽字幕描边不透明度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕描边宽度变更事件
-        YotogiSubtitleOutlineWidth.SettingChanged += (sender, args) =>
-        {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("Yotogi Subtitle outline width changed/夜伽字幕描边宽度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-    }
-
-    /// <summary>
     ///     注册基础字幕配置变更事件
     /// </summary>
     private void RegisterBaseSubtitleConfigEvents()
     {
-        // 注册字幕启用状态变更事件
-        EnableBaseSubtitle.SettingChanged += (sender, args) =>
-        {
-            if (EnableBaseSubtitle.Value)
-            {
-                LogManager.Info("Base Subtitle Enabled/基础字幕已启用");
-                SubtitleManager.Init();
-            }
-            else
-            {
-                LogManager.Info("Base Subtitle Disabled/基础字幕已禁用");
-                SubtitleManager.Unload();
-            }
-        };
-
         // 注册字幕说话人名启用状态变更事件
         EnableBaseSubtitleSpeakerName.SettingChanged += (sender, args) =>
         {
             if (EnableBaseSubtitle.Value)
             {
-                LogManager.Info("Base Subtitle Speaker Name Enabled/基础字幕显示演员名已启用");
+                LogManager.Info("Base Subtitle Speaker Name Enabled/启用基础字幕显示说话人名");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
@@ -1196,6 +1033,16 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle font size changed/基础字幕字体大小已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕文本对齐方式变更事件
+        BaseSubtitleTextAlignment.SettingChanged += (sender, args) =>
+        {
+            if (EnableBaseSubtitle.Value)
+            {
+                LogManager.Info("Base Subtitle text alignment changed/基础字幕文本对齐方式已更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
@@ -1245,7 +1092,17 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableBaseSubtitle.Value)
             {
-                LogManager.Info("Base Subtitle position changed/基础字幕位置已更改");
+                LogManager.Info("Base Subtitle vertical position changed/基础字幕垂直位置已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕背景宽度变更事件
+        BaseSubtitleBackgroundWidth.SettingChanged += (sender, args) =>
+        {
+            if (EnableBaseSubtitle.Value)
+            {
+                LogManager.Info("Base Subtitle background width changed/基础字幕背景宽度已更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
@@ -1290,7 +1147,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
-        // 注册字幕描边变更事件
+        // 注册字幕描边启用变更事件
         EnableBaseSubtitleOutline.SettingChanged += (sender, args) =>
         {
             if (EnableBaseSubtitle.Value)
@@ -1326,6 +1183,564 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableBaseSubtitle.Value)
             {
                 LogManager.Info("Base Subtitle outline width changed/基础字幕描边宽度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+    }
+
+    /// <summary>
+    ///     注册夜伽字幕配置变更事件
+    /// </summary>
+    private void RegisterYotogiSubtitleConfigEvents()
+    {
+        // 注册字幕说话人名启用状态变更事件
+        EnableYotogiSubtitleSpeakerName.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle Speaker Name Enabled/启用夜伽字幕显示说话人名");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕字体变更事件
+        YotogiSubtitleFont.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle font changed/夜伽字幕字体已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕字体大小变更事件
+        YotogiSubtitleFontSize.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle font size changed/夜伽字幕字体大小已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕文本对齐方式变更事件
+        YotogiSubtitleTextAlignment.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle text alignment changed/夜伽字幕文本对齐方式已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕颜色变更事件
+        YotogiSubtitleColor.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle color changed/夜伽字幕颜色已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕透明度变更事件
+        YotogiSubtitleOpacity.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle opacity changed/夜伽字幕透明度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕背景颜色变更事件
+        YotogiSubtitleBackgroundColor.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle background color changed/夜伽字幕背景颜色已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕背景不透明度变更事件
+        YotogiSubtitleBackgroundOpacity.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle background opacity changed/夜伽字幕背景不透明度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕位置变更事件
+        YotogiSubtitleVerticalPosition.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle vertical position changed/夜伽字幕垂直位置已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕背景宽度变更事件
+        YotogiSubtitleBackgroundWidth.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle background width changed/夜伽字幕背景宽度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕高度变更事件
+        YotogiSubtitleBackgroundHeight.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle height changed/夜伽字幕高度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕动画变更事件
+        EnableYotogiSubtitleAnimation.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle animation changed/夜伽字幕动画已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕淡入时长变更事件
+        YotogiSubtitleFadeInDuration.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle fade in duration changed/夜伽字幕淡入时长已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕淡出时长变更事件
+        YotogiSubtitleFadeOutDuration.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle fade out duration changed/夜伽字幕淡出时长已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边启用变更事件
+        EnableYotogiSubtitleOutline.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle outline changed/夜伽字幕描边已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边颜色变更事件
+        YotogiSubtitleOutlineColor.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle outline color changed/夜伽字幕描边颜色已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边不透明度变更事件
+        YotogiSubtitleOutlineOpacity.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle outline opacity changed/夜伽字幕描边不透明度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边宽度变更事件
+        YotogiSubtitleOutlineWidth.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("Yotogi Subtitle outline width changed/夜伽字幕描边宽度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+    }
+
+    /// <summary>
+    ///     注册Adv字幕配置变更事件
+    /// </summary>
+    private void RegisterAdvSubtitleConfigEvents()
+    {
+        // 注册字幕说话人名启用状态变更事件
+        EnableAdvSubtitleSpeakerName.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle Speaker Name Enabled/启用Adv字幕显示说话人名");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕字体变更事件
+        AdvSubtitleFont.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle font changed/Adv字幕字体已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕字体大小变更事件
+        AdvSubtitleFontSize.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle font size changed/Adv字幕字体大小已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕文本对齐方式变更事件
+        AdvSubtitleTextAlignment.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle text alignment changed/Adv字幕文本对齐方式已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕颜色变更事件
+        AdvSubtitleColor.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle color changed/Adv字幕颜色已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕透明度变更事件
+        AdvSubtitleOpacity.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle opacity changed/Adv字幕透明度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕背景颜色变更事件
+        AdvSubtitleBackgroundColor.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle background color changed/Adv字幕背景颜色已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕背景不透明度变更事件
+        AdvSubtitleBackgroundOpacity.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle background opacity changed/Adv字幕背景不透明度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕位置变更事件
+        AdvSubtitleVerticalPosition.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle vertical position changed/Adv字幕垂直位置已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕背景宽度变更事件
+        AdvSubtitleBackgroundWidth.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle background width changed/Adv字幕背景宽度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕高度变更事件
+        AdvSubtitleBackgroundHeight.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle height changed/Adv字幕高度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕动画变更事件
+        EnableAdvSubtitleAnimation.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle animation changed/Adv字幕动画已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕淡入时长变更事件
+        AdvSubtitleFadeInDuration.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle fade in duration changed/Adv字幕淡入时长已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕淡出时长变更事件
+        AdvSubtitleFadeOutDuration.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle fade out duration changed/Adv字幕淡出时长已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边启用变更事件
+        EnableAdvSubtitleOutline.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle outline changed/Adv字幕描边已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边颜色变更事件
+        AdvSubtitleOutlineColor.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle outline color changed/Adv字幕描边颜色已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边不透明度变更事件
+        AdvSubtitleOutlineOpacity.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle outline opacity changed/Adv字幕描边不透明度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边宽度变更事件
+        AdvSubtitleOutlineWidth.SettingChanged += (sender, args) =>
+        {
+            if (EnableAdvSubtitle.Value)
+            {
+                LogManager.Info("Adv Subtitle outline width changed/Adv字幕描边宽度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+    }
+
+    /// <summary>
+    ///     注册歌词字幕配置变更事件
+    /// </summary>
+    private void RegisterLyricSubtitleConfigEvents()
+    {
+        // 注册字幕说话人名启用状态变更事件
+        EnableLyricSubtitleSpeakerName.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle Speaker Name Enabled/启用歌词字幕显示说话人名");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕字体变更事件
+        LyricSubtitleFont.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle font changed/歌词字幕字体已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕字体大小变更事件
+        LyricSubtitleFontSize.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle font size changed/歌词字幕字体大小已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕文本对齐方式变更事件
+        LyricSubtitleTextAlignment.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle text alignment changed/歌词字幕文本对齐方式已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕颜色变更事件
+        LyricSubtitleColor.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle color changed/歌词字幕颜色已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕透明度变更事件
+        LyricSubtitleOpacity.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle opacity changed/歌词字幕透明度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕背景颜色变更事件
+        LyricSubtitleBackgroundColor.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle background color changed/歌词字幕背景颜色已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕背景不透明度变更事件
+        LyricSubtitleBackgroundOpacity.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle background opacity changed/歌词字幕背景不透明度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕位置变更事件
+        LyricSubtitleVerticalPosition.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle vertical position changed/歌词字幕垂直位置已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕背景宽度变更事件
+        LyricSubtitleBackgroundWidth.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle background width changed/歌词字幕背景宽度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕高度变更事件
+        LyricSubtitleBackgroundHeight.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle height changed/歌词字幕高度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕动画变更事件
+        EnableLyricSubtitleAnimation.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle animation changed/歌词字幕动画已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕淡入时长变更事件
+        LyricSubtitleFadeInDuration.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle fade in duration changed/歌词字幕淡入时长已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕淡出时长变更事件
+        LyricSubtitleFadeOutDuration.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle fade out duration changed/歌词字幕淡出时长已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边启用变更事件
+        EnableLyricSubtitleOutline.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle outline changed/歌词字幕描边已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边颜色变更事件
+        LyricSubtitleOutlineColor.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle outline color changed/歌词字幕描边颜色已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边不透明度变更事件
+        LyricSubtitleOutlineOpacity.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle outline opacity changed/歌词字幕描边不透明度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕描边宽度变更事件
+        LyricSubtitleOutlineWidth.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle outline width changed/歌词字幕描边宽度已更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
@@ -1376,195 +1791,26 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
-        // 注册VR字幕宽度变更事件
-        VRSubtitleWidth.SettingChanged += (sender, args) =>
+        // 注册VR悬浮字幕宽度变更事件
+        VRInSpaceSubtitleWidth.SettingChanged += (sender, args) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
-                LogManager.Info("Yotogi Subtitle VR width changed/夜伽字幕VR宽度已更改");
+                LogManager.Info("VR Floating Subtitle Width changed/VR悬浮字幕宽度已更改");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册VR悬浮字幕高度变更事件
+        VRInSpaceSubtitleHeight.SettingChanged += (sender, args) =>
+        {
+            if (EnableYotogiSubtitle.Value)
+            {
+                LogManager.Info("VR Floating Subtitle Height changed/VR悬浮字幕高度已更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
     }
 
-    /// <summary>
-    ///     注册ADV字幕配置变更事件
-    /// </summary>
-    private void RegisterAdvSubtitleConfigEvents()
-    {
-        // 注册字幕启用状态变更事件
-        EnableAdvSubtitle.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle Enabled/ADV字幕已启用");
-                SubtitleManager.Init();
-            }
-            else
-            {
-                LogManager.Info("Adv Subtitle Disabled/ADV字幕已禁用");
-                SubtitleManager.Unload();
-            }
-        };
-
-        // 注册字幕说话人名启用状态变更事件
-        EnableAdvSubtitleSpeakerName.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle Speaker Name Enabled/ADV字幕显示演员名已启用");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕字体变更事件
-        AdvSubtitleFont.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle font changed/ADV字幕字体已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕字体大小变更事件
-        AdvSubtitleFontSize.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle font size changed/ADV字幕字体大小已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕颜色变更事件
-        AdvSubtitleColor.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle color changed/ADV字幕颜色已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕透明度变更事件
-        AdvSubtitleOpacity.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle opacity changed/ADV字幕透明度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕背景颜色变更事件
-        AdvSubtitleBackgroundColor.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle background color changed/ADV字幕背景颜色已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕背景不透明度变更事件
-        AdvSubtitleBackgroundOpacity.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle background opacity changed/ADV字幕背景不透明度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕位置变更事件
-        AdvSubtitleVerticalPosition.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle position changed/ADV字幕位置已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕高度变更事件
-        AdvSubtitleBackgroundHeight.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle height changed/ADV字幕高度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕动画变更事件
-        EnableAdvSubtitleAnimation.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle animation changed/ADV字幕动画已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕淡入时长变更事件
-        AdvSubtitleFadeInDuration.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle fade in duration changed/ADV字幕淡入时长已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕淡出时长变更事件
-        AdvSubtitleFadeOutDuration.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle fade out duration changed/ADV字幕淡出时长已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕描边变更事件
-        EnableAdvSubtitleOutline.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle outline changed/ADV字幕描边已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕描边颜色变更事件
-        AdvSubtitleOutlineColor.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle outline color changed/ADV字幕描边颜色已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕描边不透明度变更事件
-        AdvSubtitleOutlineOpacity.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle outline opacity changed/ADV字幕描边不透明度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-
-        // 注册字幕描边宽度变更事件
-        AdvSubtitleOutlineWidth.SettingChanged += (sender, args) =>
-        {
-            if (EnableAdvSubtitle.Value)
-            {
-                LogManager.Info("Adv Subtitle outline width changed/ADV字幕描边宽度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
-        };
-    }
+    # endregion
 }

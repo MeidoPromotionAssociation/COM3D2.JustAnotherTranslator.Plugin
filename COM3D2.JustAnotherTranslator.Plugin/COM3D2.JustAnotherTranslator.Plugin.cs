@@ -158,6 +158,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string TargetLanguePath;
     public static string TranslationTextPath;
     public static string TranslationTexturePath;
+    public static string LyricPath;
 
     private void Awake()
     {
@@ -180,6 +181,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         TargetLanguePath = TranslationRootPath + "/" + TargetLanguage.Value;
         TranslationTextPath = TargetLanguePath + "/Text";
         TranslationTexturePath = TargetLanguePath + "/Texture";
+        LyricPath = TargetLanguePath + "/Lyric";
 
         EnableTextTranslation = Config.Bind("General",
             "EnableTextTranslation/启用文本翻译",
@@ -674,6 +676,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             Directory.CreateDirectory(TargetLanguePath);
             Directory.CreateDirectory(TranslationTextPath);
             Directory.CreateDirectory(TranslationTexturePath);
+            Directory.CreateDirectory(LyricPath);
         }
         catch (Exception e)
         {
@@ -712,15 +715,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogManager.Info("Texture Replace Disabled/贴图替换已禁用");
         }
 
-        if (EnableYotogiSubtitle.Value)
-        {
-            LogManager.Info("Yotogi Subtitle Enabled/夜伽字幕已启用");
-            SubtitleManager.Init();
-        }
-        else
-        {
-            LogManager.Info("Yotogi Subtitle Disabled/夜伽字幕已禁用");
-        }
 
         if (EnableBaseSubtitle.Value)
         {
@@ -732,6 +726,16 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogManager.Info("Base Subtitle Disabled/基础字幕已禁用");
         }
 
+        if (EnableYotogiSubtitle.Value)
+        {
+            LogManager.Info("Yotogi Subtitle Enabled/夜伽字幕已启用");
+            SubtitleManager.Init();
+        }
+        else
+        {
+            LogManager.Info("Yotogi Subtitle Disabled/夜伽字幕已禁用");
+        }
+
         if (EnableAdvSubtitle.Value)
         {
             LogManager.Info("Adv Subtitle Enabled/ADV字幕已启用");
@@ -741,6 +745,17 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             LogManager.Info("Adv Subtitle Disabled/ADV字幕已禁用");
         }
+
+        if (EnableLyricSubtitle.Value)
+        {
+            LogManager.Info("Lyric Subtitle Enabled/歌词字幕已启用");
+            SubtitleManager.Init();
+        }
+        else
+        {
+            LogManager.Info("Lyric Subtitle Disabled/歌词字幕已禁用");
+        }
+
 
         // 注册通用变更事件
         RegisterGeneralConfigEvents();
@@ -789,6 +804,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             TargetLanguePath = TranslationRootPath + "/" + TargetLanguage.Value;
             TranslationTextPath = TargetLanguePath + "/Text";
             TranslationTexturePath = TargetLanguePath + "/Texture";
+            LyricPath = TargetLanguePath + "/Lyric";
 
             // 创建目录
             try
@@ -796,6 +812,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 Directory.CreateDirectory(TargetLanguePath);
                 Directory.CreateDirectory(TranslationTextPath);
                 Directory.CreateDirectory(TranslationTexturePath);
+                Directory.CreateDirectory(LyricPath);
             }
             catch (Exception e)
             {

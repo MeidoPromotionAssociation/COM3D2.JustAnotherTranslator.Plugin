@@ -346,11 +346,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
         # region YotogiSubtitleSettings
 
         // 夜伽字幕相关配置
-        EnableYotogiSubtitle = Config.Bind("YotogiSubtitle",
-            "EnableYotogiSubtitle/启用夜伽字幕",
-            true,
-            "Enable Yotogi Subtitle/启用夜伽字幕");
-
         EnableYotogiSubtitleSpeakerName = Config.Bind("YotogiSubtitle",
             "EnableYotogiSubtitleSpeakerName/启用夜伽字幕显示说话人名",
             true,
@@ -447,11 +442,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
         # region AdvSubtitleSettings
 
         // ADV字幕相关配置
-        EnableAdvSubtitle = Config.Bind("AdvSubtitle",
-            "EnableAdvSubtitle/启用ADV字幕",
-            true,
-            "Enable ADV Subtitle/启用ADV字幕");
-
         EnableAdvSubtitleSpeakerName = Config.Bind("AdvSubtitle",
             "EnableAdvSubtitleSpeakerName/启用ADV字幕显示说话人名",
             true,
@@ -548,11 +538,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
         # region LyricSubtitleSettings
 
         // 歌词字幕相关配置
-        EnableLyricSubtitle = Config.Bind("LyricSubtitle",
-            "EnableLyricSubtitle/启用歌词字幕",
-            true,
-            "Enable Lyric Subtitle/启用歌词字幕");
-
         EnableLyricSubtitleSpeakerName = Config.Bind("LyricSubtitle",
             "EnableLyricSubtitleSpeakerName/启用歌词字幕显示说话人名",
             true,
@@ -990,13 +975,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableLyricSubtitle.Value)
             {
                 LogManager.Info("Lyric Subtitle Enabled/歌词字幕已启用");
-                SubtitleManager.Unload();
-                SubtitleManager.Init();
+                LyricManger.Unload();
+                LyricManger.Init();
             }
             else
             {
                 LogManager.Info("Lyric Subtitle Disabled/歌词字幕已禁用");
-                SubtitleManager.Unload();
+                LyricManger.Unload();
             }
         };
     }

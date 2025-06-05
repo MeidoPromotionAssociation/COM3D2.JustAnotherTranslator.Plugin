@@ -250,17 +250,20 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// </summary>
     protected virtual void ApplyConfig()
     {
-        // 检查配置是否为空
         if (Config == null)
         {
             LogManager.Warning("Subtitle config is null, cannot apply/字幕配置为空，无法应用");
             return;
         }
 
+        // 避免修改垂直位置
+        var verticalPosition = Config.VerticalPosition;
+        Config.CurrentVerticalPosition = verticalPosition;
+
+
         // 应用文本组件配置
         if (TextComponent is not null)
         {
-            // 设置字体
             if (Config.Font is not null)
                 TextComponent.font = Config.Font;
 
@@ -272,7 +275,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         // 应用背景配置
         if (BackgroundImage is not null)
         {
-            // 设置背景颜色和透明度
             BackgroundImage.color = Config.BackgroundColor;
 
             // 设置背景大小
@@ -290,15 +292,15 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             if (width <= 1.0f)
             {
                 // 作为屏幕宽度的百分比，保持原来的锚点设置
-                backgroundRect.anchorMin = new Vector2((1 - width) / 2, Config.VerticalPosition);
-                backgroundRect.anchorMax = new Vector2((1 + width) / 2, Config.VerticalPosition);
+                backgroundRect.anchorMin = new Vector2((1 - width) / 2, Config.CurrentVerticalPosition);
+                backgroundRect.anchorMax = new Vector2((1 + width) / 2, Config.CurrentVerticalPosition);
                 backgroundRect.sizeDelta = new Vector2(0, height);
             }
             else
             {
                 // 绝对像素宽度，需要调整锚点为中心
-                backgroundRect.anchorMin = new Vector2(0.5f, Config.VerticalPosition);
-                backgroundRect.anchorMax = new Vector2(0.5f, Config.VerticalPosition);
+                backgroundRect.anchorMin = new Vector2(0.5f, Config.CurrentVerticalPosition);
+                backgroundRect.anchorMax = new Vector2(0.5f, Config.CurrentVerticalPosition);
                 backgroundRect.sizeDelta = new Vector2(width, height);
             }
         }
@@ -306,10 +308,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         // 应用描边配置
         if (Outline is not null)
         {
-            // 设置描边是否启用
             Outline.enabled = Config.EnableOutline;
 
-            // 如果启用，设置描边颜色和宽度
             if (Config.EnableOutline)
             {
                 Outline.effectColor = Config.OutlineColor;
@@ -327,8 +327,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
                 if (rectTransform is not null)
                 {
                     // 0是底部，1是顶部，调整字幕的垂直位置
-                    rectTransform.anchorMin = new Vector2(0.5f, Config.VerticalPosition);
-                    rectTransform.anchorMax = new Vector2(0.5f, Config.VerticalPosition);
+                    rectTransform.anchorMin = new Vector2(0.5f, Config.CurrentVerticalPosition);
+                    rectTransform.anchorMax = new Vector2(0.5f, Config.CurrentVerticalPosition);
                     rectTransform.pivot = new Vector2(0.5f, 0.5f);
                 }
             }

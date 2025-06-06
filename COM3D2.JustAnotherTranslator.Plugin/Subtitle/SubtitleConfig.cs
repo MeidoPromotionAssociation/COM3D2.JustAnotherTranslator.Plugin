@@ -184,10 +184,10 @@ public class SubtitleConfig
             VRSubtitleHorizontalOffset = JustAnotherTranslator.VRSubtitleHorizontalOffset.Value,
 
             // VR悬浮字幕背景宽度
-            VRSubtitleWidth = JustAnotherTranslator.VRInSpaceSubtitleWidth.Value,
+            VRSubtitleBackgroundWidth = JustAnotherTranslator.VRInSpaceSubtitleWidth.Value,
 
             // VR悬浮字幕高度
-            VRSubtitleHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value
+            VRSubtitleBackgroundHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value
         };
 
         return config;
@@ -348,11 +348,20 @@ public class SubtitleConfig
     // 垂直位置（0-1，0表示底部，1表示顶部）
     public float VerticalPosition { get; set; } = 1f;
 
-    // 背景宽度百分比
+    // 当前垂直位置
+    public float CurrentVerticalPosition { get; set; } = 1f;
+
+    // 背景宽度
     public float BackgroundWidth { get; set; } = 1f;
 
-    // 背景高度百分比
+    // 当前背景宽度
+    public float CurrentBackgroundWidth { get; set; } = 1f;
+
+    // 背景高度
     public float BackgroundHeight { get; set; } = 0.1f;
+
+    // 当前背景高度
+    public float CurrentBackgroundHeight { get; set; } = 0.1f;
 
     // 是否启用动画效果
     public bool EnableAnimation { get; set; } = true;
@@ -377,13 +386,16 @@ public class SubtitleConfig
     public float VRSubtitleHorizontalOffset { get; set; }
 
     // VR悬浮字幕背景宽度（米）
-    public float VRSubtitleWidth { get; set; } = 0.2f;
+    public float VRSubtitleBackgroundWidth { get; set; } = 1.5f;
+
+    // 当前VR悬浮字幕背景宽度
+    public float CurrentVRSubtitleBackgroundWidth { get; set; } = 1.5f;
 
     // VR悬浮字幕背景高度（米）
-    public float VRSubtitleHeight { get; set; } = 1f;
+    public float VRSubtitleBackgroundHeight { get; set; } = 0.1f;
 
-    // 当前垂直位置
-    public float CurrentVerticalPosition { get; set; } = 1f;
+    // 当前VR悬浮字幕背景高度
+    public float CurrentVRSubtitleBackgroundHeight { get; set; } = 0.1f;
 
     # endregion
 }

@@ -108,7 +108,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
         // 设置Canvas尺寸，使其在世界空间中有合适的大小
         VrSpaceCanvasRect = Canvas.GetComponent<RectTransform>();
-        VrSpaceCanvasRect.sizeDelta = new Vector2(Config.VRSubtitleWidth * 1000, 300);
+        VrSpaceCanvasRect.sizeDelta = new Vector2(Config.VRSubtitleBackgroundWidth * 1000, 300);
         VrSubtitleContainer.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
 
         // 添加画布缩放器
@@ -152,7 +152,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         // 设置默认文本样式
         TextComponent.alignment = TextAnchor.MiddleCenter;
         TextComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
-        TextComponent.verticalOverflow = VerticalWrapMode.Overflow;
+        TextComponent.verticalOverflow = VerticalWrapMode.Truncate;
 
         // 设置文本和背景不拦截点击事件
         TextComponent.raycastTarget = false;
@@ -256,7 +256,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     /// <summary>
     ///     应用配置到UI
     /// </summary>
-    protected override void ApplyConfig()
+    public override void ApplyConfig()
     {
         // 先调用基类的ApplyConfig方法应用通用配置
         base.ApplyConfig();
@@ -264,9 +264,18 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         // 检查配置是否为空
         if (Config == null) return;
 
+        var backgroundWidth = Config.VRSubtitleBackgroundWidth;
+        Config.CurrentVRSubtitleBackgroundWidth = backgroundWidth;
+
+        var backgroundHeight = Config.VRSubtitleBackgroundHeight;
+        Config.CurrentVRSubtitleBackgroundHeight = backgroundHeight;
+
         if (VrSpaceCanvasRect is not null)
+        {
             // 更新VR字幕画布尺寸
-            VrSpaceCanvasRect.sizeDelta = new Vector2(Config.VRSubtitleWidth * 1000, 300);
+            VrSpaceCanvasRect.localScale = new Vector3(1, 1, 1);
+            VrSpaceCanvasRect.sizeDelta = new Vector2(backgroundWidth, backgroundHeight);
+        }
 
         // 如果正在跟踪头部且配置更改，重启跟随头部协程以应用新配置
         if (_followHeadCoroutine != null)
@@ -276,5 +285,23 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         }
 
         LogManager.Debug($"Applied VR-specific subtitle config to {gameObject.name}");
+    }
+
+
+    /// <summary>
+    ///     应用新的位置，包括背景大小
+    /// </summary>
+    public override void ApplyNewPosition()
+    {
+        base.ApplyNewPosition();
+
+
+        if (VrSpaceCanvasRect is not null)
+        {
+            // 更新VR字幕画布尺寸
+            VrSpaceCanvasRect.localScale = new Vector3(1, 1, 1);
+            VrSpaceCanvasRect.sizeDelta = new Vector2(Config.CurrentVRSubtitleBackgroundWidth, Config.CurrentVRSubtitleBackgroundHeight);
+        }
+
     }
 }

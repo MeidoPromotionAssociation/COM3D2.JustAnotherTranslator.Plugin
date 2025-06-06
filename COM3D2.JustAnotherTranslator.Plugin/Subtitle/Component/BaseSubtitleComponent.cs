@@ -248,7 +248,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <summary>
     ///     应用配置到UI
     /// </summary>
-    protected virtual void ApplyConfig()
+    public virtual void ApplyConfig()
     {
         if (Config == null)
         {
@@ -259,6 +259,12 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         // 避免修改垂直位置
         var verticalPosition = Config.VerticalPosition;
         Config.CurrentVerticalPosition = verticalPosition;
+
+        var backgroundHeight = Config.BackgroundHeight;
+        Config.CurrentBackgroundHeight = backgroundHeight;
+
+        var backgroundWidth = Config.BackgroundWidth;
+        Config.CurrentBackgroundWidth = backgroundWidth;
 
 
         // 应用文本组件配置
@@ -282,13 +288,13 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 
             // 计算高度 - 如果BackgroundHeight <= 1则作为百分比处理，否则作为绝对像素值
             float height;
-            if (Config.BackgroundHeight <= 1.0f)
-                height = Screen.height * Config.BackgroundHeight;
+            if (backgroundHeight <= 1.0f)
+                height = Screen.height * backgroundHeight;
             else
-                height = Config.BackgroundHeight;
+                height = backgroundHeight;
 
             // 宽度设置 - 如果BackgroundWidth <= 1则作为百分比处理，否则作为绝对像素值
-            var width = Config.BackgroundWidth;
+            var width = backgroundWidth;
             if (width <= 1.0f)
             {
                 // 作为屏幕宽度的百分比，保持原来的锚点设置
@@ -344,6 +350,52 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         LogManager.Debug($"Applied subtitle config to {gameObject.name}");
+    }
+
+
+    /// <summary>
+    ///     应用新的位置，包括垂直位置，背景高度，背景宽度
+    /// </summary>
+    public virtual void ApplyNewPosition()
+    {
+        if (Config == null)
+        {
+            LogManager.Warning("Subtitle config is null, cannot apply/字幕配置为空，无法应用");
+            return;
+        }
+
+        // 应用背景配置
+        if (BackgroundImage is not null)
+        {
+            BackgroundImage.color = Config.BackgroundColor;
+
+            // 设置背景大小
+            var backgroundRect = BackgroundImage.rectTransform;
+
+            // 计算高度 - 如果BackgroundHeight <= 1则作为百分比处理，否则作为绝对像素值
+            float height;
+            if (Config.CurrentBackgroundHeight <= 1.0f)
+                height = Screen.height * Config.CurrentBackgroundHeight;
+            else
+                height = Config.CurrentBackgroundHeight;
+
+            // 宽度设置 - 如果BackgroundWidth <= 1则作为百分比处理，否则作为绝对像素值
+            var width = Config.CurrentBackgroundWidth;
+            if (width <= 1.0f)
+            {
+                // 作为屏幕宽度的百分比，保持原来的锚点设置
+                backgroundRect.anchorMin = new Vector2((1 - width) / 2, Config.CurrentVerticalPosition);
+                backgroundRect.anchorMax = new Vector2((1 + width) / 2, Config.CurrentVerticalPosition);
+                backgroundRect.sizeDelta = new Vector2(0, height);
+            }
+            else
+            {
+                // 绝对像素宽度，需要调整锚点为中心
+                backgroundRect.anchorMin = new Vector2(0.5f, Config.CurrentVerticalPosition);
+                backgroundRect.anchorMax = new Vector2(0.5f, Config.CurrentVerticalPosition);
+                backgroundRect.sizeDelta = new Vector2(width, height);
+            }
+        }
     }
 
     /// <summary>

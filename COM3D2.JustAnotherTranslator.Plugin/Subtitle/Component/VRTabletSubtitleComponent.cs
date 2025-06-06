@@ -77,7 +77,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         // 设置默认文本样式
         TextComponent.alignment = TextAnchor.MiddleCenter;
         TextComponent.horizontalOverflow = HorizontalWrapMode.Wrap;
-        TextComponent.verticalOverflow = VerticalWrapMode.Overflow;
+        TextComponent.verticalOverflow = VerticalWrapMode.Truncate;
 
         // 设置文本和背景不拦截点击事件
         TextComponent.raycastTarget = false;

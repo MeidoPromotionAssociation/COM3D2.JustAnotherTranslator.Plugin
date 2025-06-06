@@ -119,6 +119,8 @@ public static class SubtitleComponentManager
             }
         }
 
+        CalculateNewPosition(subtitleComponent);
+
         subtitleComponent.ShowSubtitle(text, speakerName, duration);
 
         LogManager.Debug($"Showing subtitle: [{speakerName}] {text}");
@@ -158,6 +160,25 @@ public static class SubtitleComponentManager
             return "JAT_SubtitleComponent_For_Default";
 
         return $"JAT_SubtitleComponent_For_{speakerName}";
+    }
+
+
+    /// <summary>
+    ///     计算字幕可用位置
+    /// </summary>
+    public static void CalculateNewPosition(ISubtitleComponent subtitleComponent)
+    {
+        if (!_initialized)
+            Init();
+
+        var config = subtitleComponent.GetConfig();
+
+
+        // config.CurrentVerticalPosition = todo;
+        // config.CurrentBackgroundHeight = todo;
+        // config.CurrentBackgroundWidth = todo;
+
+        subtitleComponent.UpdateConfig(config);
     }
 
     /// <summary>

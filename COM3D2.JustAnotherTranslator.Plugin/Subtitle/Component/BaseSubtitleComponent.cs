@@ -550,4 +550,46 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 
         return color;
     }
+
+
+    /// <summary>
+    ///     获取当前垂直位置
+    /// </summary>
+    /// <returns>垂直位置</returns>
+    public virtual float GetVerticalPosition()
+    {
+        return Config?.CurrentVerticalPosition ?? 0f;
+    }
+
+    /// <summary>
+    ///     设置当前垂直位置
+    /// </summary>
+    /// <param name="position"></param>
+    public virtual void SetVerticalPosition(float position)
+    {
+        if (Config != null)
+        {
+            Config.CurrentVerticalPosition = position;
+            ApplyNewPosition();
+        }
+    }
+
+    /// <summary>
+    ///     获取当前高度
+    /// </summary>
+    /// <returns>高度</returns>
+    public virtual float GetHeight()
+    {
+        if (Config == null) return 0.015f;
+
+        float height = Config.CurrentBackgroundHeight;
+
+        // 如果大于1，说明是像素值，转换为屏幕比例
+        if (height > 1.0f)
+        {
+            height = height / Screen.height;
+        }
+
+        return height;
+    }
 }

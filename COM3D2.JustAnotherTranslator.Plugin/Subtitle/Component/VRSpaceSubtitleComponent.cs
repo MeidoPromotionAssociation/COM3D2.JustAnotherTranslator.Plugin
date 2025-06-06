@@ -300,8 +300,11 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         {
             // 更新VR字幕画布尺寸
             VrSpaceCanvasRect.localScale = new Vector3(1, 1, 1);
-            VrSpaceCanvasRect.sizeDelta = new Vector2(Config.CurrentVRSubtitleBackgroundWidth, Config.CurrentVRSubtitleBackgroundHeight);
+            VrSpaceCanvasRect.sizeDelta = new Vector2(Config.CurrentVRSubtitleBackgroundWidth,
+                Config.CurrentVRSubtitleBackgroundHeight);
         }
-
     }
+
+
+
 }

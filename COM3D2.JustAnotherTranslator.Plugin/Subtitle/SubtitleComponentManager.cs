@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 using UnityEngine;
 
@@ -19,6 +20,21 @@ public static class SubtitleComponentManager
     // 所有种类字幕的配置字典
     private static readonly Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig> SubtitleConfigs = new();
 
+    // 槽位相关常量
+    private const float BOTTOM_MARGIN = 0.03f; // 底部边距（屏幕高度的3%）
+    private const float SPACING = 0.00f; // 槽位之间的间距（屏幕高度的%）
+
+    // 槽位列表
+    private static readonly List<SlotInfo> _slots = new();
+
+    // 记录每个槽位的信息
+    private class SlotInfo
+    {
+        public string SubtitleId { get; set; }
+        public ISubtitleComponent Subtitle { get; set; }
+        public float Bottom { get; set; } // 槽位底部位置（相对于屏幕底部的距离）
+        public float Height { get; set; } // 槽位高度（屏幕比例）
+    }
 
     /// <summary>
     ///     初始化字幕组件管理器
@@ -119,11 +135,11 @@ public static class SubtitleComponentManager
             }
         }
 
-        CalculateNewPosition(subtitleComponent);
+        CalculateNewPosition(subtitleComponent, subtitleType);
 
         subtitleComponent.ShowSubtitle(text, speakerName, duration);
 
-        LogManager.Debug($"Showing subtitle: [{speakerName}] {text}");
+        LogManager.Debug($"Try to show subtitle: [{speakerName}] {text}");
     }
 
     /// <summary>
@@ -166,19 +182,151 @@ public static class SubtitleComponentManager
     /// <summary>
     ///     计算字幕可用位置
     /// </summary>
-    public static void CalculateNewPosition(ISubtitleComponent subtitleComponent)
+    public static void CalculateNewPosition(ISubtitleComponent subtitleComponent,
+        JustAnotherTranslator.SubtitleTypeEnum subtitleType)
     {
         if (!_initialized)
             Init();
 
         var config = subtitleComponent.GetConfig();
+        if (config == null) return;
 
+        try
+        {
+            // 获取当前字幕类型的高度
+            float subtitleHeight = GetSubtitleTypeHeight(subtitleType) * 2; // 我不知道为什么实际占用高度是 2 倍
+            float newPosition = 0f;
+            bool foundSlot = false;
 
-        // config.CurrentVerticalPosition = todo;
-        // config.CurrentBackgroundHeight = todo;
-        // config.CurrentBackgroundWidth = todo;
+            // 检查是否已经存在相同ID的字幕
+            var existingSlot = _slots.FirstOrDefault(s => s.SubtitleId == subtitleComponent.GetSubtitleId());
 
-        subtitleComponent.UpdateConfig(config);
+            if (existingSlot != null)
+            {
+                // 如果存在相同ID的字幕，重用其位置
+                newPosition = existingSlot.Bottom;
+                foundSlot = true;
+
+                // 移除旧槽位
+                _slots.Remove(existingSlot);
+            }
+            // 如果没有相同说话者的活跃字幕，则查找新位置
+            else if (_slots.Count == 0)
+            {
+                // 如果没有其他字幕，放在最顶部
+                newPosition = 1f - subtitleHeight;
+                foundSlot = true;
+            }
+            else
+            {
+                // 按顶部位置降序排序（从高到低）
+                _slots.Sort((a, b) => (b.Bottom + b.Height).CompareTo(a.Bottom + a.Height));
+
+                // 检查顶部是否有足够空间
+                var topSlot = _slots[0];
+                float topSlotTop = topSlot.Bottom + topSlot.Height;
+                float availableSpace = 1f - topSlotTop;
+
+                if (availableSpace >= subtitleHeight + SPACING)
+                {
+                    // 顶部有足够空间
+                    newPosition = 1f - subtitleHeight;
+                    foundSlot = true;
+                }
+                else
+                {
+                    // 检查其他槽位之间的空间
+                    for (int i = 0; i < _slots.Count - 1; i++)
+                    {
+                        float currentBottom = _slots[i].Bottom;
+                        float nextTop = _slots[i + 1].Bottom + _slots[i + 1].Height;
+
+                        if (currentBottom - nextTop >= subtitleHeight + SPACING)
+                        {
+                            // 找到足够的空间
+                            newPosition = currentBottom - SPACING - subtitleHeight;
+                            foundSlot = true;
+                            break;
+                        }
+                    }
+
+                    // 检查底部是否有足够空间
+                    if (!foundSlot)
+                    {
+                        float bottomSlotBottom = _slots.Min(s => s.Bottom);
+                        if (bottomSlotBottom >= BOTTOM_MARGIN + subtitleHeight + SPACING)
+                        {
+                            // 底部有足够空间
+                            newPosition = bottomSlotBottom - SPACING - subtitleHeight;
+                            foundSlot = true;
+                        }
+                    }
+                }
+            }
+
+            // 如果找到了合适的位置，添加新槽位
+            if (foundSlot)
+            {
+                var newSlot = new SlotInfo
+                {
+                    SubtitleId = subtitleComponent.GetSubtitleId(),
+                    Subtitle = subtitleComponent,
+                    Bottom = newPosition,
+                    Height = subtitleHeight
+                };
+
+                _slots.Add(newSlot);
+
+                // 更新字幕位置
+                config.CurrentVerticalPosition = newPosition;
+                subtitleComponent.SetVerticalPosition(newPosition);
+
+                LogManager.Debug(
+                    $"Subtitle {subtitleComponent.GetSubtitleId()} placed at {newPosition}, height: {subtitleHeight}");
+            }
+            else
+            {
+                // 如果还是无法放置，使用默认位置
+                config.CurrentVerticalPosition = config.VerticalPosition;
+                subtitleComponent.UpdateConfig(config);
+                LogManager.Info(
+                    $"Subtitle placement failed, using default position/字幕无法放置，使用默认位置: {subtitleComponent.GetSubtitleId()}");
+            }
+        }
+        catch (Exception ex)
+        {
+            LogManager.Error($"Calculate subtitle position error/计算字幕位置时出错: {ex.Message}\n{ex.StackTrace}");
+            config.CurrentVerticalPosition = config.VerticalPosition;
+            subtitleComponent.UpdateConfig(config);
+        }
+    }
+
+    // 获取指定类型字幕的固定高度
+    private static float GetSubtitleTypeHeight(JustAnotherTranslator.SubtitleTypeEnum type)
+    {
+        SubtitleConfigs.TryGetValue(type, out var config);
+        if (config == null)
+        {
+            return 0f;
+        }
+
+        if (config.BackgroundHeight >= 1.0f)
+        {
+            return config.BackgroundHeight / Screen.height;
+        }
+
+        return config.BackgroundHeight;
+    }
+
+    // 移除字幕的方法
+    public static void RemoveSubtitle(ISubtitleComponent subtitleComponent)
+    {
+        var slotToRemove = _slots.FirstOrDefault(s => s.Subtitle == subtitleComponent);
+        if (slotToRemove != null)
+        {
+            _slots.Remove(slotToRemove);
+            LogManager.Debug($"移除字幕 {subtitleComponent.GetSubtitleId()}");
+        }
     }
 
     /// <summary>

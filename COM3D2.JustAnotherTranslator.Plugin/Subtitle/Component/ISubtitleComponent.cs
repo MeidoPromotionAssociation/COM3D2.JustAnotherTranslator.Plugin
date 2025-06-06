@@ -57,6 +57,23 @@ public interface ISubtitleComponent
     string GetSubtitleId();
 
     /// <summary>
+    ///     获取垂直位置
+    /// </summary>
+    /// <returns>垂直位置</returns>
+    float GetVerticalPosition();
+
+    /// <summary>
+    ///     设置垂直位置
+    /// </summary>
+    void SetVerticalPosition(float position);
+
+    /// <summary>
+    ///     获取字幕高度
+    /// </summary>
+    /// <returns>字幕高度</returns>
+    float GetHeight();
+
+    /// <summary>
     ///     检查字幕是否可见
     /// </summary>
     /// <returns>字幕是否可见</returns>

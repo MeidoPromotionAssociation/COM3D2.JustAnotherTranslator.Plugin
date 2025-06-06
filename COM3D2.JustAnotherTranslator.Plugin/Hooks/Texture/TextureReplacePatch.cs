@@ -52,6 +52,7 @@ public static class TextureReplacePatch
 
         var fileName = Path.GetFileNameWithoutExtension(f_strFileName);
 
+        // 没有后缀
         if (string.IsNullOrEmpty(fileName))
             return true;
 

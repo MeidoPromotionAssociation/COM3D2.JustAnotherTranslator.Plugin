@@ -12,17 +12,16 @@ public static class LyricPatch
     [HarmonyPrefix]
     public static void DanceSubtitleMgr_Start_Prefix(DanceSubtitleMgr __instance)
     {
-
-        if(DanceMain.SelectDanceData is null)
+        if (DanceMain.SelectDanceData is null)
             return;
 
-        string csv_path = RhythmAction_Mgr.Instance.MusicCSV_Path;
-        string musicName = string.Empty;
+        var csv_path = RhythmAction_Mgr.Instance.MusicCSV_Path;
+        var musicName = string.Empty;
 
         if (!string.IsNullOrEmpty(csv_path))
         {
-            string prefix = "csv_rhythm_action/";
-            string suffix = "/";
+            var prefix = "csv_rhythm_action/";
+            var suffix = "/";
 
             if (csv_path.StartsWith(prefix) && csv_path.EndsWith(suffix))
             {
@@ -36,7 +35,5 @@ public static class LyricPatch
         }
 
         LyricManger.CreateMusicPath(musicName);
-
-
     }
 }

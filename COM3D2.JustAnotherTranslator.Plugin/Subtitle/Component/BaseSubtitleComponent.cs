@@ -12,6 +12,12 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 /// </summary>
 public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 {
+    // 当前显示的文本
+    private string _currentText = "";
+
+    // 翻译后的说话者名称
+    private string _translatedSpeakerName = "";
+
     // 动画协程
     protected Coroutine AnimationCoroutine;
 
@@ -34,10 +40,10 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     protected Outline Outline;
 
     // 说话者文本颜色
-    protected string SpeakerColor;
+    protected string SpeakerColor = "";
 
     // 说话者名称
-    protected string SpeakerName;
+    protected string SpeakerName = "";
 
     // 字幕文本组件
     protected Text TextComponent;
@@ -79,7 +85,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             SpeakerName = speakerName;
 
         if (string.IsNullOrEmpty(SpeakerColor))
-            SpeakerColor = ColorUtility.ToHtmlStringRGB(GetSpeakerColor(speakerName));
+            SpeakerColor = ColorUtility.ToHtmlStringRGBA(GetSpeakerColor(speakerName));
 
         // 设置文本内容
         SetText(text, speakerName, SpeakerColor, Config.EnableSpeakerName);
@@ -99,15 +105,15 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         else
         {
             // 直接显示
-            SetAlpha(1);
+            SetAlpha(Config.TextColor.a);
 
             // 如果设置了持续时间，则在指定时间后隐藏
             if (duration > 0) StartCoroutine(AutoHide(duration));
         }
 
-        LogManager.Debug($"Showing subtitle: {text}");
+        LogManager.Debug(
+            $"Showing subtitle: {text}, SpeakerName: {speakerName}, SpeakerColor: {SpeakerColor}, Duration: {duration}");
     }
-
 
     /// <summary>
     ///     隐藏字幕
@@ -145,7 +151,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     {
         if (config == null)
         {
-            LogManager.Warning("字幕配置为空，无法更新/Subtitle config is null, cannot update");
+            LogManager.Warning("Subtitle config is null, cannot update/字幕配置为空，无法更新");
             return;
         }
 
@@ -218,7 +224,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         return gameObject;
     }
 
-
     /// <summary>
     ///     设置文本内容
     /// </summary>
@@ -233,10 +238,13 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         // 但人名需要被翻译
         if (!string.IsNullOrEmpty(speakerName) && enableSpeakerName)
         {
-            TextTranslator.GetTranslateText(speakerName, out var translatedSpeakerName);
-            displayText = $"<color=#{speakerColor}>{translatedSpeakerName}</color>: {text}";
+            if (string.IsNullOrEmpty(_translatedSpeakerName))
+                TextTranslator.GetTranslateText(speakerName, out _translatedSpeakerName);
+
+            displayText = $"<color=#{speakerColor}>{_translatedSpeakerName}</color>: {text}";
         }
 
+        _currentText = text;
         TextComponent.text = displayText;
     }
 
@@ -429,56 +437,41 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <param name="alpha">透明度值（0-1）</param>
     protected virtual void SetAlpha(float alpha)
     {
-        // 设置文本透明度
+        if (TextComponent is null) return;
+
+        //设置主文本组件的基础透明度
         var textColor = TextComponent.color;
-        textColor.a = alpha;
+        textColor.a = Mathf.Clamp01(alpha);
         TextComponent.color = textColor;
 
-        // 如果文本中包含带颜色的说话者名称，需要更新富文本中的颜色
-        if (TextComponent.text.Contains("<color="))
+        // 设置背景透明度
+        if (BackgroundImage is not null)
         {
-            // 获取当前文本内容
-            var currentText = TextComponent.text;
-
-            // 查找颜色标签的开始位置
-            var colorTagStart = currentText.IndexOf("<color=", StringComparison.Ordinal);
-            if (colorTagStart >= 0)
-            {
-                // 查找颜色值的开始和结束位置
-                var colorValueStart = currentText.IndexOf('#', colorTagStart);
-                var colorValueEnd = currentText.IndexOf('>', colorValueStart);
-
-                if (colorValueStart >= 0 && colorValueEnd > colorValueStart)
-                {
-                    // 提取原始颜色值
-                    var originalColorValue =
-                        currentText.Substring(colorValueStart + 1, colorValueEnd - colorValueStart - 1);
-
-                    // 如果颜色值是6位的RGB格式，转换为带透明度的RGBA格式
-                    if (originalColorValue.Length == 6)
-                    {
-                        // 计算alpha值的十六进制表示（00-FF）
-                        var alphaValue = (byte)(alpha * 255);
-                        var alphaHex = alphaValue.ToString("X2");
-
-                        // 创建新的颜色值，加入alpha通道
-                        var newColorValue = originalColorValue + alphaHex;
-
-                        // 替换原来的颜色值
-                        currentText = currentText.Substring(0, colorValueStart + 1) + newColorValue +
-                                      currentText.Substring(colorValueEnd);
-
-                        // 更新文本内容
-                        TextComponent.text = currentText;
-                    }
-                }
-            }
+            var bgColor = BackgroundImage.color;
+            // Config.BackgroundColor.a 作为背景的最大透明度
+            bgColor.a = Mathf.Clamp01(alpha) * Config.BackgroundColor.a;
+            BackgroundImage.color = bgColor;
         }
 
-        // 设置背景透明度
-        var bgColor = BackgroundImage.color;
-        bgColor.a = alpha * Config.BackgroundColor.a; // 保持背景的相对透明度
-        BackgroundImage.color = bgColor;
+        // TextComponent.color 无法影响 html 标签，因此需要单独处理
+        if (Config.EnableSpeakerName && !string.IsNullOrEmpty(SpeakerColor))
+        {
+            // 将alpha (0-1) 转换为两位十六进制字符串 (00-FF)
+            var alphaByte = (byte)(Mathf.Clamp01(alpha) * 255f);
+            var alphaHex = alphaByte.ToString("X2");
+
+            // SpeakerColor 存储的是 RRGGBBAA, 替换最后两位
+            if (SpeakerColor.Length < 8) SpeakerColor += "FF";
+
+            SpeakerColor = SpeakerColor.Substring(0, SpeakerColor.Length - 2) + alphaHex;
+
+
+            if (string.IsNullOrEmpty(_translatedSpeakerName))
+                TextTranslator.GetTranslateText(SpeakerName, out _translatedSpeakerName);
+
+            // 重构文本
+            TextComponent.text = $"<color=#{SpeakerColor}>{_translatedSpeakerName}</color>: {_currentText}";
+        }
     }
 
     /// <summary>
@@ -497,7 +490,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             yield return null;
         }
 
-        SetAlpha(1);
+        SetAlpha(Config.TextColor.a);
         CurrentAnimation = null;
     }
 
@@ -507,7 +500,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     protected virtual IEnumerator FadeOut()
     {
         float time = 0;
-        SetAlpha(1);
+        SetAlpha(Config.TextColor.a);
 
         while (time < Config.FadeOutDuration)
         {
@@ -550,7 +543,10 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             0.5f + (float)random.NextDouble() * 0.5f
         );
 
-        LogManager.Debug($"Created Color R:{color.r:F2} G:{color.g:F2} B:{color.b:F2} for {speakerName}");
+        color.a = Config.TextColor.a;
+
+        LogManager.Debug(
+            $"Created Color R:{color.r:F2} G:{color.g:F2} B:{color.b:F2} A:{color.a:F2} for {speakerName}");
 
         return color;
     }

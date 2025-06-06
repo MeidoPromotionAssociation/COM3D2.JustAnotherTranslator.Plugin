@@ -153,6 +153,12 @@ public static class SubtitleComponentManager
 
         if (SubtitleIdComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
             subtitleComponent.HideSubtitle();
+
+        var slotToRemove = _slots.FirstOrDefault(s => s.SubtitleId == subtitleId);
+        if (slotToRemove != null)
+        {
+            _slots.Remove(slotToRemove);
+        }
     }
 
     /// <summary>
@@ -194,73 +200,54 @@ public static class SubtitleComponentManager
         try
         {
             // 获取当前字幕类型的高度
-            float subtitleHeight = GetSubtitleTypeHeight(subtitleType) * 2; // 我不知道为什么实际占用高度是 2 倍
+            float subtitleHeight = GetSubtitleTypeHeight(subtitleType) * 2; // 我不知道为什么实际高度是 2 倍
             float newPosition = 0f;
             bool foundSlot = false;
+            string currentSubtitleId = subtitleComponent.GetSubtitleId();
 
             // 检查是否已经存在相同ID的字幕
-            var existingSlot = _slots.FirstOrDefault(s => s.SubtitleId == subtitleComponent.GetSubtitleId());
+            var existingSlot = _slots.FirstOrDefault(s => s.SubtitleId == currentSubtitleId);
 
             if (existingSlot != null)
             {
                 // 如果存在相同ID的字幕，重用其位置
                 newPosition = existingSlot.Bottom;
                 foundSlot = true;
-
-                // 移除旧槽位
                 _slots.Remove(existingSlot);
             }
-            // 如果没有相同说话者的活跃字幕，则查找新位置
+            // 如果没有相同ID的字幕，则查找新位置
             else if (_slots.Count == 0)
             {
-                // 如果没有其他字幕，放在最顶部
-                newPosition = 1f - subtitleHeight;
+                newPosition = config.VerticalPosition;
                 foundSlot = true;
             }
             else
             {
-                // 按顶部位置降序排序（从高到低）
-                _slots.Sort((a, b) => (b.Bottom + b.Height).CompareTo(a.Bottom + a.Height));
+                LogManager.Debug(
+                    $"Finding position for {currentSubtitleId}. Current slots: {_slots.Count}, StartPos: {config.VerticalPosition}, StackMode: {(config.VerticalPosition > 0.5f ? "Downward" : "Upward")}, Height: {subtitleHeight}");
 
-                // 检查顶部是否有足够空间
-                var topSlot = _slots[0];
-                float topSlotTop = topSlot.Bottom + topSlot.Height;
-                float availableSpace = 1f - topSlotTop;
+                // 判断堆叠方向：只有非常底部的字幕会向上堆叠
+                bool stackDownward = config.VerticalPosition > 0.1f;
 
-                if (availableSpace >= subtitleHeight + SPACING)
+                // 按位置排序
+                _slots.Sort((a, b) => stackDownward
+                    ? (b.Bottom + b.Height).CompareTo(a.Bottom + a.Height) // 从上到下
+                    : a.Bottom.CompareTo(b.Bottom)); // 从下到上
+
+                // 根据堆叠方向查找可用位置
+                if (stackDownward)
                 {
-                    // 顶部有足够空间
-                    newPosition = 1f - subtitleHeight;
-                    foundSlot = true;
+                    // 向下堆叠：从用户设置位置开始向下查找
+                    float startPosition = Mathf.Min(config.VerticalPosition, 1f - subtitleHeight);
+                    newPosition = FindDownwardPosition(startPosition, subtitleHeight);
+                    foundSlot = newPosition >= 0;
                 }
                 else
                 {
-                    // 检查其他槽位之间的空间
-                    for (int i = 0; i < _slots.Count - 1; i++)
-                    {
-                        float currentBottom = _slots[i].Bottom;
-                        float nextTop = _slots[i + 1].Bottom + _slots[i + 1].Height;
-
-                        if (currentBottom - nextTop >= subtitleHeight + SPACING)
-                        {
-                            // 找到足够的空间
-                            newPosition = currentBottom - SPACING - subtitleHeight;
-                            foundSlot = true;
-                            break;
-                        }
-                    }
-
-                    // 检查底部是否有足够空间
-                    if (!foundSlot)
-                    {
-                        float bottomSlotBottom = _slots.Min(s => s.Bottom);
-                        if (bottomSlotBottom >= BOTTOM_MARGIN + subtitleHeight + SPACING)
-                        {
-                            // 底部有足够空间
-                            newPosition = bottomSlotBottom - SPACING - subtitleHeight;
-                            foundSlot = true;
-                        }
-                    }
+                    // 向上堆叠：从用户设置位置开始向上查找
+                    float startPosition = Mathf.Max(0, config.VerticalPosition - subtitleHeight);
+                    newPosition = FindUpwardPosition(startPosition, subtitleHeight);
+                    foundSlot = newPosition >= 0;
                 }
             }
 
@@ -269,39 +256,170 @@ public static class SubtitleComponentManager
             {
                 var newSlot = new SlotInfo
                 {
-                    SubtitleId = subtitleComponent.GetSubtitleId(),
+                    SubtitleId = currentSubtitleId,
                     Subtitle = subtitleComponent,
                     Bottom = newPosition,
                     Height = subtitleHeight
                 };
 
                 _slots.Add(newSlot);
-
-                // 更新字幕位置
                 config.CurrentVerticalPosition = newPosition;
                 subtitleComponent.SetVerticalPosition(newPosition);
 
                 LogManager.Debug(
-                    $"Subtitle {subtitleComponent.GetSubtitleId()} placed at {newPosition}, height: {subtitleHeight}");
+                    $"Subtitle {currentSubtitleId} placed at {newPosition}, height: {subtitleHeight}");
             }
             else
             {
+                // 如果没有足够空间，移除第一个字幕
+                if (_slots.Count > 0)
+                {
+                    var oldestSubtitle = _slots[0];
+                    _slots.RemoveAt(0);
+                    DestroySubtitleComponentBySubtitleId(oldestSubtitle.SubtitleId);
+                    CalculateNewPosition(subtitleComponent, subtitleType);
+                    return;
+                }
+
                 // 如果还是无法放置，使用默认位置
                 config.CurrentVerticalPosition = config.VerticalPosition;
                 subtitleComponent.UpdateConfig(config);
-                LogManager.Info(
-                    $"Subtitle placement failed, using default position/字幕无法放置，使用默认位置: {subtitleComponent.GetSubtitleId()}");
+                LogManager.Warning(
+                    $"Subtitle placement failed, using default position: {currentSubtitleId}");
             }
         }
         catch (Exception ex)
         {
-            LogManager.Error($"Calculate subtitle position error/计算字幕位置时出错: {ex.Message}\n{ex.StackTrace}");
+            LogManager.Error($"Calculate subtitle position error: {ex.Message}\n{ex.StackTrace}");
             config.CurrentVerticalPosition = config.VerticalPosition;
             subtitleComponent.UpdateConfig(config);
         }
     }
 
-    // 获取指定类型字幕的固定高度
+    /// <summary>
+    ///     查找向下可用位置
+    /// </summary>
+    /// <param name="startPosition"></param>
+    /// <param name="subtitleHeight"></param>
+    /// <returns>位置</returns>
+    private static float FindDownwardPosition(float startPosition, float subtitleHeight)
+    {
+        // 获取所有已占用的区域，按底部位置排序
+        var occupiedRanges = _slots
+            .Select(s => new { Top = s.Bottom + s.Height, Bottom = s.Bottom })
+            .OrderBy(r => r.Bottom)
+            .ToList();
+
+        // 检查起始位置是否可用
+        bool isStartPositionValid = true;
+        foreach (var range in occupiedRanges)
+        {
+            if (startPosition < range.Top && startPosition + subtitleHeight > range.Bottom)
+            {
+                isStartPositionValid = false;
+                break;
+            }
+        }
+
+        if (isStartPositionValid && startPosition + subtitleHeight <= 1f)
+        {
+            return startPosition;
+        }
+
+        // 检查顶部是否有足够空间
+        if (occupiedRanges.Count == 0 || 1f - occupiedRanges[0].Top >= subtitleHeight + SPACING)
+        {
+            return 1f - subtitleHeight;
+        }
+
+        // 检查槽位之间的空间
+        for (int i = 0; i < occupiedRanges.Count - 1; i++)
+        {
+            float currentBottom = occupiedRanges[i].Bottom;
+            float nextTop = occupiedRanges[i + 1].Top; // 下一个槽位的顶部
+            float availableSpace = currentBottom - nextTop;
+
+            if (availableSpace >= subtitleHeight + SPACING)
+            {
+                return currentBottom - subtitleHeight;
+            }
+        }
+
+        // 检查底部空间
+        float lastBottom = occupiedRanges.Last().Bottom;
+        if (lastBottom - BOTTOM_MARGIN >= subtitleHeight + SPACING)
+        {
+            return lastBottom - subtitleHeight - SPACING;
+        }
+
+        return -1; // 没有找到合适位置
+    }
+
+    /// <summary>
+    ///     向上查找可用位置
+    /// </summary>
+    /// <param name="startPosition"></param>
+    /// <param name="subtitleHeight"></param>
+    /// <returns>位置</returns>
+    private static float FindUpwardPosition(float startPosition, float subtitleHeight)
+    {
+        // 获取所有已占用的区域，按顶部位置降序排序
+        var occupiedRanges = _slots
+            .Select(s => new { Top = s.Bottom + s.Height, Bottom = s.Bottom })
+            .OrderByDescending(r => r.Top)
+            .ToList();
+
+        // 检查起始位置是否可用
+        bool isStartPositionValid = true;
+        foreach (var range in occupiedRanges)
+        {
+            if (startPosition < range.Top && startPosition + subtitleHeight > range.Bottom)
+            {
+                isStartPositionValid = false;
+                break;
+            }
+        }
+
+        if (isStartPositionValid && startPosition >= 0)
+        {
+            return startPosition;
+        }
+
+        // 检查底部是否有足够空间
+        if (occupiedRanges.Count == 0 || occupiedRanges[0].Bottom - BOTTOM_MARGIN >= subtitleHeight + SPACING)
+        {
+            return Mathf.Max(0, BOTTOM_MARGIN);
+        }
+
+        // 检查槽位之间的空间
+        for (int i = 0; i < occupiedRanges.Count - 1; i++)
+        {
+            float currentTop = occupiedRanges[i].Top;
+            float nextBottom = occupiedRanges[i + 1].Bottom + occupiedRanges[i + 1].Top;
+            float availableSpace = nextBottom - currentTop;
+
+            if (availableSpace >= subtitleHeight + SPACING)
+            {
+                return currentTop + SPACING;
+            }
+        }
+
+        // 检查顶部空间
+        float lastTop = occupiedRanges.Last().Top;
+        if (1f - lastTop >= subtitleHeight + SPACING)
+        {
+            return lastTop + SPACING;
+        }
+
+        return -1; // 没有找到合适位置
+    }
+
+
+    /// <summary>
+    ///     获取指定字幕类型的设置高度
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns>高度</returns>
     private static float GetSubtitleTypeHeight(JustAnotherTranslator.SubtitleTypeEnum type)
     {
         SubtitleConfigs.TryGetValue(type, out var config);
@@ -318,16 +436,6 @@ public static class SubtitleComponentManager
         return config.BackgroundHeight;
     }
 
-    // 移除字幕的方法
-    public static void RemoveSubtitle(ISubtitleComponent subtitleComponent)
-    {
-        var slotToRemove = _slots.FirstOrDefault(s => s.Subtitle == subtitleComponent);
-        if (slotToRemove != null)
-        {
-            _slots.Remove(slotToRemove);
-            LogManager.Debug($"移除字幕 {subtitleComponent.GetSubtitleId()}");
-        }
-    }
 
     /// <summary>
     ///     获取指定类型的字幕配置
@@ -392,7 +500,32 @@ public static class SubtitleComponentManager
 
         component.Destroy();
 
+        var slotToRemove = _slots.FirstOrDefault(s => s.Subtitle == component);
+        if (slotToRemove != null)
+        {
+            _slots.Remove(slotToRemove);
+        }
+
         LogManager.Debug("Subtitle component destroyed");
+    }
+
+    /// <summary>
+    ///     根据字幕ID销毁字幕组件
+    /// </summary>
+    /// <param name="subtitleId">字幕ID</param>
+    public static void DestroySubtitleComponentBySubtitleId(string subtitleId)
+    {
+        if (SubtitleIdComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
+        {
+            SubtitleIdComponentsMap.Remove(subtitleId);
+            subtitleComponent.Destroy();
+        }
+
+        var slotToRemove = _slots.FirstOrDefault(s => s.SubtitleId == subtitleId);
+        if (slotToRemove != null)
+        {
+            _slots.Remove(slotToRemove);
+        }
     }
 
     /// <summary>
@@ -405,5 +538,7 @@ public static class SubtitleComponentManager
 
         SubtitleIdComponentsMap.Clear();
         LogManager.Debug("All subtitle components destroyed");
+
+        _slots.Clear();
     }
 }

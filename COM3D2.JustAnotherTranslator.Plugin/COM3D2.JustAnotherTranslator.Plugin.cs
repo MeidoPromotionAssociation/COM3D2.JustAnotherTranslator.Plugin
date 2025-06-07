@@ -152,6 +152,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> VRSubtitleHorizontalOffset;
     public static ConfigEntry<float> VRInSpaceSubtitleWidth;
     public static ConfigEntry<float> VRInSpaceSubtitleHeight;
+    public static ConfigEntry<float> VRSubtitleScale;
 
     // translation folder path
     public static readonly string TranslationRootPath = Paths.BepInExRootPath + "/JustAnotherTranslator";
@@ -647,7 +648,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         VRSubtitleVerticalOffset = Config.Bind("VRSubtitle",
             "VRSubtitleVerticalOffset/VR字幕垂直偏移",
-            35f,
+            25f,
             "VR Floating Subtitle Vertical Offset in degrees (relative to center of view)/VR悬浮字幕垂直偏移（度，相对于视线中心）");
 
         VRSubtitleHorizontalOffset = Config.Bind("VRSubtitle",
@@ -657,13 +658,18 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         VRInSpaceSubtitleWidth = Config.Bind("VRSubtitle",
             "VRFloatingSubtitleWidth/VR悬浮字幕宽度",
-            1f,
+            1.5f,
             "VR Floating Subtitle Width in meters/VR悬浮字幕宽度（米）");
 
         VRInSpaceSubtitleHeight = Config.Bind("VRSubtitle",
             "VRFloatingSubtitleHeight/VR悬浮字幕高度",
-            0.2f,
+            0.04f,
             "VR Floating Subtitle Height in meters/VR悬浮字幕高度（米）");
+
+        VRSubtitleScale = Config.Bind("VRSubtitle",
+            "VRSubtitleScale/VR字幕整体缩放",
+            0.8f,
+            "VR Floating Subtitle Scale/VR悬浮字幕整体缩放比例");
 
         # endregion
 
@@ -1757,7 +1763,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableYotogiSubtitle.Value)
             {
-                LogManager.Info("Yotogi Subtitle VR mode changed/夜伽字幕VR模式已更改");
+                LogManager.Info("VR Subtitle mode changed/VR字幕模式已更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
@@ -1767,7 +1773,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableYotogiSubtitle.Value)
             {
-                LogManager.Info("Yotogi Subtitle VR distance changed/夜伽字幕VR距离已更改");
+                LogManager.Info("VR Floating Subtitle distance changed/VR悬浮字幕距离已更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
@@ -1777,7 +1783,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableYotogiSubtitle.Value)
             {
-                LogManager.Info("Yotogi Subtitle VR vertical offset changed/夜伽字幕VR垂直偏移已更改");
+                LogManager.Info("VR Floating Subtitle vertical offset changed/VR悬浮字幕垂直偏移已更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
@@ -1787,7 +1793,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableYotogiSubtitle.Value)
             {
-                LogManager.Info("Yotogi Subtitle VR horizontal offset changed/夜伽字幕VR水平偏移已更改");
+                LogManager.Info("VR Floating Subtitle horizontal offset changed/VR悬浮字幕水平偏移已更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };
@@ -1810,6 +1816,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 LogManager.Info("VR Floating Subtitle Height changed/VR悬浮字幕高度已更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
+        };
+
+        // 注册VR字幕缩放变更事件
+        VRSubtitleScale.SettingChanged += (sender, args) =>
+        {
+            LogManager.Info("VR Subtitle scale changed/VR字幕缩放已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
     }
 

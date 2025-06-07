@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -188,10 +189,18 @@ public static class SubtitleManager
             return;
 
         // 启动新的协程监控 Maid 的语音播放状态
-        var coroutineId = CoroutineManager.LaunchCoroutine(MonitorMaidVoicePlayback(maid));
-        MaidMonitorCoroutineIds[maid] = coroutineId;
-
-        LogManager.Debug($"Started monitoring coroutine for Maid: {MaidInfo.GetMaidFullName(maid)}, ID: {coroutineId}");
+        try
+        {
+            var coroutineId = CoroutineManager.LaunchCoroutine(MonitorMaidVoicePlayback(maid));
+            MaidMonitorCoroutineIds[maid] = coroutineId;
+            LogManager.Debug(
+                $"Started monitoring coroutine for Maid: {MaidInfo.GetMaidFullName(maid)}, ID: {coroutineId}");
+        }
+        catch (Exception ex)
+        {
+            LogManager.Error(
+                $"Failed to start monitoring coroutine for Maid: {MaidInfo.GetMaidFullName(maid)}, {ex.Message}");
+        }
     }
 
     /// <summary>

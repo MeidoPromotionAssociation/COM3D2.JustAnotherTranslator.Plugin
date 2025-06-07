@@ -187,7 +187,10 @@ public class SubtitleConfig
             VRSubtitleBackgroundWidth = JustAnotherTranslator.VRInSpaceSubtitleWidth.Value,
 
             // VR悬浮字幕高度
-            VRSubtitleBackgroundHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value
+            VRSubtitleBackgroundHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value,
+
+            // VR悬浮字幕缩放比率
+            VRSubtitleScale = JustAnotherTranslator.VRSubtitleScale.Value
         };
 
         return config;
@@ -396,6 +399,9 @@ public class SubtitleConfig
 
     // 当前VR悬浮字幕背景高度
     public float CurrentVRSubtitleBackgroundHeight { get; set; } = 0.1f;
+
+    // VR悬浮字幕缩放比率
+    public float VRSubtitleScale { get; set; } = 1f;
 
     # endregion
 }

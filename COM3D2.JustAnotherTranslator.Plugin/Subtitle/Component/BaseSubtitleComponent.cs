@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using UnityEngine;
@@ -54,7 +53,12 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <param name="config">字幕配置</param>
     public virtual void Init(SubtitleConfig config)
     {
-        Config = config ?? throw new ArgumentNullException(nameof(config));
+        if (Config is null)
+        {
+            LogManager.Warning(
+                "Subtitle config is null, subtitle component will not be initialized/字幕配置为空，字幕组件将不会被初始化");
+            return;
+        }
 
         // 创建UI
         CreateSubtitleUI();
@@ -222,6 +226,45 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     public GameObject GetGameObject()
     {
         return gameObject;
+    }
+
+
+    /// <summary>
+    ///     获取当前垂直位置
+    /// </summary>
+    /// <returns>垂直位置</returns>
+    public virtual float GetVerticalPosition()
+    {
+        return Config?.CurrentVerticalPosition ?? 0f;
+    }
+
+    /// <summary>
+    ///     设置当前垂直位置
+    /// </summary>
+    /// <param name="position"></param>
+    public virtual void SetVerticalPosition(float position)
+    {
+        if (Config != null)
+        {
+            Config.CurrentVerticalPosition = position;
+            ApplyNewPosition();
+        }
+    }
+
+    /// <summary>
+    ///     获取当前高度
+    /// </summary>
+    /// <returns>高度</returns>
+    public virtual float GetHeight()
+    {
+        if (Config == null) return 0.015f;
+
+        var height = Config.CurrentBackgroundHeight;
+
+        // 如果大于1，说明是像素值，转换为屏幕比例
+        if (height > 1.0f) height = height / Screen.height;
+
+        return height;
     }
 
     /// <summary>
@@ -549,47 +592,5 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             $"Created Color R:{color.r:F2} G:{color.g:F2} B:{color.b:F2} A:{color.a:F2} for {speakerName}");
 
         return color;
-    }
-
-
-    /// <summary>
-    ///     获取当前垂直位置
-    /// </summary>
-    /// <returns>垂直位置</returns>
-    public virtual float GetVerticalPosition()
-    {
-        return Config?.CurrentVerticalPosition ?? 0f;
-    }
-
-    /// <summary>
-    ///     设置当前垂直位置
-    /// </summary>
-    /// <param name="position"></param>
-    public virtual void SetVerticalPosition(float position)
-    {
-        if (Config != null)
-        {
-            Config.CurrentVerticalPosition = position;
-            ApplyNewPosition();
-        }
-    }
-
-    /// <summary>
-    ///     获取当前高度
-    /// </summary>
-    /// <returns>高度</returns>
-    public virtual float GetHeight()
-    {
-        if (Config == null) return 0.015f;
-
-        float height = Config.CurrentBackgroundHeight;
-
-        // 如果大于1，说明是像素值，转换为屏幕比例
-        if (height > 1.0f)
-        {
-            height = height / Screen.height;
-        }
-
-        return height;
     }
 }

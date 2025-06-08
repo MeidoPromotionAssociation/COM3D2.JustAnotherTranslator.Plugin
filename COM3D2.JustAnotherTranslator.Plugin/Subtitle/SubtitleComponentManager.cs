@@ -293,12 +293,10 @@ public static class SubtitleComponentManager
         }
     }
 
-
     private static void CalculateVRSpacePosition(ISubtitleComponent subtitleComponent, SubtitleConfig config)
     {
         //TODO
     }
-
 
     /// <summary>
     ///     查找向下可用位置

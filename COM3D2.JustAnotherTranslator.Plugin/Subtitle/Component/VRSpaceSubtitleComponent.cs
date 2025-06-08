@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,9 +13,6 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     // 字幕跟随平滑度
     protected readonly float FollowSmoothness = 5.0f;
 
-    // 跟随头部的协程
-    private Coroutine _followHeadCoroutine;
-
     // VR头部位置参考，用于跟随头部运动
     protected Transform VRHeadTransform;
 
@@ -25,6 +21,69 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
     // VR悬浮字幕容器
     protected GameObject VrSubtitleContainer;
+
+
+    /// <summary>
+    ///     跟随头部更新
+    /// </summary>
+    private void Update()
+    {
+        if (!gameObject.activeSelf) return;
+
+        if (VRHeadTransform is null)
+        {
+            InitVRComponents();
+            if (VRHeadTransform is null)
+            {
+                LogManager.Warning(
+                    "VRHeadTransform failed to initialize, component disabled /VRHeadTransform 多次初始化失败，组件已被禁用。");
+                enabled = false; // 禁用组件以避免后续错误
+                return;
+            }
+        }
+
+        // 缓存 VRHeadTransform 的属性
+        var headTransform = VRHeadTransform;
+        var headPosition = headTransform.position;
+        var headForward = headTransform.forward;
+        var headUp = headTransform.up;
+        var headRight = headTransform.right;
+
+        // 缓存 VrSubtitleContainer 的 Transform 及其当前状态
+        var containerTransform = VrSubtitleContainer.transform;
+        var currentContainerPosition = containerTransform.position;
+
+        // 计算目标位置（基于头部位置和配置的偏移）
+        var verticalRotation = Quaternion.AngleAxis(Config.VRSubtitleVerticalOffset, headRight);
+        var horizontalRotation = Quaternion.AngleAxis(Config.VRSubtitleHorizontalOffset, headUp);
+        var offsetDirection = horizontalRotation * verticalRotation * headForward;
+
+        var targetPosition = headPosition + offsetDirection * Config.VRSubtitleDistance;
+
+        // 为平滑处理限制 deltaTime 的最大值，以防止因单帧时间过长导致的跳跃
+        var cappedDeltaTime = Mathf.Min(Time.deltaTime, 0.1f); // 例如，最大允许0.1秒的dt
+
+        // 使用帧率无关的平滑因子
+        // 确保 FollowSmoothness 为正。如果 FollowSmoothness 为0，smoothFactor 将为0。
+        var smoothFactor = FollowSmoothness > 0.0001f
+            ? 1.0f - Mathf.Exp(-FollowSmoothness * cappedDeltaTime)
+            : 0f;
+
+        // 平滑更新位置
+        var newContainerPosition = Vector3.Lerp(
+            currentContainerPosition,
+            targetPosition,
+            smoothFactor
+        );
+        containerTransform.position = newContainerPosition;
+
+        // 字幕始终面向玩家
+        VrSubtitleContainer.transform.rotation = Quaternion.Lerp(
+            VrSubtitleContainer.transform.rotation,
+            Quaternion.LookRotation(currentContainerPosition - headPosition),
+            Time.deltaTime * FollowSmoothness
+        );
+    }
 
     /// <summary>
     ///     初始化字幕组件
@@ -190,72 +249,6 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         ApplyOverallScale();
 
         LogManager.Debug("VRSpaceSubtitleComponent Subtitle UI created");
-    }
-
-
-    /// <summary>
-    ///     跟随头部更新
-    /// </summary>
-    private void Update()
-    {
-        if (!gameObject.activeSelf)
-        {
-            return;
-        }
-
-        if (VRHeadTransform is null)
-        {
-            InitVRComponents();
-            if (VRHeadTransform is null)
-            {
-                LogManager.Warning(
-                    "VRHeadTransform failed to initialize, component disabled /VRHeadTransform 多次初始化失败，组件已被禁用。");
-                enabled = false; // 禁用组件以避免后续错误
-                return;
-            }
-        }
-
-        // 缓存 VRHeadTransform 的属性
-        Transform headTransform = VRHeadTransform;
-        Vector3 headPosition = headTransform.position;
-        Vector3 headForward = headTransform.forward;
-        Vector3 headUp = headTransform.up;
-        Vector3 headRight = headTransform.right;
-
-        // 缓存 VrSubtitleContainer 的 Transform 及其当前状态
-        Transform containerTransform = VrSubtitleContainer.transform;
-        Vector3 currentContainerPosition = containerTransform.position;
-
-        // 计算目标位置（基于头部位置和配置的偏移）
-        Quaternion verticalRotation = Quaternion.AngleAxis(Config.VRSubtitleVerticalOffset, headRight);
-        Quaternion horizontalRotation = Quaternion.AngleAxis(Config.VRSubtitleHorizontalOffset, headUp);
-        Vector3 offsetDirection = horizontalRotation * verticalRotation * headForward;
-
-        Vector3 targetPosition = headPosition + offsetDirection * Config.VRSubtitleDistance;
-
-        // 为平滑处理限制 deltaTime 的最大值，以防止因单帧时间过长导致的跳跃
-        float cappedDeltaTime = Mathf.Min(Time.deltaTime, 0.1f); // 例如，最大允许0.1秒的dt
-
-        // 使用帧率无关的平滑因子
-        // 确保 FollowSmoothness 为正。如果 FollowSmoothness 为0，smoothFactor 将为0。
-        float smoothFactor = (FollowSmoothness > 0.0001f)
-            ? (1.0f - Mathf.Exp(-FollowSmoothness * cappedDeltaTime))
-            : 0f;
-
-        // 平滑更新位置
-        Vector3 newContainerPosition = Vector3.Lerp(
-            currentContainerPosition,
-            targetPosition,
-            smoothFactor
-        );
-        containerTransform.position = newContainerPosition;
-
-        // 字幕始终面向玩家
-        VrSubtitleContainer.transform.rotation = Quaternion.Lerp(
-            VrSubtitleContainer.transform.rotation,
-            Quaternion.LookRotation(currentContainerPosition - headPosition),
-            Time.deltaTime * FollowSmoothness
-        );
     }
 
 

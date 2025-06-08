@@ -50,9 +50,6 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         // 应用配置
         ApplyConfig();
 
-        // 启动跟随头部的协程
-        StartFollowHeadCoroutine();
-
         gameObject.SetActive(false);
         LogManager.Debug("VR space subtitle component initialized");
     }
@@ -122,6 +119,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
         // 设置Canvas尺寸
         VrSpaceCanvasRect = Canvas.GetComponent<RectTransform>();
+
         VrSpaceCanvasRect.sizeDelta = new Vector2(
             Config.VRSubtitleBackgroundWidth * VRScaleFactor,
             Config.VRSubtitleBackgroundHeight * VRScaleFactor
@@ -189,89 +187,75 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         Outline = TextComponent.gameObject.AddComponent<Outline>();
         Outline.enabled = false;
 
-        LogManager.Debug("VRSpaceSubtitleComponent Subtitle UI created with proper scaling");
+        ApplyOverallScale();
+
+        LogManager.Debug("VRSpaceSubtitleComponent Subtitle UI created");
     }
 
-    /// <summary>
-    ///     启动跟随头部的协程
-    /// </summary>
-    private void StartFollowHeadCoroutine()
-    {
-        StopFollowHeadCoroutine();
-        _followHeadCoroutine = StartCoroutine(FollowHeadCoroutine());
-    }
 
     /// <summary>
-    ///     停止跟随头部的协程
+    ///     跟随头部更新
     /// </summary>
-    private void StopFollowHeadCoroutine()
+    private void Update()
     {
-        if (_followHeadCoroutine != null)
+        if (!gameObject.activeSelf)
         {
-            StopCoroutine(_followHeadCoroutine);
-            _followHeadCoroutine = null;
+            return;
         }
-    }
 
-    /// <summary>
-    ///     跟随头部的协程
-    /// </summary>
-    private IEnumerator FollowHeadCoroutine()
-    {
-        if (!JustAnotherTranslator.IsVrMode ||
-            Config.VRSubtitleMode != JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
-            yield break;
-
-        var findCount = 0;
-        while (VRHeadTransform is null)
+        if (VRHeadTransform is null)
         {
-            if (findCount > 10)
+            InitVRComponents();
+            if (VRHeadTransform is null)
             {
                 LogManager.Warning(
-                    "VR head transform not found after 10 seconds, subtitle head tracking disabled/VR头部变换未找到，头部字幕跟踪将被禁用");
-                yield break;
+                    "VRHeadTransform failed to initialize, component disabled /VRHeadTransform 多次初始化失败，组件已被禁用。");
+                enabled = false; // 禁用组件以避免后续错误
+                return;
             }
-
-            LogManager.Info("Waiting for VR head transform.../等待VR头部变换...");
-            InitVRComponents();
-            findCount++;
-            yield return new WaitForSeconds(1);
         }
 
-        while (true)
-        {
-            if (!gameObject.activeSelf)
-                yield return new WaitForSeconds(0.05f);
+        // 缓存 VRHeadTransform 的属性
+        Transform headTransform = VRHeadTransform;
+        Vector3 headPosition = headTransform.position;
+        Vector3 headForward = headTransform.forward;
+        Vector3 headUp = headTransform.up;
+        Vector3 headRight = headTransform.right;
 
-            // 计算目标位置（基于头部位置和配置的偏移）
-            var headForward = VRHeadTransform.forward;
-            var headUp = VRHeadTransform.up;
-            var headRight = VRHeadTransform.right;
+        // 缓存 VrSubtitleContainer 的 Transform 及其当前状态
+        Transform containerTransform = VrSubtitleContainer.transform;
+        Vector3 currentContainerPosition = containerTransform.position;
 
-            // 应用偏移角度（水平和垂直）
-            var verticalRotation = Quaternion.AngleAxis(Config.VRSubtitleVerticalOffset, headRight);
-            var horizontalRotation = Quaternion.AngleAxis(Config.VRSubtitleHorizontalOffset, headUp);
-            var offsetDirection = horizontalRotation * verticalRotation * headForward;
+        // 计算目标位置（基于头部位置和配置的偏移）
+        Quaternion verticalRotation = Quaternion.AngleAxis(Config.VRSubtitleVerticalOffset, headRight);
+        Quaternion horizontalRotation = Quaternion.AngleAxis(Config.VRSubtitleHorizontalOffset, headUp);
+        Vector3 offsetDirection = horizontalRotation * verticalRotation * headForward;
 
-            // 计算最终位置（头部位置 + 偏移方向 * 距离）
-            var targetPosition = VRHeadTransform.position + offsetDirection * Config.VRSubtitleDistance;
+        Vector3 targetPosition = headPosition + offsetDirection * Config.VRSubtitleDistance;
 
-            // 平滑跟随
-            VrSubtitleContainer.transform.position = Vector3.Lerp(
-                VrSubtitleContainer.transform.position,
-                targetPosition,
-                Time.deltaTime * FollowSmoothness
-            );
+        // 为平滑处理限制 deltaTime 的最大值，以防止因单帧时间过长导致的跳跃
+        float cappedDeltaTime = Mathf.Min(Time.deltaTime, 0.1f); // 例如，最大允许0.1秒的dt
 
-            // 字幕始终面向用户
-            VrSubtitleContainer.transform.rotation = Quaternion.Lerp(
-                VrSubtitleContainer.transform.rotation,
-                Quaternion.LookRotation(VrSubtitleContainer.transform.position - VRHeadTransform.position),
-                Time.deltaTime * FollowSmoothness
-            );
+        // 使用帧率无关的平滑因子
+        // 确保 FollowSmoothness 为正。如果 FollowSmoothness 为0，smoothFactor 将为0。
+        float smoothFactor = (FollowSmoothness > 0.0001f)
+            ? (1.0f - Mathf.Exp(-FollowSmoothness * cappedDeltaTime))
+            : 0f;
 
-            yield return null;
-        }
+        // 平滑更新位置
+        Vector3 newContainerPosition = Vector3.Lerp(
+            currentContainerPosition,
+            targetPosition,
+            smoothFactor
+        );
+        containerTransform.position = newContainerPosition;
+
+        // 字幕始终面向玩家
+        VrSubtitleContainer.transform.rotation = Quaternion.Lerp(
+            VrSubtitleContainer.transform.rotation,
+            Quaternion.LookRotation(currentContainerPosition - headPosition),
+            Time.deltaTime * FollowSmoothness
+        );
     }
 
 
@@ -291,20 +275,28 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
                 Config.CurrentVRSubtitleBackgroundHeight);
         }
 
-
-        if (_followHeadCoroutine != null)
-        {
-            StopFollowHeadCoroutine();
-            StartFollowHeadCoroutine();
-        }
+        ApplyOverallScale();
     }
 
 
     /// <summary>
-    ///     更新UI缩放
+    ///     应用配置 - 使用统一的缩放系统
     /// </summary>
-    private void UpdateUIScaling()
+    public override void ApplyConfig()
     {
+        base.ApplyConfig();
+
+        if (Config == null)
+        {
+            LogManager.Warning("VR Subtitle config is null, cannot apply config/VR 字幕配置为空，无法应用配置");
+            return;
+        }
+
+        // 更新当前值
+        Config.CurrentVRSubtitleBackgroundWidth = Config.VRSubtitleBackgroundWidth;
+        Config.CurrentVRSubtitleBackgroundHeight = Config.VRSubtitleBackgroundHeight;
+
+        // 应用缩放
         if (VrSpaceCanvasRect is not null)
             // 更新Canvas尺寸
             VrSpaceCanvasRect.sizeDelta = new Vector2(
@@ -329,26 +321,11 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             textRect.sizeDelta = new Vector2(horizontalMargin, verticalMargin);
 
             // 根据VR环境调整字体大小
-            var scaledFontSize = Mathf.RoundToInt(Config.FontSize * (VRScaleFactor / 1000f));
-            TextComponent.fontSize = scaledFontSize;
+            // var scaledFontSize = Mathf.RoundToInt(Config.FontSize * (VRScaleFactor / 1000f));
+            // TextComponent.fontSize = scaledFontSize;
         }
-    }
 
-    /// <summary>
-    ///     应用配置 - 使用统一的缩放系统
-    /// </summary>
-    public override void ApplyConfig()
-    {
-        base.ApplyConfig();
-
-        if (Config == null) return;
-
-        // 更新当前值
-        Config.CurrentVRSubtitleBackgroundWidth = Config.VRSubtitleBackgroundWidth;
-        Config.CurrentVRSubtitleBackgroundHeight = Config.VRSubtitleBackgroundHeight;
-
-        // 应用缩放
-        UpdateUIScaling();
+        ApplyOverallScale();
 
         // 应用其他样式
         if (TextComponent is not null)
@@ -369,14 +346,22 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             Outline.effectDistance = new Vector2(scaledOutlineWidth, scaledOutlineWidth);
         }
 
-        // 重启跟随协程
-        if (_followHeadCoroutine != null)
-        {
-            StopFollowHeadCoroutine();
-            StartFollowHeadCoroutine();
-        }
-
         LogManager.Debug("Applied VR-specific subtitle config with proper UI scaling");
+    }
+
+
+    /// <summary>
+    ///     应用整体缩放
+    /// </summary>
+    private void ApplyOverallScale()
+    {
+        if (VrSubtitleContainer is null || Config == null)
+            return;
+
+        // 应用缩放
+        //VrSubtitleContainer.transform.localScale = VrSubtitleContainer.transform.localScale * Config.VRSubtitleScale;
+
+        LogManager.Debug($"Applied overall VR subtitle scale: {Config.VRSubtitleScale}");
     }
 
 
@@ -386,7 +371,6 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     public override void HideSubtitle(bool skipAnimation = false)
     {
         VrSubtitleContainer.SetActive(false);
-        StopFollowHeadCoroutine();
         base.HideSubtitle(skipAnimation);
     }
 
@@ -395,7 +379,6 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     /// </summary>
     public override void Destroy()
     {
-        StopFollowHeadCoroutine();
         base.Destroy();
     }
 }

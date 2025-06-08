@@ -391,14 +391,14 @@ public class SubtitleConfig
     // VR悬浮字幕背景宽度（米）
     public float VRSubtitleBackgroundWidth { get; set; } = 1.5f;
 
-    // 当前VR悬浮字幕背景宽度
+    // 当前VR悬浮字幕背景宽度（米）
     public float CurrentVRSubtitleBackgroundWidth { get; set; } = 1.5f;
 
     // VR悬浮字幕背景高度（米）
-    public float VRSubtitleBackgroundHeight { get; set; } = 0.1f;
+    public float VRSubtitleBackgroundHeight { get; set; } = 0.04f;
 
-    // 当前VR悬浮字幕背景高度
-    public float CurrentVRSubtitleBackgroundHeight { get; set; } = 0.1f;
+    // 当前VR悬浮字幕背景高度（米）
+    public float CurrentVRSubtitleBackgroundHeight { get; set; } = 0.04f;
 
     // VR悬浮字幕缩放比率
     public float VRSubtitleScale { get; set; } = 1f;

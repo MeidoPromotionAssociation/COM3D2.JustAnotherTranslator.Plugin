@@ -1,9 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Lyric;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
@@ -22,7 +24,11 @@ public static class LyricManger
 
     private static Harmony _lyricPatch;
 
-    public static List<LyricEntry> CurrentLyrics = new();
+    private static readonly List<LyricEntry> _currentLyrics = new();
+
+    private static RhythmAction_Mgr _rhythmActionMgr;
+
+    private static string _playbackMonitorCoroutineID;
 
     public static void Init()
     {
@@ -92,7 +98,7 @@ public static class LyricManger
     /// <param name="path"></param>
     private static void LoadSubtitle(string path)
     {
-        CurrentLyrics.Clear();
+        _currentLyrics.Clear();
 
         if (!File.Exists(path))
         {
@@ -127,7 +133,7 @@ public static class LyricManger
                             float.TryParse(firstEndTimeStr, NumberStyles.Any, CultureInfo.InvariantCulture,
                                 out var firstLineEndTime))
                             // First line is valid data
-                            CurrentLyrics.Add(new LyricEntry
+                            _currentLyrics.Add(new LyricEntry
                             {
                                 StartTime = firstLineStartTime,
                                 EndTime = firstLineEndTime,
@@ -164,7 +170,7 @@ public static class LyricManger
 
                     if (string.IsNullOrEmpty(startTimeStr) || string.IsNullOrEmpty(endTimeStr))
                     {
-                        LogManager.Info(
+                        LogManager.Warning(
                             $"Time field(s) cannot be empty in lyric file: {path}, line: {lineNumber} - Content: {line}/字幕文件中的时间字段不能为空: {path}, 行: {lineNumber} - 内容: {line}");
                         continue;
                     }
@@ -172,7 +178,7 @@ public static class LyricManger
                     if (float.TryParse(startTimeStr, NumberStyles.Any, CultureInfo.InvariantCulture,
                             out var startTime) &&
                         float.TryParse(endTimeStr, NumberStyles.Any, CultureInfo.InvariantCulture, out var endTime))
-                        CurrentLyrics.Add(new LyricEntry
+                        _currentLyrics.Add(new LyricEntry
                         {
                             StartTime = startTime,
                             EndTime = endTime,
@@ -180,16 +186,95 @@ public static class LyricManger
                             TranslatedText = translatedText
                         });
                     else
-                        LogManager.Info(
+                        LogManager.Warning(
                             $"Could not parse non-empty time values in lyric file: {path}, line: {lineNumber} - Content: {line}/无法解析字幕文件中的非空时间值: {path}, 行: {lineNumber} - 内容: {line}");
                 }
             }
 
-            LogManager.Debug($"Successfully loaded {CurrentLyrics.Count} lyric entries from {path}");
+            // Sort by StartTime
+            _currentLyrics.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+
+            LogManager.Debug($"Successfully loaded {_currentLyrics.Count} lyric entries from {path}");
         }
         catch (Exception ex)
         {
             LogManager.Error($"Error loading lyric file {path}: {ex.Message}/加载字幕文件出错 {path}: {ex.Message}");
+        }
+    }
+
+
+    /// <summary>
+    ///     处理舞蹈开始
+    /// </summary>
+    /// <param name="instance"></param>
+    public static void HandleDanceStart(RhythmAction_Mgr instance)
+    {
+        _currentLyrics.Clear();
+        _rhythmActionMgr = instance;
+
+        // Start the playback monitor coroutine
+        if (_playbackMonitorCoroutineID == null)
+            _playbackMonitorCoroutineID = CoroutineManager.LaunchCoroutine(PlaybackMonitor());
+    }
+
+
+    /// <summary>
+    ///     处理舞蹈结束
+    /// </summary>
+    public static void HandleDanceEnd()
+    {
+        // Stop the playback monitor coroutine
+        if (_playbackMonitorCoroutineID != null)
+        {
+            CoroutineManager.StopCoroutine(_playbackMonitorCoroutineID);
+            _playbackMonitorCoroutineID = null;
+        }
+
+        SubtitleComponentManager.DestroyAllSubtitleComponents();
+    }
+
+
+    /// <summary>
+    ///     监控协程
+    /// </summary>
+    /// <returns></returns>
+    private static IEnumerator PlaybackMonitor()
+    {
+        var lastLyricIndex = -1;
+        while (true)
+        {
+            var currentTime = _rhythmActionMgr.DanceTimer; //当前舞蹈从开始播放到现在的累计时间
+
+            // 查找当前时间点应该显示的歌词索引
+            var currentLyricIndex = -1;
+            for (var i = 0; i < _currentLyrics.Count; i++)
+                if (_currentLyrics[i].StartTime <= currentTime && _currentLyrics[i].EndTime > currentTime)
+                {
+                    currentLyricIndex = i;
+                    break;
+                }
+
+            // 只有当需要显示的歌词索引与上一帧不同时，才执行操作
+            if (currentLyricIndex != lastLyricIndex)
+            {
+                // 如果有新的歌词要显示 (currentLyricIndex != -1)
+                if (currentLyricIndex != -1)
+                {
+                    var entry = _currentLyrics[currentLyricIndex];
+
+                    SubtitleComponentManager.ShowSubtitle(entry.TranslatedText, null, entry.EndTime - entry.StartTime,
+                        JustAnotherTranslator.SubtitleTypeEnum.Lyric);
+                }
+                else
+                {
+                    SubtitleComponentManager.HideSubtitleById(SubtitleComponentManager.GetSpeakerSubtitleId(null));
+                }
+
+                // 更新最后显示的歌词索引，以便下一帧进行比较
+                lastLyricIndex = currentLyricIndex;
+            }
+
+            yield return null;
         }
     }
 }

@@ -5,9 +5,7 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Lyric;
 
 public static class LyricPatch
 {
-    private static bool isActive;
-
-
+    // 初始化字幕管理器
     [HarmonyPatch(typeof(DanceSubtitleMgr), "Start")]
     [HarmonyPrefix]
     public static void DanceSubtitleMgr_Start_Prefix(DanceSubtitleMgr __instance)
@@ -27,13 +25,32 @@ public static class LyricPatch
             {
                 musicName = csv_path.Substring(prefix.Length, csv_path.Length - prefix.Length - suffix.Length);
                 LogManager.Debug($"Extracted m_UseMusicName: {musicName}");
+
+                LyricManger.CreateMusicPath(musicName);
             }
             else
             {
                 LogManager.Warning($"MusicCSV_Path format is unexpected: {csv_path}");
             }
         }
+    }
 
-        LyricManger.CreateMusicPath(musicName);
+
+    // 开始舞蹈
+    [HarmonyPatch(typeof(RhythmAction_Mgr), "RhythmGame_Start")]
+    [HarmonyPrefix]
+    public static void RhythmActionMgr_RhythmGame_Start_Prefix(RhythmAction_Mgr __instance)
+    {
+        // just be safe
+        LyricManger.HandleDanceStart(__instance);
+    }
+
+
+    // 结束舞蹈
+    [HarmonyPatch(typeof(RhythmAction_Mgr), "RhythmGame_End")]
+    [HarmonyPrefix]
+    public static void RhythmActionMgr_RhythmGame_End_Prefix()
+    {
+        LyricManger.HandleDanceEnd();
     }
 }

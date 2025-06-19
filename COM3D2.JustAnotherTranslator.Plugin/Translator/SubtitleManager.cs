@@ -116,7 +116,7 @@ public static class SubtitleManager
 
         // 调试补丁
         if (JustAnotherTranslator.LogLevelConfig.Value >= LogLevel.Debug)
-            _debugPatch = Harmony.CreateAndPatchAll(typeof(DebugPatch));
+            _debugPatch = Harmony.CreateAndPatchAll(typeof(SubtitleDebugPatch));
     }
 
 

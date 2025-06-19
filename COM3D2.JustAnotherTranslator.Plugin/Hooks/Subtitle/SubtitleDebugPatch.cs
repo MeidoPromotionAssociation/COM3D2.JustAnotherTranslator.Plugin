@@ -2,7 +2,7 @@
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
 
-public static class DebugPatch
+public static class SubtitleDebugPatch
 {
     // 测试用
     [HarmonyPatch(typeof(KagScript), "CallTag")]

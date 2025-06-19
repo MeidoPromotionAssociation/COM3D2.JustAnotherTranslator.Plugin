@@ -159,14 +159,15 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         //    sizeDelta = (1920, 1080) 表示1920x1080像素
         //
         // WorldSpace（VR模式）：
-        //  单位：Unity世界单位（米）
-        //     sizeDelta = (1, 1) 表示1米x1米的真实物理尺寸
-        //
-        // 为了获得更清晰的效果，先创建大尺寸UI再缩放
+        //  单位：Unity世界单位（米）。当 CanvasScaler.physicalUnit 为 Centimeters 时，
+        //  RectTransform 的 1 个单位 = 1 厘米。
+        //  因此 sizeDelta = (100, 100) 表示 1米 x 1米 的物理尺寸。
 
         // 创建一个容器来承载悬浮字幕
         VrSubtitleContainer = new GameObject("JAT_Subtitle_SubtitleContainer_VR_Space");
         VrSubtitleContainer.transform.SetParent(transform, false);
+        // 使用 ConstantPhysicalSize 时，容器的 scale 保持为 1
+        VrSubtitleContainer.transform.localScale = Vector3.one;
 
         // 创建世界空间Canvas
         var canvasObj = new GameObject("JAT_Subtitle_SubtitleCanvas_VR_Space");
@@ -178,23 +179,20 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
         // 设置Canvas尺寸
         VrSpaceCanvasRect = Canvas.GetComponent<RectTransform>();
-
+        // 使用 ConstantPhysicalSize 时，sizeDelta 直接定义了物理尺寸（单位：厘米）
+        // 配置中的单位是米，这里需要转换为厘米
         VrSpaceCanvasRect.sizeDelta = new Vector2(
-            Config.VRSubtitleBackgroundWidth * VRScaleFactor,
-            Config.VRSubtitleBackgroundHeight * VRScaleFactor
+            Config.VRSubtitleBackgroundWidth * 100f,
+            Config.VRSubtitleBackgroundHeight * 100f
         );
-        VrSubtitleContainer.transform.localScale =
-            new Vector3(1f / VRScaleFactor, 1f / VRScaleFactor, 1f / VRScaleFactor);
 
         // 添加画布缩放器
         CanvasScaler = Canvas.gameObject.AddComponent<CanvasScaler>();
-        CanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        CanvasScaler.referenceResolution = new Vector2(1920, 1080);
-        CanvasScaler.matchWidthOrHeight = 0.5f;
+        CanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPhysicalSize;
+        CanvasScaler.physicalUnit = CanvasScaler.Unit.Centimeters;
 
-        // 添加射线检测
+        // 添加图形射线投射器
         var raycaster = Canvas.gameObject.AddComponent<GraphicRaycaster>();
-        raycaster.blockingObjects = GraphicRaycaster.BlockingObjects.None;
         raycaster.ignoreReversedGraphics = false;
 
         // 创建背景面板
@@ -203,35 +201,30 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         BackgroundImage = backgroundObj.AddComponent<Image>();
         BackgroundImage.color = new Color(0, 0, 0, 0.5f);
 
-        // 设置背景位置和大小 - 修正版本
+        // 设置背景位置和大小，让它完全填充 Canvas
         var backgroundRect = BackgroundImage.rectTransform;
         backgroundRect.anchorMin = new Vector2(0, 0);
-        backgroundRect.anchorMax = new Vector2(1, 0);
-        backgroundRect.pivot = new Vector2(0.5f, 0);
-
-        // 背景高度需要根据缩放因子调整
-        // 原本100像素，在VR中应该对应合适的高度
-        var backgroundHeight = Config.VRSubtitleBackgroundHeight * VRScaleFactor;
-        backgroundRect.sizeDelta = new Vector2(0, backgroundHeight);
-        backgroundRect.anchoredPosition = new Vector2(0, 0);
+        backgroundRect.anchorMax = new Vector2(1, 1);
+        backgroundRect.pivot = new Vector2(0.5f, 0.5f);
+        backgroundRect.sizeDelta = Vector2.zero; // sizeDelta 为 0 表示完全匹配 anchor
 
         // 创建文本对象
         var textObj = new GameObject("JAT_Subtitle_SubtitleText");
         textObj.transform.SetParent(backgroundRect, false);
         TextComponent = textObj.AddComponent<Text>();
 
-        // 设置文本位置和大小 - 修正版本
+        // 设置文本位置和大小，让它填充背景并留出边距
         var textRect = TextComponent.rectTransform;
         textRect.anchorMin = new Vector2(0, 0);
         textRect.anchorMax = new Vector2(1, 1);
         textRect.pivot = new Vector2(0.5f, 0.5f);
 
-        // 文本边距需要根据缩放因子调整
-        // 原本边距-40, -20，在VR中需要相应放大
-        var horizontalMargin = -40f * (VRScaleFactor / 1000f); // 根据缩放调整
-        var verticalMargin = -20f * (VRScaleFactor / 1000f);
-        textRect.sizeDelta = new Vector2(horizontalMargin, verticalMargin);
-        textRect.anchoredPosition = new Vector2(0, 0);
+        // 使用 offsetMin/Max 来设置物理边距（单位：厘米）
+        // 这会从 RectTransform 的四边向内缩进
+        var horizontalPadding = 10f; // 左右边距各 20 厘米
+        var verticalPadding = 5f; // 上下边距各 5 厘米
+        textRect.offsetMin = new Vector2(horizontalPadding, verticalPadding); // left, bottom
+        textRect.offsetMax = new Vector2(-horizontalPadding, -verticalPadding); // -right, -top
 
         // 设置默认文本样式
         TextComponent.alignment = TextAnchor.MiddleCenter;
@@ -264,8 +257,10 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         {
             // 更新VR字幕画布尺寸
             VrSpaceCanvasRect.localScale = new Vector3(1, 1, 1);
-            VrSpaceCanvasRect.sizeDelta = new Vector2(Config.CurrentVRSubtitleBackgroundWidth,
-                Config.CurrentVRSubtitleBackgroundHeight);
+            VrSpaceCanvasRect.sizeDelta = new Vector2(
+                Config.CurrentVRSubtitleBackgroundWidth * 100f,
+                Config.CurrentVRSubtitleBackgroundHeight * 100f
+            );
         }
 
         ApplyOverallScale();
@@ -291,41 +286,21 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
         // 应用缩放
         if (VrSpaceCanvasRect is not null)
-            // 更新Canvas尺寸
+            // 更新Canvas尺寸 (单位: 厘米)
+            // 配置中的单位是米，这里需要转换为厘米
             VrSpaceCanvasRect.sizeDelta = new Vector2(
-                Config.CurrentVRSubtitleBackgroundWidth * VRScaleFactor,
-                Config.CurrentVRSubtitleBackgroundHeight * VRScaleFactor
+                Config.CurrentVRSubtitleBackgroundWidth * 100f,
+                Config.CurrentVRSubtitleBackgroundHeight * 100f
             );
 
-        if (BackgroundImage is not null)
-        {
-            // 更新背景高度
-            var backgroundRect = BackgroundImage.rectTransform;
-            var backgroundHeight = Config.CurrentVRSubtitleBackgroundHeight * VRScaleFactor;
-            backgroundRect.sizeDelta = new Vector2(0, backgroundHeight);
-        }
+        // 背景 RectTransform 会自动跟随 Canvas 变化，无需手动更新
 
         if (TextComponent is not null)
         {
-            // 更新文本边距（可以根据背景尺寸动态调整）
-            var textRect = TextComponent.rectTransform;
-            var horizontalMargin = -40f * (VRScaleFactor / 1000f);
-            var verticalMargin = -20f * (VRScaleFactor / 1000f);
-            textRect.sizeDelta = new Vector2(horizontalMargin, verticalMargin);
-
-            // 根据VR环境调整字体大小
-            // var scaledFontSize = Mathf.RoundToInt(Config.FontSize * (VRScaleFactor / 1000f));
-            // TextComponent.fontSize = scaledFontSize;
-        }
-
-        ApplyOverallScale();
-
-        // 应用其他样式
-        if (TextComponent is not null)
-        {
+            // 更新文本样式
+            TextComponent.fontSize = Config.FontSize;
             TextComponent.font = Config.Font;
             TextComponent.color = Config.TextColor;
-            TextComponent.alignment = Config.TextAlignment;
         }
 
         if (BackgroundImage is not null) BackgroundImage.color = Config.BackgroundColor;
@@ -334,10 +309,9 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         {
             Outline.enabled = Config.EnableOutline;
             Outline.effectColor = Config.OutlineColor;
-            // 描边粗细也需要缩放
-            var scaledOutlineWidth = Config.OutlineWidth * (1000f / 1000f);
-            Outline.effectDistance = new Vector2(scaledOutlineWidth, scaledOutlineWidth);
         }
+
+        ApplyOverallScale();
 
         LogManager.Debug("Applied VR-specific subtitle config with proper UI scaling");
     }

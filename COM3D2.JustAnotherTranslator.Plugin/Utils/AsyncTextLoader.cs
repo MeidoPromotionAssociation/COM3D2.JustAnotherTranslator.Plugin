@@ -126,6 +126,7 @@ public class AsyncTextLoader
             var allFiles = new List<string>();
             foreach (var directory in directories)
             {
+                // 获取当前目录下的所有文件，按Unicode排序
                 var files = Directory.GetFiles(directory, "*.txt")
                     .OrderBy(f => f, StringComparer.Ordinal)
                     .ToList();

@@ -160,6 +160,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string TranslationTextPath;
     public static string TranslationTexturePath;
     public static string LyricPath;
+    public static string UIPath;
 
     private void Awake()
     {
@@ -183,6 +184,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         TranslationTextPath = TargetLanguePath + "/Text";
         TranslationTexturePath = TargetLanguePath + "/Texture";
         LyricPath = TargetLanguePath + "/Lyric";
+        UIPath = TargetLanguePath + "/UI";
 
         EnableTextTranslation = Config.Bind("General",
             "EnableTextTranslation/启用文本翻译",
@@ -683,6 +685,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             Directory.CreateDirectory(TranslationTextPath);
             Directory.CreateDirectory(TranslationTexturePath);
             Directory.CreateDirectory(LyricPath);
+            Directory.CreateDirectory(UIPath);
         }
         catch (Exception e)
         {
@@ -811,6 +814,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             TranslationTextPath = TargetLanguePath + "/Text";
             TranslationTexturePath = TargetLanguePath + "/Texture";
             LyricPath = TargetLanguePath + "/Lyric";
+            UIPath = TargetLanguePath + "/UI";
 
             // 创建目录
             try
@@ -819,6 +823,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 Directory.CreateDirectory(TranslationTextPath);
                 Directory.CreateDirectory(TranslationTexturePath);
                 Directory.CreateDirectory(LyricPath);
+                Directory.CreateDirectory(UIPath);
             }
             catch (Exception e)
             {

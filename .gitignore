@@ -4,3 +4,4 @@
 .windsurfrules
 COM3D2.JustAnotherTranslator.Plugin.sln.DotSettings.user
 *.cs~
+qodana.yaml

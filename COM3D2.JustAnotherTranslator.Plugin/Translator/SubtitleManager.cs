@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using BepInEx.Logging;
-using COM3D2.JustAnotherTranslator.Plugin.Hooks;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Subtitle;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;

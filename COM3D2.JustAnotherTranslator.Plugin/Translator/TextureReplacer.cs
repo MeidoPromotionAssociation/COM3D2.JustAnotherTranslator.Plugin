@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using COM3D2.JustAnotherTranslator.Plugin.Hooks;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Texture;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;

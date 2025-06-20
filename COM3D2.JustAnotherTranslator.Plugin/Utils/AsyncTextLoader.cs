@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 

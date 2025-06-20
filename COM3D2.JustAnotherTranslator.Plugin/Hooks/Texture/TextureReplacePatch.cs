@@ -124,7 +124,8 @@ public static class TextureReplacePatch
     // 用于替换UITexture控件的主纹理
     [HarmonyPatch(typeof(UITexture), nameof(UITexture.mainTexture), MethodType.Getter)]
     [HarmonyPostfix]
-    private static void GetMainTexturePostTex(UITexture __instance, ref UnityEngine.Texture __result, ref UnityEngine.Texture ___mTexture)
+    private static void GetMainTexturePostTex(UITexture __instance, ref UnityEngine.Texture __result,
+        ref UnityEngine.Texture ___mTexture)
     {
         LogManager.Debug("GetMainTexturePostTex called: " + __instance.name);
 

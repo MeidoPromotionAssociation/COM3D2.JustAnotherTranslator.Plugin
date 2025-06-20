@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using COM3D2.JustAnotherTranslator.Plugin.Hooks;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;

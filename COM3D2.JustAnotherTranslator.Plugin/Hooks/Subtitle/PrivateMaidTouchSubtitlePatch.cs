@@ -1,7 +1,8 @@
 ﻿using COM3D2.JustAnotherTranslator.Plugin.Translator;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
+namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Subtitle;
 
 public static class PrivateMaidTouchSubtitlePatch
 {

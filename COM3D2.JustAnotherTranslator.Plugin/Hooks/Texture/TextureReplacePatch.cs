@@ -1,11 +1,12 @@
 ﻿using System;
 using System.IO;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
+namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Texture;
 
 // <summary>
 //      用于替换贴图的Harmony补丁
@@ -76,11 +77,11 @@ public static class TextureReplacePatch
     [HarmonyPatch(typeof(UIWidget), nameof(UIWidget.mainTexture), MethodType.Getter)]
     [HarmonyPatch(typeof(UI2DSprite), nameof(UI2DSprite.mainTexture), MethodType.Getter)]
     [HarmonyPostfix]
-    private static void GetMainTexturePost(UIWidget __instance, ref Texture __result)
+    private static void GetMainTexturePost(UIWidget __instance, ref UnityEngine.Texture __result)
     {
         // LogManager.Debug("GetMainTexturePost called: " + __instance.name);
 
-        Texture tex;
+        UnityEngine.Texture tex;
 
         switch (__instance)
         {
@@ -123,7 +124,7 @@ public static class TextureReplacePatch
     // 用于替换UITexture控件的主纹理
     [HarmonyPatch(typeof(UITexture), nameof(UITexture.mainTexture), MethodType.Getter)]
     [HarmonyPostfix]
-    private static void GetMainTexturePostTex(UITexture __instance, ref Texture __result, ref Texture ___mTexture)
+    private static void GetMainTexturePostTex(UITexture __instance, ref UnityEngine.Texture __result, ref UnityEngine.Texture ___mTexture)
     {
         LogManager.Debug("GetMainTexturePostTex called: " + __instance.name);
 

@@ -5,7 +5,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using UnityEngine.UI;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
+namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
 
 // <summary>
 //     用于翻译文本的 Harmony 补丁
@@ -46,7 +46,7 @@ public static class TextTranslatePatch
     private static void UITextSetTextPatch(object __instance)
     {
         // LogManager.Debug($"Graphic SetVerticesDirty instance: {__instance}");
-        if (__instance is Text)
+        if (__instance is UnityEngine.UI.Text)
         {
             var traverse = Traverse.Create(__instance).Field("m_Text");
             var text = traverse.GetValue() as string;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using UnityEngine;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;

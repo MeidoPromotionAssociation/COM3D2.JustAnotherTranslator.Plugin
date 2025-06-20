@@ -1,3 +1,4 @@
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using UnityEngine;
 using UnityEngine.UI;
 

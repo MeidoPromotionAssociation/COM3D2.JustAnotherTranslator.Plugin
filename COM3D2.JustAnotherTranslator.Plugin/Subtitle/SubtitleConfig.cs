@@ -1,4 +1,5 @@
 using System;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using UnityEngine;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle;

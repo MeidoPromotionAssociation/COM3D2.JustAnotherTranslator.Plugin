@@ -1,7 +1,8 @@
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Hooks;
+namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Subtitle;
 
 // <summary>
 //      用于处理一般的语音字幕的 Harmony 补丁

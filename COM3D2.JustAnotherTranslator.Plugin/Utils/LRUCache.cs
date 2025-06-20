@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace COM3D2.JustAnotherTranslator.Plugin;
+namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 /// <summary>
 ///     LRU缓存实现，使用LinkedList和Dictionary实现O(1)的访问和更新

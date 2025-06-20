@@ -1,6 +1,6 @@
 ﻿using BepInEx.Logging;
 
-namespace COM3D2.JustAnotherTranslator.Plugin;
+namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 /// <summary>
 ///     A wrapper for BepInEx's logging system that provides different log levels

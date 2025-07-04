@@ -11,7 +11,7 @@ public static class TextureReplacer
 {
     private static bool _initialized;
     private static Harmony _textureReplacePatch;
-    private static readonly Dictionary<string, string> _filePathCache = new();
+    private static readonly Dictionary<string, string> FilePathCache = new(); // filename -> path
     private static LRUCache<string, byte[]> _textureCache;
 
     public static void Init()
@@ -33,9 +33,8 @@ public static class TextureReplacer
                 LogManager.Error(
                     "Create translation texture folder failed, plugin may not work/创建翻译贴图文件夹失败，插件可能无法运行: " +
                     e.Message);
+                return;
             }
-
-            return;
         }
 
         // 初始化LRU缓存
@@ -52,7 +51,7 @@ public static class TextureReplacer
         foreach (var path in files)
         {
             var fileName = Path.GetFileName(path);
-            _filePathCache[fileName] = path;
+            FilePathCache[fileName] = path;
         }
 
         // Apply patch
@@ -97,7 +96,7 @@ public static class TextureReplacer
         }
 
         // 如果缓存中没有，则从文件中读取
-        if (_filePathCache.TryGetValue(filename, out var cachePath))
+        if (FilePathCache.TryGetValue(filename, out var cachePath))
             try
             {
                 replaced = File.ReadAllBytes(cachePath);
@@ -130,6 +129,6 @@ public static class TextureReplacer
 
         if (Path.GetExtension(filename) == string.Empty) filename += ".png";
 
-        return _filePathCache.ContainsKey(filename);
+        return FilePathCache.ContainsKey(filename);
     }
 }

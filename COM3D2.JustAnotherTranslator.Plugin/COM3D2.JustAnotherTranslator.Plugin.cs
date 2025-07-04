@@ -161,6 +161,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string TranslationTexturePath;
     public static string LyricPath;
     public static string UIPath;
+    public static string UITextPath;
+    public static string UISpritePath;
 
     private void Awake()
     {
@@ -185,6 +187,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         TranslationTexturePath = TargetLanguePath + "/Texture";
         LyricPath = TargetLanguePath + "/Lyric";
         UIPath = TargetLanguePath + "/UI";
+        UITextPath = UIPath + "/Text";
+        UISpritePath = UIPath + "/Sprite";
 
         EnableTextTranslation = Config.Bind("General",
             "EnableTextTranslation/启用文本翻译",
@@ -686,6 +690,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             Directory.CreateDirectory(TranslationTexturePath);
             Directory.CreateDirectory(LyricPath);
             Directory.CreateDirectory(UIPath);
+            Directory.CreateDirectory(UITextPath);
+            Directory.CreateDirectory(UISpritePath);
         }
         catch (Exception e)
         {
@@ -815,7 +821,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             TranslationTexturePath = TargetLanguePath + "/Texture";
             LyricPath = TargetLanguePath + "/Lyric";
             UIPath = TargetLanguePath + "/UI";
-
+            UITextPath = UIPath + "/Text";
+            UISpritePath = UIPath + "/Sprite";
             // 创建目录
             try
             {
@@ -824,6 +831,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 Directory.CreateDirectory(TranslationTexturePath);
                 Directory.CreateDirectory(LyricPath);
                 Directory.CreateDirectory(UIPath);
+                Directory.CreateDirectory(UITextPath);
+                Directory.CreateDirectory(UISpritePath);
             }
             catch (Exception e)
             {

@@ -39,6 +39,7 @@ public static class UITranslator
     {
         if (_initialized) return;
 
+        // TODO 修改缓存设置键
         _spriteCache = new LRUCache<string, Texture2D>(JustAnotherTranslator.TextureCacheSize.Value);
 
         LoadTextTranslationsAsync();
@@ -104,7 +105,7 @@ public static class UITranslator
             }
         }
 
-        return term;
+        return "";
     }
 
 
@@ -169,7 +170,7 @@ public static class UITranslator
                 .ToList();
 
             // 添加根目录到列表开头，确保先处理根目录中的文件
-            directories.Insert(0, JustAnotherTranslator.UIPath);
+            directories.Insert(0, JustAnotherTranslator.UITextPath);
 
             // 获取所有文件以计算总数
             var allFiles = directories.SelectMany(dir => Directory.GetFiles(dir, "*.csv")
@@ -178,9 +179,7 @@ public static class UITranslator
 
             var totalFiles = allFiles.Count;
 
-            if (totalFiles > 0)
-                LogManager.Info(
-                    $"Starting asynchronous UI translation loading, found {totalFiles} CSV files/开始异步加载UI翻译文件，共找到 {totalFiles} 个 CSV 文件");
+            LogManager.Info($"Starting asynchronous UI translation loading, found {totalFiles} CSV files/开始异步加载UI翻译文件，共找到 {totalFiles} 个 CSV 文件");
 
             // 处理每个文件
             foreach (var filePath in allFiles)
@@ -331,14 +330,14 @@ public static class UITranslator
         }
         catch (Exception e)
         {
-            LogManager.Error($"Error while scanning for UI textures/扫描UI图片时发生错误: {e.Message}");
+            LogManager.Error($"Error while scanning for UI Sprite/扫描UI精灵图时发生错误: {e.Message}");
         }
         finally
         {
             sw.Stop();
             if (SpritePathCache.Count > 0)
                 LogManager.Info(
-                    $"UI texture scanning completed! Found {SpritePathCache.Count} items, took {sw.ElapsedMilliseconds} ms/UI图片扫描完成！共找到 {SpritePathCache.Count} 个项目, 耗时 {sw.ElapsedMilliseconds} ms");
+                    $"UI Sprite scanning completed! Found {SpritePathCache.Count} items, took {sw.ElapsedMilliseconds} ms/UI精灵图扫描完成！共找到 {SpritePathCache.Count} 个项目, 耗时 {sw.ElapsedMilliseconds} ms");
         }
     }
 

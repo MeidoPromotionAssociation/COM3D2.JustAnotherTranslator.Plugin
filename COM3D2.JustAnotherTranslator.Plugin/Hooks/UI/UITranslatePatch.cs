@@ -36,10 +36,8 @@ public static class UITranslatePatch
 
             var result = UITranslator.HandleTextTermTranslation(Term);
 
-            // 返回原文或空内容则让原函数处理
+            // 空内容则让原函数处理
             if (string.IsNullOrEmpty(result)) return true;
-
-            if (result == Term) return true;
 
             __result = result;
             return false;

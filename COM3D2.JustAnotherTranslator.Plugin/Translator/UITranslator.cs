@@ -179,7 +179,8 @@ public static class UITranslator
 
             var totalFiles = allFiles.Count;
 
-            LogManager.Info($"Starting asynchronous UI translation loading, found {totalFiles} CSV files/开始异步加载UI翻译文件，共找到 {totalFiles} 个 CSV 文件");
+            LogManager.Info(
+                $"Starting asynchronous UI translation loading, found {totalFiles} CSV files/开始异步加载UI翻译文件，共找到 {totalFiles} 个 CSV 文件");
 
             // 处理每个文件
             foreach (var filePath in allFiles)

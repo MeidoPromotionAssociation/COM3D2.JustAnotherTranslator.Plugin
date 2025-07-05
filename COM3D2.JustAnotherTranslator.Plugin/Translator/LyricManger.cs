@@ -10,6 +10,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using CsvHelper;
 using CsvHelper.Configuration;
 using HarmonyLib;
+using UnityEngine;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
@@ -19,7 +20,21 @@ public static class LyricManger
 
     private static Harmony _lyricPatch;
 
-    private static readonly List<LyricEntry> CurrentLyrics = new();
+    private static readonly List<LyricCsvEntry> CurrentLyrics = new();
+    private static int _currentLyricIndex;
+
+    private static readonly CsvConfiguration CsvConfig = new()
+    {
+        CultureInfo = CultureInfo.InvariantCulture,
+        AllowComments = true,
+        HasHeaderRecord = true,
+        Encoding = Encoding.UTF8,
+        IgnoreBlankLines = true,
+        IgnoreHeaderWhiteSpace = true,
+        IsHeaderCaseSensitive = false,
+        SkipEmptyRecords = true,
+        WillThrowOnMissingField = false
+    };
 
     private static RhythmAction_Mgr _rhythmActionMgr;
 
@@ -62,11 +77,12 @@ public static class LyricManger
             Directory.CreateDirectory(path);
 
             var lyricPath = Path.Combine(path, "lyric.csv");
-            File.WriteAllText(lyricPath, string.Empty);
+            if (!File.Exists(lyricPath))
+                File.WriteAllText(lyricPath, string.Empty);
         }
-        catch
+        catch (Exception e)
         {
-            LogManager.Error("Create music folder failed/创建音乐文件夹失败");
+            LogManager.Error($"Create music folder failed/创建音乐文件夹失败: {e.Message}");
         }
     }
 
@@ -76,7 +92,9 @@ public static class LyricManger
     /// </summary>
     public static void TryToLoadLyric(string musicName)
     {
-        var path = Path.Combine(JustAnotherTranslator.LyricPath, musicName) + "/lyric.csv";
+        // I don't have 3 args in .net framework 3.5
+        var path = Path.Combine(JustAnotherTranslator.LyricPath, musicName);
+        path = Path.Combine(path, "lyric.csv");
 
         if (File.Exists(path))
             LoadSubtitle(path);
@@ -99,6 +117,7 @@ public static class LyricManger
     private static void LoadSubtitle(string path)
     {
         CurrentLyrics.Clear();
+        _currentLyricIndex = 0;
 
         if (!File.Exists(path))
         {
@@ -108,32 +127,11 @@ public static class LyricManger
 
         try
         {
-            var csvConfig = new CsvConfiguration
-            {
-                CultureInfo = CultureInfo.InvariantCulture,
-                AllowComments = true,
-                HasHeaderRecord = true,
-                Encoding = Encoding.UTF8,
-                IgnoreBlankLines = true,
-                IgnoreHeaderWhiteSpace = true,
-                IsHeaderCaseSensitive = false,
-                SkipEmptyRecords = true,
-                WillThrowOnMissingField = false
-            };
-
             using (var reader = new StreamReader(path, Encoding.UTF8))
-            using (var csv = new CsvReader(reader, csvConfig))
+            using (var csv = new CsvReader(reader, CsvConfig))
             {
                 var records = csv.GetRecords<LyricCsvEntry>();
-
-                foreach (var record in records)
-                    CurrentLyrics.Add(new LyricEntry
-                    {
-                        StartTime = record.StartTime,
-                        EndTime = record.EndTime,
-                        OriginalText = record.OriginalLyric,
-                        TranslatedText = record.TranslatedLyric
-                    });
+                CurrentLyrics.AddRange(records);
             }
 
             // Sort by StartTime
@@ -166,8 +164,8 @@ public static class LyricManger
     /// <param name="instance"></param>
     public static void HandleDanceStart(RhythmAction_Mgr instance)
     {
-        CurrentLyrics.Clear();
         _rhythmActionMgr = instance;
+        _currentLyricIndex = 0;
 
         // Start the playback monitor coroutine
         if (_playbackMonitorCoroutineID == null)
@@ -186,6 +184,7 @@ public static class LyricManger
             _playbackMonitorCoroutineID = null;
         }
 
+        _currentLyricIndex = 0;
         ClearLyric();
         SubtitleComponentManager.DestroyAllSubtitleComponents();
     }
@@ -197,16 +196,20 @@ public static class LyricManger
     private static IEnumerator PlaybackMonitor()
     {
         var lastLyricIndex = -1;
+
         while (true)
         {
             var currentTime = _rhythmActionMgr.DanceTimer; //当前舞蹈从开始播放到现在的累计时间
+
 
             // 查找当前时间点应该显示的歌词索引
             var currentLyricIndex = -1;
             for (var i = 0; i < CurrentLyrics.Count; i++)
                 if (CurrentLyrics[i].StartTime <= currentTime && CurrentLyrics[i].EndTime > currentTime)
+
                 {
                     currentLyricIndex = i;
+
                     break;
                 }
 
@@ -218,10 +221,11 @@ public static class LyricManger
                 {
                     var entry = CurrentLyrics[currentLyricIndex];
 
+
                     // TODO 支持双语显示
-                    SubtitleComponentManager.ShowSubtitle(entry.TranslatedText, null, entry.EndTime - entry.StartTime,
+                    SubtitleComponentManager.ShowSubtitle(entry.TranslatedLyric, null, entry.EndTime - entry.StartTime,
                         JustAnotherTranslator.SubtitleTypeEnum.Lyric);
-                    LogManager.Debug($"Showing lyric: {entry.TranslatedText}");
+                    LogManager.Debug($"Showing lyric: {entry.TranslatedLyric}");
                 }
                 else
                 {
@@ -244,14 +248,5 @@ public static class LyricManger
         public float EndTime { get; set; }
         public string OriginalLyric { get; set; }
         public string TranslatedLyric { get; set; }
-    }
-
-    // Struct for lyric entries
-    public struct LyricEntry
-    {
-        public float StartTime;
-        public float EndTime;
-        public string OriginalText;
-        public string TranslatedText;
     }
 }

@@ -19,7 +19,7 @@ public static class LyricManger
 
     private static Harmony _lyricPatch;
 
-    private static readonly List<LyricEntry> _currentLyrics = new();
+    private static readonly List<LyricEntry> CurrentLyrics = new();
 
     private static RhythmAction_Mgr _rhythmActionMgr;
 
@@ -83,6 +83,14 @@ public static class LyricManger
     }
 
     /// <summary>
+    ///     清空字幕
+    /// </summary>
+    public static void ClearLyric()
+    {
+        CurrentLyrics.Clear();
+    }
+
+    /// <summary>
     ///     加载字幕
     ///     CSV 格式为 startTime,endTime,originalLyric,translatedLyric
     ///     允许 originalLyric 或 translatedLyric 为空
@@ -90,7 +98,7 @@ public static class LyricManger
     /// <param name="path"></param>
     private static void LoadSubtitle(string path)
     {
-        _currentLyrics.Clear();
+        CurrentLyrics.Clear();
 
         if (!File.Exists(path))
         {
@@ -119,7 +127,7 @@ public static class LyricManger
                 var records = csv.GetRecords<LyricCsvEntry>();
 
                 foreach (var record in records)
-                    _currentLyrics.Add(new LyricEntry
+                    CurrentLyrics.Add(new LyricEntry
                     {
                         StartTime = record.StartTime,
                         EndTime = record.EndTime,
@@ -129,9 +137,9 @@ public static class LyricManger
             }
 
             // Sort by StartTime
-            _currentLyrics.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
+            CurrentLyrics.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
 
-            LogManager.Debug($"Successfully loaded {_currentLyrics.Count} lyric entries from {path}");
+            LogManager.Debug($"Successfully loaded {CurrentLyrics.Count} lyric entries from {path}");
         }
         catch (Exception ex)
         {
@@ -140,12 +148,25 @@ public static class LyricManger
     }
 
     /// <summary>
+    ///     处理舞蹈加载
+    /// </summary>
+    /// <param name="musicName"></param>
+    public static void HandleDanceLoaded(string musicName)
+    {
+        if (string.IsNullOrEmpty(musicName))
+            return;
+
+        CreateMusicPath(musicName);
+        TryToLoadLyric(musicName);
+    }
+
+    /// <summary>
     ///     处理舞蹈开始
     /// </summary>
     /// <param name="instance"></param>
     public static void HandleDanceStart(RhythmAction_Mgr instance)
     {
-        _currentLyrics.Clear();
+        CurrentLyrics.Clear();
         _rhythmActionMgr = instance;
 
         // Start the playback monitor coroutine
@@ -165,6 +186,7 @@ public static class LyricManger
             _playbackMonitorCoroutineID = null;
         }
 
+        ClearLyric();
         SubtitleComponentManager.DestroyAllSubtitleComponents();
     }
 
@@ -181,8 +203,8 @@ public static class LyricManger
 
             // 查找当前时间点应该显示的歌词索引
             var currentLyricIndex = -1;
-            for (var i = 0; i < _currentLyrics.Count; i++)
-                if (_currentLyrics[i].StartTime <= currentTime && _currentLyrics[i].EndTime > currentTime)
+            for (var i = 0; i < CurrentLyrics.Count; i++)
+                if (CurrentLyrics[i].StartTime <= currentTime && CurrentLyrics[i].EndTime > currentTime)
                 {
                     currentLyricIndex = i;
                     break;
@@ -194,14 +216,17 @@ public static class LyricManger
                 // 如果有新的歌词要显示 (currentLyricIndex != -1)
                 if (currentLyricIndex != -1)
                 {
-                    var entry = _currentLyrics[currentLyricIndex];
+                    var entry = CurrentLyrics[currentLyricIndex];
 
+                    // TODO 支持双语显示
                     SubtitleComponentManager.ShowSubtitle(entry.TranslatedText, null, entry.EndTime - entry.StartTime,
                         JustAnotherTranslator.SubtitleTypeEnum.Lyric);
+                    LogManager.Debug($"Showing lyric: {entry.TranslatedText}");
                 }
                 else
                 {
                     SubtitleComponentManager.HideSubtitleById(SubtitleComponentManager.GetSpeakerSubtitleId(null));
+                    LogManager.Debug("Hiding lyric");
                 }
 
                 // 更新最后显示的歌词索引，以便下一帧进行比较
@@ -221,6 +246,7 @@ public static class LyricManger
         public string TranslatedLyric { get; set; }
     }
 
+    // Struct for lyric entries
     public struct LyricEntry
     {
         public float StartTime;

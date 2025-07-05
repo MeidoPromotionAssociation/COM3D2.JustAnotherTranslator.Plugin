@@ -195,46 +195,54 @@ public static class LyricManger
     /// <returns></returns>
     private static IEnumerator PlaybackMonitor()
     {
-        var lastLyricIndex = -1;
+        LyricCsvEntry activeLyric = null;
 
         while (true)
         {
+            if (_rhythmActionMgr == null || CurrentLyrics.Count == 0)
+            {
+                yield return new WaitForSeconds(0.1f);
+                continue;
+            }
+
             var currentTime = _rhythmActionMgr.DanceTimer; //当前舞蹈从开始播放到现在的累计时间
 
+            // 查找当前应该显示的歌词
+            LyricCsvEntry lyricToShow = null;
 
-            // 查找当前时间点应该显示的歌词索引
-            var currentLyricIndex = -1;
-            for (var i = 0; i < CurrentLyrics.Count; i++)
-                if (CurrentLyrics[i].StartTime <= currentTime && CurrentLyrics[i].EndTime > currentTime)
-
-                {
-                    currentLyricIndex = i;
-
-                    break;
-                }
-
-            // 只有当需要显示的歌词索引与上一帧不同时，才执行操作
-            if (currentLyricIndex != lastLyricIndex)
+            // 将索引推进到已经完成的所有歌词之后
+            while (_currentLyricIndex < CurrentLyrics.Count && currentTime > CurrentLyrics[_currentLyricIndex].EndTime)
             {
-                // 如果有新的歌词要显示 (currentLyricIndex != -1)
-                if (currentLyricIndex != -1)
+                _currentLyricIndex++;
+            }
+
+            // 检查是否应显示当前（或下一个）歌词
+            if (_currentLyricIndex < CurrentLyrics.Count)
+            {
+                var currentLyric = CurrentLyrics[_currentLyricIndex];
+                if (currentTime >= currentLyric.StartTime && currentTime <= currentLyric.EndTime)
                 {
-                    var entry = CurrentLyrics[currentLyricIndex];
+                    lyricToShow = currentLyric;
+                }
+            }
 
-
+            // 仅当活动歌词发生变化时才更新字幕显示
+            if (activeLyric != lyricToShow)
+            {
+                activeLyric = lyricToShow;
+                if (activeLyric != null)
+                {
                     // TODO 支持双语显示
-                    SubtitleComponentManager.ShowSubtitle(entry.TranslatedLyric, null, entry.EndTime - entry.StartTime,
+                    SubtitleComponentManager.ShowSubtitle(activeLyric.TranslatedLyric, null,
+                        activeLyric.EndTime - activeLyric.StartTime,
                         JustAnotherTranslator.SubtitleTypeEnum.Lyric);
-                    LogManager.Debug($"Showing lyric: {entry.TranslatedLyric}");
+                    LogManager.Debug($"Showing lyric: {activeLyric.TranslatedLyric}");
                 }
                 else
                 {
                     SubtitleComponentManager.HideSubtitleById(SubtitleComponentManager.GetSpeakerSubtitleId(null));
                     LogManager.Debug("Hiding lyric");
                 }
-
-                // 更新最后显示的歌词索引，以便下一帧进行比较
-                lastLyricIndex = currentLyricIndex;
             }
 
             yield return null;

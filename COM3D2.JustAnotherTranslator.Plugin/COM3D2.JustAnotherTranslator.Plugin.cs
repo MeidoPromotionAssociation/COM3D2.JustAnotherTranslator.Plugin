@@ -170,7 +170,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         Logger.LogInfo("COM3D2.JustAnotherTranslator.Plugin is loading/COM3D2.JustAnotherTranslator.Plugin 正在载入");
         Logger.LogInfo(
             "Get update or report bug/获取更新或报告bug: https://github.com/90135/COM3D2.JustAnotherTranslator.Plugin");
-        Logger.LogInfo("This plugin does not provide translation data, you need to get it somewhere else/本插件不提供翻译数据，您需要自行获取");
+        Logger.LogInfo(
+            "This plugin does not provide translation data, you need to get it somewhere else/本插件不提供翻译数据，您需要自行获取");
 
         // Init our LogManager with the BepInEx logger
         LogManager.Initialize(Logger);

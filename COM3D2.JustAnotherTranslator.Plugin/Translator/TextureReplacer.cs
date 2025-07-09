@@ -60,7 +60,8 @@ public static class TextureReplacer
         }
 
         // Apply patch
-        _textureReplacePatch = Harmony.CreateAndPatchAll(typeof(TextureReplacePatch),"com3d2.justanothertranslator.plugin.hooks.texture.texturereplacepatch");
+        _textureReplacePatch = Harmony.CreateAndPatchAll(typeof(TextureReplacePatch),
+            "com3d2.justanothertranslator.plugin.hooks.texture.texturereplacepatch");
 
         _initialized = true;
     }

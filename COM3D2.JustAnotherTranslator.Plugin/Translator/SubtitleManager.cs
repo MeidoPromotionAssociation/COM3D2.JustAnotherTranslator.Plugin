@@ -99,24 +99,30 @@ public static class SubtitleManager
         // 基础字幕补丁
         if (JustAnotherTranslator.EnableBaseSubtitle.Value)
         {
-            _baseVoiceSubtitlePatch = Harmony.CreateAndPatchAll(typeof(BaseVoiceSubtitlePatch), "com3d2.justanothertranslator.plugin.hooks.subtitle.basevoicesubtitlepatch");
-            _privateMaidTouchSubtitlePatch = Harmony.CreateAndPatchAll(typeof(PrivateMaidTouchSubtitlePatch), "com3d2.justanothertranslator.plugin.hooks.subtitle.privatemaidthouchsubtitlepatch");
-            _vrTouchSubtitlePatch = Harmony.CreateAndPatchAll(typeof(VRTouchSubtitlePatch), "com3d2.justanothertranslator.plugin.hooks.subtitle.vrtouchsubtitlepatch");
+            _baseVoiceSubtitlePatch = Harmony.CreateAndPatchAll(typeof(BaseVoiceSubtitlePatch),
+                "com3d2.justanothertranslator.plugin.hooks.subtitle.basevoicesubtitlepatch");
+            _privateMaidTouchSubtitlePatch = Harmony.CreateAndPatchAll(typeof(PrivateMaidTouchSubtitlePatch),
+                "com3d2.justanothertranslator.plugin.hooks.subtitle.privatemaidthouchsubtitlepatch");
+            _vrTouchSubtitlePatch = Harmony.CreateAndPatchAll(typeof(VRTouchSubtitlePatch),
+                "com3d2.justanothertranslator.plugin.hooks.subtitle.vrtouchsubtitlepatch");
         }
 
         // Yotogi 字幕补丁
         if (JustAnotherTranslator.EnableYotogiSubtitle.Value)
-            _yotogiSubtitlePatch = Harmony.CreateAndPatchAll(typeof(YotogiSubtitlePatch), "com3d2.justanothertranslator.plugin.hooks.subtitle.yotogisubtitlepatch");
+            _yotogiSubtitlePatch = Harmony.CreateAndPatchAll(typeof(YotogiSubtitlePatch),
+                "com3d2.justanothertranslator.plugin.hooks.subtitle.yotogisubtitlepatch");
 
         // ADV 字幕补丁
         // ADV 模式自带字幕，因此非 VR 模式下几乎没有意义
         if ((JustAnotherTranslator.IsVrMode && JustAnotherTranslator.EnableAdvSubtitle.Value) ||
             JustAnotherTranslator.ForceEnableAdvSubtitle.Value)
-            _advSubtitlePatch = Harmony.CreateAndPatchAll(typeof(AdvSubtitlePatch), "com3d2.justanothertranslator.plugin.hooks.subtitle.advsubtitlepatch");
+            _advSubtitlePatch = Harmony.CreateAndPatchAll(typeof(AdvSubtitlePatch),
+                "com3d2.justanothertranslator.plugin.hooks.subtitle.advsubtitlepatch");
 
         // 调试补丁
         if (JustAnotherTranslator.LogLevelConfig.Value >= LogLevel.Debug)
-            _debugPatch = Harmony.CreateAndPatchAll(typeof(SubtitleDebugPatch), "com3d2.justanothertranslator.plugin.hooks.subtitle.subtitledebugpatch");
+            _debugPatch = Harmony.CreateAndPatchAll(typeof(SubtitleDebugPatch),
+                "com3d2.justanothertranslator.plugin.hooks.subtitle.subtitledebugpatch");
     }
 
 

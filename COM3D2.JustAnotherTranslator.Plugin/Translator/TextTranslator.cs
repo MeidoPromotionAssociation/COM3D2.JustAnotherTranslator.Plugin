@@ -11,6 +11,8 @@ public static class TextTranslator
 {
     private static Harmony _textTranslatePatch;
 
+    private static Harmony _maidCafeDlcLineBreakCommentFixPatch;
+
     private static bool _initialized;
 
     // 翻译字典
@@ -46,10 +48,17 @@ public static class TextTranslator
         LoadTextAsync();
 
         // 创建 Harmony 实例
-        _textTranslatePatch = Harmony.CreateAndPatchAll(typeof(TextTranslatePatch), "com3d2.justanothertranslator.plugin.hooks.text.texttranslatepatch");
+        _textTranslatePatch = Harmony.CreateAndPatchAll(typeof(TextTranslatePatch),
+            "com3d2.justanothertranslator.plugin.hooks.text.texttranslatepatch");
 
         // 手动注册 NGUIText.WrapText 方法的补丁
         TextTranslatePatch.RegisterNGUITextPatches(_textTranslatePatch);
+
+        if (MaidCafeManagerHelper.IsMaidCafeAvailable())
+        {
+            _maidCafeDlcLineBreakCommentFixPatch=Harmony.CreateAndPatchAll(typeof(MaidCafeDlcLineBreakCommentFix),
+                "com3d2.justanothertranslator.plugin.hooks.text.maidcafedlclinebreakcommentfix");
+        }
 
         _initialized = true;
     }
@@ -69,11 +78,13 @@ public static class TextTranslator
             TotalFiles = 0;
         }
 
-        if (_textTranslatePatch != null)
-        {
-            _textTranslatePatch.UnpatchSelf();
-            _textTranslatePatch = null;
-        }
+
+        _textTranslatePatch?.UnpatchSelf();
+        _textTranslatePatch = null;
+
+
+        _maidCafeDlcLineBreakCommentFixPatch?.UnpatchSelf();
+        _maidCafeDlcLineBreakCommentFixPatch = null;
 
         TranslationDict.Clear();
         RegexTranslationDict.Clear();

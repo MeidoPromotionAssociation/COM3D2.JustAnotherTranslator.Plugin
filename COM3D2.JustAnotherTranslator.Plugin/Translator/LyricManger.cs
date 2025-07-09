@@ -58,7 +58,8 @@ public static class LyricManger
 
         SceneManager.sceneUnloaded += OnSceneUnloaded;
 
-        _lyricPatch = Harmony.CreateAndPatchAll(typeof(LyricPatch),"com3d2.justanothertranslator.plugin.hooks.lyric.lyricpatch");
+        _lyricPatch = Harmony.CreateAndPatchAll(typeof(LyricPatch),
+            "com3d2.justanothertranslator.plugin.hooks.lyric.lyricpatch");
 
         _initialized = true;
     }

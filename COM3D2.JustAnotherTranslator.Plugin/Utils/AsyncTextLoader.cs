@@ -64,7 +64,7 @@ public class AsyncTextLoader
     {
         if (_loaderThread != null && _loaderThread.IsAlive)
         {
-            LogManager.Warning("Async file loader is already running/异步文件加载器已在运行中");
+            LogManager.Warning("Async file loader is already running, please report this issue/异步文件加载器已在运行中，请报告此问题");
             return;
         }
 

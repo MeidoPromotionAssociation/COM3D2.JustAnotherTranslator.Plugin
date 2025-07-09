@@ -56,7 +56,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<MaidNameStyleEnum> MaidNameStyle;
     public static ConfigEntry<LogLevel> LogLevelConfig;
     public static ConfigEntry<int> TextureCacheSize;
-    public static ConfigEntry<bool> EnableAsyncLoading;
 
     // 字幕启用相关配置
     public static ConfigEntry<bool> EnableBaseSubtitle;
@@ -220,11 +219,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "TextureCacheSize/贴图缓存大小",
             30,
             "Texture Cache Size, larger value will use more memory but improve performance/贴图缓存大小，较大的值会使用更多内存但提高性能");
-
-        EnableAsyncLoading = Config.Bind("General",
-            "EnableAsyncLoading/启用异步加载",
-            true,
-            "Enable Async Loading, load translation files in background thread/启用异步加载，在后台线程中加载翻译文件");
 
         # endregion
 
@@ -923,20 +917,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
             {
                 TextureReplacer.Unload();
                 TextureReplacer.Init();
-            }
-        };
-
-        // 注册异步加载启用状态变更事件
-        EnableAsyncLoading.SettingChanged += (sender, args) =>
-        {
-            LogManager.Info(
-                $"Async loading {(EnableAsyncLoading.Value ? "enabled" : "disabled")}/异步加载{(EnableAsyncLoading.Value ? "已启用" : "已禁用")}");
-
-            // 异步加载设置变更后需要重新加载翻译
-            if (EnableTextTranslation.Value)
-            {
-                TextTranslator.Unload();
-                TextTranslator.Init();
             }
         };
     }

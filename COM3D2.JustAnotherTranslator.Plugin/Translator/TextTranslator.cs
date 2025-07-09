@@ -1,10 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
@@ -18,20 +13,17 @@ public static class TextTranslator
 
     private static bool _initialized;
 
-    // 文件读取缓冲区大小 (默认16MB)
-    private const int DefaultBufferSize = 16 * 1024 * 1024;
-
-    // 文件读取块大小 (默认4MB)
-    private const int FileReadChunkSize = 4 * 1024 * 1024;
-
-    // 翻译字典，存储原文和翻译的映射关系
-    public static Dictionary<string, string> TranslationDict = new();
+    // 翻译字典
+    public static Dictionary<string, string> TranslationDict = new(); // original -> translation
 
     // 正则表达式翻译字典
-    public static Dictionary<Regex, string> RegexTranslationDict = new();
+    public static Dictionary<Regex, string> RegexTranslationDict = new(); // regex -> translation
 
     // 异步加载器
     private static AsyncTextLoader _asyncLoader;
+
+    // 翻译是否已加载完成
+    public static bool IsTranslationLoaded;
 
     // 加载状态
     public static bool IsLoading { get; private set; }
@@ -49,11 +41,9 @@ public static class TextTranslator
     {
         if (_initialized) return;
 
-        // 检查是否启用异步加载
-        if (JustAnotherTranslator.EnableAsyncLoading.Value)
-            LoadTextAsync();
-        else
-            LoadText();
+        // 加载翻译
+        IsTranslationLoaded = false;
+        LoadTextAsync();
 
         // 创建 Harmony 实例
         _textTranslatePatch = Harmony.CreateAndPatchAll(typeof(TextTranslatePatch));
@@ -73,6 +63,10 @@ public static class TextTranslator
         {
             _asyncLoader.Cancel();
             IsLoading = false;
+            _asyncLoader = null;
+            LoadingProgress = 0f;
+            FilesProcessed = 0;
+            TotalFiles = 0;
         }
 
         if (_textTranslatePatch != null)
@@ -82,6 +76,8 @@ public static class TextTranslator
         }
 
         TranslationDict.Clear();
+        RegexTranslationDict.Clear();
+        IsTranslationLoaded = false;
 
         _initialized = false;
     }
@@ -130,6 +126,7 @@ public static class TextTranslator
         LoadingProgress = 1.0f;
         FilesProcessed = totalFiles;
         TotalFiles = totalFiles;
+        IsTranslationLoaded = true;
 
         // 更新翻译字典
         TranslationDict = result;
@@ -139,148 +136,30 @@ public static class TextTranslator
             $"Asynchronous translation loading complete: {totalEntries} entries from {totalFiles} files, cost {elapsedMilliseconds} ms/异步翻译加载完成: 从 {totalFiles} 个文件中加载了 {totalEntries} 条翻译，耗时 {elapsedMilliseconds} 毫秒");
     }
 
-    private static void LoadText()
-    {
-        // 记录加载时间
-        var sw = new Stopwatch();
-        sw.Start();
-
-        TranslationDict.Clear();
-        var totalFiles = 0;
-        var totalEntries = 0;
-
-        try
-        {
-            if (!Directory.Exists(JustAnotherTranslator.TranslationTextPath))
-            {
-                LogManager.Warning(
-                    "Translation directory not found, try to create/未找到翻译目录，尝试创建: " +
-                    JustAnotherTranslator.TranslationTextPath);
-                try
-                {
-                    Directory.CreateDirectory(JustAnotherTranslator.TranslationTextPath);
-                }
-                catch (Exception e)
-                {
-                    LogManager.Error(
-                        "Create translation folder failed, plugin may not work/创建翻译文件夹失败，插件可能无法运行: " + e.Message);
-                }
-
-                return;
-            }
-
-            LogManager.Info("Loading translation files/正在加载翻译文件");
-            LogManager.Info(
-                "Translation files are read in Unicode order, if there are duplicate translations, later read translations will overwrite earlier read translations/翻译文件按照 Unicode 顺序读取，如有相同翻译则后读取的翻译会覆盖先读取的翻译");
-
-            // 获取所有子目录，按Unicode排序
-            var directories = Directory.GetDirectories(JustAnotherTranslator.TranslationTextPath)
-                .OrderBy(d => d, StringComparer.Ordinal)
-                .ToList();
-
-            // 添加根目录到列表开头，确保先处理根目录中的文件
-            directories.Insert(0, JustAnotherTranslator.TranslationTextPath);
-
-            foreach (var directory in directories)
-            {
-                var files = Directory.GetFiles(directory, "*.txt")
-                    .OrderBy(f => f, StringComparer.Ordinal)
-                    .ToList();
-
-
-                totalFiles += files.Count;
-
-                foreach (var file in files)
-                {
-                    var entriesInFile = ProcessTranslationFile(file);
-                    totalEntries += entriesInFile;
-                }
-            }
-
-            sw.Stop();
-            LogManager.Info(
-                $"Total loaded {totalEntries} translations from {totalFiles} files, cost {sw.ElapsedMilliseconds} ms/总共从 {totalFiles} 个文件中加载了 {totalEntries} 条翻译，耗时 {sw.ElapsedMilliseconds} 毫秒");
-        }
-        catch (Exception e)
-        {
-            LogManager.Error("Error loading translation files/加载翻译文件时出错: " + e.Message);
-        }
-    }
-
-    // 处理单个翻译文件
-    private static int ProcessTranslationFile(string filePath)
-    {
-        var entriesCount = 0;
-
-        try
-        {
-            var fileInfo = new FileInfo(filePath);
-            var fileSize = fileInfo.Length;
-
-            LogManager.Debug($"Processing file: {Path.GetFileName(filePath)} ({fileSize / (1024 * 1024)} MB)");
-
-            using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read,
-                       FileReadChunkSize))
-            using (var bs = new BufferedStream(fs, DefaultBufferSize))
-            using (var reader = new StreamReader(bs, Encoding.UTF8))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                    if (ProcessTranslationLine(line))
-                        entriesCount++;
-            }
-        }
-        catch (Exception e)
-        {
-            LogManager.Error(
-                $"Error processing file/处理文件时出错 {Path.GetFileName(filePath)}: {e.Message}");
-        }
-
-        return entriesCount;
-    }
-
-    // 处理单行翻译文本
-    private static bool ProcessTranslationLine(string line)
-    {
-        if (string.IsNullOrEmpty(line) || line.StartsWith(";"))
-            return false;
-
-        var parts = line.Split(new[] { '\t' }, 2);
-        if (parts.Length != 2)
-            return false;
-
-        var original = parts[0].Unescape();
-        var translation = parts[1].Unescape();
-
-        if (string.IsNullOrEmpty(original) || string.IsNullOrEmpty(translation))
-            return false;
-
-        if (line.StartsWith("$"))
-            RegexTranslationDict[new Regex(original.Substring(1), RegexOptions.Compiled)] = translation;
-        else
-            TranslationDict[original] = translation;
-
-
-        return true;
-    }
-
 
     // 获取翻译文本
     public static bool GetTranslateText(string original, out string translated)
     {
         translated = original;
+
+        if (!IsTranslationLoaded)
+        {
+            LogManager.Warning("Translation not loaded yet, return original text/翻译未加载或是加载中，返回原文");
+            return false;
+        }
+
         // XUAT 标记过的文本不进行翻译
         if (original.Contains(XUATInterop.XuatSpicalMaker))
             return false;
 
-        LogManager.Debug("Translating text: " + original);
+        LogManager.Debug($"Translating text: {original}");
 
         if (string.IsNullOrEmpty(original))
             return false;
 
         if (TranslationDict.TryGetValue(original, out var value))
         {
-            LogManager.Debug("Translated text: " + value);
+            LogManager.Debug($"Translated text: {value}");
             translated = XUATInterop.MarkTranslated(value);
             return true;
         }
@@ -291,7 +170,7 @@ public static class TextTranslator
         if (TranslationDict.TryGetValue(original.ToUpper().Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(),
                 out var lowerValue))
         {
-            LogManager.Debug("Translated text: " + lowerValue);
+            LogManager.Debug($"Translated text: {lowerValue}");
             translated = XUATInterop.MarkTranslated(lowerValue);
             return true;
         }

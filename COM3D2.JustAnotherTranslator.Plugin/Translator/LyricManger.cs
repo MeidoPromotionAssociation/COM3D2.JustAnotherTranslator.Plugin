@@ -253,18 +253,14 @@ public static class LyricManger
 
             // 将索引推进到已经完成的所有歌词之后
             while (_currentLyricIndex < CurrentLyrics.Count && currentTime > CurrentLyrics[_currentLyricIndex].EndTime)
-            {
                 _currentLyricIndex++;
-            }
 
             // 检查是否应显示当前（或下一个）歌词
             if (_currentLyricIndex < CurrentLyrics.Count)
             {
                 var currentLyric = CurrentLyrics[_currentLyricIndex];
                 if (currentTime >= currentLyric.StartTime && currentTime <= currentLyric.EndTime)
-                {
                     lyricToShow = currentLyric;
-                }
             }
 
             // 仅当活动歌词发生变化时才更新字幕显示

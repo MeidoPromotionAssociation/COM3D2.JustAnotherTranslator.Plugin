@@ -28,7 +28,7 @@ public static class UITranslator
     private static Thread _textLoaderThread;
 
     // 存储翻译数据的字典
-    private static Dictionary<string, TranslationData> _translations = new();
+    private static Dictionary<string, TranslationData> _translations = new(); // term -> TranslationData
 
     // 缓存文件名到完整路径的映射
     private static readonly Dictionary<string, string> SpritePathCache = new(); // filename -> path

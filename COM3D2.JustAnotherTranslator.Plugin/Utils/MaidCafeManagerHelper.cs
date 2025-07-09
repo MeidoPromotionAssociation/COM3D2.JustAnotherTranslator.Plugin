@@ -13,8 +13,11 @@ public static class MaidCafeManagerHelper
     private static bool? _isMaidCafeAvailable;
     private static PropertyInfo _isStreamingPartProperty;
 
-    // 检查MaidCafeManager是否可用
-    private static bool IsMaidCafeAvailable()
+
+    /// <summary>
+    ///     检查 MaidCafeManager 是否可用
+    /// </summary>
+    public static bool IsMaidCafeAvailable()
     {
         if (!_isMaidCafeAvailable.HasValue)
             try
@@ -32,7 +35,10 @@ public static class MaidCafeManagerHelper
         return _isMaidCafeAvailable.Value;
     }
 
-    // 安全获取isStreamingPart的值
+    /// <summary>
+    ///     安全获取 isStreamingPart 的值
+    /// </summary>
+    /// <returns></returns>
     public static bool IsStreamingPart()
     {
         if (!IsMaidCafeAvailable() || _isStreamingPartProperty == null)

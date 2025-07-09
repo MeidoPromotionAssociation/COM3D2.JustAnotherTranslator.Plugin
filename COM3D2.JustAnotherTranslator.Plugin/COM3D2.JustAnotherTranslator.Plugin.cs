@@ -49,6 +49,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     public static bool IsVrMode;
 
+    // 通用配置
     public static ConfigEntry<string> TargetLanguage;
     public static ConfigEntry<bool> EnableTextTranslation;
     public static ConfigEntry<bool> EnableUITranslation;
@@ -56,6 +57,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<MaidNameStyleEnum> MaidNameStyle;
     public static ConfigEntry<LogLevel> LogLevelConfig;
     public static ConfigEntry<int> TextureCacheSize;
+    public static ConfigEntry<int> UICacheSize;
 
     // 字幕启用相关配置
     public static ConfigEntry<bool> EnableBaseSubtitle;
@@ -168,6 +170,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         Logger.LogInfo("COM3D2.JustAnotherTranslator.Plugin is loading/COM3D2.JustAnotherTranslator.Plugin 正在载入");
         Logger.LogInfo(
             "Get update or report bug/获取更新或报告bug: https://github.com/90135/COM3D2.JustAnotherTranslator.Plugin");
+        Logger.LogInfo("This plugin does not provide translation data, you need to get it somewhere else/本插件不提供翻译数据，您需要自行获取");
 
         // Init our LogManager with the BepInEx logger
         LogManager.Initialize(Logger);
@@ -218,7 +221,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
         TextureCacheSize = Config.Bind("General",
             "TextureCacheSize/贴图缓存大小",
             30,
-            "Texture Cache Size, larger value will use more memory but improve performance/贴图缓存大小，较大的值会使用更多内存但提高性能");
+            "Texture Replace Cache Size, larger value will use more memory but improve performance/贴图替换缓存大小，较大的值会使用更多内存但提高性能");
+
+        UICacheSize = Config.Bind("General",
+            "UICacheSize/UI缓存大小",
+            30,
+            "UI Sprite Cache Size, larger value will use more memory but improve performance/UI精灵图缓存大小，较大的值会使用更多内存但提高性能");
 
         # endregion
 
@@ -910,13 +918,26 @@ public class JustAnotherTranslator : BaseUnityPlugin
         TextureCacheSize.SettingChanged += (sender, args) =>
         {
             LogManager.Info(
-                $"Texture cache size changed to {TextureCacheSize.Value}/贴图缓存大小已更改为 {TextureCacheSize.Value}");
+                $"Texture replace cache size changed to {TextureCacheSize.Value}/贴图替换缓存大小已更改为 {TextureCacheSize.Value}");
 
             // 重新加载贴图替换模块以应用新的缓存大小
             if (EnableTextureReplace.Value)
             {
                 TextureReplacer.Unload();
                 TextureReplacer.Init();
+            }
+        };
+
+        // 注册UI精灵图缓存大小变更事件
+        UICacheSize.SettingChanged += (sender, args) =>
+        {
+            LogManager.Info($"UI Sprite cache size changed to {UICacheSize.Value}/UI精灵图缓存大小已更改为 {UICacheSize.Value}");
+
+            // 重新加载贴图替换模块以应用新的缓存大小
+            if (EnableUITranslation.Value)
+            {
+                UITranslator.Unload();
+                UITranslator.Init();
             }
         };
     }

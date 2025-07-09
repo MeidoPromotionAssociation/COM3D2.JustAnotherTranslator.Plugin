@@ -47,8 +47,7 @@ public static class UITranslator
     {
         if (_initialized) return;
 
-        // TODO 修改缓存设置键
-        _spriteCache = new LRUCache<string, Texture2D>(JustAnotherTranslator.TextureCacheSize.Value);
+        _spriteCache = new LRUCache<string, Texture2D>(JustAnotherTranslator.UICacheSize.Value);
 
         SceneManager.sceneUnloaded += OnSceneUnloaded;
 

@@ -56,7 +56,7 @@ public static class SubtitleManager
         ApplySubtitlePatches();
 
         // 注册场景变更事件
-        SceneManager.sceneUnloaded += OnSceneChange;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _initialized = true;
     }
@@ -72,7 +72,7 @@ public static class SubtitleManager
         UnloadSubtitlePatches();
 
         // 取消事件订阅
-        SceneManager.sceneUnloaded -= OnSceneChange;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
         // 清理资源
         CleanResources();
@@ -83,7 +83,7 @@ public static class SubtitleManager
     /// <summary>
     ///     场景切换时的处理
     /// </summary>
-    private static void OnSceneChange(Scene scene)
+    private static void OnSceneUnloaded(Scene scene)
     {
         LogManager.Debug($"Scene {scene.name} - {scene.buildIndex}, unloaded  cleaning up");
 

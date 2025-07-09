@@ -14,6 +14,10 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
 public static class TextTranslator
 {
+    private static Harmony _textTranslatePatch;
+
+    private static bool _initialized;
+
     // 文件读取缓冲区大小 (默认16MB)
     private const int DefaultBufferSize = 16 * 1024 * 1024;
 
@@ -25,10 +29,6 @@ public static class TextTranslator
 
     // 正则表达式翻译字典
     public static Dictionary<Regex, string> RegexTranslationDict = new();
-
-    private static Harmony _textTranslatePatch;
-
-    private static bool _initialized;
 
     // 异步加载器
     private static AsyncTextLoader _asyncLoader;

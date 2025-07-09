@@ -23,6 +23,8 @@ public static class UITranslator
     private static Harmony _uiTranslatePatch;
     private static Harmony _uiDebugPatch;
     private static bool _initialized;
+
+    // 翻译文件加载线程
     private static Thread _textLoaderThread;
 
     // 存储翻译数据的字典

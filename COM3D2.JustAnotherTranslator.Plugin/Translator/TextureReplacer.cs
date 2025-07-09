@@ -10,9 +10,14 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 public static class TextureReplacer
 {
     private static bool _initialized;
+
     private static Harmony _textureReplacePatch;
+
+    // 文件路径缓存
     private static readonly Dictionary<string, string> FilePathCache = new(); // filename -> path
-    private static LRUCache<string, byte[]> _textureCache;
+
+    // 纹理数据缓存
+    private static LRUCache<string, byte[]> _textureCache; // filename -> texture
 
     public static void Init()
     {

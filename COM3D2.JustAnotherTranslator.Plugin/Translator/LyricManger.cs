@@ -11,6 +11,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
@@ -20,8 +21,17 @@ public static class LyricManger
 
     private static Harmony _lyricPatch;
 
+    // 当前正在播放的歌词列表
     private static readonly List<LyricCsvEntry> CurrentLyrics = new();
+
+    // 当前正在播放的歌词的索引
     private static int _currentLyricIndex;
+
+    // 舞蹈管理器实例
+    private static RhythmAction_Mgr _rhythmActionMgr;
+
+    // 处理歌词显示的协程
+    private static string _playbackMonitorCoroutineID;
 
     private static readonly CsvConfiguration CsvConfig = new()
     {
@@ -36,9 +46,6 @@ public static class LyricManger
         WillThrowOnMissingField = false
     };
 
-    private static RhythmAction_Mgr _rhythmActionMgr;
-
-    private static string _playbackMonitorCoroutineID;
 
     public static void Init()
     {
@@ -47,7 +54,9 @@ public static class LyricManger
         // 初始化字幕组件管理器
         SubtitleComponentManager.Init();
 
-        // 无需提取加载字幕到内存，播放时加载即可
+        // 无需提前加载字幕到内存，播放时加载即可
+
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _lyricPatch = Harmony.CreateAndPatchAll(typeof(LyricPatch));
 
@@ -58,10 +67,40 @@ public static class LyricManger
     {
         if (!_initialized) return;
 
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+
         _lyricPatch?.UnpatchSelf();
         _lyricPatch = null;
 
+        ClearSceneResources();
+
         _initialized = false;
+    }
+
+    /// <summary>
+    ///     场景卸载时清理资源
+    /// </summary>
+    /// <param name="scene"></param>
+    private static void OnSceneUnloaded(Scene scene)
+    {
+        ClearSceneResources();
+        SubtitleComponentManager.DestroyAllSubtitleComponents();
+    }
+
+
+    /// <summary>
+    ///     清理场景资源
+    /// </summary>
+    private static void ClearSceneResources()
+    {
+        ClearLyric();
+        _rhythmActionMgr = null;
+
+        if (_playbackMonitorCoroutineID != null)
+        {
+            CoroutineManager.StopCoroutine(_playbackMonitorCoroutineID);
+            _playbackMonitorCoroutineID = null;
+        }
     }
 
     /// <summary>
@@ -106,6 +145,7 @@ public static class LyricManger
     public static void ClearLyric()
     {
         CurrentLyrics.Clear();
+        _currentLyricIndex = 0;
     }
 
     /// <summary>
@@ -184,7 +224,6 @@ public static class LyricManger
             _playbackMonitorCoroutineID = null;
         }
 
-        _currentLyricIndex = 0;
         ClearLyric();
         SubtitleComponentManager.DestroyAllSubtitleComponents();
     }
@@ -196,6 +235,8 @@ public static class LyricManger
     private static IEnumerator PlaybackMonitor()
     {
         LyricCsvEntry activeLyric = null;
+
+        LogManager.Debug("Lyric Playback monitor started");
 
         while (true)
         {

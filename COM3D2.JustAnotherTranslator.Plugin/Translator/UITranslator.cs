@@ -13,6 +13,8 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
@@ -33,7 +35,8 @@ public static class UITranslator
     private static LRUCache<string, Texture2D> _spriteCache; // filename -> texture
 
     // 缓存原始精灵图信息
-    private static readonly Dictionary<UISprite, OriginalSpriteInfoStruct> OriginalSpriteInfo = new(); // UISprite -> OriginalSpriteInfo
+    private static readonly Dictionary<UISprite, OriginalSpriteInfoStruct>
+        OriginalSpriteInfo = new(); // UISprite -> OriginalSpriteInfo
 
     // 缓存已创建的替换 Atlas，避免重复创建
     private static readonly Dictionary<string, UIAtlas> ReplacementAtlasCache = new(); // spriteName -> UIAtlas
@@ -44,6 +47,8 @@ public static class UITranslator
 
         // TODO 修改缓存设置键
         _spriteCache = new LRUCache<string, Texture2D>(JustAnotherTranslator.TextureCacheSize.Value);
+
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         LoadTextTranslationsAsync();
         LoadSpriteTextures();
@@ -64,36 +69,24 @@ public static class UITranslator
     {
         if (!_initialized) return;
 
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+
+        CleanupSceneResources();
+
         _textLoaderThread?.Join();
         _textLoaderThread = null;
 
         _uiTranslatePatch?.UnpatchSelf();
         _uiTranslatePatch = null;
 
-        // 清理所有替换的Atlas和相关资源
-        foreach (var atlas in ReplacementAtlasCache.Values)
-        {
-            if (atlas != null)
-            {
-                if (atlas.spriteMaterial != null)
-                    UnityEngine.Object.DestroyImmediate(atlas.spriteMaterial);
-                if (atlas.gameObject != null)
-                    UnityEngine.Object.DestroyImmediate(atlas.gameObject);
-            }
-        }
-
-        // 清理缓存的纹理
+        // 清理纹理缓存
         foreach (var texture in _spriteCache.GetAllValues())
-        {
             if (texture != null)
-                UnityEngine.Object.DestroyImmediate(texture);
-        }
+                Object.DestroyImmediate(texture);
 
         _translations.Clear();
         _spriteCache.Clear();
         SpritePathCache.Clear();
-        OriginalSpriteInfo.Clear();
-        ReplacementAtlasCache.Clear();
 
         _initialized = false;
     }
@@ -428,7 +421,6 @@ public static class UITranslator
             {
                 // 保存原始信息（仅在第一次替换时保存）
                 if (!OriginalSpriteInfo.ContainsKey(sprite))
-                {
                     OriginalSpriteInfo[sprite] = new OriginalSpriteInfoStruct
                     {
                         OriginalAtlas = sprite.atlas,
@@ -436,7 +428,6 @@ public static class UITranslator
                         OriginalSpriteData = sprite.GetAtlasSprite(),
                         OriginalMaterial = sprite.material
                     };
-                }
 
                 // 尝试从缓存获取 Atlas，如果没有则创建新的
                 var newAtlas = GetOrCreateReplacementAtlas(replacementTexture, sprite.material, spriteName);
@@ -476,27 +467,16 @@ public static class UITranslator
         if (ReplacementAtlasCache.TryGetValue(cacheKey, out var cachedAtlas))
         {
             // 检查缓存的 Atlas 是否仍然有效
-            if (cachedAtlas != null && cachedAtlas.spriteMaterial != null)
-            {
-                return cachedAtlas;
-            }
-            else
-            {
-                // 清理无效缓存时也要清理对应的GameObject
-                if (cachedAtlas != null && cachedAtlas.gameObject != null)
-                {
-                    UnityEngine.Object.DestroyImmediate(cachedAtlas.gameObject);
-                }
-                ReplacementAtlasCache.Remove(cacheKey);
-            }
+            if (cachedAtlas != null && cachedAtlas.spriteMaterial != null) return cachedAtlas;
+
+            // 清理无效缓存时也要清理对应的GameObject
+            if (cachedAtlas != null && cachedAtlas.gameObject != null) Object.DestroyImmediate(cachedAtlas.gameObject);
+            ReplacementAtlasCache.Remove(cacheKey);
         }
 
         // 创建新的 Atlas
         var newAtlas = CreateSingleSpriteAtlas(texture, originalMaterial, spriteName);
-        if (newAtlas != null)
-        {
-            ReplacementAtlasCache[cacheKey] = newAtlas;
-        }
+        if (newAtlas != null) ReplacementAtlasCache[cacheKey] = newAtlas;
 
         return newAtlas;
     }
@@ -522,7 +502,8 @@ public static class UITranslator
 
             if (texture.width <= 0 || texture.height <= 0)
             {
-                LogManager.Warning($"Invalid texture dimensions for sprite {spriteName}: {texture.width}x{texture.height}");
+                LogManager.Warning(
+                    $"Invalid texture dimensions for sprite {spriteName}: {texture.width}x{texture.height}");
                 return null;
             }
 
@@ -593,7 +574,6 @@ public static class UITranslator
         if (sprite == null) return;
 
         if (OriginalSpriteInfo.TryGetValue(sprite, out var info))
-        {
             try
             {
                 // 恢复原始属性
@@ -601,16 +581,10 @@ public static class UITranslator
                 sprite.spriteName = info.OriginalSpriteName;
 
                 // 安全地恢复精灵数据
-                if (info.OriginalSpriteData != null)
-                {
-                    sprite.SetAtlasSprite(info.OriginalSpriteData);
-                }
+                if (info.OriginalSpriteData != null) sprite.SetAtlasSprite(info.OriginalSpriteData);
 
                 // 恢复材质
-                if (info.OriginalMaterial != null)
-                {
-                    sprite.material = info.OriginalMaterial;
-                }
+                if (info.OriginalMaterial != null) sprite.material = info.OriginalMaterial;
 
                 // 强制刷新精灵图
                 sprite.MarkAsChanged();
@@ -624,12 +598,46 @@ public static class UITranslator
             {
                 LogManager.Error($"Failed to restore original sprite for {sprite.name}: {e.Message}");
             }
-        }
     }
 
 
+    /// <summary>
+    ///     场景卸载时的清理
+    /// </summary>
+    /// <param name="scene"></param>
+    private static void OnSceneUnloaded(Scene scene)
+    {
+        CleanupSceneResources();
+    }
 
+    /// <summary>
+    ///     清理场景资源
+    /// </summary>
+    private static void CleanupSceneResources()
+    {
+        try
+        {
+            // 清理所有替换的Atlas和相关资源
+            foreach (var atlas in ReplacementAtlasCache.Values)
+                if (atlas != null)
+                {
+                    if (atlas.spriteMaterial != null)
+                        Object.DestroyImmediate(atlas.spriteMaterial);
+                    if (atlas.gameObject != null)
+                        Object.DestroyImmediate(atlas.gameObject);
+                }
 
+            // 清理缓存
+            ReplacementAtlasCache.Clear();
+            OriginalSpriteInfo.Clear();
+
+            LogManager.Debug("Scene resources cleaned up");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Error during scene cleanup: {e.Message}");
+        }
+    }
 
     /// <summary>
     ///     调试方法：打印精灵图详细信息

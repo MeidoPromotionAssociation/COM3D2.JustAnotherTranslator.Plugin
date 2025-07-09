@@ -46,7 +46,7 @@ public static class TextTranslator
         LoadTextAsync();
 
         // 创建 Harmony 实例
-        _textTranslatePatch = Harmony.CreateAndPatchAll(typeof(TextTranslatePatch));
+        _textTranslatePatch = Harmony.CreateAndPatchAll(typeof(TextTranslatePatch), "com3d2.justanothertranslator.plugin.hooks.text.texttranslatepatch");
 
         // 手动注册 NGUIText.WrapText 方法的补丁
         TextTranslatePatch.RegisterNGUITextPatches(_textTranslatePatch);

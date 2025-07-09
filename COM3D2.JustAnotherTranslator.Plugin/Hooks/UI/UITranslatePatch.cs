@@ -66,7 +66,8 @@ public static class UITranslatePatch
     }
 
     // /// <summary>
-    // ///     对于 UI 来说，图片是一整张 UIAtlas，而替换整个 atlas 有版本兼容风险，因此我们直接替换组件的纹理，达到只替换 sprite 的目的
+    // ///     对于 UI 来说，图片是一整张 UIAtlas，而替换整个 atlas 会有游戏更新后 atlas 布局改变的问题，
+    // ///     因此我们直接替换组件的纹理，达到只替换 sprite 的目的
     // ///     此方法用于获取 UIWidget 的纹理.
     // ///     弃用，因为 UI 坐标不同，导致替换后显示不正确
     // /// </summary>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
@@ -94,6 +95,37 @@ public class LRUCache<TKey, TValue>
     {
         _cache.Clear();
         _lruList.Clear();
+    }
+
+    /// <summary>
+    ///     获取缓存中的所有键
+    /// </summary>
+    /// <returns>缓存中所有键的集合</returns>
+    public IEnumerable<TKey> GetAllKeys()
+    {
+        return _cache.Keys;
+    }
+
+    /// <summary>
+    ///     获取缓存中的所有值
+    /// </summary>
+    /// <returns>缓存中所有值的集合</returns>
+    public IEnumerable<TValue> GetAllValues()
+    {
+        return _cache.Values.Select(node => node.Value.Value);
+    }
+
+    /// <summary>
+    ///     移除指定键的缓存项
+    /// </summary>
+    /// <param name="key">键</param>
+    public void Remove(TKey key)
+    {
+        if (_cache.TryGetValue(key, out var node))
+        {
+            _lruList.Remove(node);
+            _cache.Remove(key);
+        }
     }
 
     /// <summary>

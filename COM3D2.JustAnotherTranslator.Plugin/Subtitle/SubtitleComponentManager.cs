@@ -41,6 +41,12 @@ public static class SubtitleComponentManager
                      typeof(JustAnotherTranslator.SubtitleTypeEnum)))
         {
             var config = SubtitleConfig.CreateSubtitleConfig(subtitleType);
+            LogManager.Debug($"Init subtitle config: {subtitleType}");
+            if (config == null)
+            {
+                LogManager.Error($"Failed to create subtitle config: {subtitleType}, please report this issue/创建 {subtitleType} 的字幕配置失败，请报告此问题");
+                continue;
+            }
             SubtitleConfigs[subtitleType] = config;
         }
 
@@ -58,6 +64,17 @@ public static class SubtitleComponentManager
     {
         if (!_initialized)
             Init();
+
+        if (config == null)
+        {
+            LogManager.Warning("Subtitle config is null, using default subtitle component, please report this issue/字幕配置为空，使用默认字幕组件，请报告此问题");
+            config = SubtitleConfigs[JustAnotherTranslator.SubtitleTypeEnum.Base];
+            if (config == null)
+            {
+                LogManager.Error("Default subtitle component is null, please report this issue/默认字幕组件为空，请报告此问题");
+                return null;
+            }
+        }
 
         var gameObject = new GameObject(GetSpeakerSubtitleId(speakerName));
         ISubtitleComponent component;
@@ -103,6 +120,13 @@ public static class SubtitleComponentManager
     public static void ShowSubtitle(string text, string speakerName, float duration,
         JustAnotherTranslator.SubtitleTypeEnum subtitleType)
     {
+        var subtitleConfig = GetSubtitleConfig(subtitleType);
+        if (subtitleConfig == null)
+        {
+            LogManager.Error($"Subtitle config for {subtitleType} not found, please report this issue/找不到 {subtitleType} 的字幕配置，请报告此问题");
+            return;
+        }
+
         if (string.IsNullOrEmpty(text))
             return;
 
@@ -113,7 +137,7 @@ public static class SubtitleComponentManager
 
         if (!SubtitleIdComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
         {
-            subtitleComponent = CreateSubtitleComponent(speakerName, GetSubtitleConfig(subtitleType));
+            subtitleComponent = CreateSubtitleComponent(speakerName, subtitleConfig);
             SubtitleIdComponentsMap[subtitleId] = subtitleComponent;
         }
         else
@@ -123,7 +147,7 @@ public static class SubtitleComponentManager
             {
                 subtitleComponent.Destroy();
                 SubtitleIdComponentsMap.Remove(subtitleId);
-                subtitleComponent = CreateSubtitleComponent(speakerName, GetSubtitleConfig(subtitleType));
+                subtitleComponent = CreateSubtitleComponent(speakerName, subtitleConfig);
                 SubtitleIdComponentsMap[subtitleId] = subtitleComponent;
             }
         }

@@ -54,12 +54,14 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <param name="config">字幕配置</param>
     public virtual void Init(SubtitleConfig config)
     {
-        if (Config is null)
+        if (config is null)
         {
             LogManager.Warning(
                 "Subtitle config is null, subtitle component will not be initialized/字幕配置为空，字幕组件将不会被初始化");
             return;
         }
+
+        Config = config;
 
         // 创建UI
         CreateSubtitleUI();

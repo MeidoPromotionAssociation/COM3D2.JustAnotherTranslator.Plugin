@@ -295,7 +295,7 @@ public static class SubtitleManager
                     {
                         var text = VoiceIdToTextMap[currentVoiceId];
                         LogManager.Debug(
-                            $"Found text for voice {currentVoiceId} -> {text}, showing subtitle (form text cache)");
+                            $"Found text for voice {currentVoiceId} -> {text}, showing subtitle (form text cache), currentSubtitleType={_currentSubtitleType}");
 
                         // 显示字幕
                         SubtitleComponentManager.ShowSubtitle(text, speakerName, 0, _currentSubtitleType);
@@ -307,7 +307,7 @@ public static class SubtitleManager
                         VoiceIdToTextMap[currentVoiceId] = translateText;
 
                         LogManager.Debug(
-                            $"Found text for voice {currentVoiceId} -> {translateText}, showing subtitle (form text translator)");
+                            $"Found text for voice {currentVoiceId} -> {translateText}, showing subtitle (form text translator), currentSubtitleType={_currentSubtitleType}");
                         SubtitleComponentManager.ShowSubtitle(translateText, speakerName, 0, _currentSubtitleType);
                         foundText = true;
                     }

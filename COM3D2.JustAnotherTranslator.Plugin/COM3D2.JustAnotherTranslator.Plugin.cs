@@ -767,7 +767,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         if (EnableLyricSubtitle.Value)
         {
             LogManager.Info("Lyric Subtitle Enabled/歌词字幕已启用");
-            SubtitleManager.Init();
+            LyricManger.Init();
         }
         else
         {

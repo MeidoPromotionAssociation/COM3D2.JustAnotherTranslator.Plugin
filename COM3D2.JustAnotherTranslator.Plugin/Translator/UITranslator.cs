@@ -390,11 +390,11 @@ public static class UITranslator
                 return texture;
             }
 
-            LogManager.Warning($"Failed to load image data for texture: {spriteName}");
+            LogManager.Warning($"Failed to load image data for texture: {spriteName}/加载图片数据失败: {spriteName}");
         }
         catch (Exception e)
         {
-            LogManager.Error($"Failed to load texture {spriteName}: {e.Message}");
+            LogManager.Error($"Failed to load texture: {spriteName}/加载材质失败: {spriteName}  {e.Message}");
         }
 
         return null;

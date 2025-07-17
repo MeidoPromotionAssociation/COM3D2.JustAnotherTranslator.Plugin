@@ -12,6 +12,8 @@ public static class LyricPatch
     // [HarmonyPrefix]
     // public static void DanceSubtitleMgr_Start_Prefix(DanceSubtitleMgr __instance)
     // {
+    //     LogManager.Debug("DanceSubtitleMgr_Start_Prefix called");
+    //
     //     if (DanceMain.SelectDanceData is null)
     //         return;
     //
@@ -46,15 +48,19 @@ public static class LyricPatch
     {
         try
         {
+            LogManager.Debug("RhythmActionMgr_Awake_Postfix called");
+
             var musicName = Traverse.Create(__instance).Field<string>("m_UseMusicName").Value;
             if (string.IsNullOrEmpty(musicName))
                 return;
+
+            LogManager.Info($"Current dance name (musicName)/当前舞蹈（musicName）: {musicName}");
 
             LyricManger.HandleDanceLoaded(musicName);
         }
         catch (Exception e)
         {
-            LogManager.Error("HandleDanceLoaded failed/处理舞蹈加载失败: " + e.Message);
+            LogManager.Error($"HandleDanceLoaded failed/处理舞蹈加载失败: {e.Message}");
         }
     }
 
@@ -63,6 +69,8 @@ public static class LyricPatch
     [HarmonyPrefix]
     public static void RhythmActionMgr_RhythmGame_Start_Prefix(RhythmAction_Mgr __instance)
     {
+        LogManager.Debug("RhythmActionMgr_RhythmGame_Start called");
+        LogManager.Info("Dance started/舞蹈开始");
         // just be safe, use __instance here
         LyricManger.HandleDanceStart(__instance);
     }
@@ -73,6 +81,8 @@ public static class LyricPatch
     [HarmonyPrefix]
     public static void RhythmActionMgr_RhythmGame_End_Prefix()
     {
+        LogManager.Debug("RhythmActionMgr_RhythmGame_End called");
+        LogManager.Info("Dance ended/舞蹈结束");
         LyricManger.HandleDanceEnd();
     }
 }

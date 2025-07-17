@@ -55,7 +55,6 @@ public static class LyricManger
         SubtitleComponentManager.Init();
 
         // 无需提前加载字幕到内存，播放时加载即可
-
         SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _lyricPatch = Harmony.CreateAndPatchAll(typeof(LyricPatch),
@@ -178,7 +177,8 @@ public static class LyricManger
             // Sort by StartTime
             CurrentLyrics.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
 
-            LogManager.Debug($"Successfully loaded {CurrentLyrics.Count} lyric entries from {path}");
+            LogManager.Info(
+                $"Successfully loaded {CurrentLyrics.Count} lyric entries from {path}/成功加载 {CurrentLyrics.Count} 条字幕");
         }
         catch (Exception ex)
         {
@@ -230,7 +230,7 @@ public static class LyricManger
     }
 
     /// <summary>
-    ///     监控协程
+    ///     歌曲播放监控协程
     /// </summary>
     /// <returns></returns>
     private static IEnumerator PlaybackMonitor()
@@ -270,11 +270,15 @@ public static class LyricManger
                 activeLyric = lyricToShow;
                 if (activeLyric != null)
                 {
+                    // 必须标记，否则原文会被 Graphic SetVerticesDirty 捕获而被翻译
+                    var text = XUATInterop.MarkTranslated(activeLyric.TranslatedLyric);
+
                     // TODO 支持双语显示
-                    SubtitleComponentManager.ShowSubtitle(activeLyric.TranslatedLyric, null,
+                    SubtitleComponentManager.ShowSubtitle(text, "",
                         activeLyric.EndTime - activeLyric.StartTime,
                         JustAnotherTranslator.SubtitleTypeEnum.Lyric);
-                    LogManager.Debug($"Showing lyric: {activeLyric.TranslatedLyric}");
+
+                    LogManager.Debug($"Showing lyric: {text}");
                 }
                 else
                 {

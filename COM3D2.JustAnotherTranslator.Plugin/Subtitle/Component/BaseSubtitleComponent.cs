@@ -89,7 +89,11 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         if (string.IsNullOrEmpty(SpeakerName))
-            SpeakerName = speakerName;
+            if (!string.IsNullOrEmpty(speakerName))
+                SpeakerName = speakerName;
+            else
+                SpeakerName = "";
+
 
         if (string.IsNullOrEmpty(SpeakerColor))
             SpeakerColor = ColorUtility.ToHtmlStringRGBA(GetSpeakerColor(speakerName));
@@ -500,7 +504,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         // TextComponent.color 无法影响 html 标签，因此需要单独处理
-        if (Config.EnableSpeakerName && !string.IsNullOrEmpty(SpeakerColor))
+        if (Config.EnableSpeakerName && !string.IsNullOrEmpty(SpeakerColor) && !string.IsNullOrEmpty(SpeakerName))
         {
             // 将alpha (0-1) 转换为两位十六进制字符串 (00-FF)
             var alphaByte = (byte)(Mathf.Clamp01(alpha) * 255f);
@@ -579,6 +583,10 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <returns>专属颜色</returns>
     protected virtual Color GetSpeakerColor(string speakerName)
     {
+        LogManager.Debug($"Creating Color for {speakerName}");
+
+        if (speakerName == null) speakerName = "";
+
         // 使用哈希值生成颜色，确保相同名称总是获得相同颜色
         var random = new Random(speakerName.GetHashCode());
 

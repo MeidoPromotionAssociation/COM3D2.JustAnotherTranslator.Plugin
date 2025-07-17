@@ -44,9 +44,11 @@ public static class SubtitleComponentManager
             LogManager.Debug($"Init subtitle config: {subtitleType}");
             if (config == null)
             {
-                LogManager.Error($"Failed to create subtitle config: {subtitleType}, please report this issue/创建 {subtitleType} 的字幕配置失败，请报告此问题");
+                LogManager.Error(
+                    $"Failed to create subtitle config: {subtitleType}, please report this issue/创建 {subtitleType} 的字幕配置失败，请报告此问题");
                 continue;
             }
+
             SubtitleConfigs[subtitleType] = config;
         }
 
@@ -67,7 +69,8 @@ public static class SubtitleComponentManager
 
         if (config == null)
         {
-            LogManager.Warning("Subtitle config is null, using default subtitle component, please report this issue/字幕配置为空，使用默认字幕组件，请报告此问题");
+            LogManager.Warning(
+                "Subtitle config is null, using default subtitle component, please report this issue/字幕配置为空，使用默认字幕组件，请报告此问题");
             config = SubtitleConfigs[JustAnotherTranslator.SubtitleTypeEnum.Base];
             if (config == null)
             {
@@ -123,7 +126,8 @@ public static class SubtitleComponentManager
         var subtitleConfig = GetSubtitleConfig(subtitleType);
         if (subtitleConfig == null)
         {
-            LogManager.Error($"Subtitle config for {subtitleType} not found, please report this issue/找不到 {subtitleType} 的字幕配置，请报告此问题");
+            LogManager.Error(
+                $"Subtitle config for {subtitleType} not found, please report this issue/找不到 {subtitleType} 的字幕配置，请报告此问题");
             return;
         }
 

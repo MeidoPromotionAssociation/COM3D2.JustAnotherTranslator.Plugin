@@ -156,8 +156,6 @@ public class AsyncTextLoader
             }
 
             sw.Stop();
-            LogManager.Info(
-                $"Total loaded {totalEntries} translations from {filesProcessed} files, cost {sw.ElapsedMilliseconds} ms/总共从 {filesProcessed} 个文件中加载了 {totalEntries} 条翻译，耗时 {sw.ElapsedMilliseconds} 毫秒");
 
             // 调用完成回调
             _completionCallback?.Invoke(translationDict, regexTranslationDict, totalEntries, filesProcessed,

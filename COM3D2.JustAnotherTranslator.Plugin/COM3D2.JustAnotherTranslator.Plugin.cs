@@ -10,7 +10,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 namespace COM3D2.JustAnotherTranslator.Plugin;
 
-[BepInPlugin("COM3D2.JustAnotherTranslator.Plugin", "COM3D2.JustAnotherTranslator.Plugin", "1.0.0")]
+[BepInPlugin("COM3D2.JustAnotherTranslator.Plugin", "COM3D2.JustAnotherTranslator.Plugin", "0.0.1")]
 public class JustAnotherTranslator : BaseUnityPlugin
 {
     public enum MaidNameStyleEnum

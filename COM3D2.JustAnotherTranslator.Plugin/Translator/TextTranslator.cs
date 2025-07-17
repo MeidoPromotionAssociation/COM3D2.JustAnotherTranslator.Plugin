@@ -58,7 +58,6 @@ public static class TextTranslator
         TextTranslatePatch.RegisterNGUITextPatches(_textTranslatePatch);
 
         if (MaidCafeManagerHelper.IsMaidCafeAvailable())
-        {
             try
             {
                 var original = typeof(MaidCafeComment).GetMethod("LineBreakComment",
@@ -71,28 +70,23 @@ public static class TextTranslator
                     isPatchedByOthers = patches?.Owners?.Count > 0;
                 }
 
-                bool isPatchedByLegacy =
+                var isPatchedByLegacy =
                     Harmony.HasAnyPatches("com.github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix");
 
                 if (isPatchedByLegacy || isPatchedByOthers)
-                {
                     LogManager.Warning(
                         "MaidCafeDlcLineBreakCommentFix patch already applied by someone else, skipping/MaidCafeDlcLineBreakCommentFix 已被其他人应用，跳过\n" +
                         "if you got maid_cafe_line_break_fix.cs in your scripts folder, please remove it/如果你在 scripts 脚本文件夹中有 maid_cafe_line_break_fix.cs，请删除它");
-                }
                 else
-                {
                     _maidCafeDlcLineBreakCommentFixPatch = Harmony.CreateAndPatchAll(
                         typeof(MaidCafeDlcLineBreakCommentFix),
                         "com3d2.justanothertranslator.plugin.hooks.text.maidcafedlclinebreakcommentfix");
-                }
             }
             catch (Exception e)
             {
                 LogManager.Warning(
                     $"Failed to patch MaidCafeDlcLineBreakCommentFix/补丁 MaidCafeDlcLineBreakCommentFix 失败: {e.Message}");
             }
-        }
 
         _initialized = true;
     }

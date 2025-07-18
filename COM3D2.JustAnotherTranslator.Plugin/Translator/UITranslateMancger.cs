@@ -12,6 +12,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using CsvHelper;
 using CsvHelper.Configuration;
 using HarmonyLib;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -275,8 +276,8 @@ public static class UITranslateMancger
     private class CsvEntry
     {
         public string Term { get; set; } // 键名
-        public string Original { get; set; } // 原文
-        public string Translation { get; set; } // 译文
+        [CanBeNull] public string Original { get; set; } // 原文
+        [CanBeNull] public string Translation { get; set; } // 译文
     }
 
     // 翻译数据

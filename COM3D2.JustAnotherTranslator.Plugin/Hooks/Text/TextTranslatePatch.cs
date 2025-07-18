@@ -21,13 +21,13 @@ public static class TextTranslatePatch
     [HarmonyPostfix]
     private static void KagScript_GetText_Postfix(ref string __result)
     {
-        if (string.IsNullOrEmpty(__result) || TextTranslator.IsNumeric(__result))
+        if (string.IsNullOrEmpty(__result) || TextTranslateManger.IsNumeric(__result))
             return;
 
         LogManager.Debug("KagScript GetText called: " + __result);
 
         string translated;
-        if (TextTranslator.GetTranslateText(__result, out translated)) __result = translated;
+        if (TextTranslateManger.GetTranslateText(__result, out translated)) __result = translated;
     }
 
     /// <summary>
@@ -38,13 +38,13 @@ public static class TextTranslatePatch
     [HarmonyPrefix]
     private static void ScriptManger_ReplaceCaraName_Prefix(ref string text)
     {
-        if (string.IsNullOrEmpty(text) || TextTranslator.IsNumeric(text))
+        if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
             return;
 
         LogManager.Debug("ScriptManager ReplaceCharaName called: " + text);
 
         string translated;
-        if (TextTranslator.GetTranslateText(text, out translated)) text = translated;
+        if (TextTranslateManger.GetTranslateText(text, out translated)) text = translated;
     }
 
 
@@ -67,13 +67,13 @@ public static class TextTranslatePatch
         // 提取日文原文
         var originalText = __result[Product.Language.Japanese];
 
-        if (TextTranslator.IsNumeric(originalText)) return;
+        if (TextTranslateManger.IsNumeric(originalText)) return;
 
         LogManager.Debug($"LocalizationManager GetTranslationText called: {originalText}");
 
         string translatedText;
 
-        if (TextTranslator.GetTranslateText(originalText, out translatedText))
+        if (TextTranslateManger.GetTranslateText(originalText, out translatedText))
         {
             __result[Product.Language.Japanese] = translatedText;
             __result[Product.baseScenarioLanguage] = translatedText;
@@ -95,13 +95,13 @@ public static class TextTranslatePatch
         {
             var traverse = Traverse.Create(__instance).Field("m_Text");
             var text = traverse.GetValue() as string;
-            if (string.IsNullOrEmpty(text) || TextTranslator.IsNumeric(text))
+            if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
                 return;
             if (text.Contains(XUATInterop.XuatSpicalMaker))
                 return;
             LogManager.Debug($"Graphic SetVerticesDirty called: {text}");
             string translated;
-            if (TextTranslator.GetTranslateText(text, out translated))
+            if (TextTranslateManger.GetTranslateText(text, out translated))
                 traverse.SetValue(translated);
         }
     }
@@ -114,13 +114,13 @@ public static class TextTranslatePatch
     /// <param name="text"></param>
     private static void NGUIText_WrapText_Prefix(ref string text)
     {
-        if (string.IsNullOrEmpty(text) || TextTranslator.IsNumeric(text))
+        if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
             return;
 
         LogManager.Debug("NGUIText WrapText(string, out string) called: " + text);
 
         string translated;
-        if (TextTranslator.GetTranslateText(text, out translated))
+        if (TextTranslateManger.GetTranslateText(text, out translated))
         {
             LogManager.Debug("NGUIText WrapText translated: " + translated);
             text = translated;

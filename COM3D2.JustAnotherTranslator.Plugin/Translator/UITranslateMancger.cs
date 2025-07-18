@@ -18,29 +18,32 @@ using Object = UnityEngine.Object;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
-public static class UITranslator
+/// <summary>
+///     UI 翻译管理器
+/// </summary>
+public static class UITranslateMancger
 {
     private static Harmony _uiTranslatePatch;
     private static Harmony _uiDebugPatch;
     private static bool _initialized;
 
-    // 翻译文件加载线程
+    /// 翻译文件加载线程
     private static Thread _textLoaderThread;
 
-    // 存储翻译数据的字典
+    /// 存储翻译数据的字典
     private static Dictionary<string, TranslationData> _translations = new(); // term -> TranslationData
 
-    // 缓存文件名到完整路径的映射
+    /// 缓存文件名到完整路径的映射
     private static readonly Dictionary<string, string> SpritePathCache = new(); // filename -> path
 
-    // LRU缓存已加载的图片纹理
+    /// LRU缓存已加载的图片纹理
     private static LRUCache<string, Texture2D> _spriteCache; // filename -> texture
 
-    // 缓存原始精灵图信息
+    /// 缓存原始精灵图信息
     private static readonly Dictionary<UISprite, OriginalSpriteInfoStruct>
         OriginalSpriteInfo = new(); // UISprite -> OriginalSpriteInfo
 
-    // 缓存已创建的替换 Atlas，避免重复创建
+    /// 缓存已创建的替换 Atlas，避免重复创建
     private static readonly Dictionary<string, UIAtlas> ReplacementAtlasCache = new(); // spriteName -> UIAtlas
 
     public static void Init()

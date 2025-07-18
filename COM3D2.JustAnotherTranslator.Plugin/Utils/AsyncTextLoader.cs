@@ -14,33 +14,33 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 /// </summary>
 public class AsyncTextLoader
 {
-    // 加载完成委托
+    /// 加载完成委托
     public delegate void CompletionCallback(Dictionary<string, string> result, Dictionary<Regex, string> resultRegex,
         int totalEntries, int totalFiles,
         long elapsedMilliseconds);
 
-    // 加载进度委托
+    /// 加载进度委托
     public delegate void ProgressCallback(float progress, int filesProcessed, int totalFiles);
 
-    // 文件读取缓冲区大小 (默认16MB)
+    /// 文件读取缓冲区大小 (默认16MB)
     private const int DefaultBufferSize = 16 * 1024 * 1024;
 
-    // 文件读取块大小 (默认4MB)
+    /// 文件读取块大小 (默认4MB)
     private const int FileReadChunkSize = 4 * 1024 * 1024;
 
-    // 完成回调
+    /// 完成回调
     private readonly CompletionCallback _completionCallback;
 
-    // 进度回调
+    /// 进度回调
     private readonly ProgressCallback _progressCallback;
 
-    // 翻译目录路径
+    /// 翻译目录路径
     private readonly string _translationPath;
 
-    // 取消标志
+    /// 取消标志
     private bool _cancelRequested;
 
-    // 线程对象
+    /// 加载线程
     private Thread _loaderThread;
 
     /// <summary>

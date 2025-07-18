@@ -10,7 +10,10 @@ using MaidCafe;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
-public static class TextTranslator
+/// <summary>
+///     文本翻译管理器
+/// </summary>
+public static class TextTranslateManger
 {
     private static Harmony _textTranslatePatch;
 
@@ -18,28 +21,28 @@ public static class TextTranslator
 
     private static bool _initialized;
 
-    // 翻译字典
-    public static Dictionary<string, string> TranslationDict = new(); // original -> translation
+    /// 翻译字典
+    private static Dictionary<string, string> _translationDict = new(); // original -> translation
 
-    // 正则表达式翻译字典
-    public static Dictionary<Regex, string> RegexTranslationDict = new(); // regex -> translation
+    /// 正则表达式翻译字典
+    private static Dictionary<Regex, string> _regexTranslationDict = new(); // regex -> translation
 
-    // 异步加载器
+    /// 异步加载器
     private static AsyncTextLoader _asyncLoader;
 
-    // 翻译是否已加载完成
+    /// 翻译是否已加载完成
     public static bool IsTranslationLoaded;
 
-    // 加载状态
+    /// 加载状态
     public static bool IsLoading { get; private set; }
 
-    // 加载进度 (0.0-1.0)
+    /// 加载进度 (0.0-1.0)
     public static float LoadingProgress { get; private set; }
 
-    // 已处理文件数
+    /// 已处理文件数
     public static int FilesProcessed { get; private set; }
 
-    // 总文件数
+    /// 总文件数
     public static int TotalFiles { get; private set; }
 
     public static void Init()
@@ -112,13 +115,16 @@ public static class TextTranslator
         _maidCafeDlcLineBreakCommentFixPatch?.UnpatchSelf();
         _maidCafeDlcLineBreakCommentFixPatch = null;
 
-        TranslationDict.Clear();
-        RegexTranslationDict.Clear();
+        _translationDict.Clear();
+        _regexTranslationDict.Clear();
         IsTranslationLoaded = false;
 
         _initialized = false;
     }
 
+    /// <summary>
+    ///     异步加载翻译文本
+    /// </summary>
     private static void LoadTextAsync()
     {
         // 重置状态
@@ -140,7 +146,13 @@ public static class TextTranslator
         _asyncLoader.StartLoading();
     }
 
-    // 加载进度回调
+
+    /// <summary>
+    ///     异步加载进度回调
+    /// </summary>
+    /// <param name="progress"></param>
+    /// <param name="filesProcessed"></param>
+    /// <param name="totalFiles"></param>
     private static void OnLoadingProgress(float progress, int filesProcessed, int totalFiles)
     {
         LoadingProgress = progress;
@@ -153,7 +165,14 @@ public static class TextTranslator
                 $"Translation loading progress: {progress:P0} ({filesProcessed}/{totalFiles})/翻译加载进度: {progress:P0} ({filesProcessed}/{totalFiles})");
     }
 
-    // 加载完成回调
+    /// <summary>
+    ///     异步加载加载完成回调
+    /// </summary>
+    /// <param name="result"></param>
+    /// <param name="regexResult"></param>
+    /// <param name="totalEntries"></param>
+    /// <param name="totalFiles"></param>
+    /// <param name="elapsedMilliseconds"></param>
     private static void OnLoadingComplete(Dictionary<string, string> result, Dictionary<Regex, string> regexResult,
         int totalEntries, int totalFiles,
         long elapsedMilliseconds)
@@ -166,15 +185,20 @@ public static class TextTranslator
         IsTranslationLoaded = true;
 
         // 更新翻译字典
-        TranslationDict = result;
-        RegexTranslationDict = regexResult;
+        _translationDict = result;
+        _regexTranslationDict = regexResult;
 
         LogManager.Info(
             $"Asynchronous translation loading complete: {totalEntries} entries from {totalFiles} files, cost {elapsedMilliseconds} ms/异步翻译加载完成: 从 {totalFiles} 个文件中加载了 {totalEntries} 条翻译，耗时 {elapsedMilliseconds} 毫秒");
     }
 
 
-    // 获取翻译文本
+    /// <summary>
+    ///     尝试获取翻译文本
+    /// </summary>
+    /// <param name="original"></param>
+    /// <param name="translated"></param>
+    /// <returns></returns>
     public static bool GetTranslateText(string original, out string translated)
     {
         translated = original;
@@ -195,7 +219,7 @@ public static class TextTranslator
         if (string.IsNullOrEmpty(original))
             return false;
 
-        if (TranslationDict.TryGetValue(original, out var value))
+        if (_translationDict.TryGetValue(original, out var value))
         {
             LogManager.Debug($"Translated text: {value}");
             translated = XUATInterop.MarkTranslated(value);
@@ -205,7 +229,7 @@ public static class TextTranslator
         // KISS did something in cm3d2.dll
         // it seems [HF] will become [hf]
         // 尝试去除换行符和空格后进行翻译，现有翻译的原文均无换行符
-        if (TranslationDict.TryGetValue(original.ToUpper().Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(),
+        if (_translationDict.TryGetValue(original.ToUpper().Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(),
                 out var lowerValue))
         {
             LogManager.Debug($"Translated text (to upper, replace and trimmed): {lowerValue}");
@@ -215,7 +239,7 @@ public static class TextTranslator
 
         // 尝试使用正则表达式匹配
         // 为了保持兼容 Template 方法是从 CM3D2.YATranslator 移植的
-        foreach (var keyValuePair in RegexTranslationDict)
+        foreach (var keyValuePair in _regexTranslationDict)
         {
             var regex = keyValuePair.Key;
             var template = keyValuePair.Value;
@@ -242,7 +266,7 @@ public static class TextTranslator
 
                 LogManager.Debug($"Template placeholder ${s} => '{capturedString}'");
 
-                if (TranslationDict.TryGetValue(capturedString, out var groupTranslation))
+                if (_translationDict.TryGetValue(capturedString, out var groupTranslation))
                 {
                     LogManager.Debug($"Found translation for '{capturedString}' => '{groupTranslation}'");
                     return groupTranslation;

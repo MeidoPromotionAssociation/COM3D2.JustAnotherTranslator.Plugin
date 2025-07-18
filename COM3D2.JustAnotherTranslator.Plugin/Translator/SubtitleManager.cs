@@ -19,22 +19,22 @@ public static class SubtitleManager
 {
     private static bool _initialized;
 
-    // 存储每个Maid的监听协程ID
-    private static readonly Dictionary<Maid, string> MaidMonitorCoroutineIds = new();
+    /// 存储每个 Maid 的监听协程 ID
+    private static readonly Dictionary<Maid, string> MaidMonitorCoroutineIds = new(); // maid -> coroutineId
 
-    // 存储voiceId与文本的映射关系
-    private static readonly Dictionary<string, string> VoiceIdToTextMap = new();
+    /// 存储 voiceId 与文本的映射关系
+    private static readonly Dictionary<string, string> VoiceIdToTextMap = new(); // voiceId -> text
 
-    // 当前正在说话的角色
+    /// 当前正在说话的角色
     private static Maid _currentSpeaker;
 
-    // 当前正在播放的语音ID
+    /// 当前正在播放的语音ID
     private static string _currentVoiceId;
 
-    // 当前字幕类型
+    /// 当前字幕类型
     private static JustAnotherTranslator.SubtitleTypeEnum _currentSubtitleType;
 
-    // 各种补丁实例
+    /// 各种补丁实例
     private static Harmony _yotogiSubtitlePatch;
     private static Harmony _advSubtitlePatch;
     private static Harmony _baseVoiceSubtitlePatch;
@@ -302,7 +302,7 @@ public static class SubtitleManager
                         foundText = true;
                     }
                     // 尝试直接按 voiceId 获取翻译
-                    else if (TextTranslator.GetTranslateText(currentVoiceId, out var translateText))
+                    else if (TextTranslateManger.GetTranslateText(currentVoiceId, out var translateText))
                     {
                         VoiceIdToTextMap[currentVoiceId] = translateText;
 

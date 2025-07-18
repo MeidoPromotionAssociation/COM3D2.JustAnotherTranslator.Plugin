@@ -4,14 +4,19 @@ using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Subtitle;
 
-// <summary>
-//     用于处理 ADV 字幕的 Harmony 补丁
-//     ADV 场景都自带字幕，因此基本只在 VR 模式有用
-//     基本和 SubtitleManager 中的代码相同
-// </summary>
+/// <summary>
+///     用于处理 ADV 字幕的 Harmony 补丁
+///     ADV 场景都自带字幕，因此基本只在 VR 模式有用
+///     基本和 SubtitleManager 中的代码相同
+/// </summary>
 public static class AdvSubtitlePatch
 {
-    // 获取说话角色
+    /// <summary>
+    ///     捕获 @Talk 标签
+    ///     获取说话角色
+    /// </summary>
+    /// <param name="tag_data"></param>
+    /// <param name="__instance"></param>
     [HarmonyPatch(typeof(ADVKagManager), "TagTalk")]
     [HarmonyPostfix]
     public static void ADVKagManager_TagTalk_Postfix(KagTagSupport tag_data, ADVKagManager __instance)
@@ -40,7 +45,11 @@ public static class AdvSubtitlePatch
     }
 
 
-    // 在脚本段落结束时，获取文本
+    /// <summary>
+    ///     捕获 @HitRet 标签
+    ///     在脚本段落结束时，获取文本
+    /// </summary>
+    /// <param name="__instance"></param>
     [HarmonyPatch(typeof(ADVKagManager), "TagHitRet")]
     [HarmonyPrefix]
     public static void ADVKagManager_HitRet_Prefix(ADVKagManager __instance)

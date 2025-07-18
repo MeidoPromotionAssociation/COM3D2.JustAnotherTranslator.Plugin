@@ -18,13 +18,15 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 /// </summary>
 public static class CoroutineManager
 {
-    // 单例GameObject，用于运行所有协程
+    /// 单例 GameObject，用于运行所有协程
     private static GameObject _instance;
 
-    // 协程运行器组件
+    /// 协程运行器组件
     private static CoroutineRunner _runner;
 
-    // 初始化
+    /// <summary>
+    ///     初始化
+    /// </summary>
     private static void Initialize()
     {
         if (_instance is null)

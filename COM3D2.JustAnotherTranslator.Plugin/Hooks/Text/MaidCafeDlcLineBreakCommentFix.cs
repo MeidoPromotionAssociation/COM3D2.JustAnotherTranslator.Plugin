@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
 
+/// <summary>
+///     修复 MaidCafe DLC 中可能出现的翻译后文本长度不一致导致的数组越界
+/// </summary>
 public static class MaidCafeDlcLineBreakCommentFix
 {
     /// <summary>
@@ -53,7 +56,13 @@ public static class MaidCafeDlcLineBreakCommentFix
         return false;
     }
 
-    // There is a same methon in MaidCafeSuperChatComment
+    /// <summary>
+    ///     覆盖 MaidCafeComment.LineBreakComment 以免翻译后出现数组越界
+    ///     same method in MaidCafeComment
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="text"></param>
+    /// <returns></returns>
     [HarmonyPatch(typeof(MaidCafeSuperChatComment), "LineBreakComment")]
     [HarmonyPrefix]
     private static bool SuperChatLineBreakCommentPrefix(MaidCafeComment __instance, string text)

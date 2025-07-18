@@ -706,7 +706,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         if (EnableTextTranslation.Value)
         {
             LogManager.Info("Text Translation Enabled/文本翻译已启用");
-            TextTranslator.Init();
+            TextTranslateManger.Init();
         }
         else
         {
@@ -716,7 +716,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         if (EnableUITranslation.Value)
         {
             LogManager.Info("UI Translation Enabled/UI 翻译已启用");
-            UITranslator.Init();
+            UITranslateMancger.Init();
         }
         else
         {
@@ -726,7 +726,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         if (EnableTextureReplace.Value)
         {
             LogManager.Info("Texture Replace Enabled/贴图替换已启用");
-            TextureReplacer.Init();
+            TextureReplaceManger.Init();
         }
         else
         {
@@ -800,9 +800,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     private void OnDestroy()
     {
-        TextTranslator.Unload();
-        UITranslator.Unload();
-        TextureReplacer.Unload();
+        TextTranslateManger.Unload();
+        UITranslateMancger.Unload();
+        TextureReplaceManger.Unload();
         SubtitleManager.Unload();
     }
 
@@ -845,15 +845,15 @@ public class JustAnotherTranslator : BaseUnityPlugin
             // 重新加载翻译
             if (EnableTextTranslation.Value)
             {
-                TextTranslator.Unload();
-                TextTranslator.Init();
+                TextTranslateManger.Unload();
+                TextTranslateManger.Init();
             }
 
             // 重新加载贴图
             if (EnableTextureReplace.Value)
             {
-                TextureReplacer.Unload();
-                TextureReplacer.Init();
+                TextureReplaceManger.Unload();
+                TextureReplaceManger.Init();
             }
         };
 
@@ -863,13 +863,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableTextTranslation.Value)
             {
                 LogManager.Info("Text Translation Enabled/文本翻译已启用");
-                TextTranslator.Init();
+                TextTranslateManger.Init();
                 XUATInterop.Initialize();
             }
             else
             {
                 LogManager.Info("Text Translation Disabled/文本翻译已禁用");
-                TextTranslator.Unload();
+                TextTranslateManger.Unload();
             }
         };
 
@@ -879,12 +879,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableUITranslation.Value)
             {
                 LogManager.Info("UI Translation Enabled/UI 翻译已启用");
-                UITranslator.Init();
+                UITranslateMancger.Init();
             }
             else
             {
                 LogManager.Info("UI Translation Disabled/UI 翻译已禁用");
-                UITranslator.Unload();
+                UITranslateMancger.Unload();
             }
         };
 
@@ -894,12 +894,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableTextureReplace.Value)
             {
                 LogManager.Info("Texture Replace Enabled/贴图替换已启用");
-                TextureReplacer.Init();
+                TextureReplaceManger.Init();
             }
             else
             {
                 LogManager.Info("Texture Replace Disabled/贴图替换已禁用");
-                TextureReplacer.Unload();
+                TextureReplaceManger.Unload();
             }
         };
 
@@ -924,8 +924,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             // 重新加载贴图替换模块以应用新的缓存大小
             if (EnableTextureReplace.Value)
             {
-                TextureReplacer.Unload();
-                TextureReplacer.Init();
+                TextureReplaceManger.Unload();
+                TextureReplaceManger.Init();
             }
         };
 
@@ -937,8 +937,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             // 重新加载贴图替换模块以应用新的缓存大小
             if (EnableUITranslation.Value)
             {
-                UITranslator.Unload();
-                UITranslator.Init();
+                UITranslateMancger.Unload();
+                UITranslateMancger.Init();
             }
         };
     }

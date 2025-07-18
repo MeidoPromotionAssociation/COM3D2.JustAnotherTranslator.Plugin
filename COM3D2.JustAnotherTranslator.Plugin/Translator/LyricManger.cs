@@ -15,24 +15,31 @@ using UnityEngine.SceneManagement;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
+/// <summary>
+///     歌词翻译管理器
+/// </summary>
 public static class LyricManger
 {
     private static bool _initialized;
 
     private static Harmony _lyricPatch;
 
-    // 当前正在播放的歌词列表
+    /// 当前正在播放的歌词列表
     private static readonly List<LyricCsvEntry> CurrentLyrics = new();
 
-    // 当前正在播放的歌词的索引
+    /// 当前正在播放的歌词的索引
     private static int _currentLyricIndex;
 
-    // 舞蹈管理器实例
+    /// 舞蹈管理器实例
     private static RhythmAction_Mgr _rhythmActionMgr;
 
-    // 处理歌词显示的协程
+    /// 处理歌词显示的协程
     private static string _playbackMonitorCoroutineID;
 
+
+    /// <summary>
+    ///     CsvHelper 配置
+    /// </summary>
     private static readonly CsvConfiguration CsvConfig = new()
     {
         CultureInfo = CultureInfo.InvariantCulture,
@@ -46,6 +53,16 @@ public static class LyricManger
         WillThrowOnMissingField = false
     };
 
+    /// <summary>
+    ///     CSV structure for lyrics
+    /// </summary>
+    private class LyricCsvEntry
+    {
+        public float StartTime { get; set; }
+        public float EndTime { get; set; }
+        public string OriginalLyric { get; set; }
+        public string TranslatedLyric { get; set; }
+    }
 
     public static void Init()
     {
@@ -289,14 +306,5 @@ public static class LyricManger
 
             yield return null;
         }
-    }
-
-    // CSV structure for lyrics
-    private class LyricCsvEntry
-    {
-        public float StartTime { get; set; }
-        public float EndTime { get; set; }
-        public string OriginalLyric { get; set; }
-        public string TranslatedLyric { get; set; }
     }
 }

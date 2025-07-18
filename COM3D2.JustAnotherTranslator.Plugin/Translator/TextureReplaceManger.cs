@@ -7,16 +7,19 @@ using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
-public static class TextureReplacer
+/// <summary>
+///     纹理替换管理器
+/// </summary>
+public static class TextureReplaceManger
 {
     private static bool _initialized;
 
     private static Harmony _textureReplacePatch;
 
-    // 文件路径缓存
+    /// 文件路径缓存
     private static readonly Dictionary<string, string> FilePathCache = new(); // filename -> path
 
-    // 纹理数据缓存
+    /// 纹理数据缓存
     private static LRUCache<string, byte[]> _textureCache; // filename -> texture
 
     public static void Init()
@@ -83,6 +86,13 @@ public static class TextureReplacer
         _initialized = false;
     }
 
+
+    /// <summary>
+    ///     尝试从文件中获取纹理数据
+    /// </summary>
+    /// <param name="filename"></param>
+    /// <param name="replaced"></param>
+    /// <returns></returns>
     public static bool GetReplaceTexture(string filename, out byte[] replaced)
     {
         replaced = null;
@@ -126,6 +136,11 @@ public static class TextureReplacer
         return false;
     }
 
+    /// <summary>
+    ///     从缓存中检查纹理是否存在
+    /// </summary>
+    /// <param name="filename"></param>
+    /// <returns></returns>
     public static bool IsTextureExist(string filename)
     {
         if (string.IsNullOrEmpty(filename))

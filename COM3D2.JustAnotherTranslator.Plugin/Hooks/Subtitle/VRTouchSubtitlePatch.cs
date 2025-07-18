@@ -4,21 +4,26 @@ using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Subtitle;
 
-// <summary>
-//      用于处理 VR 字幕的 Harmony 补丁
-//      见 VRTouchKagManager
-//      可以看到只有 @VRTouch 标签会命中，其余标签为注释
-//      @VRTouch maid=0 type=wait random voice=S2_32080 face=微笑み faceblend=頬１涙０
-//      ;;会話ランダム１
-//      ;*L0|
-//      ;@talk voice=S2_32080 name=[HF]
-//      ;さて……何を歌いましょうか。
-//      ;@hitret
-//      因此也依赖于 VoiceID 翻译
-// </summary>
+/// <summary>
+///      用于处理 VR 字幕的 Harmony 补丁
+///      见 VRTouchKagManager
+///      可以看到只有 @VRTouch 标签会命中，其余标签为注释
+///      @VRTouch maid=0 type=wait random voice=S2_32080 face=微笑み faceblend=頬１涙０
+///      ;;会話ランダム１
+///      ;*L0|
+///      ;@talk voice=S2_32080 name=[HF]
+///      ;さて……何を歌いましょうか。
+///      ;@hitret
+///      因此也依赖于 VoiceID 翻译
+/// </summary>
 public static class VRTouchSubtitlePatch
 {
-    // 获取说话角色
+    /// <summary>
+    ///     捕获 @Shuffle 标签
+    ///     获取说话角色
+    /// </summary>
+    /// <param name="tag_data"></param>
+    /// <param name="__instance"></param>
     [HarmonyPatch(typeof(VRTouchKagManager), "TagShuffle")]
     [HarmonyPostfix]
     public static void VRTouchKagManager_TagTalk_Postfix(KagTagSupport tag_data, ADVKagManager __instance)

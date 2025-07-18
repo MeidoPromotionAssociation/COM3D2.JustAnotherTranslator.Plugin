@@ -289,7 +289,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         if (!string.IsNullOrEmpty(speakerName) && enableSpeakerName)
         {
             if (string.IsNullOrEmpty(_translatedSpeakerName))
-                TextTranslator.GetTranslateText(speakerName, out _translatedSpeakerName);
+                TextTranslateManger.GetTranslateText(speakerName, out _translatedSpeakerName);
 
             displayText = $"<color=#{speakerColor}>{_translatedSpeakerName}</color>: {text}";
         }
@@ -517,7 +517,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 
 
             if (string.IsNullOrEmpty(_translatedSpeakerName))
-                TextTranslator.GetTranslateText(SpeakerName, out _translatedSpeakerName);
+                TextTranslateManger.GetTranslateText(SpeakerName, out _translatedSpeakerName);
 
             // 重构文本
             TextComponent.text = $"<color=#{SpeakerColor}>{_translatedSpeakerName}</color>: {_currentText}";

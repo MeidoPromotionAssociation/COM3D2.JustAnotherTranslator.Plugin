@@ -3,11 +3,11 @@ using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
-// <summary>
-//     MaidCafeManager的辅助类
-//     用于安全检查 MaidCafeManager 是否可用
-//     这样就不需要限定游戏版本 2.42 以上了
-// </summary>
+/// <summary>
+///     MaidCafeManager的辅助类
+///     用于安全检查 MaidCafeManager 是否可用
+///     这样就不需要限定游戏版本 2.42 以上了
+/// </summary>
 public static class MaidCafeManagerHelper
 {
     private static bool? _isMaidCafeAvailable;

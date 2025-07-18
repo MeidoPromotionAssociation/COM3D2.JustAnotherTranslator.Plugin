@@ -4,9 +4,17 @@ using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Subtitle;
 
+/// <summary>
+///     用于触摸模式语音字幕的 Harmony 补丁
+/// </summary>
 public static class PrivateMaidTouchSubtitlePatch
 {
-    // 获取说话角色
+    /// <summary>
+    ///     捕获 @Talk @rcTalk @TalkRepeat 标签
+    ///     获取说话角色
+    /// </summary>
+    /// <param name="tag_data"></param>
+    /// <param name="__instance"></param>
     [HarmonyPatch(typeof(PrivateMaidTouchKagManager), "TagTalk")]
     [HarmonyPatch(typeof(PrivateMaidTouchKagManager), "TagRcTalk")]
     [HarmonyPatch(typeof(PrivateMaidTouchKagManager), "TagTalkRepeat")]
@@ -38,7 +46,11 @@ public static class PrivateMaidTouchSubtitlePatch
     }
 
 
-    // 在脚本段落结束时，获取文本
+    /// <summary>
+    ///     捕获 @HitRet 标签
+    ///     在脚本段落结束时，获取文本
+    /// </summary>
+    /// <param name="__instance"></param>
     [HarmonyPatch(typeof(PrivateMaidTouchKagManager), "TagHitRet")]
     [HarmonyPrefix]
     public static void PrivateMaidTouchKagManager_HitRet_Prefix(ADVKagManager __instance)

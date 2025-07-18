@@ -535,7 +535,9 @@ public static class SubtitleComponentManager
         Slots.Clear();
     }
 
-    // 记录每个槽位的信息
+    /// <summary>
+    ///     记录每个字幕槽位的信息
+    /// </summary>
     private class SlotInfo
     {
         public string SubtitleId { get; set; }

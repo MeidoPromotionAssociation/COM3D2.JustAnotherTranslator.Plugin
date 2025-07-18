@@ -35,7 +35,7 @@ public static class TextureReplacePatch
             !Path.GetExtension(file_name).Equals(".tex", StringComparison.InvariantCultureIgnoreCase))
             return;
 
-        if (TextureReplacer.IsTextureExist(file_name))
+        if (TextureReplaceManger.IsTextureExist(file_name))
             __result = true;
     }
 
@@ -58,7 +58,7 @@ public static class TextureReplacePatch
         if (string.IsNullOrEmpty(fileName))
             return true;
 
-        if (!TextureReplacer.GetReplaceTexture(fileName, out var newTexture))
+        if (!TextureReplaceManger.GetReplaceTexture(fileName, out var newTexture))
             return true;
 
         // create new texture
@@ -87,7 +87,7 @@ public static class TextureReplacePatch
         if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
             return;
 
-        if (!TextureReplacer.GetReplaceTexture(tex.name, out var newTexture))
+        if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
             return;
 
         // 检查并转换为 Texture2D
@@ -125,7 +125,7 @@ public static class TextureReplacePatch
         if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
             return;
 
-        if (!TextureReplacer.GetReplaceTexture(tex.name, out var newTexture))
+        if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
             return;
 
         tex.LoadImage(EmptyBytes);
@@ -155,7 +155,7 @@ public static class TextureReplacePatch
         if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
             return;
 
-        if (!TextureReplacer.GetReplaceTexture(tex.name, out var newTexture))
+        if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
             return;
 
         // 检查并转换为 Texture2D
@@ -175,8 +175,10 @@ public static class TextureReplacePatch
     }
 
 
-    // 为Image的sprite属性setter添加前缀补丁
-    // 用于替换Image控件的精灵纹理
+    /// <summary>
+    ///     替换 Image 控件的精灵图
+    /// </summary>
+    /// <param name="value"></param>
     [HarmonyPatch(typeof(Image), nameof(Image.sprite), MethodType.Setter)]
     [HarmonyPrefix]
     private static void Image_sprite_Setter_Prefix(ref Sprite value)
@@ -189,7 +191,7 @@ public static class TextureReplacePatch
 
         byte[] newTexture = null;
         if (!string.IsNullOrEmpty(value.texture.name))
-            TextureReplacer.GetReplaceTexture(value.texture.name, out newTexture);
+            TextureReplaceManger.GetReplaceTexture(value.texture.name, out newTexture);
 
         if (newTexture == null)
             return;

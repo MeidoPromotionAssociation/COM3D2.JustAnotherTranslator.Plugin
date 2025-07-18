@@ -5,9 +5,16 @@ using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Lyric;
 
+/// <summary>
+///     处理舞蹈歌词字幕的 Harmony 补丁
+/// </summary>
 public static class LyricPatch
 {
-    // // 初始化字幕管理器
+    // /// <summary>
+    // ///     初始化字幕管理器
+    // ///     处理舞蹈加载
+    // /// </summary>
+    // /// <param name="__instance"></param>
     // [HarmonyPatch(typeof(DanceSubtitleMgr), "Start")]
     // [HarmonyPrefix]
     // public static void DanceSubtitleMgr_Start_Prefix(DanceSubtitleMgr __instance)
@@ -41,7 +48,10 @@ public static class LyricPatch
     //     }
     // }
 
-    // 舞蹈加载
+    /// <summary>
+    ///     处理舞蹈加载
+    /// </summary>
+    /// <param name="__instance"></param>
     [HarmonyPatch(typeof(RhythmAction_Mgr), "Awake")]
     [HarmonyPostfix]
     public static void RhythmActionMgr_Awake_Postfix(RhythmAction_Mgr __instance)
@@ -64,7 +74,10 @@ public static class LyricPatch
         }
     }
 
-    // 开始舞蹈
+    /// <summary>
+    ///     处理开始舞蹈
+    /// </summary>
+    /// <param name="__instance"></param>
     [HarmonyPatch(typeof(RhythmAction_Mgr), "RhythmGame_Start")]
     [HarmonyPrefix]
     public static void RhythmActionMgr_RhythmGame_Start_Prefix(RhythmAction_Mgr __instance)
@@ -76,7 +89,9 @@ public static class LyricPatch
     }
 
 
-    // 结束舞蹈
+    /// <summary>
+    ///     处理结束舞蹈
+    /// </summary>
     [HarmonyPatch(typeof(RhythmAction_Mgr), "RhythmGame_End")]
     [HarmonyPrefix]
     public static void RhythmActionMgr_RhythmGame_End_Prefix()

@@ -13,6 +13,18 @@ namespace COM3D2.JustAnotherTranslator.Plugin;
 [BepInPlugin("COM3D2.JustAnotherTranslator.Plugin", "COM3D2.JustAnotherTranslator.Plugin", "0.0.1")]
 public class JustAnotherTranslator : BaseUnityPlugin
 {
+    public enum LyricSubtitleTypeEnum
+    {
+        [Description("OriginalOnly/仅原文")] OriginalOnly,
+        [Description("TranslationOnly/仅译文")] TranslationOnly,
+
+        [Description("OriginalAndTranslation/译文和原文")]
+        TranslationAndOriginal,
+
+        [Description("OriginalAndTranslation/原文和译文")]
+        OriginalAndTranslation
+    }
+
     public enum MaidNameStyleEnum
     {
         [Description("JpStyle/日式")] JpStyle,
@@ -44,13 +56,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
     {
         [Description("InSpac/空间字幕")] InSpace,
         [Description("OnTablet/平板字幕")] OnTablet
-    }
-
-    public enum LyricSubtitleTypeEnum
-    {
-        [Description("OriginalOnly/仅原文")] OriginalOnly,
-        [Description("TranslationOnly/仅译文")] TranslationOnly,
-        [Description("OriginalAndTranslation/原文和译文")] OriginalAndTranslation,
     }
 
     public static bool IsVrMode;

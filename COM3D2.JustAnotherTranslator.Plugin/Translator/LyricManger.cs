@@ -10,6 +10,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using CsvHelper;
 using CsvHelper.Configuration;
 using HarmonyLib;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -37,7 +38,7 @@ public static class LyricManger
     private static string _playbackMonitorCoroutineID;
 
     /// 主舞蹈Maid名
-    private static string _mainDanceMaidName= "";
+    private static string _mainDanceMaidName = "";
 
 
     /// <summary>
@@ -48,7 +49,7 @@ public static class LyricManger
         CultureInfo = CultureInfo.InvariantCulture,
         AllowComments = true,
         HasHeaderRecord = true,
-        Encoding = Encoding.UTF8,
+        Encoding = Encoding.UTF8, // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
         IgnoreBlankLines = true,
         IgnoreHeaderWhiteSpace = true,
         IsHeaderCaseSensitive = false,
@@ -176,7 +177,7 @@ public static class LyricManger
 
         try
         {
-            using (var reader = new StreamReader(path, Encoding.UTF8))
+            using (var reader = new StreamReader(path, Encoding.UTF8)) // This can process utf-8-sig as well, which is csv should be
             using (var csv = new CsvReader(reader, CsvConfig))
             {
                 var records = csv.GetRecords<LyricCsvEntry>();
@@ -187,11 +188,11 @@ public static class LyricManger
             CurrentLyrics.Sort((a, b) => a.StartTime.CompareTo(b.StartTime));
 
             LogManager.Info(
-                $"Successfully loaded {CurrentLyrics.Count} lyric entries from {path}/成功加载 {CurrentLyrics.Count} 条字幕");
+                $"Successfully loaded {CurrentLyrics.Count} lyric entries from {path}/成功加载 {CurrentLyrics.Count} 条歌词");
         }
         catch (Exception ex)
         {
-            LogManager.Error($"Error loading lyric file {path}: {ex.Message}/加载字幕文件出错 {path}: {ex.Message}");
+            LogManager.Error($"Error loading lyric file {path}: {ex.Message}/加载歌词文件出错 {path}: {ex.Message}");
         }
     }
 
@@ -220,13 +221,9 @@ public static class LyricManger
         // 音频文件是通过 PlayDanceBGM 的形式加载的（m_strMasterAudioFileName）
         // 不存在歌唱的 Maid，因此 SpeakerName 显示始终为主 Maid
         if (JustAnotherTranslator.EnableLyricSubtitleSpeakerName.Value)
-        {
             _mainDanceMaidName = MaidInfo.GetMaidFullName(_rhythmActionMgr.DanceMaid[0]);
-        }
         else
-        {
             _mainDanceMaidName = "";
-        }
 
         // Start the playback monitor coroutine
         if (_playbackMonitorCoroutineID == null)
@@ -290,7 +287,7 @@ public static class LyricManger
                 activeLyric = lyricToShow;
                 if (activeLyric != null)
                 {
-                   var lyric = ProcessLyric(activeLyric);
+                    var lyric = ProcessLyric(activeLyric);
 
                     SubtitleComponentManager.ShowSubtitle(lyric, _mainDanceMaidName,
                         activeLyric.EndTime - activeLyric.StartTime,
@@ -318,6 +315,11 @@ public static class LyricManger
     private static string ProcessLyric(LyricCsvEntry lyricEntry)
     {
         var lyric = "";
+        var placeHolder = "";
+
+        if (JustAnotherTranslator.EnableLyricSubtitleSpeakerName.Value)
+            // Add 2 for ": "
+            placeHolder = new string(' ', (_mainDanceMaidName?.Length ?? 0) + 2);
 
         switch (JustAnotherTranslator.LyricSubtitleType.Value)
         {
@@ -327,13 +329,17 @@ public static class LyricManger
             case JustAnotherTranslator.LyricSubtitleTypeEnum.TranslationOnly:
                 lyric = lyricEntry.TranslatedLyric;
                 break;
+            case JustAnotherTranslator.LyricSubtitleTypeEnum.TranslationAndOriginal:
+                lyric = string.Concat(lyricEntry.TranslatedLyric, "\n", placeHolder, lyricEntry.OriginalLyric);
+                break;
             case JustAnotherTranslator.LyricSubtitleTypeEnum.OriginalAndTranslation:
-                lyric = string.Concat(lyricEntry.TranslatedLyric, "\n", lyricEntry.OriginalLyric);
+                lyric = string.Concat(lyricEntry.OriginalLyric, "\n", placeHolder, lyricEntry.TranslatedLyric);
                 break;
             default:
-                lyric = string.Concat(lyricEntry.TranslatedLyric, "\n", lyricEntry.OriginalLyric);
+                lyric = string.Concat(lyricEntry.TranslatedLyric, "\n", placeHolder, lyricEntry.OriginalLyric);
                 break;
         }
+
         lyric = XUATInterop.MarkTranslated(lyric);
         return lyric;
     }
@@ -345,7 +351,7 @@ public static class LyricManger
     {
         public float StartTime { get; set; }
         public float EndTime { get; set; }
-        public string OriginalLyric { get; set; }
-        public string TranslatedLyric { get; set; }
+        [CanBeNull] public string OriginalLyric { get; set; }
+        [CanBeNull] public string TranslatedLyric { get; set; }
     }
 }

@@ -5,18 +5,18 @@ using HarmonyLib;
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Subtitle;
 
 /// <summary>
-///      用于处理 Yotogi 字幕的 Harmony 补丁
-///      见 YotogiKagManager
-///      首先会命中 @talk 标签，开始说话
-///      然后会命中 @hitret 标签，结束脚本段落
-///      此时在 @hitret 可以拿到脚本段落的文本
-///      例如
-///      ;*L1|
-///      ;@talk voice=H0_GP01_17908 name=[HF1]
-///      ;う～……どうして３人でするの……？　おかしくないかなぁ、ご主人様……
-///      ;@hitret
-///      但是游戏可能会提取执行下一个 @talk 标签，但语音排队播放，因此需要判断角色说话的 VoiceID
-///      可以从 maid.AudioMan.FileName 中获取
+///     用于处理 Yotogi 字幕的 Harmony 补丁
+///     见 YotogiKagManager
+///     首先会命中 @talk 标签，开始说话
+///     然后会命中 @hitret 标签，结束脚本段落
+///     此时在 @hitret 可以拿到脚本段落的文本
+///     例如
+///     ;*L1|
+///     ;@talk voice=H0_GP01_17908 name=[HF1]
+///     ;う～……どうして３人でするの……？　おかしくないかなぁ、ご主人様……
+///     ;@hitret
+///     但是游戏可能会提取执行下一个 @talk 标签，但语音排队播放，因此需要判断角色说话的 VoiceID
+///     可以从 maid.AudioMan.FileName 中获取
 /// </summary>
 public static class YotogiSubtitlePatch
 {

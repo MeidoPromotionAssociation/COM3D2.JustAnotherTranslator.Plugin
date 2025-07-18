@@ -229,7 +229,8 @@ public static class TextTranslateManger
         // KISS did something in cm3d2.dll
         // it seems [HF] will become [hf]
         // 尝试去除换行符和空格后进行翻译，现有翻译的原文均无换行符
-        if (_translationDict.TryGetValue(original.ToUpper().Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(),
+        if (_translationDict.TryGetValue(
+                original.ToUpper().Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(),
                 out var lowerValue))
         {
             LogManager.Debug($"Translated text (to upper, replace and trimmed): {lowerValue}");

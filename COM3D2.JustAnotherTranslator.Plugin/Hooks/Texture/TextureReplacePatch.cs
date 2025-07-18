@@ -45,6 +45,8 @@ public static class TextureReplacePatch
     /// </summary>
     /// <param name="__result"></param>
     /// <param name="f_fileSystem"></param>
+    /// <param name="f_strFileName"></param>
+    /// <param name="usePoolBuffer"></param>
     [HarmonyPatch(typeof(ImportCM), nameof(ImportCM.LoadTexture))]
     [HarmonyPrefix]
     private static bool ImportCM_LoadTexture_Prefix(ref TextureResource __result, AFileSystemBase f_fileSystem,

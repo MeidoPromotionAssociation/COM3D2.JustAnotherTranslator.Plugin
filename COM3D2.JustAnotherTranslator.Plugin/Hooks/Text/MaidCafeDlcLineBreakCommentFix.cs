@@ -41,7 +41,7 @@ public static class MaidCafeDlcLineBreakCommentFix
         catch (Exception e)
         {
             const int FALLBACK_MAX_LENGTH = 30;
-            var fallbackText = text ?? string.Empty;
+            var fallbackText = text;
             var safeText = fallbackText.Length > FALLBACK_MAX_LENGTH
                 ? fallbackText.Substring(0, FALLBACK_MAX_LENGTH) + "..."
                 : fallbackText;

@@ -53,17 +53,6 @@ public static class LyricManger
         WillThrowOnMissingField = false
     };
 
-    /// <summary>
-    ///     CSV structure for lyrics
-    /// </summary>
-    private class LyricCsvEntry
-    {
-        public float StartTime { get; set; }
-        public float EndTime { get; set; }
-        public string OriginalLyric { get; set; }
-        public string TranslatedLyric { get; set; }
-    }
-
     public static void Init()
     {
         if (_initialized) return;
@@ -306,5 +295,16 @@ public static class LyricManger
 
             yield return null;
         }
+    }
+
+    /// <summary>
+    ///     CSV structure for lyrics
+    /// </summary>
+    private class LyricCsvEntry
+    {
+        public float StartTime { get; set; }
+        public float EndTime { get; set; }
+        public string OriginalLyric { get; set; }
+        public string TranslatedLyric { get; set; }
     }
 }

@@ -21,13 +21,10 @@ public static class TextTranslatePatch
     [HarmonyPostfix]
     private static void KagScript_GetText_Postfix(ref string __result)
     {
-        if (string.IsNullOrEmpty(__result) || TextTranslateManger.IsNumeric(__result))
-            return;
-
         LogManager.Debug("KagScript GetText called: " + __result);
 
-        string translated;
-        if (TextTranslateManger.GetTranslateText(__result, out translated)) __result = translated;
+        if (TextTranslateManger.GetTranslateText(__result, out var translated))
+            __result = translated;
     }
 
     /// <summary>
@@ -38,19 +35,16 @@ public static class TextTranslatePatch
     [HarmonyPrefix]
     private static void ScriptManger_ReplaceCaraName_Prefix(ref string text)
     {
-        if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
-            return;
-
         LogManager.Debug("ScriptManager ReplaceCharaName called: " + text);
 
-        string translated;
-        if (TextTranslateManger.GetTranslateText(text, out translated)) text = translated;
+        if (TextTranslateManger.GetTranslateText(text, out var translated))
+            text = translated;
     }
 
 
     /// <summary>
     ///     Hook for LocalizationManager.GetTranslationText
-    ///     部分插件例如 WildParty，会直接调用 MessageClass SetText
+    ///     部分插件例如 COM3D2.WildParty，会直接调用 MessageClass SetText
     ///     然后 MessageClass SetText 再调用 LocalizationManager.GetTranslationText
     ///     注意这个LocalizationManager 不是 I2.Loc 的，是 Scourt.Loc
     ///     该方法传入形如此的多语言标记文本：'这是日文原文lt;e&gt;This is English text&lt;sc&gt;这是中文文本
@@ -67,13 +61,9 @@ public static class TextTranslatePatch
         // 提取日文原文
         var originalText = __result[Product.Language.Japanese];
 
-        if (TextTranslateManger.IsNumeric(originalText)) return;
-
         LogManager.Debug($"LocalizationManager GetTranslationText called: {originalText}");
 
-        string translatedText;
-
-        if (TextTranslateManger.GetTranslateText(originalText, out translatedText))
+        if (TextTranslateManger.GetTranslateText(originalText, out var translatedText))
         {
             __result[Product.Language.Japanese] = translatedText;
             __result[Product.baseScenarioLanguage] = translatedText;
@@ -95,13 +85,14 @@ public static class TextTranslatePatch
         {
             var traverse = Traverse.Create(__instance).Field("m_Text");
             var text = traverse.GetValue() as string;
+
+            // Just too much logs
             if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
                 return;
-            if (text.Contains(XUATInterop.XuatSpicalMaker))
-                return;
+
             LogManager.Debug($"Graphic SetVerticesDirty called: {text}");
-            string translated;
-            if (TextTranslateManger.GetTranslateText(text, out translated))
+
+            if (TextTranslateManger.GetTranslateText(text, out var translated))
                 traverse.SetValue(translated);
         }
     }
@@ -114,13 +105,13 @@ public static class TextTranslatePatch
     /// <param name="text"></param>
     private static void NGUIText_WrapText_Prefix(ref string text)
     {
+        // Just too much logs
         if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
             return;
 
         LogManager.Debug("NGUIText WrapText(string, out string) called: " + text);
 
-        string translated;
-        if (TextTranslateManger.GetTranslateText(text, out translated))
+        if (TextTranslateManger.GetTranslateText(text, out var translated))
         {
             LogManager.Debug("NGUIText WrapText translated: " + translated);
             text = translated;

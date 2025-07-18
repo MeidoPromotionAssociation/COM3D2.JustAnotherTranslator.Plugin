@@ -209,7 +209,8 @@ public static class TextTranslateManger
             return false;
         }
 
-        if (string.IsNullOrEmpty(original) || IsNumeric(original))
+        // 考虑到音频文件可能是数字，这里不进行数字检查
+        if (string.IsNullOrEmpty(original))
             return false;
 
         LogManager.Debug($"Translating text: {original}");
@@ -292,6 +293,7 @@ public static class TextTranslateManger
     /// <summary>
     ///     检查字符串是否为数字（包含小数点）
     ///     应当比直接 decimal.TryParse 和正则表达式更快
+    ///     因为 .NET Framework 3.5 比较慢
     /// </summary>
     /// <param name="text">要检查的字符串</param>
     /// <returns>如果字符串是数字，则返回 true；否则返回 false</returns>
@@ -300,32 +302,45 @@ public static class TextTranslateManger
         if (string.IsNullOrEmpty(text))
             return false;
 
-        // 特殊情况优化：短数字直接检查
+        // 特殊情况：单字符非数字
+        if (text.Length == 1)
+            return text[0] >= '0' && text[0] <= '9';
+
+        // 短字符串优化
         if (text.Length <= 8)
         {
             var hasDecimalPoint = false;
+            var hasDigit = false;
+
             for (var i = 0; i < text.Length; i++)
             {
                 var c = text[i];
-                if (i == 0 && c == '-') continue;
-                if (c == '.' || c == ',')
+
+                // 处理符号（只能在开头）
+                if (i == 0 && (c == '-' || c == '+'))
+                    continue;
+
+                // 处理小数点
+                if (c == '.')
                 {
                     if (hasDecimalPoint) return false;
                     hasDecimalPoint = true;
                 }
-                else if (c < '0' || c > '9')
+                // 处理数字
+                else if (c >= '0' && c <= '9')
+                {
+                    hasDigit = true;
+                }
+                else
                 {
                     return false;
                 }
             }
 
-            return true;
+            return hasDigit;
         }
 
         // 长字符串回退到 decimal.TryParse
-        return decimal.TryParse(text,
-            NumberStyles.Any,
-            CultureInfo.InvariantCulture,
-            out _);
+        return decimal.TryParse(text, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
     }
 }

@@ -36,6 +36,7 @@ public static class SubtitleManager
 
     /// 各种补丁实例
     private static Harmony _yotogiSubtitlePatch;
+
     private static Harmony _advSubtitlePatch;
     private static Harmony _baseVoiceSubtitlePatch;
     private static Harmony _debugPatch;

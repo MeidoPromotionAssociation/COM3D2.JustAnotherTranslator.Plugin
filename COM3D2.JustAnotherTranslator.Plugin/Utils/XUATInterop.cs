@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -43,7 +43,6 @@ public static class XUATInterop
         // 标记为已初始化
         _initialized = true;
 
-
         try
         {
             // 查找 XUAT 程序集
@@ -52,7 +51,7 @@ public static class XUATInterop
             if (xuatAssembly == null)
             {
                 LogManager.Info(
-                    "No XUnity.AutoTranslator Plugin detected, skipping interop/未检测到 XUnity.AutoTranslator 插件，跳过互操作");
+                    "No XUnity.AutoTranslator(XUAT) Plugin detected, skipping interop/未检测到 XUnity.AutoTranslator (XUAT)插件，跳过互操作");
                 return false;
             }
 
@@ -61,7 +60,7 @@ public static class XUATInterop
             if (langHelper == null)
             {
                 LogManager.Warning(
-                    "Could not find LanguageHelper; skipping XUAT interop/无法找到 LanguageHelper，跳过 XUAT 互操作");
+                    "Could not find XUnity.AutoTranslator LanguageHelper; skipping XUAT interop/无法找到 XUnity.AutoTranslator LanguageHelper，跳过 XUAT 互操作");
                 return false;
             }
 
@@ -69,14 +68,17 @@ public static class XUATInterop
             var mogolianVowelSeparatorStringField = langHelper.GetField("MogolianVowelSeparatorString",
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             if (mogolianVowelSeparatorStringField != null)
-                XuatSpicalMaker = (string)mogolianVowelSeparatorStringField.GetValue(null);
+            {
+                var val = (string)mogolianVowelSeparatorStringField.GetValue(null);
+                if (!string.IsNullOrEmpty(val)) XuatSpicalMaker = val;
+            }
 
             // 获取 MakeRedirected 方法
             var makeRedirectedMethod = AccessTools.Method(langHelper, "MakeRedirected");
             if (makeRedirectedMethod == null)
             {
                 LogManager.Warning(
-                    "Could not find LanguageHelper.MakeRedirected; skipping XUAT interop/无法找到 LanguageHelper.MakeRedirected，跳过 XUAT 互操作");
+                    "Could not find XUnity.AutoTranslator LanguageHelper.MakeRedirected; skipping XUAT interop/无法找到 XUnity.AutoTranslator LanguageHelper.MakeRedirected，跳过 XUAT 互操作");
                 return false;
             }
 

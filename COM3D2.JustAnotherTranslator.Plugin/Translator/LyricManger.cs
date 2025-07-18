@@ -36,6 +36,9 @@ public static class LyricManger
     /// 处理歌词显示的协程
     private static string _playbackMonitorCoroutineID;
 
+    /// 主舞蹈Maid名
+    private static string _mainDanceMaidName= "";
+
 
     /// <summary>
     ///     CsvHelper 配置
@@ -214,6 +217,17 @@ public static class LyricManger
         _rhythmActionMgr = instance;
         _currentLyricIndex = 0;
 
+        // 音频文件是通过 PlayDanceBGM 的形式加载的（m_strMasterAudioFileName）
+        // 不存在歌唱的 Maid，因此 SpeakerName 显示始终为主 Maid
+        if (JustAnotherTranslator.EnableLyricSubtitleSpeakerName.Value)
+        {
+            _mainDanceMaidName = MaidInfo.GetMaidFullName(_rhythmActionMgr.DanceMaid[0]);
+        }
+        else
+        {
+            _mainDanceMaidName = "";
+        }
+
         // Start the playback monitor coroutine
         if (_playbackMonitorCoroutineID == null)
             _playbackMonitorCoroutineID = CoroutineManager.LaunchCoroutine(PlaybackMonitor());
@@ -276,15 +290,13 @@ public static class LyricManger
                 activeLyric = lyricToShow;
                 if (activeLyric != null)
                 {
-                    // 必须标记，否则原文会被 Graphic SetVerticesDirty 捕获而被翻译
-                    var text = XUATInterop.MarkTranslated(activeLyric.TranslatedLyric);
+                   var lyric = ProcessLyric(activeLyric);
 
-                    // TODO 支持双语显示
-                    SubtitleComponentManager.ShowSubtitle(text, "",
+                    SubtitleComponentManager.ShowSubtitle(lyric, _mainDanceMaidName,
                         activeLyric.EndTime - activeLyric.StartTime,
                         JustAnotherTranslator.SubtitleTypeEnum.Lyric);
 
-                    LogManager.Debug($"Showing lyric: {text}");
+                    LogManager.Debug($"Showing lyric: {lyric}");
                 }
                 else
                 {
@@ -295,6 +307,35 @@ public static class LyricManger
 
             yield return null;
         }
+    }
+
+
+    /// <summary>
+    ///     处理歌词显示类型
+    /// </summary>
+    /// <param name="lyricEntry"></param>
+    /// <returns>lyric</returns>
+    private static string ProcessLyric(LyricCsvEntry lyricEntry)
+    {
+        var lyric = "";
+
+        switch (JustAnotherTranslator.LyricSubtitleType.Value)
+        {
+            case JustAnotherTranslator.LyricSubtitleTypeEnum.OriginalOnly:
+                lyric = lyricEntry.OriginalLyric;
+                break;
+            case JustAnotherTranslator.LyricSubtitleTypeEnum.TranslationOnly:
+                lyric = lyricEntry.TranslatedLyric;
+                break;
+            case JustAnotherTranslator.LyricSubtitleTypeEnum.OriginalAndTranslation:
+                lyric = string.Concat(lyricEntry.TranslatedLyric, "\n", lyricEntry.OriginalLyric);
+                break;
+            default:
+                lyric = string.Concat(lyricEntry.TranslatedLyric, "\n", lyricEntry.OriginalLyric);
+                break;
+        }
+        lyric = XUATInterop.MarkTranslated(lyric);
+        return lyric;
     }
 
     /// <summary>

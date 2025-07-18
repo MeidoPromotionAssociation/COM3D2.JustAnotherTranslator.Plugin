@@ -46,6 +46,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
         [Description("OnTablet/平板字幕")] OnTablet
     }
 
+    public enum LyricSubtitleTypeEnum
+    {
+        [Description("OriginalOnly/仅原文")] OriginalOnly,
+        [Description("TranslationOnly/仅译文")] TranslationOnly,
+        [Description("OriginalAndTranslation/原文和译文")] OriginalAndTranslation,
+    }
 
     public static bool IsVrMode;
 
@@ -128,6 +134,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     // 歌词字幕相关配置
     public static ConfigEntry<bool> EnableLyricSubtitleSpeakerName;
+    public static ConfigEntry<LyricSubtitleTypeEnum> LyricSubtitleType;
     public static ConfigEntry<TextAnchorEnum> LyricSubtitleTextAlignment;
     public static ConfigEntry<string> LyricSubtitleFont;
     public static ConfigEntry<int> LyricSubtitleFontSize;
@@ -552,8 +559,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
         // 歌词字幕相关配置
         EnableLyricSubtitleSpeakerName = Config.Bind("LyricSubtitle",
             "EnableLyricSubtitleSpeakerName/启用歌词字幕显示说话人名",
-            true,
-            "Enable Lyric Subtitle Speaker Name/启用歌词字幕显示说话人名");
+            false,
+            "Enable Lyric Subtitle Speaker Name. The song is played as a BGM, the speaker name is always displayed as the dance main maid/启用歌词字幕显示说话人名。歌曲作为BGM形式播放，人名始终显示为舞蹈主女仆");
+
+        LyricSubtitleType = Config.Bind("LyricSubtitle",
+            "LyricSubtitleType/歌词字幕类型",
+            LyricSubtitleTypeEnum.OriginalAndTranslation,
+            "Lyric Subtitle Type/歌词字幕类型");
 
         LyricSubtitleFont = Config.Bind("LyricSubtitle",
             "LyricSubtitleFont/歌词字幕字体",
@@ -1594,6 +1606,16 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableLyricSubtitle.Value)
             {
                 LogManager.Info("Lyric Subtitle Speaker Name Enabled/启用歌词字幕显示说话人名");
+                SubtitleComponentManager.UpdateAllSubtitleConfig();
+            }
+        };
+
+        // 注册字幕类型变更事件
+        LyricSubtitleType.SettingChanged += (sender, args) =>
+        {
+            if (EnableLyricSubtitle.Value)
+            {
+                LogManager.Info("Lyric Subtitle type changed/歌词字幕类型已更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
             }
         };

@@ -382,15 +382,12 @@ public static class UITranslator
             if (!SpritePathCache.TryGetValue(spriteName, out var path)) return null;
 
             var fileData = File.ReadAllBytes(path);
-            var texture = new Texture2D(2, 2);
-            if (texture.LoadImage(fileData)) // LoadImage会自动调整纹理大小
-            {
-                LogManager.Debug($"Loaded texture {spriteName} from {path}");
-                _spriteCache.Set(spriteName, texture);
-                return texture;
-            }
-
-            LogManager.Warning($"Failed to load image data for texture: {spriteName}/加载图片数据失败: {spriteName}");
+            var texture = new Texture2D(1, 1);
+            texture.LoadImage(new byte[0]); // 强制刷新内部纹理
+            texture.LoadImage(fileData); // LoadImage会自动调整纹理大小
+            LogManager.Debug($"Loaded texture {spriteName} from {path}");
+            _spriteCache.Set(spriteName, texture);
+            return texture;
         }
         catch (Exception e)
         {

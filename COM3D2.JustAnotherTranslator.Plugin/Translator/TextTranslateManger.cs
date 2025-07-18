@@ -209,15 +209,19 @@ public static class TextTranslateManger
             return false;
         }
 
-        // XUAT 标记过的文本不进行翻译
-        // 除非 XUAT 进行了更改，否则特殊标记永远位于结尾，但目前已有的的文本特殊标记位于开头
-        if (original.StartsWith(XUATInterop.XuatSpicalMaker) || original.EndsWith(XUATInterop.XuatSpicalMaker))
+        if (string.IsNullOrEmpty(original) || IsNumeric(original))
             return false;
 
         LogManager.Debug($"Translating text: {original}");
 
-        if (string.IsNullOrEmpty(original))
+        // XUAT 标记过的文本不进行翻译
+        // 除非 XUAT 进行了更改，否则特殊标记永远位于结尾，但目前已有的的文本特殊标记位于开头
+        // 然而因为某种原因，StartsWith 和 EndsWith 会把所有文本都标记为已翻译，因此必须使用 Contains
+        if (original.Contains(XUATInterop.XuatSpicalMaker))
+        {
+            LogManager.Debug($"Text already marked by XUAT skipping: {original}");
             return false;
+        }
 
         if (_translationDict.TryGetValue(original, out var value))
         {

@@ -186,7 +186,8 @@ public static class TextTranslator
         }
 
         // XUAT 标记过的文本不进行翻译
-        if (original.Contains(XUATInterop.XuatSpicalMaker))
+        // 除非 XUAT 进行了更改，否则特殊标记永远位于结尾，但目前已有的的文本特殊标记位于开头
+        if (original.StartsWith(XUATInterop.XuatSpicalMaker) || original.EndsWith(XUATInterop.XuatSpicalMaker))
             return false;
 
         LogManager.Debug($"Translating text: {original}");
@@ -207,7 +208,7 @@ public static class TextTranslator
         if (TranslationDict.TryGetValue(original.ToUpper().Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(),
                 out var lowerValue))
         {
-            LogManager.Debug($"Translated text: {lowerValue}");
+            LogManager.Debug($"Translated text (to upper, replace and trimmed): {lowerValue}");
             translated = XUATInterop.MarkTranslated(lowerValue);
             return true;
         }
@@ -250,7 +251,7 @@ public static class TextTranslator
                 return capturedString;
             });
 
-            LogManager.Debug($"Regex translated text: {translated}");
+            LogManager.Debug($"translated text (Regex): {translated}");
             translated = XUATInterop.MarkTranslated(translated);
             return true;
         }

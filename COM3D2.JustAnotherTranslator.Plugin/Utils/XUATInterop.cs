@@ -102,9 +102,9 @@ public static class XUATInterop
     /// <returns>标记后的文本</returns>
     public static string MarkTranslated(string text)
     {
-        // 如果初始化失败则进行手动标记，否则调用 XUAT 的标记方法
+        // 如果初始化失败则进行手动标记（插件本身也依靠此进行标记），否则调用 XUAT 的标记方法
         // 需要使用标记后的文本，否则 XUAT 会重复翻译
-        if (!Initialize()) return string.Concat(XuatSpicalMaker, text);
+        if (!Initialize()) return string.Concat(text, XuatSpicalMaker);
         return _markTranslated(text);
     }
 

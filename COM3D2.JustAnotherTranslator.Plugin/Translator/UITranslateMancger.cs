@@ -59,11 +59,13 @@ public static class UITranslateMancger
         LoadSpriteTextures();
 
         _uiTranslatePatch = Harmony.CreateAndPatchAll(typeof(UITranslatePatch),
-            "com3d2.justanothertranslator.plugin.hooks.ui.uitranslatepatch");
+            "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitranslatepatch");
 
         if (JustAnotherTranslator.LogLevelConfig.Value >= LogLevel.Debug)
         {
-            _uiDebugPatch = new Harmony("com3d2.justanothertranslator.plugin.hooks.ui.uidebugpatch");
+            _uiDebugPatch =
+                new Harmony(
+                    "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uidebugpatch");
             UIDebugPatch.LocalizeTargetPatcher.ApplyPatch(_uiDebugPatch);
         }
 
@@ -247,7 +249,8 @@ public static class UITranslateMancger
             csvConfig.CultureInfo = CultureInfo.InvariantCulture;
             csvConfig.AllowComments = true;
             csvConfig.HasHeaderRecord = true;
-            csvConfig.Encoding = Encoding.UTF8;  // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
+            csvConfig.Encoding =
+                Encoding.UTF8; // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
             csvConfig.IgnoreBlankLines = true;
             csvConfig.IgnoreHeaderWhiteSpace = true;
             csvConfig.IsHeaderCaseSensitive = false;
@@ -255,7 +258,9 @@ public static class UITranslateMancger
             csvConfig.WillThrowOnMissingField = true;
         }
 
-        using var reader = new StreamReader(filePath, Encoding.UTF8);  // This can process utf-8-sig as well, which is csv should be
+        using var
+            reader = new StreamReader(filePath,
+                Encoding.UTF8); // This can process utf-8-sig as well, which is csv should be
         using var csv = new CsvReader(reader, csvConfig);
 
         var records = csv.GetRecords<CsvEntry>();

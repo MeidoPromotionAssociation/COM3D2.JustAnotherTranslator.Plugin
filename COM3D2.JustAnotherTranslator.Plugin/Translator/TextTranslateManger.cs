@@ -55,7 +55,7 @@ public static class TextTranslateManger
 
         // 创建 Harmony 实例
         _textTranslatePatch = Harmony.CreateAndPatchAll(typeof(TextTranslatePatch),
-            "com3d2.justanothertranslator.plugin.hooks.text.texttranslatepatch");
+            "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.text.texttranslatepatch");
 
         // 手动注册 NGUIText.WrapText 方法的补丁
         TextTranslatePatch.RegisterNGUITextPatches(_textTranslatePatch);
@@ -74,7 +74,9 @@ public static class TextTranslateManger
                 }
 
                 var isPatchedByLegacy =
-                    Harmony.HasAnyPatches("com.github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix");
+                    Harmony.HasAnyPatches("com.github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
+                    Harmony.HasAnyPatches("github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
+                    Harmony.HasAnyPatches("github.meidopromotionassociation.com3d2_scripts_901.maidcafelinebreakcommentfix");
 
                 if (isPatchedByLegacy || isPatchedByOthers)
                     LogManager.Warning(
@@ -83,7 +85,7 @@ public static class TextTranslateManger
                 else
                     _maidCafeDlcLineBreakCommentFixPatch = Harmony.CreateAndPatchAll(
                         typeof(MaidCafeDlcLineBreakCommentFix),
-                        "com3d2.justanothertranslator.plugin.hooks.text.maidcafedlclinebreakcommentfix");
+                        "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.text.maidcafedlclinebreakcommentfix");
             }
             catch (Exception e)
             {

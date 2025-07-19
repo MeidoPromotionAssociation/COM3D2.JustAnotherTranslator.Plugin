@@ -64,7 +64,7 @@ public static class TextureReplaceManger
 
         // Apply patch
         _textureReplacePatch = Harmony.CreateAndPatchAll(typeof(TextureReplacePatch),
-            "com3d2.justanothertranslator.plugin.hooks.texture.texturereplacepatch");
+            "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.texture.texturereplacepatch");
 
         _initialized = true;
     }

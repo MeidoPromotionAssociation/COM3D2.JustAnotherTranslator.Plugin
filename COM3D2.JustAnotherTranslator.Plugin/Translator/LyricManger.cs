@@ -49,7 +49,8 @@ public static class LyricManger
         CultureInfo = CultureInfo.InvariantCulture,
         AllowComments = true,
         HasHeaderRecord = true,
-        Encoding = Encoding.UTF8, // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
+        Encoding = Encoding
+            .UTF8, // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
         IgnoreBlankLines = true,
         IgnoreHeaderWhiteSpace = true,
         IsHeaderCaseSensitive = false,
@@ -68,7 +69,7 @@ public static class LyricManger
         SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _lyricPatch = Harmony.CreateAndPatchAll(typeof(LyricPatch),
-            "com3d2.justanothertranslator.plugin.hooks.lyric.lyricpatch");
+            "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.lyric.lyricpatch");
 
         _initialized = true;
     }
@@ -177,7 +178,8 @@ public static class LyricManger
 
         try
         {
-            using (var reader = new StreamReader(path, Encoding.UTF8)) // This can process utf-8-sig as well, which is csv should be
+            using (var reader =
+                   new StreamReader(path, Encoding.UTF8)) // This can process utf-8-sig as well, which is csv should be
             using (var csv = new CsvReader(reader, CsvConfig))
             {
                 var records = csv.GetRecords<LyricCsvEntry>();

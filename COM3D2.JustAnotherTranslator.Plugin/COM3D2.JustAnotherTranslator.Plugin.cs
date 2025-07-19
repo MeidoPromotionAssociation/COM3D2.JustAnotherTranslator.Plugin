@@ -569,7 +569,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         LyricSubtitleType = Config.Bind("LyricSubtitle",
             "LyricSubtitleType/歌词字幕类型",
-            LyricSubtitleTypeEnum.OriginalAndTranslation,
+            LyricSubtitleTypeEnum.TranslationAndOriginal,
             "Lyric Subtitle Type/歌词字幕类型");
 
         LyricSubtitleFont = Config.Bind("LyricSubtitle",

@@ -173,13 +173,13 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         // 创建世界空间Canvas
         var canvasObj = new GameObject("JAT_Subtitle_SubtitleCanvas_VR_Space");
         canvasObj.transform.SetParent(VrSubtitleContainer.transform, false);
-        Canvas = canvasObj.AddComponent<Canvas>();
-        Canvas.renderMode = RenderMode.WorldSpace;
-        Canvas.sortingOrder = 32767;
-        Canvas.overrideSorting = true;
+        CanvasComponents = canvasObj.AddComponent<Canvas>();
+        CanvasComponents.renderMode = RenderMode.WorldSpace;
+        CanvasComponents.sortingOrder = 32767;
+        CanvasComponents.overrideSorting = true;
 
         // 设置Canvas尺寸
-        VrSpaceCanvasRect = Canvas.GetComponent<RectTransform>();
+        VrSpaceCanvasRect = CanvasComponents.GetComponent<RectTransform>();
         // 使用 ConstantPhysicalSize 时，sizeDelta 直接定义了物理尺寸（单位：厘米）
         // 配置中的单位是米，这里需要转换为厘米
         VrSpaceCanvasRect.sizeDelta = new Vector2(
@@ -188,22 +188,22 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         );
 
         // 添加画布缩放器
-        CanvasScaler = Canvas.gameObject.AddComponent<CanvasScaler>();
-        CanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPhysicalSize;
-        CanvasScaler.physicalUnit = CanvasScaler.Unit.Centimeters;
+        CanvasScalerComponents = CanvasComponents.gameObject.AddComponent<CanvasScaler>();
+        CanvasScalerComponents.uiScaleMode = CanvasScaler.ScaleMode.ConstantPhysicalSize;
+        CanvasScalerComponents.physicalUnit = CanvasScaler.Unit.Centimeters;
 
         // 添加图形射线投射器
-        var raycaster = Canvas.gameObject.AddComponent<GraphicRaycaster>();
+        var raycaster = CanvasComponents.gameObject.AddComponent<GraphicRaycaster>();
         raycaster.ignoreReversedGraphics = false;
 
         // 创建背景面板
         var backgroundObj = new GameObject("JAT_Subtitle_SubtitleBackground");
-        backgroundObj.transform.SetParent(Canvas.transform, false);
-        BackgroundImage = backgroundObj.AddComponent<Image>();
-        BackgroundImage.color = new Color(0, 0, 0, 0.5f);
+        backgroundObj.transform.SetParent(CanvasComponents.transform, false);
+        BackgroundImageComponents = backgroundObj.AddComponent<Image>();
+        BackgroundImageComponents.color = new Color(0, 0, 0, 0.5f);
 
         // 设置背景位置和大小，让它完全填充 Canvas
-        var backgroundRect = BackgroundImage.rectTransform;
+        var backgroundRect = BackgroundImageComponents.rectTransform;
         backgroundRect.anchorMin = new Vector2(0, 0);
         backgroundRect.anchorMax = new Vector2(1, 1);
         backgroundRect.pivot = new Vector2(0.5f, 0.5f);
@@ -234,11 +234,11 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
         // 设置文本和背景不拦截点击事件
         TextComponent.raycastTarget = false;
-        BackgroundImage.raycastTarget = false;
+        BackgroundImageComponents.raycastTarget = false;
 
         // 添加描边组件
-        Outline = TextComponent.gameObject.AddComponent<Outline>();
-        Outline.enabled = false;
+        OutlineComponents = TextComponent.gameObject.AddComponent<Outline>();
+        OutlineComponents.enabled = false;
 
         ApplyOverallScale();
 
@@ -304,12 +304,12 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             TextComponent.color = Config.TextColor;
         }
 
-        if (BackgroundImage is not null) BackgroundImage.color = Config.BackgroundColor;
+        if (BackgroundImageComponents is not null) BackgroundImageComponents.color = Config.BackgroundColor;
 
-        if (Outline is not null)
+        if (OutlineComponents is not null)
         {
-            Outline.enabled = Config.EnableOutline;
-            Outline.effectColor = Config.OutlineColor;
+            OutlineComponents.enabled = Config.EnableOutline;
+            OutlineComponents.effectColor = Config.OutlineColor;
         }
 
         ApplyOverallScale();

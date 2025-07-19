@@ -17,24 +17,24 @@ public class ScreenSubtitleComponent : BaseSubtitleComponent
         // 创建画布
         var canvasObj = new GameObject("JAT_Subtitle_SubtitleCanvas");
         canvasObj.transform.SetParent(transform, false);
-        Canvas = canvasObj.AddComponent<Canvas>();
-        Canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        Canvas.sortingOrder = 32767; // 确保在最上层显示
+        CanvasComponents = canvasObj.AddComponent<Canvas>();
+        CanvasComponents.renderMode = RenderMode.ScreenSpaceOverlay;
+        CanvasComponents.sortingOrder = 32767; // 确保在最上层显示
 
         // 添加画布缩放器
-        CanvasScaler = Canvas.gameObject.AddComponent<CanvasScaler>();
-        CanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        CanvasScaler.referenceResolution = new Vector2(1920, 1080);
-        CanvasScaler.matchWidthOrHeight = 0.5f;
+        CanvasScalerComponents = CanvasComponents.gameObject.AddComponent<CanvasScaler>();
+        CanvasScalerComponents.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        CanvasScalerComponents.referenceResolution = new Vector2(1920, 1080);
+        CanvasScalerComponents.matchWidthOrHeight = 0.5f;
 
         // 创建背景面板
         var backgroundObj = new GameObject("JAT_Subtitle_SubtitleBackground");
-        backgroundObj.transform.SetParent(Canvas.transform, false);
-        BackgroundImage = backgroundObj.AddComponent<Image>();
-        BackgroundImage.color = new Color(0, 0, 0, 0.5f); // 半透明黑色背景
+        backgroundObj.transform.SetParent(CanvasComponents.transform, false);
+        BackgroundImageComponents = backgroundObj.AddComponent<Image>();
+        BackgroundImageComponents.color = new Color(0, 0, 0, 0.5f); // 半透明黑色背景
 
         // 设置背景位置和大小
-        var backgroundRect = BackgroundImage.rectTransform;
+        var backgroundRect = BackgroundImageComponents.rectTransform;
         backgroundRect.anchorMin = new Vector2(0, 0);
         backgroundRect.anchorMax = new Vector2(1, 0);
         backgroundRect.pivot = new Vector2(0.5f, 0);
@@ -61,11 +61,11 @@ public class ScreenSubtitleComponent : BaseSubtitleComponent
 
         // 设置文本和背景不拦截点击事件
         TextComponent.raycastTarget = false;
-        BackgroundImage.raycastTarget = false;
+        BackgroundImageComponents.raycastTarget = false;
 
         // 添加描边组件
-        Outline = TextComponent.gameObject.AddComponent<Outline>();
-        Outline.enabled = false;
+        OutlineComponents = TextComponent.gameObject.AddComponent<Outline>();
+        OutlineComponents.enabled = false;
 
         LogManager.Debug("ScreenSubtitleComponent Subtitle UI created");
     }

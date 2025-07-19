@@ -22,13 +22,16 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     protected Coroutine AnimationCoroutine;
 
     // 字幕背景图像组件
-    protected Image BackgroundImage;
+    protected Image BackgroundImageComponents;
 
     // 字幕画布组件
-    protected Canvas Canvas;
+    protected Canvas CanvasComponents;
+
+    // 画布组组件
+    protected CanvasGroup CanvasGroupComponents;
 
     // 字幕画布缩放器组件
-    protected CanvasScaler CanvasScaler;
+    protected CanvasScaler CanvasScalerComponents;
 
     // 字幕配置
     protected SubtitleConfig Config;
@@ -37,7 +40,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     protected Coroutine CurrentAnimation;
 
     // 字幕描边组件
-    protected Outline Outline;
+    protected Outline OutlineComponents;
 
     // 说话者文本颜色
     protected string SpeakerColor = "";
@@ -337,12 +340,12 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         // 应用背景配置
-        if (BackgroundImage is not null)
+        if (BackgroundImageComponents is not null)
         {
-            BackgroundImage.color = Config.BackgroundColor;
+            BackgroundImageComponents.color = Config.BackgroundColor;
 
             // 设置背景大小
-            var backgroundRect = BackgroundImage.rectTransform;
+            var backgroundRect = BackgroundImageComponents.rectTransform;
 
             // 计算高度 - 如果BackgroundHeight <= 1则作为百分比处理，否则作为绝对像素值
             float height;
@@ -370,24 +373,24 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         // 应用描边配置
-        if (Outline is not null)
+        if (OutlineComponents is not null)
         {
-            Outline.enabled = Config.EnableOutline;
+            OutlineComponents.enabled = Config.EnableOutline;
 
             if (Config.EnableOutline)
             {
-                Outline.effectColor = Config.OutlineColor;
-                Outline.effectDistance = new Vector2(Config.OutlineWidth, Config.OutlineWidth);
+                OutlineComponents.effectColor = Config.OutlineColor;
+                OutlineComponents.effectDistance = new Vector2(Config.OutlineWidth, Config.OutlineWidth);
             }
         }
 
         // 应用画布配置
-        if (Canvas is not null)
+        if (CanvasComponents is not null)
             // 根据字幕类型设置画布属性
             if (Config.SubtitleType == JustAnotherTranslator.SubtitleTypeEnum.Base)
             {
                 // 设置垂直位置
-                var rectTransform = Canvas.GetComponent<RectTransform>();
+                var rectTransform = CanvasComponents.GetComponent<RectTransform>();
                 if (rectTransform is not null)
                 {
                     // 0是底部，1是顶部，调整字幕的垂直位置
@@ -398,13 +401,13 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             }
 
         // 应用画布缩放器配置
-        if (CanvasScaler is not null)
+        if (CanvasScalerComponents is not null)
         {
             // 设置UI缩放模式和参考分辨率
-            CanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            CanvasScaler.referenceResolution = new Vector2(1920, 1080);
-            CanvasScaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            CanvasScaler.matchWidthOrHeight = 0.5f; // 0是宽度，1是高度，0.5是两者平衡
+            CanvasScalerComponents.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            CanvasScalerComponents.referenceResolution = new Vector2(1920, 1080);
+            CanvasScalerComponents.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            CanvasScalerComponents.matchWidthOrHeight = 0.5f; // 0是宽度，1是高度，0.5是两者平衡
         }
 
         LogManager.Debug($"Applied subtitle config to {gameObject.name}");
@@ -423,12 +426,12 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         // 应用背景配置
-        if (BackgroundImage is not null)
+        if (BackgroundImageComponents is not null)
         {
-            BackgroundImage.color = Config.BackgroundColor;
+            BackgroundImageComponents.color = Config.BackgroundColor;
 
             // 设置背景大小
-            var backgroundRect = BackgroundImage.rectTransform;
+            var backgroundRect = BackgroundImageComponents.rectTransform;
 
             // 计算高度 - 如果BackgroundHeight <= 1则作为百分比处理，否则作为绝对像素值
             float height;
@@ -474,10 +477,10 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// </summary>
     protected virtual void DestroySubtitleUI()
     {
-        if (Canvas != null)
+        if (CanvasComponents != null)
         {
-            Destroy(Canvas.gameObject);
-            Canvas = null;
+            Destroy(CanvasComponents.gameObject);
+            CanvasComponents = null;
         }
     }
 
@@ -495,12 +498,12 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         TextComponent.color = textColor;
 
         // 设置背景透明度
-        if (BackgroundImage is not null)
+        if (BackgroundImageComponents is not null)
         {
-            var bgColor = BackgroundImage.color;
+            var bgColor = BackgroundImageComponents.color;
             // Config.BackgroundColor.a 作为背景的最大透明度
             bgColor.a = Mathf.Clamp01(alpha) * Config.BackgroundColor.a;
-            BackgroundImage.color = bgColor;
+            BackgroundImageComponents.color = bgColor;
         }
 
         // TextComponent.color 无法影响 html 标签，因此需要单独处理

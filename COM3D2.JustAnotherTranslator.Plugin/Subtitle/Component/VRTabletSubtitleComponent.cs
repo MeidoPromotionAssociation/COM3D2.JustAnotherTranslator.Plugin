@@ -47,28 +47,28 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
                 "SystemUI Root not found, subtitles mar will not display on VR tablet/SystemUI Root 未找到，VR平板电脑上的字幕可能不会显示");
         }
 
-        Canvas = canvasObj.AddComponent<Canvas>();
-        Canvas.renderMode = RenderMode.WorldSpace;
-        Canvas.sortingOrder = 32767; // 确保在最上层显示
+        CanvasComponents = canvasObj.AddComponent<Canvas>();
+        CanvasComponents.renderMode = RenderMode.WorldSpace;
+        CanvasComponents.sortingOrder = 32767; // 确保在最上层显示
 
         // Canvas.transform.localPosition = Vector3.zero;
         // Canvas.transform.localRotation = Quaternion.identity;
         // Canvas.transform.localScale = new Vector3(0.001f, 0.001f, 0.001f);
 
         // 添加画布缩放器
-        CanvasScaler = Canvas.gameObject.AddComponent<CanvasScaler>();
-        CanvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        CanvasScaler.referenceResolution = new Vector2(1920, 1080);
-        CanvasScaler.matchWidthOrHeight = 0.5f;
+        CanvasScalerComponents = CanvasComponents.gameObject.AddComponent<CanvasScaler>();
+        CanvasScalerComponents.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        CanvasScalerComponents.referenceResolution = new Vector2(1920, 1080);
+        CanvasScalerComponents.matchWidthOrHeight = 0.5f;
 
         // 创建背景面板
         var backgroundObj = new GameObject("JAT_Subtitle_SubtitleBackground");
-        backgroundObj.transform.SetParent(Canvas.transform, false);
-        BackgroundImage = backgroundObj.AddComponent<Image>();
-        BackgroundImage.color = new Color(0, 0, 0, 0.5f); // 半透明黑色背景
+        backgroundObj.transform.SetParent(CanvasComponents.transform, false);
+        BackgroundImageComponents = backgroundObj.AddComponent<Image>();
+        BackgroundImageComponents.color = new Color(0, 0, 0, 0.5f); // 半透明黑色背景
 
         // 设置背景位置和大小
-        var backgroundRect = BackgroundImage.rectTransform;
+        var backgroundRect = BackgroundImageComponents.rectTransform;
         backgroundRect.anchorMin = new Vector2(0, Config.VerticalPosition);
         backgroundRect.anchorMax = new Vector2(1, Config.VerticalPosition);
         backgroundRect.pivot = new Vector2(0.5f, 0);
@@ -95,11 +95,11 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
 
         // 设置文本和背景不拦截点击事件
         TextComponent.raycastTarget = false;
-        BackgroundImage.raycastTarget = false;
+        BackgroundImageComponents.raycastTarget = false;
 
         // 添加描边组件
-        Outline = TextComponent.gameObject.AddComponent<Outline>();
-        Outline.enabled = false;
+        OutlineComponents = TextComponent.gameObject.AddComponent<Outline>();
+        OutlineComponents.enabled = false;
 
         LogManager.Debug("VRTabletSubtitleComponent Subtitle UI created");
     }

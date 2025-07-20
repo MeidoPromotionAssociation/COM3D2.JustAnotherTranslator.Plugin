@@ -186,19 +186,8 @@ public static class UITranslateMancger
 
         try
         {
-            // 获取所有子目录，按Unicode排序
-            var directories = Directory.GetDirectories(JustAnotherTranslator.UITextPath)
-                .OrderBy(d => d, StringComparer.Ordinal)
-                .ToList();
-
-            // 添加根目录到列表开头，确保先处理根目录中的文件
-            directories.Insert(0, JustAnotherTranslator.UITextPath);
-
             // 获取所有文件以计算总数
-            var allFiles = directories.SelectMany(dir => Directory.GetFiles(dir, "*.csv")
-                    .OrderBy(f => f, StringComparer.Ordinal))
-                .ToList();
-
+            var allFiles = GetAllTranslationFiles();
             var totalFiles = allFiles.Count;
 
             LogManager.Info(
@@ -235,6 +224,55 @@ public static class UITranslateMancger
                 LogManager.Info(
                     $"UI translation loading completed! Total entries: {totalEntries}, from {processedFiles} files, took {sw.ElapsedMilliseconds} ms/UI翻译文件加载完成！总计加载 {totalEntries} 条翻译条目，来自 {processedFiles} 个文件, 耗时 {sw.ElapsedMilliseconds} ms");
         }
+    }
+
+
+    /// <summary>
+    ///     获取所有翻译文件列表，按 Unicode 顺序排序
+    /// </summary>
+    /// <returns>文件路径列表</returns>
+    private static List<string> GetAllTranslationFiles()
+    {
+        var allFiles = new List<string>();
+
+        // 首先添加根目录的文件
+        try
+        {
+            var rootFiles = Directory.GetFiles(JustAnotherTranslator.UITextPath, "*.csv", SearchOption.TopDirectoryOnly)
+                .OrderBy(f => f, StringComparer.Ordinal);
+            allFiles.AddRange(rootFiles);
+        }
+        catch (Exception e)
+        {
+            LogManager.Warning($"Error reading root directory files/读取根目录文件时出错: {e.Message}");
+        }
+
+        // 然后添加子目录的文件
+        try
+        {
+            var directories = Directory.GetDirectories(JustAnotherTranslator.UITextPath, "*", SearchOption.AllDirectories)
+                .OrderBy(d => d, StringComparer.Ordinal);
+
+            foreach (var directory in directories)
+            {
+                try
+                {
+                    var files = Directory.GetFiles(directory, "*.csv", SearchOption.TopDirectoryOnly)
+                        .OrderBy(f => f, StringComparer.Ordinal);
+                    allFiles.AddRange(files);
+                }
+                catch (Exception e)
+                {
+                    LogManager.Warning($"Error reading directory files/读取目录文件时出错 {directory}: {e.Message}");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Warning($"Error enumerating directories/枚举目录时出错: {e.Message}");
+        }
+
+        return allFiles;
     }
 
     /// <summary>

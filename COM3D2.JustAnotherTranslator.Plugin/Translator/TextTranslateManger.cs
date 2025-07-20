@@ -76,7 +76,8 @@ public static class TextTranslateManger
                 var isPatchedByLegacy =
                     Harmony.HasAnyPatches("com.github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
                     Harmony.HasAnyPatches("github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
-                    Harmony.HasAnyPatches("github.meidopromotionassociation.com3d2_scripts_901.maidcafelinebreakcommentfix");
+                    Harmony.HasAnyPatches(
+                        "github.meidopromotionassociation.com3d2_scripts_901.maidcafelinebreakcommentfix");
 
                 if (isPatchedByLegacy || isPatchedByOthers)
                     LogManager.Warning(
@@ -161,8 +162,8 @@ public static class TextTranslateManger
         FilesProcessed = filesProcessed;
         TotalFiles = totalFiles;
 
-        // 每处理10个文件或进度变化超过10%时输出日志
-        if (filesProcessed % 10 == 0 || (int)(progress * 100) % 10 == 0)
+        // 进度变化超过 10% 时输出日志
+        if ((int)(progress * 100) % 10 == 0)
             LogManager.Info(
                 $"Translation loading progress: {progress:P0} ({filesProcessed}/{totalFiles})/翻译加载进度: {progress:P0} ({filesProcessed}/{totalFiles})");
     }

@@ -250,11 +250,11 @@ public static class UITranslateMancger
         // 然后添加子目录的文件
         try
         {
-            var directories = Directory.GetDirectories(JustAnotherTranslator.UITextPath, "*", SearchOption.AllDirectories)
+            var directories = Directory
+                .GetDirectories(JustAnotherTranslator.UITextPath, "*", SearchOption.AllDirectories)
                 .OrderBy(d => d, StringComparer.Ordinal);
 
             foreach (var directory in directories)
-            {
                 try
                 {
                     var files = Directory.GetFiles(directory, "*.csv", SearchOption.TopDirectoryOnly)
@@ -265,7 +265,6 @@ public static class UITranslateMancger
                 {
                     LogManager.Warning($"Error reading directory files/读取目录文件时出错 {directory}: {e.Message}");
                 }
-            }
         }
         catch (Exception e)
         {

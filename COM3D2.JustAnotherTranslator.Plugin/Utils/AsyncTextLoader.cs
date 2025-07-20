@@ -22,8 +22,17 @@ public class AsyncTextLoader
     /// 加载进度委托
     public delegate void ProgressCallback(float progress, int filesProcessed, int totalFiles);
 
-    ///  大文件缓冲区大小
+    /// 大文件缓冲区大小
     private static readonly int LargeFileBufferSize = 16 * 1024 * 1024; // 16MB
+
+    /// 翻译目录路径
+    private static string _translationPath;
+
+    /// 翻译字典
+    private static readonly Dictionary<string, string> TranslationDict = new();
+
+    /// 正则翻译字典
+    private static readonly Dictionary<Regex, string> RegexTranslationDict = new();
 
     /// 完成回调
     private readonly CompletionCallback _completionCallback;
@@ -31,20 +40,11 @@ public class AsyncTextLoader
     /// 进度回调
     private readonly ProgressCallback _progressCallback;
 
-    /// 翻译目录路径
-    private static readonly string TranslationPath;
-
     /// 取消标志
     private volatile bool _cancelRequested;
 
     /// 加载线程
     private Thread _loaderThread;
-
-    /// 翻译字典
-    private static readonly Dictionary<string, string> TranslationDict = new();
-
-    /// 正则翻译字典
-    private static readonly Dictionary<Regex, string> RegexTranslationDict = new();
 
     /// <summary>
     ///     创建一个新的异步文件加载器
@@ -55,7 +55,7 @@ public class AsyncTextLoader
     public AsyncTextLoader(string translationPath, ProgressCallback progressCallback,
         CompletionCallback completionCallback)
     {
-        TranslationPath = translationPath;
+        _translationPath = translationPath;
         _progressCallback = progressCallback;
         _completionCallback = completionCallback;
     }
@@ -103,10 +103,10 @@ public class AsyncTextLoader
 
         try
         {
-            if (!Directory.Exists(TranslationPath))
+            if (!Directory.Exists(_translationPath))
             {
                 LogManager.Warning(
-                    "Translation directory not found/未找到翻译目录: " + TranslationPath);
+                    "Translation directory not found/未找到翻译目录: " + _translationPath);
 
                 // 调用完成回调，传递空字典
                 _completionCallback?.Invoke(TranslationDict, RegexTranslationDict, 0, 0, 0);
@@ -172,7 +172,7 @@ public class AsyncTextLoader
         // 首先添加根目录的文件
         try
         {
-            var rootFiles = Directory.GetFiles(TranslationPath, "*.txt", SearchOption.TopDirectoryOnly)
+            var rootFiles = Directory.GetFiles(_translationPath, "*.txt", SearchOption.TopDirectoryOnly)
                 .OrderBy(f => f, StringComparer.Ordinal);
             allFiles.AddRange(rootFiles);
         }
@@ -184,7 +184,7 @@ public class AsyncTextLoader
         // 然后添加子目录的文件
         try
         {
-            var directories = Directory.GetDirectories(TranslationPath, "*", SearchOption.AllDirectories)
+            var directories = Directory.GetDirectories(_translationPath, "*", SearchOption.AllDirectories)
                 .OrderBy(d => d, StringComparer.Ordinal);
 
             foreach (var directory in directories)
@@ -229,20 +229,16 @@ public class AsyncTextLoader
 
             // 只对大文件显示处理信息
             if (bigFile)
-            {
                 LogManager.Info(
                     $"Processing large file/正在处理大文件: {Path.GetFileName(filePath)} ({fileSize / (1024 * 1024):F1} MB)");
-            }
 
             // 对于小文件，直接一次性读取全部内容
             if (fileSize < 1024 * 1024) // < 1MB
             {
                 var contents = File.ReadAllLines(filePath, Encoding.UTF8);
                 foreach (var line in contents)
-                {
                     if (ProcessTranslationLine(line))
                         entriesCount++;
-                }
             }
             else
             {
@@ -251,10 +247,8 @@ public class AsyncTextLoader
                 {
                     string line;
                     while ((line = reader.ReadLine()) != null)
-                    {
                         if (ProcessTranslationLine(line))
                             entriesCount++;
-                    }
                 }
             }
         }
@@ -273,7 +267,7 @@ public class AsyncTextLoader
     /// </summary>
     /// <param name="line">文本行</param>
     /// <returns>是否成功处理</returns>
-    private bool ProcessTranslationLine(string line)
+    private static bool ProcessTranslationLine(string line)
     {
         if (string.IsNullOrEmpty(line) || line.StartsWith(";"))
             return false;

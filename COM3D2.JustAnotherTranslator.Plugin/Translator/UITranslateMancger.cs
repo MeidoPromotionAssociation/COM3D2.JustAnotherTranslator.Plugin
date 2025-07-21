@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using BepInEx.Logging;
@@ -12,6 +11,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using CsvHelper;
 using CsvHelper.Configuration;
 using HarmonyLib;
+using ICSharpCode.SharpZipLib.Zip;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -32,7 +32,7 @@ public static class UITranslateMancger
     private static Thread _textLoaderThread;
 
     /// 存储翻译数据的字典
-    private static Dictionary<string, TranslationData> _translations = new(); // term -> TranslationData
+    private static readonly Dictionary<string, TranslationData> _translations = new(); // term -> TranslationData
 
     /// 缓存文件名到完整路径的映射
     private static readonly Dictionary<string, string> SpritePathCache = new(); // filename -> path
@@ -46,6 +46,22 @@ public static class UITranslateMancger
 
     /// 缓存已创建的替换 Atlas，避免重复创建
     private static readonly Dictionary<string, UIAtlas> ReplacementAtlasCache = new(); // spriteName -> UIAtlas
+
+
+    /// CSV 配置
+    private static readonly CsvConfiguration CsvConfig = new()
+    {
+        CultureInfo = CultureInfo.InvariantCulture,
+        AllowComments = true,
+        HasHeaderRecord = true,
+        Encoding = Encoding
+            .UTF8, // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
+        IgnoreBlankLines = true,
+        IgnoreHeaderWhiteSpace = true,
+        IsHeaderCaseSensitive = false,
+        SkipEmptyRecords = true,
+        WillThrowOnMissingField = true
+    };
 
     public static void Init()
     {
@@ -162,7 +178,6 @@ public static class UITranslateMancger
         var sw = new Stopwatch();
         sw.Start();
 
-        var tempTranslations = new Dictionary<string, TranslationData>();
         var totalEntries = 0;
         var processedFiles = 0;
 
@@ -187,7 +202,7 @@ public static class UITranslateMancger
         try
         {
             // 获取所有文件以计算总数
-            var allFiles = GetAllTranslationFiles();
+            var allFiles = FileTool.GetAllTranslationFiles(JustAnotherTranslator.UITextPath, new[] { ".csv", ".zip" });
             var totalFiles = allFiles.Count;
 
             LogManager.Info(
@@ -195,23 +210,10 @@ public static class UITranslateMancger
 
             // 处理每个文件
             foreach (var filePath in allFiles)
-                try
-                {
-                    var entriesLoaded = LoadCsvFile(filePath, tempTranslations);
-                    totalEntries += entriesLoaded;
-                    processedFiles++;
-
-                    LogManager.Info(
-                        $"Loading UI file/正在加载UI文件 ({processedFiles}/{totalFiles}): {Path.GetFileName(filePath)} - {entriesLoaded} 条");
-                }
-                catch (Exception ex)
-                {
-                    processedFiles++;
-                    LogManager.Warning(
-                        $"Failed to load UI file/加载UI文件失败 ({processedFiles}/{totalFiles}): {filePath}, error: {ex.Message}");
-                }
-
-            _translations = tempTranslations;
+            {
+                var entriesInFile = ProcessTranslationFile(filePath);
+                totalEntries += entriesInFile;
+            }
         }
         catch (Exception ex)
         {
@@ -226,89 +228,135 @@ public static class UITranslateMancger
         }
     }
 
+    /// <summary>
+    ///     处理单个翻译文件
+    /// </summary>
+    /// <param name="filePath">文件路径</param>
+    /// <returns>处理的条目数</returns>
+    private static int ProcessTranslationFile(string filePath)
+    {
+        var entriesCount = 0;
+
+        try
+        {
+            if (filePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                entriesCount = ProcessZipFile(filePath);
+            else if (filePath.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                entriesCount = ProcessCsvFile(filePath);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"Error processing file/处理文件时出错 {Path.GetFileName(filePath)}: {e.Message}");
+        }
+
+        return entriesCount;
+    }
 
     /// <summary>
-    ///     获取所有翻译文件列表，按 Unicode 顺序排序
+    ///     加载ZIP文件
     /// </summary>
-    /// <returns>文件路径列表</returns>
-    private static List<string> GetAllTranslationFiles()
+    private static int ProcessZipFile(string zipFilePath)
     {
-        var allFiles = new List<string>();
+        var entriesCount = 0;
+        var fileName = Path.GetFileName(zipFilePath);
 
-        // 首先添加根目录的文件
         try
         {
-            var rootFiles = Directory.GetFiles(JustAnotherTranslator.UITextPath, "*.csv", SearchOption.TopDirectoryOnly)
-                .OrderBy(f => f, StringComparer.Ordinal);
-            allFiles.AddRange(rootFiles);
+            using (var zf = new ZipFile(zipFilePath))
+            {
+                var textFiles = new List<ZipEntry>();
+                foreach (ZipEntry zipEntry in zf)
+                {
+                    if (!zipEntry.IsFile || !zipEntry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    if (FileTool.IsZipPathUnsafe(zipEntry.Name))
+                    {
+                        LogManager.Warning($"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {zipEntry.Name}");
+                        continue;
+                    }
+
+                    textFiles.Add(zipEntry);
+                }
+
+                if (textFiles.Count == 0)
+                {
+                    LogManager.Warning($"No .csv files found in ZIP archive/ZIP压缩包中未找到.csv文件: {fileName}");
+                    return 0;
+                }
+
+                // 按照Unicode顺序排序
+                textFiles.Sort((a, b) => StringComparer.Ordinal.Compare(a.Name, b.Name));
+
+                LogManager.Info(
+                    $"Processing ZIP archive {fileName} - {textFiles.Count} .csv files/正在处理ZIP压缩包: {fileName} - {textFiles.Count} 个.csv文件)");
+
+                foreach (var entry in textFiles)
+                    try
+                    {
+                        using (var stream = zf.GetInputStream(entry))
+                        {
+                            entriesCount += ProcessCsvStream(stream);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        LogManager.Warning(
+                            $"Error processing entry in ZIP/处理ZIP中的条目时出错 {entry.Name}: {e.Message}");
+                    }
+            }
         }
         catch (Exception e)
         {
-            LogManager.Warning($"Error reading root directory files/读取根目录文件时出错: {e.Message}");
+            LogManager.Error($"Error processing ZIP file/处理ZIP文件时出错 {fileName}: {e.Message}");
         }
 
-        // 然后添加子目录的文件
-        try
-        {
-            var directories = Directory
-                .GetDirectories(JustAnotherTranslator.UITextPath, "*", SearchOption.AllDirectories)
-                .OrderBy(d => d, StringComparer.Ordinal);
-
-            foreach (var directory in directories)
-                try
-                {
-                    var files = Directory.GetFiles(directory, "*.csv", SearchOption.TopDirectoryOnly)
-                        .OrderBy(f => f, StringComparer.Ordinal);
-                    allFiles.AddRange(files);
-                }
-                catch (Exception e)
-                {
-                    LogManager.Warning($"Error reading directory files/读取目录文件时出错 {directory}: {e.Message}");
-                }
-        }
-        catch (Exception e)
-        {
-            LogManager.Warning($"Error enumerating directories/枚举目录时出错: {e.Message}");
-        }
-
-        return allFiles;
+        return entriesCount;
     }
 
     /// <summary>
     ///     加载CSV文件
     /// </summary>
-    private static int LoadCsvFile(string filePath, IDictionary<string, TranslationData> translations)
+    private static int ProcessCsvFile(string filePath)
+    {
+        try
+        {
+            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                return ProcessCsvStream(fileStream);
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Error processing CSV file/处理CSV文件时出错 {Path.GetFileName(filePath)}: {e.Message}");
+            return 0;
+        }
+    }
+
+    /// <summary>
+    ///     从流中加载CSV数据
+    /// </summary>
+    /// <param name="stream">包含CSV数据的流</param>
+    /// <returns>加载的条目数</returns>
+    private static int ProcessCsvStream(Stream stream)
     {
         var entriesLoaded = 0;
 
-        var csvConfig = new CsvConfiguration();
+
+        using (var reader = new StreamReader(stream, Encoding.UTF8))
+        using (var csv = new CsvReader(reader, CsvConfig))
         {
-            csvConfig.CultureInfo = CultureInfo.InvariantCulture;
-            csvConfig.AllowComments = true;
-            csvConfig.HasHeaderRecord = true;
-            csvConfig.Encoding =
-                Encoding.UTF8; // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
-            csvConfig.IgnoreBlankLines = true;
-            csvConfig.IgnoreHeaderWhiteSpace = true;
-            csvConfig.IsHeaderCaseSensitive = false;
-            csvConfig.SkipEmptyRecords = true;
-            csvConfig.WillThrowOnMissingField = true;
-        }
+            var records = csv.GetRecords<CsvEntry>();
 
-        using var
-            reader = new StreamReader(filePath,
-                Encoding.UTF8); // This can process utf-8-sig as well, which is csv should be
-        using var csv = new CsvReader(reader, csvConfig);
+            foreach (var record in records)
+            {
+                if (string.IsNullOrEmpty(record.Term) || string.IsNullOrEmpty(record.Translation)) continue;
 
-        var records = csv.GetRecords<CsvEntry>();
-
-        foreach (var record in records)
-        {
-            if (string.IsNullOrEmpty(record.Term) || string.IsNullOrEmpty(record.Translation)) continue;
-
-            // 使用精简结构以节省内存
-            translations[record.Term] = new TranslationData(record.Translation);
-            entriesLoaded++;
+                // 使用精简结构以节省内存
+                _translations[record.Term] = new TranslationData(record.Translation);
+                entriesLoaded++;
+            }
         }
 
         return entriesLoaded;
@@ -643,7 +691,6 @@ public static class UITranslateMancger
                 LogManager.Error($"Failed to restore original sprite for {sprite.name}: {e.Message}");
             }
     }
-
 
     /// <summary>
     ///     场景卸载时的清理

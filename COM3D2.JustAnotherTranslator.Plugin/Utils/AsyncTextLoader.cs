@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
@@ -76,7 +76,7 @@ public class AsyncTextLoader
 
         _cancelRequested = false;
         _loaderThread = new Thread(LoadFilesThreadFunc);
-        _loaderThread.IsBackground = true; // 设置为后台线程，这样不会阻止应用程序退出
+        _loaderThread.IsBackground = true;
         _loaderThread.Start();
     }
 
@@ -117,9 +117,12 @@ public class AsyncTextLoader
                 "Loading translation files asynchronously, other plugins can load at the same time/正在异步加载翻译文件，其他插件可以同时进行加载");
             LogManager.Info(
                 "Translation files are read in Unicode order, if there are duplicate translations, later read translations will overwrite earlier read translations/翻译文件按照 Unicode 顺序读取，如有相同翻译则后读取的翻译会覆盖先读取的翻译");
+            LogManager.Info(
+                "If you have many small files, it is recommended to compress to .zip or merge into a single .txt file to speed up loading/如果您有很多个小文件，建议压缩为 .zip 或合并到单个 .txt 中以加速加载");
+            LogManager.Info("Please note that files in zip file do not support sorting/请注意zip中的文件不支持排序");
 
             // Get all files to calculate the total
-            var allFiles = GetAllTranslationFiles();
+            var allFiles = FileTool.GetAllTranslationFiles(_translationPath, new[] { ".txt", ".zip" });
             totalFiles = allFiles.Count;
 
             if (totalFiles == 0)
@@ -162,53 +165,98 @@ public class AsyncTextLoader
     }
 
     /// <summary>
-    ///     获取所有翻译文件列表，按 Unicode 顺序排序
+    ///     处理单个翻译文件
     /// </summary>
-    /// <returns>文件路径列表</returns>
-    private List<string> GetAllTranslationFiles()
+    /// <param name="filePath">文件路径</param>
+    /// <returns>处理的条目数</returns>
+    private int ProcessTranslationFile(string filePath)
     {
-        var allFiles = new List<string>();
+        var entriesCount = 0;
 
-        // 首先添加根目录的文件
         try
         {
-            var rootFiles = Directory.GetFiles(_translationPath, "*.txt", SearchOption.TopDirectoryOnly)
-                .OrderBy(f => f, StringComparer.Ordinal);
-            allFiles.AddRange(rootFiles);
+            if (filePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+                entriesCount = ProcessZipFile(filePath);
+            else if (filePath.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                entriesCount = ProcessTextFile(filePath);
         }
         catch (Exception e)
         {
-            LogManager.Warning($"Error reading root directory files/读取根目录文件时出错: {e.Message}");
+            LogManager.Error(
+                $"Error processing file/处理文件时出错 {Path.GetFileName(filePath)}: {e.Message}");
         }
 
-        // 然后添加子目录的文件
+        return entriesCount;
+    }
+
+    /// <summary>
+    ///     处理 ZIP 压缩文件
+    /// </summary>
+    /// <param name="zipFilePath">ZIP 文件路径</param>
+    /// <returns>处理的条目数</returns>
+    private int ProcessZipFile(string zipFilePath)
+    {
+        var entriesCount = 0;
+        var fileName = Path.GetFileName(zipFilePath);
+
         try
         {
-            var directories = Directory.GetDirectories(_translationPath, "*", SearchOption.AllDirectories)
-                .OrderBy(d => d, StringComparer.Ordinal);
+            LogManager.Info($"Processing ZIP archive {fileName} text files/正在处理ZIP压缩包: {fileName})");
 
-            foreach (var directory in directories)
+            // 重新打开文件流来读取内容
+            using (var fileStream = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read))
+            using (var zipStream = new ZipInputStream(fileStream))
             {
-                if (_cancelRequested) break;
+                ZipEntry entry;
+                while ((entry = zipStream.GetNextEntry()) != null)
+                {
+                    if (FileTool.IsZipPathUnsafe(entry.Name))
+                    {
+                        LogManager.Warning(
+                            $"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {entry.Name}");
+                        continue;
+                    }
 
-                try
-                {
-                    var files = Directory.GetFiles(directory, "*.txt", SearchOption.TopDirectoryOnly)
-                        .OrderBy(f => f, StringComparer.Ordinal);
-                    allFiles.AddRange(files);
-                }
-                catch (Exception e)
-                {
-                    LogManager.Warning($"Error reading directory files/读取目录文件时出错 {directory}: {e.Message}");
+                    if (!entry.IsFile ||
+                        !entry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    try
+                    {
+                        // 读取条目内容
+                        var buffer = new byte[entry.Size];
+                        var totalBytesRead = 0;
+
+                        while (totalBytesRead < entry.Size)
+                        {
+                            var bytesRead = zipStream.Read(buffer, totalBytesRead,
+                                (int)(entry.Size - totalBytesRead));
+                            if (bytesRead == 0) break;
+                            totalBytesRead += bytesRead;
+                        }
+
+                        // 将字节转换为文本并逐行处理
+                        var content = Encoding.UTF8.GetString(buffer, 0, totalBytesRead);
+                        var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        foreach (var line in lines)
+                            if (ProcessTranslationLine(line))
+                                entriesCount++;
+                    }
+                    catch (Exception e)
+                    {
+                        LogManager.Warning(
+                            $"Error processing entry in ZIP/处理ZIP中的条目时出错 {entry.Name}: {e.Message}");
+                    }
                 }
             }
         }
         catch (Exception e)
         {
-            LogManager.Warning($"Error enumerating directories/枚举目录时出错: {e.Message}");
+            LogManager.Error($"Error processing ZIP file/处理ZIP文件时出错 {fileName}: {e.Message}");
         }
 
-        return allFiles;
+        return entriesCount;
     }
 
 
@@ -217,7 +265,7 @@ public class AsyncTextLoader
     /// </summary>
     /// <param name="filePath">文件路径</param>
     /// <returns>处理的条目数</returns>
-    private static int ProcessTranslationFile(string filePath)
+    private static int ProcessTextFile(string filePath)
     {
         var entriesCount = 0;
 

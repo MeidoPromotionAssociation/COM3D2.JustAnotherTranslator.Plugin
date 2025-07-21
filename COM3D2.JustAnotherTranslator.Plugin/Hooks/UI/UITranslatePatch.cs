@@ -45,7 +45,7 @@ public static class UITranslatePatch
         {
             LogManager.Debug($"LocalizationManager_GetTranslation_Prefix Term: {Term}");
 
-            var result = UITranslateMancger.HandleTextTermTranslation(Term);
+            var result = UITranslateManager.HandleTextTermTranslation(Term);
 
             // 空内容则让原函数处理
             if (string.IsNullOrEmpty(result)) return true;
@@ -73,7 +73,7 @@ public static class UITranslatePatch
 
         if (__instance.mSprite == null) return;
 
-        UITranslateMancger.ProcessSpriteReplacementWithNewAtlas(__instance.mSprite, sp);
+        UITranslateManager.ProcessSpriteReplacementWithNewAtlas(__instance.mSprite, sp);
     }
 
     // /// <summary>

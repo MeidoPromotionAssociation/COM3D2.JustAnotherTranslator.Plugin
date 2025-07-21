@@ -7,6 +7,13 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 public static class FileTool
 {
+    /// 父目录符号
+    private static readonly string ParentPathSymbol = $"..{Path.DirectorySeparatorChar}";
+
+    /// 路径分隔符
+    private static readonly string PathSeparator = Path.DirectorySeparatorChar.ToString();
+
+
     /// <summary>
     ///     获取所有翻译文件列表，按 Unicode 顺序排序，支持子目录
     /// </summary>
@@ -70,7 +77,7 @@ public static class FileTool
             .Replace('\\', Path.DirectorySeparatorChar);
 
         // 1拒绝包含 ".."
-        if (normalizedPath.Contains(".."))
+        if (normalizedPath.Contains(ParentPathSymbol))
             return true;
 
         // 拒绝绝对路径
@@ -78,7 +85,7 @@ public static class FileTool
             return true;
 
         // 禁止以斜杠开头（Unix 风格绝对路径）
-        if (normalizedPath.StartsWith(Path.DirectorySeparatorChar.ToString()))
+        if (normalizedPath.StartsWith(PathSeparator))
             return true;
 
         return false;

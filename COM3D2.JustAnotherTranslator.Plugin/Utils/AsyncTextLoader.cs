@@ -176,7 +176,10 @@ public class AsyncTextLoader
         try
         {
             if (filePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                entriesCount = ProcessZipFile(filePath);
+                if (JustAnotherTranslator.AllowFilesInZipLoadInOrder.Value)
+                    entriesCount = ProcessZipFileInOrder(filePath);
+                else
+                    entriesCount = ProcessZipFile(filePath);
             else if (filePath.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
                 entriesCount = ProcessTextFile(filePath);
         }
@@ -188,6 +191,87 @@ public class AsyncTextLoader
 
         return entriesCount;
     }
+
+    /// <summary>
+    ///     处理 ZIP 压缩文件
+    /// </summary>
+    /// <param name="zipFilePath">ZIP 文件路径</param>
+    /// <returns>处理的条目数</returns>
+    private int ProcessZipFileInOrder(string zipFilePath)
+    {
+        var entriesCount = 0;
+        var fileName = Path.GetFileName(zipFilePath);
+
+        try
+        {
+            using (var zf = new ZipFile(zipFilePath))
+            {
+                var textFiles = new List<ZipEntry>();
+                foreach (ZipEntry zipEntry in zf)
+                {
+                    if (!zipEntry.IsFile || !zipEntry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    if (FileTool.IsZipPathUnsafe(zipEntry.Name))
+                    {
+                        LogManager.Warning($"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {zipEntry.Name}");
+                        continue;
+                    }
+
+                    textFiles.Add(zipEntry);
+                }
+
+                if (textFiles.Count == 0)
+                    // LogManager.Warning($"No .txt files found in ZIP archive/ZIP压缩包中未找到.txt文件: {fileName}");
+                    return 0;
+
+                // 按照Unicode顺序排序
+                textFiles.Sort((a, b) => StringComparer.Ordinal.Compare(a.Name, b.Name));
+
+                LogManager.Info(
+                    $"Processing ZIP archive {fileName} - {textFiles.Count} .txt files/正在处理ZIP压缩包: {fileName} - {textFiles.Count} 个.txt文件)");
+
+                foreach (var entry in textFiles)
+                    try
+                    {
+                        using (var stream = zf.GetInputStream(entry))
+                        {
+                            // 读取条目内容
+                            var buffer = new byte[entry.Size];
+                            var totalBytesRead = 0;
+
+                            while (totalBytesRead < entry.Size)
+                            {
+                                var bytesRead = stream.Read(buffer, totalBytesRead,
+                                    (int)(entry.Size - totalBytesRead));
+                                if (bytesRead == 0) break;
+                                totalBytesRead += bytesRead;
+                            }
+
+                            // 将字节转换为文本并逐行处理
+                            var content = Encoding.UTF8.GetString(buffer, 0, totalBytesRead);
+                            var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+                            foreach (var line in lines)
+                                if (ProcessTranslationLine(line))
+                                    entriesCount++;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        LogManager.Warning(
+                            $"Error processing entry in ZIP/处理ZIP中的条目时出错 {entry.Name}: {e.Message}");
+                    }
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Error processing ZIP file/处理ZIP文件时出错 {fileName}: {e.Message}");
+        }
+
+        return entriesCount;
+    }
+
 
     /// <summary>
     ///     处理 ZIP 压缩文件
@@ -211,6 +295,8 @@ public class AsyncTextLoader
                 while ((entry = zipStream.GetNextEntry()) != null)
                 {
                     if (FileTool.IsZipPathUnsafe(entry.Name))
+
+
                     {
                         LogManager.Warning(
                             $"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {entry.Name}");
@@ -220,6 +306,7 @@ public class AsyncTextLoader
                     if (!entry.IsFile ||
                         !entry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
                         continue;
+
 
                     try
                     {
@@ -258,7 +345,6 @@ public class AsyncTextLoader
 
         return entriesCount;
     }
-
 
     /// <summary>
     ///     处理单个翻译文件

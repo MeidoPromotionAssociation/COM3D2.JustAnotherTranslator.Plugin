@@ -1,18 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
-using System.Text;
 using System.Threading;
 using BepInEx.Logging;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
-using CsvHelper;
-using CsvHelper.Configuration;
 using HarmonyLib;
-using ICSharpCode.SharpZipLib.Zip;
-using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
@@ -22,14 +16,11 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 /// <summary>
 ///     UI 翻译管理器
 /// </summary>
-public static class UITranslateMancger
+public static class UITranslateManager
 {
     private static Harmony _uiTranslatePatch;
     private static Harmony _uiDebugPatch;
     private static bool _initialized;
-
-    /// 翻译文件加载线程
-    private static Thread _textLoaderThread;
 
     /// 存储翻译数据的字典
     private static readonly Dictionary<string, TranslationData> _translations = new(); // term -> TranslationData
@@ -47,21 +38,8 @@ public static class UITranslateMancger
     /// 缓存已创建的替换 Atlas，避免重复创建
     private static readonly Dictionary<string, UIAtlas> ReplacementAtlasCache = new(); // spriteName -> UIAtlas
 
-
-    /// CSV 配置
-    private static readonly CsvConfiguration CsvConfig = new()
-    {
-        CultureInfo = CultureInfo.InvariantCulture,
-        AllowComments = true,
-        HasHeaderRecord = true,
-        Encoding = Encoding
-            .UTF8, // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
-        IgnoreBlankLines = true,
-        IgnoreHeaderWhiteSpace = true,
-        IsHeaderCaseSensitive = false,
-        SkipEmptyRecords = true,
-        WillThrowOnMissingField = true
-    };
+    private static Thread _textLoaderThread;
+    private static AsyncUiTextLoader _uiTextLoader;
 
     public static void Init()
     {
@@ -96,8 +74,8 @@ public static class UITranslateMancger
 
         CleanupSceneResources();
 
-        _textLoaderThread?.Join();
-        _textLoaderThread = null;
+        _uiTextLoader?.StopLoading();
+        _uiTextLoader = null;
 
         _uiTranslatePatch?.UnpatchSelf();
         _uiTranslatePatch = null;
@@ -156,218 +134,22 @@ public static class UITranslateMancger
     /// </summary>
     private static void LoadTextTranslationsAsync()
     {
-        if (_textLoaderThread is { IsAlive: true })
-        {
-            LogManager.Warning(
-                "UI Translation loader is already running, please report this issue/UI 翻译加载器已在运行中，请报告此问题");
-            return;
-        }
-
-        _textLoaderThread = new Thread(LoadTranslationsThread)
-        {
-            IsBackground = true
-        };
-        _textLoaderThread.Start();
+        _uiTextLoader = new AsyncUiTextLoader(JustAnotherTranslator.UITextPath, OnUiTextLoadComplete);
+        _uiTextLoader.StartLoading();
     }
 
-    /// <summary>
-    ///     加载翻译文件
-    /// </summary>
-    private static void LoadTranslationsThread()
+    private static void OnUiTextLoadComplete(
+        Dictionary<string, TranslationData> result,
+        int totalEntries,
+        int totalFiles,
+        long elapsedMilliseconds
+    )
     {
-        var sw = new Stopwatch();
-        sw.Start();
+        foreach (var pair in result) _translations[pair.Key] = pair.Value;
 
-        var totalEntries = 0;
-        var processedFiles = 0;
-
-        if (!Directory.Exists(JustAnotherTranslator.UITextPath))
-        {
-            LogManager.Warning(
-                "Translation UITextPath directory not found, try to create/未找到UI翻译目录，尝试创建: " +
-                JustAnotherTranslator.UITextPath);
-            try
-            {
-                Directory.CreateDirectory(JustAnotherTranslator.UITextPath);
-            }
-            catch (Exception e)
-            {
-                LogManager.Error(
-                    "Create translation UIText folder failed, plugin may not work/创建翻译UI翻译目录失败，插件可能无法运行: " +
-                    e.Message);
-                return;
-            }
-        }
-
-        try
-        {
-            // 获取所有文件以计算总数
-            var allFiles = FileTool.GetAllTranslationFiles(JustAnotherTranslator.UITextPath, new[] { ".csv", ".zip" });
-            var totalFiles = allFiles.Count;
-
+        if (totalEntries > 0)
             LogManager.Info(
-                $"Starting asynchronous UI translation loading, found {totalFiles} CSV files/开始异步加载UI翻译文件，共找到 {totalFiles} 个 CSV 文件");
-
-            // 处理每个文件
-            foreach (var filePath in allFiles)
-            {
-                var entriesInFile = ProcessTranslationFile(filePath);
-                totalEntries += entriesInFile;
-            }
-        }
-        catch (Exception ex)
-        {
-            LogManager.Error($"Error while loading UI translation file/加载UI翻译文件时发生错误: {ex.Message}");
-        }
-        finally
-        {
-            sw.Stop();
-            if (totalEntries > 0)
-                LogManager.Info(
-                    $"UI translation loading completed! Total entries: {totalEntries}, from {processedFiles} files, took {sw.ElapsedMilliseconds} ms/UI翻译文件加载完成！总计加载 {totalEntries} 条翻译条目，来自 {processedFiles} 个文件, 耗时 {sw.ElapsedMilliseconds} ms");
-        }
-    }
-
-    /// <summary>
-    ///     处理单个翻译文件
-    /// </summary>
-    /// <param name="filePath">文件路径</param>
-    /// <returns>处理的条目数</returns>
-    private static int ProcessTranslationFile(string filePath)
-    {
-        var entriesCount = 0;
-
-        try
-        {
-            if (filePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                entriesCount = ProcessZipFile(filePath);
-            else if (filePath.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                entriesCount = ProcessCsvFile(filePath);
-        }
-        catch (Exception e)
-        {
-            LogManager.Error(
-                $"Error processing file/处理文件时出错 {Path.GetFileName(filePath)}: {e.Message}");
-        }
-
-        return entriesCount;
-    }
-
-    /// <summary>
-    ///     加载ZIP文件
-    /// </summary>
-    private static int ProcessZipFile(string zipFilePath)
-    {
-        var entriesCount = 0;
-        var fileName = Path.GetFileName(zipFilePath);
-
-        try
-        {
-            using (var zf = new ZipFile(zipFilePath))
-            {
-                var textFiles = new List<ZipEntry>();
-                foreach (ZipEntry zipEntry in zf)
-                {
-                    if (!zipEntry.IsFile || !zipEntry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    if (FileTool.IsZipPathUnsafe(zipEntry.Name))
-                    {
-                        LogManager.Warning($"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {zipEntry.Name}");
-                        continue;
-                    }
-
-                    textFiles.Add(zipEntry);
-                }
-
-                if (textFiles.Count == 0)
-                {
-                    LogManager.Warning($"No .csv files found in ZIP archive/ZIP压缩包中未找到.csv文件: {fileName}");
-                    return 0;
-                }
-
-                // 按照Unicode顺序排序
-                textFiles.Sort((a, b) => StringComparer.Ordinal.Compare(a.Name, b.Name));
-
-                LogManager.Info(
-                    $"Processing ZIP archive {fileName} - {textFiles.Count} .csv files/正在处理ZIP压缩包: {fileName} - {textFiles.Count} 个.csv文件)");
-
-                foreach (var entry in textFiles)
-                    try
-                    {
-                        using (var stream = zf.GetInputStream(entry))
-                        {
-                            entriesCount += ProcessCsvStream(stream);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        LogManager.Warning(
-                            $"Error processing entry in ZIP/处理ZIP中的条目时出错 {entry.Name}: {e.Message}");
-                    }
-            }
-        }
-        catch (Exception e)
-        {
-            LogManager.Error($"Error processing ZIP file/处理ZIP文件时出错 {fileName}: {e.Message}");
-        }
-
-        return entriesCount;
-    }
-
-    /// <summary>
-    ///     加载CSV文件
-    /// </summary>
-    private static int ProcessCsvFile(string filePath)
-    {
-        try
-        {
-            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                return ProcessCsvStream(fileStream);
-            }
-        }
-        catch (Exception e)
-        {
-            LogManager.Error($"Error processing CSV file/处理CSV文件时出错 {Path.GetFileName(filePath)}: {e.Message}");
-            return 0;
-        }
-    }
-
-    /// <summary>
-    ///     从流中加载CSV数据
-    /// </summary>
-    /// <param name="stream">包含CSV数据的流</param>
-    /// <returns>加载的条目数</returns>
-    private static int ProcessCsvStream(Stream stream)
-    {
-        var entriesLoaded = 0;
-
-
-        using (var reader = new StreamReader(stream, Encoding.UTF8))
-        using (var csv = new CsvReader(reader, CsvConfig))
-        {
-            var records = csv.GetRecords<CsvEntry>();
-
-            foreach (var record in records)
-            {
-                if (string.IsNullOrEmpty(record.Term) || string.IsNullOrEmpty(record.Translation)) continue;
-
-                // 使用精简结构以节省内存
-                _translations[record.Term] = new TranslationData(record.Translation);
-                entriesLoaded++;
-            }
-        }
-
-        return entriesLoaded;
-    }
-
-    // CSV 结构
-    private class CsvEntry
-    {
-        public string Term { get; set; } // 键名
-        [CanBeNull] public string Original { get; set; } // 原文
-        [CanBeNull] public string Translation { get; set; } // 译文
+                $"UI translation loading completed! Total entries: {totalEntries}, from {totalFiles} files, took {elapsedMilliseconds} ms/UI翻译文件加载完成！总计加载 {totalEntries} 条翻译条目，来自 {totalFiles} 个文件, 耗时 {elapsedMilliseconds} ms");
     }
 
     // 翻译数据

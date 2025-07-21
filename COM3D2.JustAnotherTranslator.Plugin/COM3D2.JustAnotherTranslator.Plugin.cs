@@ -70,6 +70,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<LogLevel> LogLevelConfig;
     public static ConfigEntry<int> TextureCacheSize;
     public static ConfigEntry<int> UICacheSize;
+    public static ConfigEntry<bool> AllowFilesInZipLoadInOrder;
 
     // 字幕启用相关配置
     public static ConfigEntry<bool> EnableBaseSubtitle;
@@ -221,6 +222,11 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "EnableTextureReplace/启用贴图替换",
             true,
             "Enable Texture Replace/启用贴图替换");
+
+        AllowFilesInZipLoadInOrder = Config.Bind("General",
+            "AllowFilesInZipLoadInOrder/允许 ZIP 文件内文件按顺序加载",
+            false,
+            "Allow files In zip Load in order, This will lower the loading speed/允许 ZIP 文件内文件按顺序加载，这会降低加载速度");
 
         MaidNameStyle = Config.Bind("General",
             "MaidNameStyle/女仆名字样式",
@@ -735,7 +741,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         if (EnableUITranslation.Value)
         {
             LogManager.Info("UI Translation Enabled/UI 翻译已启用");
-            UITranslateMancger.Init();
+            UITranslateManager.Init();
         }
         else
         {
@@ -820,7 +826,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     private void OnDestroy()
     {
         TextTranslateManger.Unload();
-        UITranslateMancger.Unload();
+        UITranslateManager.Unload();
         TextureReplaceManger.Unload();
         SubtitleManager.Unload();
     }
@@ -898,12 +904,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableUITranslation.Value)
             {
                 LogManager.Info("UI Translation Enabled/UI 翻译已启用");
-                UITranslateMancger.Init();
+                UITranslateManager.Init();
             }
             else
             {
                 LogManager.Info("UI Translation Disabled/UI 翻译已禁用");
-                UITranslateMancger.Unload();
+                UITranslateManager.Unload();
             }
         };
 
@@ -956,8 +962,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             // 重新加载贴图替换模块以应用新的缓存大小
             if (EnableUITranslation.Value)
             {
-                UITranslateMancger.Unload();
-                UITranslateMancger.Init();
+                UITranslateManager.Unload();
+                UITranslateManager.Init();
             }
         };
     }

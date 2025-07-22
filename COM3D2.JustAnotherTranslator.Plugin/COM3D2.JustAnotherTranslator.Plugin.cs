@@ -193,6 +193,31 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         IsVrMode = Environment.CommandLine.ToLower().Contains("/vr");
 
+        # region Note
+
+        // Tips for people using ConfigurationManager
+
+        var note1 = Config.Bind("1Note",
+            "Configuration options tips do not prompt in the game, please open the configuration file to view", true,
+            "this config do nothing");
+
+        var note2 = Config.Bind("2Note",
+            "configuration file location is \"\\COM3D2\\BepInEx\\config\\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg\"",
+            true,
+            "this config do nothing");
+
+        var note3 = Config.Bind("3Note",
+            "配置选项提示不会在游戏内提示，请打开配置文件查看", true,
+            "这个配置不做任何事情");
+
+        var note4 = Config.Bind("4Note",
+            "配置文件位于 \"\\COM3D2\\BepInEx\\config\\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg\"",
+            true,
+            "这个配置不做任何事情");
+
+        # endregion
+
+
         # region GeneralSettings
 
         TargetLanguage = Config.Bind("General",

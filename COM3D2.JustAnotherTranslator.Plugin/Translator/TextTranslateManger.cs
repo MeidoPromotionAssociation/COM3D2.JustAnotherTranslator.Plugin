@@ -201,7 +201,7 @@ public static class TextTranslateManger
         // 然而因为某种原因，StartsWith 和 EndsWith 会把所有文本都标记为已翻译，因此必须使用 Contains
         if (original.Contains(XUATInterop.XuatSpicalMaker))
         {
-            LogManager.Debug($"Text already marked by XUAT skipping: {original}");
+            LogManager.Debug($"Text already marked by XUAT, skipping: {original}");
             return false;
         }
 
@@ -235,7 +235,6 @@ public static class TextTranslateManger
             if (!match.Success)
                 continue;
 
-            // 输出匹配到的捕获组信息，帮助调试
             LogManager.Debug($"Regex matched with {match.Groups.Count} groups");
             foreach (var groupName in regex.GetGroupNames())
             {

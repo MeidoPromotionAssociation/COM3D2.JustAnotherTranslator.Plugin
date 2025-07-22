@@ -202,7 +202,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "this config do nothing");
 
         var note2 = Config.Bind("2Note",
-            "configuration file location is \"\\COM3D2\\BepInEx\\config\\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg\"",
+            "configuration file location is COM3D2/BepInEx/config/Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg",
             true,
             "this config do nothing");
 
@@ -211,7 +211,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "这个配置不做任何事情");
 
         var note4 = Config.Bind("4Note",
-            "配置文件位于 \"\\COM3D2\\BepInEx\\config\\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg\"",
+            "配置文件位于 /COM3D2/BepInEx/config/Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg",
             true,
             "这个配置不做任何事情");
 

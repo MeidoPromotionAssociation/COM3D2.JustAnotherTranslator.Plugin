@@ -74,7 +74,7 @@ public static class UITranslateManager
 
         CleanupSceneResources();
 
-        _uiTextLoader?.StopLoading();
+        _uiTextLoader?.Cancel();
         _uiTextLoader = null;
 
         _uiTranslatePatch?.UnpatchSelf();
@@ -134,10 +134,33 @@ public static class UITranslateManager
     /// </summary>
     private static void LoadTextTranslationsAsync()
     {
-        _uiTextLoader = new AsyncUiTextLoader(JustAnotherTranslator.UITextPath, OnUiTextLoadComplete);
+        _uiTextLoader =
+            new AsyncUiTextLoader(JustAnotherTranslator.UITextPath, OnUiTextLoadProgress, OnUiTextLoadComplete);
         _uiTextLoader.StartLoading();
     }
 
+    /// <summary>
+    ///     异步加载进度回调
+    /// </summary>
+    /// <param name="progress"></param>
+    /// <param name="filesProcessed"></param>
+    /// <param name="totalFiles"></param>
+    private static void OnUiTextLoadProgress(float progress, int filesProcessed, int totalFiles)
+    {
+        // 进度变化超过 10% 时输出日志
+        if ((int)(progress * 100) % 10 == 0)
+            LogManager.Info(
+                $"Translation loading progress: {progress:P0} ({filesProcessed}/{totalFiles})/翻译加载进度: {progress:P0} ({filesProcessed}/{totalFiles})");
+    }
+
+
+    /// <summary>
+    ///     异步加载加载完成回调
+    /// </summary>
+    /// <param name="result"></param>
+    /// <param name="totalEntries"></param>
+    /// <param name="totalFiles"></param>
+    /// <param name="elapsedMilliseconds"></param>
     private static void OnUiTextLoadComplete(
         Dictionary<string, TranslationData> result,
         int totalEntries,
@@ -191,8 +214,7 @@ public static class UITranslateManager
             if (!Directory.Exists(JustAnotherTranslator.UISpritePath))
             {
                 LogManager.Warning(
-                    "Translation UISpritePath directory not found, try to create/未找到UI精灵图目录，尝试创建: " +
-                    JustAnotherTranslator.UISpritePath);
+                    $"Translation UISpritePath directory not found, try to create/未找到UI精灵图目录，尝试创建: {JustAnotherTranslator.UISpritePath}");
                 try
                 {
                     Directory.CreateDirectory(JustAnotherTranslator.UISpritePath);
@@ -200,8 +222,7 @@ public static class UITranslateManager
                 catch (Exception e)
                 {
                     LogManager.Error(
-                        "Create translation UISprite folder failed, plugin may not work/创建翻译UI精灵图目录失败，插件可能无法运行: " +
-                        e.Message);
+                        $"Create translation UISprite folder failed, plugin may not work/创建翻译UI精灵图目录失败，插件可能无法运行: {e.Message}");
                     return;
                 }
             }

@@ -36,15 +36,6 @@ public static class TextTranslateManger
     /// 加载状态
     public static bool IsLoading { get; private set; }
 
-    /// 加载进度 (0.0-1.0)
-    public static float LoadingProgress { get; private set; }
-
-    /// 已处理文件数
-    public static int FilesProcessed { get; private set; }
-
-    /// 总文件数
-    public static int TotalFiles { get; private set; }
-
     public static void Init()
     {
         if (_initialized) return;
@@ -107,9 +98,6 @@ public static class TextTranslateManger
             _asyncLoader.Cancel();
             IsLoading = false;
             _asyncLoader = null;
-            LoadingProgress = 0f;
-            FilesProcessed = 0;
-            TotalFiles = 0;
         }
 
         _textTranslatePatch?.UnpatchSelf();
@@ -132,9 +120,6 @@ public static class TextTranslateManger
     {
         // 重置状态
         IsLoading = true;
-        LoadingProgress = 0f;
-        FilesProcessed = 0;
-        TotalFiles = 0;
 
         // 创建异步加载器
         _asyncLoader = new AsyncTextLoader(
@@ -158,10 +143,6 @@ public static class TextTranslateManger
     /// <param name="totalFiles"></param>
     private static void OnLoadingProgress(float progress, int filesProcessed, int totalFiles)
     {
-        LoadingProgress = progress;
-        FilesProcessed = filesProcessed;
-        TotalFiles = totalFiles;
-
         // 进度变化超过 10% 时输出日志
         if ((int)(progress * 100) % 10 == 0)
             LogManager.Info(
@@ -182,9 +163,6 @@ public static class TextTranslateManger
     {
         // 更新状态
         IsLoading = false;
-        LoadingProgress = 1.0f;
-        FilesProcessed = totalFiles;
-        TotalFiles = totalFiles;
         IsTranslationLoaded = true;
 
         // 更新翻译字典

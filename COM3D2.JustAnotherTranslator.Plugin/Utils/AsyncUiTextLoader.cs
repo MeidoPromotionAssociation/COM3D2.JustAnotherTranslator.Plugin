@@ -17,9 +17,7 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 /// </summary>
 public class AsyncUiTextLoader
 {
-    /// <summary>
-    ///     加载完成委托
-    /// </summary>
+    /// 加载完成委托
     public delegate void CompletionCallback(
         Dictionary<string, UITranslateManager.TranslationData> result,
         int totalEntries,
@@ -27,6 +25,11 @@ public class AsyncUiTextLoader
         long elapsedMilliseconds
     );
 
+    /// 加载进度委托
+    public delegate void ProgressCallback(float progress, int filesProcessed, int totalFiles);
+
+
+    /// CSV配置
     private static readonly CsvConfiguration CsvConfig = new()
     {
         CultureInfo = CultureInfo.InvariantCulture,
@@ -41,16 +44,42 @@ public class AsyncUiTextLoader
         WillThrowOnMissingField = false
     };
 
+    /// 压缩文件缓冲区大小
+    private static readonly int ZipBuffsize = 131072;
+
+    /// 压缩文件流缓冲区大小
+    private static readonly int ZipSteamCacheSize = 4096;
+
+    /// 翻译结果字典
+    private static readonly Dictionary<string, UITranslateManager.TranslationData>
+        _translations = new(); // Term -> translation
+
+    /// 取消标志
+    private static volatile bool _cancelRequested;
+
+    /// 加载线程
+    private static Thread _loaderThread;
+
+    /// 完成回调
     private readonly CompletionCallback _completionCallback;
 
-    private readonly string _translationPath;
-    private readonly Dictionary<string, UITranslateManager.TranslationData> _translations = new();
-    private volatile bool _cancelRequested;
-    private Thread _loaderThread;
+    /// 进度回调
+    private readonly ProgressCallback _progressCallback;
 
-    public AsyncUiTextLoader(string translationPath, CompletionCallback completionCallback)
+    /// 翻译文件目录路径
+    private readonly string _translationPath;
+
+
+    /// <summary>
+    ///     创建一个新的异步文件加载器
+    /// </summary>
+    /// <param name="translationPath"></param>
+    /// <param name="completionCallback"></param>
+    public AsyncUiTextLoader(string translationPath, ProgressCallback progressCallback,
+        CompletionCallback completionCallback)
     {
         _translationPath = translationPath;
+        _progressCallback = progressCallback;
         _completionCallback = completionCallback;
     }
 
@@ -68,6 +97,7 @@ public class AsyncUiTextLoader
 
         _translations.Clear();
 
+        _cancelRequested = false;
         _loaderThread = new Thread(LoadTranslationsThread)
         {
             IsBackground = true
@@ -75,7 +105,10 @@ public class AsyncUiTextLoader
         _loaderThread.Start();
     }
 
-    public void StopLoading()
+    /// <summary>
+    ///     取消加载
+    /// </summary>
+    public void Cancel()
     {
         _cancelRequested = true;
     }
@@ -88,13 +121,15 @@ public class AsyncUiTextLoader
         var sw = new Stopwatch();
         sw.Start();
 
+        var totalFiles = 0;
         var totalEntries = 0;
-        var processedFiles = 0;
+        var filesProcessed = 0;
 
         if (!Directory.Exists(_translationPath))
         {
-            LogManager.Warning("Translation UITextPath directory not found, try to create/未找到UI翻译目录，尝试创建: " +
-                               _translationPath);
+            LogManager.Warning(
+                $"UI Translation directory not found, try to create/未找到UI翻译目录, 尝试创建: {_translationPath}");
+
             try
             {
                 Directory.CreateDirectory(_translationPath);
@@ -102,7 +137,7 @@ public class AsyncUiTextLoader
             catch (Exception e)
             {
                 LogManager.Error(
-                    "Create translation UIText folder failed, plugin may not work/创建翻译UI翻译目录失败，插件可能无法运行: " + e.Message);
+                    $"Create translation UI folder failed, plugin may not work/创建翻译UI翻译目录失败，插件可能无法运行: {e.Message}");
                 _completionCallback?.Invoke(_translations, 0, 0, 0);
                 return;
             }
@@ -110,11 +145,20 @@ public class AsyncUiTextLoader
 
         try
         {
-            var allFiles = FileTool.GetAllTranslationFiles(_translationPath, new[] { ".csv", ".zip" });
-            var totalFiles = allFiles.Count;
-
             LogManager.Info(
-                $"Starting asynchronous UI translation loading, found {totalFiles} CSV files/开始异步加载UI翻译文件，共找到 {totalFiles} 个 CSV 文件");
+                "Loading UI translation files asynchronously, other plugins can load at the same time/正在异步加载ui翻译文件，其他插件可以同时进行加载");
+
+            var allFiles = FileTool.GetAllTranslationFiles(_translationPath, new[] { ".csv", ".zip" });
+            totalFiles = allFiles.Count;
+
+            if (allFiles.Count == 0)
+            {
+                LogManager.Info("No UI translation files found/未找到UI翻译文件");
+                _completionCallback?.Invoke(_translations, 0, 0, 0);
+                return;
+            }
+
+            LogManager.Info($"Found {totalFiles} CSV files/找到 {totalFiles} 个 CSV 文件");
 
             foreach (var filePath in allFiles)
             {
@@ -126,7 +170,10 @@ public class AsyncUiTextLoader
 
                 var entriesInFile = ProcessTranslationFile(filePath);
                 totalEntries += entriesInFile;
-                if (entriesInFile > 0) processedFiles++;
+                filesProcessed++;
+
+                var progress = (float)filesProcessed / totalFiles;
+                _progressCallback?.Invoke(progress, filesProcessed, totalFiles);
             }
         }
         catch (Exception ex)
@@ -136,7 +183,7 @@ public class AsyncUiTextLoader
         finally
         {
             sw.Stop();
-            _completionCallback?.Invoke(_translations, totalEntries, processedFiles, sw.ElapsedMilliseconds);
+            _completionCallback?.Invoke(_translations, totalEntries, filesProcessed, sw.ElapsedMilliseconds);
         }
     }
 
@@ -148,6 +195,7 @@ public class AsyncUiTextLoader
     private int ProcessTranslationFile(string filePath)
     {
         var entriesCount = 0;
+
         try
         {
             if (filePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
@@ -179,6 +227,7 @@ public class AsyncUiTextLoader
     {
         var entriesCount = 0;
         var fileName = Path.GetFileName(zipFilePath);
+
         try
         {
             using (var zf = new ZipFile(zipFilePath))
@@ -188,6 +237,7 @@ public class AsyncUiTextLoader
                 {
                     if (!zipEntry.IsFile || !zipEntry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                         continue;
+
                     if (FileTool.IsZipPathUnsafe(zipEntry.Name))
                     {
                         LogManager.Warning($"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {zipEntry.Name}");
@@ -197,12 +247,17 @@ public class AsyncUiTextLoader
                     csvFiles.Add(zipEntry);
                 }
 
-                if (csvFiles.Count == 0) return 0;
+                if (csvFiles.Count == 0)
+                {
+                    LogManager.Info("No .csv files found in ZIP archive/ZIP压缩包中未找到.csv文件");
+                    return 0;
+                }
 
+                // 按照 Unicode 顺序排序
                 csvFiles.Sort((a, b) => StringComparer.Ordinal.Compare(a.Name, b.Name));
 
                 LogManager.Info(
-                    $"Processing ZIP archive {fileName} - {csvFiles.Count} .csv files/正在处理ZIP压缩包: {fileName} - {csvFiles.Count} 个.csv文件)");
+                    $"Processing ZIP archive {fileName} in order, which has {csvFiles.Count} .csv files/正在按顺序处理ZIP压缩包: {fileName} 内含 {csvFiles.Count} 个.csv文件)");
 
                 foreach (var entry in csvFiles)
                     try
@@ -240,66 +295,40 @@ public class AsyncUiTextLoader
         {
             LogManager.Info($"Processing ZIP archive {fileName} text files/正在处理ZIP压缩包: {fileName})");
 
-            using var fileStream = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var fileStream = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read, FileShare.Read,
+                ZipBuffsize);
             using var zipStream = new ZipInputStream(fileStream);
-
-            // 使用更大的缓冲区提高读取性能
-            const int bufferSize = 65536; // 64KB缓冲区
-            var buffer = new byte[bufferSize];
 
             ZipEntry entry;
             while ((entry = zipStream.GetNextEntry()) != null)
             {
-                // 提前检查取消请求，避免不必要的处理
-                if (_cancelRequested)
-                {
-                    LogManager.Info("ZIP processing cancelled/ZIP处理已被取消");
-                    break;
-                }
-
-                // 安全检查
                 if (FileTool.IsZipPathUnsafe(entry.Name))
                 {
                     LogManager.Warning($"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {entry.Name}");
                     continue;
                 }
 
-                // 只处理CSV文件
                 if (!entry.IsFile || !entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 try
                 {
                     // 预估容量以减少内存重分配
-                    var estimatedSize = entry.Size > 0 ? (int)Math.Min(entry.Size, int.MaxValue) : 4096;
-
-                    using var memStream = new MemoryStream(estimatedSize > 0 ? estimatedSize : 4096);
-
-                    // 高效的流复制
-                    var totalBytesRead = 0;
-                    int bytesRead;
-
-                    while ((bytesRead = zipStream.Read(buffer, 0, bufferSize)) > 0)
+                    var estimatedSize = entry.Size > 0 ? (int)Math.Min(entry.Size, int.MaxValue) : ZipSteamCacheSize;
+                    using (var memStream = new MemoryStream(estimatedSize > 0 ? estimatedSize : ZipSteamCacheSize))
                     {
-                        memStream.Write(buffer, 0, bytesRead);
-                        totalBytesRead += bytesRead;
+                        var buffer = new byte[ZipSteamCacheSize];
+                        int bytesRead;
+                        while ((bytesRead = zipStream.Read(buffer, 0, buffer.Length)) > 0)
+                            memStream.Write(buffer, 0, bytesRead);
 
-                        // 定期检查取消请求
-                        if (totalBytesRead % (bufferSize * 4) == 0 && _cancelRequested)
-                        {
-                            LogManager.Info("ZIP entry processing cancelled/ZIP条目处理已被取消");
-                            return entriesCount;
-                        }
+                        // 重置流位置
+                        memStream.Position = 0;
+
+                        // 处理 CSV 数据
+                        var entryCount = ProcessCsvStream(memStream);
+                        entriesCount += entryCount;
                     }
-
-                    // 重置流位置
-                    memStream.Position = 0;
-
-                    // 处理CSV数据
-                    var entryCount = ProcessCsvStream(memStream);
-                    entriesCount += entryCount;
-
-                    if (entryCount > 0) LogManager.Debug($"Processed {entryCount} entries from {entry.Name}");
                 }
                 catch (Exception e)
                 {
@@ -317,6 +346,11 @@ public class AsyncUiTextLoader
         return entriesCount;
     }
 
+    /// <summary>
+    ///     处理 CSV 文件
+    /// </summary>
+    /// <param name="filePath"></param>
+    /// <returns></returns>
     private int ProcessCsvFile(string filePath)
     {
         try
@@ -348,6 +382,7 @@ public class AsyncUiTextLoader
             foreach (var record in records)
             {
                 if (string.IsNullOrEmpty(record.Term) || string.IsNullOrEmpty(record.Translation)) continue;
+                // 使用精简结构以节省内存
                 _translations[record.Term] = new UITranslateManager.TranslationData(record.Translation);
                 entriesLoaded++;
             }
@@ -356,6 +391,9 @@ public class AsyncUiTextLoader
         return entriesLoaded;
     }
 
+    /// <summary>
+    ///     CSV 结构
+    /// </summary>
     private class CsvEntry
     {
         public string Term { get; set; } // 键名

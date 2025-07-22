@@ -1,4 +1,5 @@
-﻿using COM3D2.JustAnotherTranslator.Plugin.Utils;
+﻿using System;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Subtitle;
@@ -18,10 +19,12 @@ public static class SubtitleDebugPatch
     {
         try
         {
-            LogManager.Debug($"KagScriptCallTag currentFileName: {__instance.GetCurrentFileName()}");
+            LogManager.Debug($"KagScriptCallTag_Prefix currentFileName: {__instance.GetCurrentFileName()}");
         }
-        catch
+        catch (Exception e)
         {
+            LogManager.Error(
+                $"KagScriptCallTag_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
         }
     }
 }

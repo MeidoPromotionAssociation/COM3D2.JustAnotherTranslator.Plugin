@@ -1,3 +1,4 @@
+using System;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
@@ -21,26 +22,34 @@ public static class AdvSubtitlePatch
     [HarmonyPostfix]
     public static void ADVKagManager_TagTalk_Postfix(KagTagSupport tag_data, ADVKagManager __instance)
     {
-        LogManager.Debug("ADVKagManager_TagTalk_Postfix called");
-
-        if (tag_data.IsValid("voice"))
+        try
         {
-            var speakingMaid = BaseKagManager.GetVoiceTargetMaid(tag_data);
+            LogManager.Debug("ADVKagManager_TagTalk_Postfix called");
 
-            if (speakingMaid is null)
-                return;
+            if (tag_data.IsValid("voice"))
+            {
+                var speakingMaid = BaseKagManager.GetVoiceTargetMaid(tag_data);
 
-            var voiceId = tag_data.GetTagProperty("voice").AsString();
+                if (speakingMaid is null)
+                    return;
 
-            SubtitleManager.SetCurrentSpeaker(speakingMaid);
-            SubtitleManager.SetCurrentVoiceId(voiceId);
-            SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Adv);
-            SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
+                var voiceId = tag_data.GetTagProperty("voice").AsString();
 
-            LogManager.Debug($"ADVKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
-            LogManager.Debug(
-                $"ADVKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
-            LogManager.Debug($"ADVKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
+                SubtitleManager.SetCurrentSpeaker(speakingMaid);
+                SubtitleManager.SetCurrentVoiceId(voiceId);
+                SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Adv);
+                SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
+
+                LogManager.Debug($"ADVKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
+                LogManager.Debug(
+                    $"ADVKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
+                LogManager.Debug($"ADVKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"ADVKagManager_TagTalk_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
         }
     }
 
@@ -54,16 +63,24 @@ public static class AdvSubtitlePatch
     [HarmonyPrefix]
     public static void ADVKagManager_HitRet_Prefix(ADVKagManager __instance)
     {
-        var text = __instance.kag_.GetText();
-        LogManager.Debug($"ADVKagManager_HitRet_Prefix called with text: {text}");
-        LogManager.Debug(
-            $"ADVKagManager_HitRet_Prefix instance.kag_.GetCurrentLabel(): {__instance.kag_.GetCurrentLabel()}");
-        LogManager.Debug(
-            $"ADVKagManager_HitRet_Prefix instance.kag_.GetCurrentFileName(): {__instance.kag_.GetCurrentFileName()}");
-        LogManager.Debug(
-            $"ADVKagManager_HitRet_Prefix instance.kag_.GetCurrentLine(): {__instance.kag_.GetCurrentLine()}");
+        try
+        {
+            var text = __instance.kag_.GetText();
+            LogManager.Debug($"ADVKagManager_HitRet_Prefix called with text: {text}");
+            LogManager.Debug(
+                $"ADVKagManager_HitRet_Prefix instance.kag_.GetCurrentLabel(): {__instance.kag_.GetCurrentLabel()}");
+            LogManager.Debug(
+                $"ADVKagManager_HitRet_Prefix instance.kag_.GetCurrentFileName(): {__instance.kag_.GetCurrentFileName()}");
+            LogManager.Debug(
+                $"ADVKagManager_HitRet_Prefix instance.kag_.GetCurrentLine(): {__instance.kag_.GetCurrentLine()}");
 
-        SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Adv);
-        SubtitleManager.SetVoiceTextMapping(text, "ADVKagManager_HitRet_Prefix");
+            SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Adv);
+            SubtitleManager.SetVoiceTextMapping(text, "ADVKagManager_HitRet_Prefix");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"ADVKagManager_HitRet_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 }

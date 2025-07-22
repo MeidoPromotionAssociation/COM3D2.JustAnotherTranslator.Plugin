@@ -55,7 +55,8 @@ public static class UITranslatePatch
         }
         catch (Exception e)
         {
-            LogManager.Error($"Error in LocalizationManager_GetTranslation_Prefix: {e.Message}");
+            LogManager.Error(
+                $"LocalizationManager_GetTranslation_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
         }
 
         return true;
@@ -69,11 +70,19 @@ public static class UITranslatePatch
     [HarmonyPostfix]
     public static void UIButton_SetSprite_Postfix(UIButton __instance, string sp)
     {
-        LogManager.Debug($"UIButton_SetSprite_Postfix called with sp: {sp}");
+        try
+        {
+            LogManager.Debug($"UIButton_SetSprite_Postfix called with sp: {sp}");
 
-        if (__instance.mSprite == null) return;
+            if (__instance.mSprite == null) return;
 
-        UITranslateManager.ProcessSpriteReplacementWithNewAtlas(__instance.mSprite, sp);
+            UITranslateManager.ProcessSpriteReplacementWithNewAtlas(__instance.mSprite, sp);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"UIButton_SetSprite_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 
     // /// <summary>

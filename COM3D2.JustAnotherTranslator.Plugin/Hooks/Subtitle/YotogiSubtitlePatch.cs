@@ -1,3 +1,4 @@
+using System;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
@@ -33,26 +34,35 @@ public static class YotogiSubtitlePatch
     [HarmonyPostfix]
     public static void YotogiKagManager_TagTalk_Postfix(KagTagSupport tag_data, YotogiKagManager __instance)
     {
-        LogManager.Debug("YotogiKagManager_TagTalk_Postfix called");
-
-        if (tag_data.IsValid("voice"))
+        try
         {
-            var speakingMaid = BaseKagManager.GetVoiceTargetMaid(tag_data);
+            LogManager.Debug("YotogiKagManager_TagTalk_Postfix called");
 
-            if (speakingMaid is null)
-                return;
+            if (tag_data.IsValid("voice"))
+            {
+                var speakingMaid = BaseKagManager.GetVoiceTargetMaid(tag_data);
 
-            var voiceId = tag_data.GetTagProperty("voice").AsString();
+                if (speakingMaid is null)
+                    return;
 
-            SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Yotogi);
-            SubtitleManager.SetCurrentVoiceId(voiceId);
-            SubtitleManager.SetCurrentSpeaker(speakingMaid);
-            SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
+                var voiceId = tag_data.GetTagProperty("voice").AsString();
 
-            LogManager.Debug(
-                $"YotogiKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
-            LogManager.Debug($"YotogiKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
-            LogManager.Debug($"YotogiKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
+                SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Yotogi);
+                SubtitleManager.SetCurrentVoiceId(voiceId);
+                SubtitleManager.SetCurrentSpeaker(speakingMaid);
+                SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
+
+                LogManager.Debug(
+                    $"YotogiKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
+                LogManager.Debug($"YotogiKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
+                LogManager.Debug(
+                    $"YotogiKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"YotogiKagManager_TagTalk_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
         }
     }
 
@@ -66,16 +76,24 @@ public static class YotogiSubtitlePatch
     [HarmonyPrefix]
     public static void YotogiKagManager_HitRet_Prefix(YotogiKagManager __instance)
     {
-        var text = __instance.kag_.GetText();
-        LogManager.Debug($"YotogiKagManager_HitRet_Prefix called with text: {text}");
-        LogManager.Debug(
-            $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentLabel(): {__instance.kag_.GetCurrentLabel()}");
-        LogManager.Debug(
-            $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentFileName(): {__instance.kag_.GetCurrentFileName()}");
-        LogManager.Debug(
-            $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentLine(): {__instance.kag_.GetCurrentLine()}");
+        try
+        {
+            var text = __instance.kag_.GetText();
+            LogManager.Debug($"YotogiKagManager_HitRet_Prefix called with text: {text}");
+            LogManager.Debug(
+                $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentLabel(): {__instance.kag_.GetCurrentLabel()}");
+            LogManager.Debug(
+                $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentFileName(): {__instance.kag_.GetCurrentFileName()}");
+            LogManager.Debug(
+                $"YotogiKagManager_HitRet_Prefix instance.kag_.GetCurrentLine(): {__instance.kag_.GetCurrentLine()}");
 
-        SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Yotogi);
-        SubtitleManager.SetVoiceTextMapping(text, "YotogiKagManager_HitRet_Prefix");
+            SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Yotogi);
+            SubtitleManager.SetVoiceTextMapping(text, "YotogiKagManager_HitRet_Prefix");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"YotogiKagManager_HitRet_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 }

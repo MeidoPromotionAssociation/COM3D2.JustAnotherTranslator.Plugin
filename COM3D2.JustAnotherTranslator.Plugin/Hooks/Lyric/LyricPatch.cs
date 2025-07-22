@@ -70,7 +70,8 @@ public static class LyricPatch
         }
         catch (Exception e)
         {
-            LogManager.Error($"HandleDanceLoaded failed/处理舞蹈加载失败: {e.Message}");
+            LogManager.Error(
+                $"RhythmActionMgr_Awake_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
         }
     }
 
@@ -82,10 +83,18 @@ public static class LyricPatch
     [HarmonyPrefix]
     public static void RhythmActionMgr_RhythmGame_Start_Prefix(RhythmAction_Mgr __instance)
     {
-        LogManager.Debug("RhythmActionMgr_RhythmGame_Start called");
-        LogManager.Info("Dance started/舞蹈开始");
-        // just be safe, use __instance here
-        LyricManger.HandleDanceStart(__instance);
+        try
+        {
+            LogManager.Debug("RhythmActionMgr_RhythmGame_Start called");
+            LogManager.Info("Dance started/舞蹈开始");
+            // just be safe, use __instance here
+            LyricManger.HandleDanceStart(__instance);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"RhythmActionMgr_RhythmGame_Start_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 
 
@@ -96,8 +105,16 @@ public static class LyricPatch
     [HarmonyPrefix]
     public static void RhythmActionMgr_RhythmGame_End_Prefix()
     {
-        LogManager.Debug("RhythmActionMgr_RhythmGame_End called");
-        LogManager.Info("Dance ended/舞蹈结束");
-        LyricManger.HandleDanceEnd();
+        try
+        {
+            LogManager.Debug("RhythmActionMgr_RhythmGame_End called");
+            LogManager.Info("Dance ended/舞蹈结束");
+            LyricManger.HandleDanceEnd();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"RhythmActionMgr_RhythmGame_End_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 }

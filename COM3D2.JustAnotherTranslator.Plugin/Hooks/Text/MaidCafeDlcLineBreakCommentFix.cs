@@ -1,4 +1,5 @@
 ﻿using System;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using MaidCafe;
 using UnityEngine;
@@ -49,7 +50,8 @@ public static class MaidCafeDlcLineBreakCommentFix
             __instance.m_commentText.text = safeText;
 
 
-            Debug.LogError($"LineBreakCommentPrefix failed (input: '{text}'): {e}");
+            LogManager.Error(
+                $"LineBreakCommentPrefix failed (input: '{text}'), please report this issue/发生错误，请报告此错误: {e.Message}/n{e.StackTrace}");
         }
 
         // prevent original method execution
@@ -67,6 +69,15 @@ public static class MaidCafeDlcLineBreakCommentFix
     [HarmonyPrefix]
     private static bool SuperChatLineBreakCommentPrefix(MaidCafeComment __instance, string text)
     {
-        return LineBreakCommentPrefix(__instance, text);
+        try
+        {
+            return LineBreakCommentPrefix(__instance, text);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"SuperChatLineBreakCommentPrefix failed (input: '{text}'), please report this issue/发生错误，请报告此错误: {e.Message}/n{e.StackTrace}");
+            return true;
+        }
     }
 }

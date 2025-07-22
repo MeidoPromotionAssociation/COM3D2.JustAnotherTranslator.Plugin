@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reflection;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
@@ -21,10 +22,18 @@ public static class TextTranslatePatch
     [HarmonyPostfix]
     private static void KagScript_GetText_Postfix(ref string __result)
     {
-        LogManager.Debug("KagScript GetText called: " + __result);
+        try
+        {
+            LogManager.Debug("KagScript_GetText_Postfix called: " + __result);
 
-        if (TextTranslateManger.GetTranslateText(__result, out var translated))
-            __result = translated;
+            if (TextTranslateManger.GetTranslateText(__result, out var translated))
+                __result = translated;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"KagScript_GetText_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 
     /// <summary>
@@ -35,10 +44,18 @@ public static class TextTranslatePatch
     [HarmonyPrefix]
     private static void ScriptManger_ReplaceCaraName_Prefix(ref string text)
     {
-        LogManager.Debug("ScriptManager ReplaceCharaName called: " + text);
+        try
+        {
+            LogManager.Debug("ScriptManager ReplaceCharaName called: " + text);
 
-        if (TextTranslateManger.GetTranslateText(text, out var translated))
-            text = translated;
+            if (TextTranslateManger.GetTranslateText(text, out var translated))
+                text = translated;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"ScriptManager_ReplaceCaraName_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 
 
@@ -56,18 +73,26 @@ public static class TextTranslatePatch
     [HarmonyPostfix]
     private static void LocalizationManager_GetTranslationText_Postfix(ref LocalizationString __result)
     {
-        if (__result == null || string.IsNullOrEmpty(__result[Product.Language.Japanese])) return;
-
-        // 提取日文原文
-        var originalText = __result[Product.Language.Japanese];
-
-        LogManager.Debug($"LocalizationManager GetTranslationText called: {originalText}");
-
-        if (TextTranslateManger.GetTranslateText(originalText, out var translatedText))
+        try
         {
-            __result[Product.Language.Japanese] = translatedText;
-            __result[Product.baseScenarioLanguage] = translatedText;
-            __result[Product.subTitleScenarioLanguage] = translatedText;
+            if (__result == null || string.IsNullOrEmpty(__result[Product.Language.Japanese])) return;
+
+            // 提取日文原文
+            var originalText = __result[Product.Language.Japanese];
+
+            LogManager.Debug($"LocalizationManager GetTranslationText called: {originalText}");
+
+            if (TextTranslateManger.GetTranslateText(originalText, out var translatedText))
+            {
+                __result[Product.Language.Japanese] = translatedText;
+                __result[Product.baseScenarioLanguage] = translatedText;
+                __result[Product.subTitleScenarioLanguage] = translatedText;
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"LocalizationManager_GetTranslationText_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
         }
     }
 
@@ -80,20 +105,28 @@ public static class TextTranslatePatch
     [HarmonyPrefix]
     private static void Graphic_SetVerticesDirty_Prefix(object __instance)
     {
-        // LogManager.Debug($"Graphic SetVerticesDirty instance: {__instance}");
-        if (__instance is UnityEngine.UI.Text)
+        try
         {
-            var traverse = Traverse.Create(__instance).Field("m_Text");
-            var text = traverse.GetValue() as string;
+            // LogManager.Debug($"Graphic SetVerticesDirty instance: {__instance}");
+            if (__instance is UnityEngine.UI.Text)
+            {
+                var traverse = Traverse.Create(__instance).Field("m_Text");
+                var text = traverse.GetValue() as string;
 
-            // Just too much logs
-            if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
-                return;
+                // Just too much logs
+                if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
+                    return;
 
-            LogManager.Debug($"Graphic SetVerticesDirty called: {text}");
+                LogManager.Debug($"Graphic SetVerticesDirty called: {text}");
 
-            if (TextTranslateManger.GetTranslateText(text, out var translated))
-                traverse.SetValue(translated);
+                if (TextTranslateManger.GetTranslateText(text, out var translated))
+                    traverse.SetValue(translated);
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"Graphic_SetVerticesDirty_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
         }
     }
 
@@ -105,16 +138,24 @@ public static class TextTranslatePatch
     /// <param name="text"></param>
     private static void NGUIText_WrapText_Prefix(ref string text)
     {
-        // Just too much logs
-        if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
-            return;
-
-        LogManager.Debug("NGUIText WrapText(string, out string) called: " + text);
-
-        if (TextTranslateManger.GetTranslateText(text, out var translated))
+        try
         {
-            LogManager.Debug("NGUIText WrapText translated: " + translated);
-            text = translated;
+            // Just too much logs
+            if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
+                return;
+
+            LogManager.Debug("NGUIText WrapText(string, out string) called: " + text);
+
+            if (TextTranslateManger.GetTranslateText(text, out var translated))
+            {
+                LogManager.Debug("NGUIText WrapText translated: " + translated);
+                text = translated;
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"NGUIText_WrapText_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
         }
     }
 
@@ -125,25 +166,33 @@ public static class TextTranslatePatch
     /// <param name="harmony"></param>
     public static void RegisterNGUITextPatches(Harmony harmony)
     {
-        var wrapTextMethods = typeof(NGUIText).GetMethods(BindingFlags.Public | BindingFlags.Static)
-            .Where(m => m.Name == "WrapText" && m.GetParameters().Length > 0 &&
-                        m.GetParameters()[0].ParameterType == typeof(string));
-
-        var patchCount = 0;
-        foreach (var method in wrapTextMethods)
+        try
         {
-            var prefix = new HarmonyMethod(typeof(TextTranslatePatch).GetMethod(nameof(NGUIText_WrapText_Prefix),
-                BindingFlags.Static | BindingFlags.NonPublic));
+            var wrapTextMethods = typeof(NGUIText).GetMethods(BindingFlags.Public | BindingFlags.Static)
+                .Where(m => m.Name == "WrapText" && m.GetParameters().Length > 0 &&
+                            m.GetParameters()[0].ParameterType == typeof(string));
 
-            harmony.Patch(method, prefix);
-            patchCount++;
-            LogManager.Debug($"NGUIText.{method.Name} patched successfully");
+            var patchCount = 0;
+            foreach (var method in wrapTextMethods)
+            {
+                var prefix = new HarmonyMethod(typeof(TextTranslatePatch).GetMethod(nameof(NGUIText_WrapText_Prefix),
+                    BindingFlags.Static | BindingFlags.NonPublic));
+
+                harmony.Patch(method, prefix);
+                patchCount++;
+                LogManager.Debug($"NGUIText.{method.Name} patched successfully");
+            }
+
+            if (patchCount > 0)
+                LogManager.Debug(
+                    $"Total {patchCount} NGUIText.WrapText methods patched");
+            else
+                LogManager.Debug("Failed to find any NGUIText.WrapText methods");
         }
-
-        if (patchCount > 0)
-            LogManager.Debug(
-                $"Total {patchCount} NGUIText.WrapText methods patched");
-        else
-            LogManager.Debug("Failed to find any NGUIText.WrapText methods");
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"RegisterNGUITextPatches unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 }

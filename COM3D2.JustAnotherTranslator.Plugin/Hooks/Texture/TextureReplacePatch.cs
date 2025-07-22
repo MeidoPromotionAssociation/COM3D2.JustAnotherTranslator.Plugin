@@ -28,15 +28,23 @@ public static class TextureReplacePatch
     [HarmonyPostfix]
     private static void IsExistentFile_Postfix(ref bool __result, string file_name)
     {
-        // LogManager.Debug("IsExistentFile called: " + file_name);
-        // LogManager.Debug("IsExistentFile result: " + __result);
+        try
+        {
+            // LogManager.Debug("IsExistentFile called: " + file_name);
+            // LogManager.Debug("IsExistentFile result: " + __result);
 
-        if (string.IsNullOrEmpty(file_name) ||
-            !Path.GetExtension(file_name).Equals(".tex", StringComparison.InvariantCultureIgnoreCase))
-            return;
+            if (string.IsNullOrEmpty(file_name) ||
+                !Path.GetExtension(file_name).Equals(".tex", StringComparison.InvariantCultureIgnoreCase))
+                return;
 
-        if (TextureReplaceManger.IsTextureExist(file_name))
-            __result = true;
+            if (TextureReplaceManger.IsTextureExist(file_name))
+                __result = true;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"IsExistentFile_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 
     /// <summary>
@@ -53,21 +61,30 @@ public static class TextureReplacePatch
         string f_strFileName,
         bool usePoolBuffer)
     {
-        LogManager.Debug("ImportCM_LoadTexture_Prefix called: " + f_strFileName);
+        try
+        {
+            LogManager.Debug("ImportCM_LoadTexture_Prefix called: " + f_strFileName);
 
-        var fileName = Path.GetFileNameWithoutExtension(f_strFileName);
+            var fileName = Path.GetFileNameWithoutExtension(f_strFileName);
 
-        if (string.IsNullOrEmpty(fileName))
+            if (string.IsNullOrEmpty(fileName))
+                return true;
+
+            if (!TextureReplaceManger.GetReplaceTexture(fileName, out var newTexture))
+                return true;
+
+            // create new texture
+            __result = new TextureResource(1, 1, TextureFormat.ARGB32, __result?.uvRects, newTexture);
+
+            LogManager.Debug("ImportCM_LoadTexture_Prefix Texture replaced: " + f_strFileName);
+            return false;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"ImportCM_LoadTexture_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
             return true;
-
-        if (!TextureReplaceManger.GetReplaceTexture(fileName, out var newTexture))
-            return true;
-
-        // create new texture
-        __result = new TextureResource(1, 1, TextureFormat.ARGB32, __result?.uvRects, newTexture);
-
-        LogManager.Debug("ImportCM_LoadTexture_Prefix Texture replaced: " + f_strFileName);
-        return false;
+        }
     }
 
     /// <summary>
@@ -81,30 +98,38 @@ public static class TextureReplacePatch
     private static void UIWidget_mainTexture_Getter_Postfix(UIWidget __instance,
         ref UnityEngine.Texture __result)
     {
-        LogManager.Debug(
-            $"UIWidget_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
-
-        var tex = __instance.material?.mainTexture;
-
-        if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
-            return;
-
-        if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
-            return;
-
-        // 检查并转换为 Texture2D
-        if (tex is Texture2D tex2d)
+        try
         {
-            tex2d.LoadImage(EmptyBytes);
-            tex2d.LoadImage(newTexture);
-            // add JAT_ prefix to avoid infinite loop
-            tex2d.name = $"JAT_{tex2d.name}";
-            LogManager.Debug($"UIWidget Texture replaced: {tex.name}");
+            LogManager.Debug(
+                $"UIWidget_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
+
+            var tex = __instance.material?.mainTexture;
+
+            if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
+                return;
+
+            if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
+                return;
+
+            // 检查并转换为 Texture2D
+            if (tex is Texture2D tex2d)
+            {
+                tex2d.LoadImage(EmptyBytes);
+                tex2d.LoadImage(newTexture);
+                // add JAT_ prefix to avoid infinite loop
+                tex2d.name = $"JAT_{tex2d.name}";
+                LogManager.Debug($"UIWidget Texture replaced: {tex.name}");
+            }
+            else
+            {
+                LogManager.Warning(
+                    $"UIWidget_mainTexture_Getter_Postfix Texture {tex.name} is of type {tex.GetType().FullName}, which is unexpected, please report this issue/贴图 {tex.name} 类型为未预期的 {tex.GetType().FullName}，请报告此问题");
+            }
         }
-        else
+        catch (Exception e)
         {
-            LogManager.Warning(
-                $"UIWidget_mainTexture_Getter_Postfix Texture {tex.name} is of type {tex.GetType().FullName}, which is unexpected, please report this issue/贴图 {tex.name} 类型为未预期的 {tex.GetType().FullName}，请报告此问题");
+            LogManager.Error(
+                $"UIWidget_mainTexture_Getter_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
         }
     }
 
@@ -119,22 +144,30 @@ public static class TextureReplacePatch
     private static void UI2DSprite_mainTexture_Getter_Postfix(UI2DSprite __instance,
         ref UnityEngine.Texture __result)
     {
-        LogManager.Debug(
-            $"UI2DSprite_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
+        try
+        {
+            LogManager.Debug(
+                $"UI2DSprite_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
 
-        var tex = __instance.sprite2D?.texture;
+            var tex = __instance.sprite2D?.texture;
 
-        if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
-            return;
+            if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
+                return;
 
-        if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
-            return;
+            if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
+                return;
 
-        tex.LoadImage(EmptyBytes);
-        tex.LoadImage(newTexture);
-        // add JAT_ prefix to avoid infinite loop
-        tex.name = $"JAT_{tex.name}";
-        LogManager.Debug($"UI2DSprite Texture replaced: {tex.name}");
+            tex.LoadImage(EmptyBytes);
+            tex.LoadImage(newTexture);
+            // add JAT_ prefix to avoid infinite loop
+            tex.name = $"JAT_{tex.name}";
+            LogManager.Debug($"UI2DSprite Texture replaced: {tex.name}");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"UI2DSprite_mainTexture_Getter_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 
 
@@ -149,30 +182,38 @@ public static class TextureReplacePatch
     private static void UITexture_mainTexture_Getter_Postfix(UITexture __instance, ref UnityEngine.Texture __result,
         ref UnityEngine.Texture ___mTexture)
     {
-        LogManager.Debug(
-            $"UITexture_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
-
-        var tex = ___mTexture ?? __instance.material?.mainTexture;
-
-        if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
-            return;
-
-        if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
-            return;
-
-        // 检查并转换为 Texture2D
-        if (tex is Texture2D tex2d)
+        try
         {
-            tex2d.LoadImage(EmptyBytes);
-            tex2d.LoadImage(newTexture);
-            // add JAT_ prefix to avoid infinite loop
-            tex2d.name = $"JAT_{tex2d.name}";
-            LogManager.Debug($"UITexture Texture replaced: {tex.name}");
+            LogManager.Debug(
+                $"UITexture_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
+
+            var tex = ___mTexture ?? __instance.material?.mainTexture;
+
+            if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
+                return;
+
+            if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
+                return;
+
+            // 检查并转换为 Texture2D
+            if (tex is Texture2D tex2d)
+            {
+                tex2d.LoadImage(EmptyBytes);
+                tex2d.LoadImage(newTexture);
+                // add JAT_ prefix to avoid infinite loop
+                tex2d.name = $"JAT_{tex2d.name}";
+                LogManager.Debug($"UITexture Texture replaced: {tex.name}");
+            }
+            else
+            {
+                LogManager.Warning(
+                    $"GetMainTexturePostTex Texture {tex.name} is of type {tex.GetType().FullName}, which is unexpected, which is unexpected, please report this issue/贴图 {tex.name} 类型为未预期的 {tex.GetType().FullName}，请报告此问题");
+            }
         }
-        else
+        catch (Exception e)
         {
-            LogManager.Warning(
-                $"GetMainTexturePostTex Texture {tex.name} is of type {tex.GetType().FullName}, which is unexpected, which is unexpected, please report this issue/贴图 {tex.name} 类型为未预期的 {tex.GetType().FullName}，请报告此问题");
+            LogManager.Error(
+                $"UITexture_mainTexture_Getter_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
         }
     }
 
@@ -185,23 +226,31 @@ public static class TextureReplacePatch
     [HarmonyPrefix]
     private static void Image_sprite_Setter_Prefix(ref Sprite value)
     {
-        LogManager.Debug("Image_sprite_Setter_Prefix called: " + value?.name);
+        try
+        {
+            LogManager.Debug("Image_sprite_Setter_Prefix called: " + value?.name);
 
-        if (value is null || value.texture is null || string.IsNullOrEmpty(value.texture.name) ||
-            value.texture.name.StartsWith("JAT_"))
-            return;
+            if (value is null || value.texture is null || string.IsNullOrEmpty(value.texture.name) ||
+                value.texture.name.StartsWith("JAT_"))
+                return;
 
-        byte[] newTexture = null;
-        if (!string.IsNullOrEmpty(value.texture.name))
-            TextureReplaceManger.GetReplaceTexture(value.texture.name, out newTexture);
+            byte[] newTexture = null;
+            if (!string.IsNullOrEmpty(value.texture.name))
+                TextureReplaceManger.GetReplaceTexture(value.texture.name, out newTexture);
 
-        if (newTexture == null)
-            return;
+            if (newTexture == null)
+                return;
 
-        value.texture.LoadImage(EmptyBytes);
-        value.texture.LoadImage(newTexture);
-        value.texture.name = $"JAT_{value.texture.name}";
-        LogManager.Debug($"Texture replaced: {value.texture.name}");
+            value.texture.LoadImage(EmptyBytes);
+            value.texture.LoadImage(newTexture);
+            value.texture.name = $"JAT_{value.texture.name}";
+            LogManager.Debug($"Texture replaced: {value.texture.name}");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"Image_sprite_Setter_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 
 
@@ -213,11 +262,19 @@ public static class TextureReplacePatch
     [HarmonyPrefix]
     private static void OnMaskableGraphicEnable(MaskableGraphic __instance)
     {
-        if (__instance is not Image img || img.sprite is null)
-            return;
+        try
+        {
+            if (__instance is not Image img || img.sprite is null)
+                return;
 
-        // 通过重新设置sprite属性来触发SetSprite补丁
-        var tmp = img.sprite;
-        img.sprite = tmp;
+            // 通过重新设置sprite属性来触发SetSprite补丁
+            var tmp = img.sprite;
+            img.sprite = tmp;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"OnMaskableGraphicEnable unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 }

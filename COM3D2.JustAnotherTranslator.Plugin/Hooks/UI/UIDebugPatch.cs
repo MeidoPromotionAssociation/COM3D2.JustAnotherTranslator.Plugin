@@ -22,66 +22,75 @@ public class UIDebugPatch
 
         public static void ApplyPatch(Harmony harmonyInstance)
         {
-            if (_patched)
+            try
             {
-                LogManager.Debug("ILocalizeTarget patch has already been applied.");
-                return;
-            }
-
-            LogManager.Debug("Applying ILocalizeTarget patch...");
-
-            var targetType = typeof(ILocalizeTarget);
-
-            // Find all types that implement ILocalizeTarget in all loaded assemblies
-            var implementingTypes = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(assembly =>
+                if (_patched)
                 {
-                    try
-                    {
-                        return assembly.GetTypes();
-                    }
-                    catch (ReflectionTypeLoadException)
-                    {
-                        // Ignore assemblies that fail to load types
-                        return Type.EmptyTypes;
-                    }
-                })
-                .Where(type => targetType.IsAssignableFrom(type) && !type.IsAbstract && !type.IsInterface)
-                .ToList();
+                    LogManager.Debug("ILocalizeTarget patch has already been applied.");
+                    return;
+                }
 
-            if (!implementingTypes.Any())
-            {
-                LogManager.Debug("No implementations of ILocalizeTarget found to patch.");
-                return;
+                LogManager.Debug("Applying ILocalizeTarget patch...");
+
+                var targetType = typeof(ILocalizeTarget);
+
+                // Find all types that implement ILocalizeTarget in all loaded assemblies
+                var implementingTypes = AppDomain.CurrentDomain.GetAssemblies()
+                    .SelectMany(assembly =>
+                    {
+                        try
+                        {
+                            return assembly.GetTypes();
+                        }
+                        catch (ReflectionTypeLoadException)
+                        {
+                            // Ignore assemblies that fail to load types
+                            return Type.EmptyTypes;
+                        }
+                    })
+                    .Where(type => targetType.IsAssignableFrom(type) && !type.IsAbstract && !type.IsInterface)
+                    .ToList();
+
+                if (!implementingTypes.Any())
+                {
+                    LogManager.Debug("No implementations of ILocalizeTarget found to patch.");
+                    return;
+                }
+
+                var prefix = new HarmonyMethod(typeof(DoLocalizePatches),
+                    nameof(DoLocalizePatches.LogDoLocalizeCallPrefix));
+                var patchedCount = 0;
+
+                foreach (var type in implementingTypes)
+                {
+                    // We need to find the specific implementation of DoLocalize in this type.
+                    // Using DeclaredOnly helps to get the override in the current class, not the base abstract method.
+                    var method = type.GetMethod("DoLocalize",
+                        BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance |
+                        BindingFlags.DeclaredOnly);
+
+                    if (method != null)
+                        try
+                        {
+                            harmonyInstance.Patch(method, prefix);
+                            patchedCount++;
+                            LogManager.Debug($"Successfully patched {type.FullName}.DoLocalize");
+                        }
+                        catch (Exception e)
+                        {
+                            LogManager.Debug($"Failed to patch {type.FullName}.DoLocalize: {e.Message}");
+                        }
+                }
+
+                LogManager.Debug(
+                    $"Patching complete. Patched {patchedCount} out of {implementingTypes.Count} implementations of ILocalizeTarget.");
+                _patched = true;
             }
-
-            var prefix = new HarmonyMethod(typeof(DoLocalizePatches),
-                nameof(DoLocalizePatches.LogDoLocalizeCallPrefix));
-            var patchedCount = 0;
-
-            foreach (var type in implementingTypes)
+            catch (Exception e)
             {
-                // We need to find the specific implementation of DoLocalize in this type.
-                // Using DeclaredOnly helps to get the override in the current class, not the base abstract method.
-                var method = type.GetMethod("DoLocalize",
-                    BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-
-                if (method != null)
-                    try
-                    {
-                        harmonyInstance.Patch(method, prefix);
-                        patchedCount++;
-                        LogManager.Debug($"Successfully patched {type.FullName}.DoLocalize");
-                    }
-                    catch (Exception e)
-                    {
-                        LogManager.Debug($"Failed to patch {type.FullName}.DoLocalize: {e.Message}");
-                    }
+                LogManager.Error(
+                    $"LocalizeTargetPatcher.ApplyPatch unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
             }
-
-            LogManager.Debug(
-                $"Patching complete. Patched {patchedCount} out of {implementingTypes.Count} implementations of ILocalizeTarget.");
-            _patched = true;
         }
     }
 
@@ -108,7 +117,8 @@ public class UIDebugPatch
             }
             catch (Exception e)
             {
-                LogManager.Debug($"Error in DoLocalize patch prefix: {e.Message}");
+                LogManager.Error(
+                    $"LogDoLocalizeCallPrefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
             }
         }
     }

@@ -1,3 +1,4 @@
+using System;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
@@ -29,23 +30,31 @@ public static class BaseVoiceSubtitlePatch
     [HarmonyPrefix]
     public static void BaseKagManager_TagPlayVoice_Prefix(KagTagSupport tag_data, BaseKagManager __instance)
     {
-        // voiceId + .ogg 既是音频文件，支持按音频文件名进行翻译
-        var voiceId = tag_data.GetTagProperty("voice").AsString();
+        try
+        {
+            // voiceId + .ogg 既是音频文件，支持按音频文件名进行翻译
+            var voiceId = tag_data.GetTagProperty("voice").AsString();
 
-        // 无法从游戏本身获取文本，因此无论如何都需要从翻译获取
-        // 交由 Maid启动监听协程尝试从翻译获取
-        // 原方法使用 GetMaidAndMan 获取 maid 对象，这里使用相同的方法
-        var speakingMaid = __instance.GetMaidAndMan(tag_data);
+            // 无法从游戏本身获取文本，因此无论如何都需要从翻译获取
+            // 交由 Maid启动监听协程尝试从翻译获取
+            // 原方法使用 GetMaidAndMan 获取 maid 对象，这里使用相同的方法
+            var speakingMaid = __instance.GetMaidAndMan(tag_data);
 
-        SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Base);
-        SubtitleManager.SetCurrentVoiceId(voiceId);
-        SubtitleManager.SetCurrentSpeaker(speakingMaid);
-        SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
+            SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Base);
+            SubtitleManager.SetCurrentVoiceId(voiceId);
+            SubtitleManager.SetCurrentSpeaker(speakingMaid);
+            SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
-        LogManager.Debug(
-            $"BaseKagManager_TagPlayVoice_Prefix tag_data maid: {tag_data.GetTagProperty("maid").AsString()}");
-        LogManager.Debug(
-            $"BaseKagManager_TagPlayVoice_Prefix GetMaidAndMan speakingMaid: {speakingMaid.status.fullNameJpStyle}");
-        LogManager.Debug($"BaseKagManager_TagPlayVoice_Prefix tag_data voiceId: {voiceId}");
+            LogManager.Debug(
+                $"BaseKagManager_TagPlayVoice_Prefix tag_data maid: {tag_data.GetTagProperty("maid").AsString()}");
+            LogManager.Debug(
+                $"BaseKagManager_TagPlayVoice_Prefix GetMaidAndMan speakingMaid: {speakingMaid.status.fullNameJpStyle}");
+            LogManager.Debug($"BaseKagManager_TagPlayVoice_Prefix tag_data voiceId: {voiceId}");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"BaseKagManager_TagPlayVoice_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
 }

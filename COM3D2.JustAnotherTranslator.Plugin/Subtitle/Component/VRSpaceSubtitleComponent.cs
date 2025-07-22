@@ -1,3 +1,4 @@
+using System;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using UnityEngine;
 using UnityEngine.UI;
@@ -90,7 +91,8 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     ///     初始化字幕组件
     /// </summary>
     /// <param name="config">字幕配置</param>
-    public override void Init(SubtitleConfig config)
+    /// <param name="subtitleId">字幕ID</param>
+    public override void Init(SubtitleConfig config, string subtitleId)
     {
         if (config is null)
         {
@@ -99,19 +101,30 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             return;
         }
 
-        Config = config;
+        try
+        {
+            Config = config;
 
-        // 初始化 VR 组件
-        InitVRComponents();
+            // 初始化 VR 组件
+            InitVRComponents();
 
-        // 创建UI
-        CreateSubtitleUI();
+            // 创建UI
+            CreateSubtitleUI();
 
-        // 应用配置
-        ApplyConfig();
+            // 应用配置
+            ApplyConfig();
 
-        gameObject.SetActive(false);
-        LogManager.Debug("VR space subtitle component initialized");
+            if (gameObject == null)
+                throw new NullReferenceException(
+                    "GameObject is null after creating UI, cannot initialize VR space subtitle component/创建UI后GameObject为空，无法初始化VR空间字幕组件");
+            gameObject.name = subtitleId;
+            gameObject.SetActive(false);
+            LogManager.Debug($"VR space subtitle component {subtitleId} initialized");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to initialize VR space subtitle component/VR空间字幕组件初始化失败: {e.Message}");
+        }
     }
 
 

@@ -1,4 +1,6 @@
-﻿namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
+﻿using System;
+
+namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 /// <summary>
 ///     获取 Maid 信息
@@ -12,9 +14,19 @@ public static class MaidInfo
     /// <returns></returns>
     public static string GetMaidFullName(Maid maid)
     {
-        if (JustAnotherTranslator.MaidNameStyle.Value == JustAnotherTranslator.MaidNameStyleEnum.JpStyle)
-            return maid.status.fullNameJpStyle;
+        try
+        {
+            if (JustAnotherTranslator.MaidNameStyle.Value == JustAnotherTranslator.MaidNameStyleEnum.JpStyle)
+                return maid.status.fullNameJpStyle;
 
-        return maid.status.fullNameEnStyle;
+            return maid.status.fullNameEnStyle;
+        }
+        catch (Exception e)
+        {
+            // Because there is a stack, it would rather be caught
+            LogManager.Error(
+                $"GetMaidFullName unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+            return "";
+        }
     }
 }

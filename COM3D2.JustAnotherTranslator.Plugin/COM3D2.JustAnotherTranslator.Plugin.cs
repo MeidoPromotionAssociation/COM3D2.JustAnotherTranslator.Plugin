@@ -88,9 +88,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> BaseSubtitleOpacity;
     public static ConfigEntry<string> BaseSubtitleBackgroundColor;
     public static ConfigEntry<float> BaseSubtitleBackgroundOpacity;
+    public static ConfigEntry<float> BaseSubtitleHorizontalPosition;
     public static ConfigEntry<float> BaseSubtitleVerticalPosition;
-    public static ConfigEntry<float> BaseSubtitleBackgroundWidth;
-    public static ConfigEntry<float> BaseSubtitleBackgroundHeight;
+    public static ConfigEntry<float> BaseSubtitleWidth;
+    public static ConfigEntry<float> BaseSubtitleHeight;
     public static ConfigEntry<bool> EnableBaseSubtitleAnimation;
     public static ConfigEntry<float> BaseSubtitleFadeInDuration;
     public static ConfigEntry<float> BaseSubtitleFadeOutDuration;
@@ -108,9 +109,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> YotogiSubtitleOpacity;
     public static ConfigEntry<string> YotogiSubtitleBackgroundColor;
     public static ConfigEntry<float> YotogiSubtitleBackgroundOpacity;
+    public static ConfigEntry<float> YotogiSubtitleHorizontalPosition;
     public static ConfigEntry<float> YotogiSubtitleVerticalPosition;
-    public static ConfigEntry<float> YotogiSubtitleBackgroundWidth;
-    public static ConfigEntry<float> YotogiSubtitleBackgroundHeight;
+    public static ConfigEntry<float> YotogiSubtitleWidth;
+    public static ConfigEntry<float> YotogiSubtitleHeight;
     public static ConfigEntry<bool> EnableYotogiSubtitleAnimation;
     public static ConfigEntry<float> YotogiSubtitleFadeInDuration;
     public static ConfigEntry<float> YotogiSubtitleFadeOutDuration;
@@ -128,9 +130,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> AdvSubtitleOpacity;
     public static ConfigEntry<string> AdvSubtitleBackgroundColor;
     public static ConfigEntry<float> AdvSubtitleBackgroundOpacity;
+    public static ConfigEntry<float> AdvSubtitleHorizontalPosition;
     public static ConfigEntry<float> AdvSubtitleVerticalPosition;
-    public static ConfigEntry<float> AdvSubtitleBackgroundWidth;
-    public static ConfigEntry<float> AdvSubtitleBackgroundHeight;
+    public static ConfigEntry<float> AdvSubtitleWidth;
+    public static ConfigEntry<float> AdvSubtitleHeight;
     public static ConfigEntry<bool> EnableAdvSubtitleAnimation;
     public static ConfigEntry<float> AdvSubtitleFadeInDuration;
     public static ConfigEntry<float> AdvSubtitleFadeOutDuration;
@@ -149,9 +152,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> LyricSubtitleOpacity;
     public static ConfigEntry<string> LyricSubtitleBackgroundColor;
     public static ConfigEntry<float> LyricSubtitleBackgroundOpacity;
+    public static ConfigEntry<float> LyricSubtitleHorizontalPosition;
     public static ConfigEntry<float> LyricSubtitleVerticalPosition;
-    public static ConfigEntry<float> LyricSubtitleBackgroundWidth;
-    public static ConfigEntry<float> LyricSubtitleBackgroundHeight;
+    public static ConfigEntry<float> LyricSubtitleWidth;
+    public static ConfigEntry<float> LyricSubtitleHeight;
     public static ConfigEntry<bool> EnableLyricSubtitleAnimation;
     public static ConfigEntry<float> LyricSubtitleFadeInDuration;
     public static ConfigEntry<float> LyricSubtitleFadeOutDuration;
@@ -348,20 +352,25 @@ public class JustAnotherTranslator : BaseUnityPlugin
             0.1f,
             "Base Subtitle Background Opacity (0-1)/基础字幕背景不透明度（0-1）");
 
+        BaseSubtitleWidth = Config.Bind("BaseSubtitle",
+            "BaseSubtitleWidth/基础字幕背景宽度",
+            1920f,
+            "Subtitle Width(pixel), reference resolution is 1920x1080, so set to 1920 will fill the whole screen width/字幕背景宽度(像素)，参考分辨率为1920x1080，因此设置为1920时将填满整个屏幕宽");
+
+        BaseSubtitleHeight = Config.Bind("BaseSubtitle",
+            "BaseSubtitleHeight/基础字幕背景高度",
+            30f,
+            "Subtitle Height(pixel), reference resolution is 1920x1080, so set to 1080 will fill the whole screen height/字幕背景高度(像素)，参考分辨率为1920x1080，因此设置为1080时将填满整个屏幕高");
+
+        BaseSubtitleHorizontalPosition = Config.Bind("BaseSubtitle",
+            "BaseSubtitleHorizontalPosition/基础字幕水平位置",
+            0f,
+            "Distance to the left side of the screen (0 is the left, 1920 is the right)/到屏幕左边的距离（0为左边，1920为最右边）");
+
         BaseSubtitleVerticalPosition = Config.Bind("BaseSubtitle",
             "BaseSubtitleVerticalPosition/基础字幕垂直位置",
-            0.97f,
-            "Base Subtitle Vertical Position (0 is bottom, 1 is top, note 0 and 1 will go out of screen)/基础字幕垂直位置（0为底部，1为顶部，注意 0 和 1 会超出屏幕）");
-
-        BaseSubtitleBackgroundWidth = Config.Bind("BaseSubtitle",
-            "BaseSubtitleBackgroundWidth/基础字幕背景宽度",
-            1f,
-            "Base Subtitle Background Width, less than 1 is relative, otherwise is pixel/基础背景幕宽度，小于 1 时为相对比例反之为像素");
-
-        BaseSubtitleBackgroundHeight = Config.Bind("BaseSubtitle",
-            "BaseSubtitleBackgroundHeight/基础字幕背景高度",
-            0.015f,
-            "Base Subtitle Background Height, less than 1 is relative, otherwise is pixel/基础背景幕高度，小于 1 时为相对比例反之为像素");
+            1050f,
+            "Distance to bottom of screen (0 is bottom, 1 is top, note 1080 will go out of screen, should subtract background height)/到屏幕底部的距离（0为底部，1080为顶部，注意1080会超出屏幕，应减去背景高度）");
 
         EnableBaseSubtitleAnimation = Config.Bind("BaseSubtitle",
             "BaseSubtitleAnimation/基础字幕动画",
@@ -443,21 +452,25 @@ public class JustAnotherTranslator : BaseUnityPlugin
             0.1f,
             "Yotogi Subtitle Background Opacity (0-1)/夜伽字幕背景不透明度（0-1）");
 
+        YotogiSubtitleWidth = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleWidth/夜伽字幕背景宽度",
+            1920f,
+            "Subtitle Width(pixel), reference resolution is 1920x1080, so set to 1920 will fill the whole screen width/字幕宽度(像素)，参考分辨率为1920x1080，因此设置为1920时将填满整个屏幕宽");
+
+        YotogiSubtitleHeight = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleHeight/夜伽字幕背景高度",
+            30f,
+            "Subtitle Height(pixel), reference resolution is 1920x1080, so set to 1080 will fill the whole screen height/字幕高度(像素)，参考分辨率为1920x1080，因此设置为1080时将填满整个屏幕高");
+
+        YotogiSubtitleHorizontalPosition = Config.Bind("YotogiSubtitle",
+            "YotogiSubtitleHorizontalPosition/夜伽字幕水平位置",
+            0f,
+            "Distance to the left side of the screen (0 is the left, 1920 is the right)/到屏幕左边的距离（0为左边，1920为最右边）");
+
         YotogiSubtitleVerticalPosition = Config.Bind("YotogiSubtitle",
             "YotogiSubtitleVerticalPosition/夜伽字幕垂直位置",
-            0.97f,
-            "Yotogi Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/夜伽字幕垂直位置（0-1，0为底部，1为顶部）");
-
-        YotogiSubtitleBackgroundWidth = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleBackgroundWidth/夜伽字幕背景宽度",
-            1f,
-            "Yotogi Subtitle Background Width, less than 1 is relative, otherwise is pixel/夜伽背景幕宽度，小于 1 时为相对比例反之为像素");
-
-
-        YotogiSubtitleBackgroundHeight = Config.Bind("YotogiSubtitle",
-            "YotogiSubtitleBackgroundHeight/夜伽字幕背景高度",
-            0.015f,
-            "Yotogi Subtitle Background Height, less than 1 is relative, otherwise is pixel/夜伽背景幕高度，小于 1 时为相对比例反之为像素");
+            1050f,
+            "Distance to bottom of screen (0 is bottom, 1 is top, note 1080 will go out of screen, should subtract background height)/到屏幕底部的距离（0为底部，1080为顶部，注意1080会超出屏幕，应减去背景高度）");
 
         EnableYotogiSubtitleAnimation = Config.Bind("YotogiSubtitle",
             "YotogiSubtitleAnimation/夜伽字幕动画",
@@ -539,21 +552,25 @@ public class JustAnotherTranslator : BaseUnityPlugin
             0.1f,
             "ADV Subtitle Background Opacity (0-1)/ADV字幕背景不透明度（0-1）");
 
+        AdvSubtitleWidth = Config.Bind("AdvSubtitle",
+            "AdvSubtitleWidth/ADV字幕背景宽度",
+            1920f,
+            "Subtitle Width(pixel), reference resolution is 1920x1080, so set to 1920 will fill the whole screen width/字幕宽度(像素)，参考分辨率为1920x1080，因此设置为1920时将填满整个屏幕宽");
+
+        AdvSubtitleHeight = Config.Bind("AdvSubtitle",
+            "AdvSubtitleHeight/ADV字幕背景高度",
+            30f,
+            "Subtitle Height(pixel), reference resolution is 1920x1080, so set to 1080 will fill the whole screen height/字幕高度(像素)，参考分辨率为1920x1080，因此设置为1080时将填满整个屏幕高");
+
+        AdvSubtitleHorizontalPosition = Config.Bind("AdvSubtitle",
+            "AdvSubtitleHorizontalPosition/ADV字幕水平位置",
+            0f,
+            "Distance to the left side of the screen (0 is the left, 1920 is the right)/到屏幕左边的距离（0为左边，1920为最右边）");
+
         AdvSubtitleVerticalPosition = Config.Bind("AdvSubtitle",
             "AdvSubtitleVerticalPosition/ADV字幕垂直位置",
-            0.97f,
-            "ADV Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/ADV字幕垂直位置（0-1，0为底部，1为顶部）");
-
-        AdvSubtitleBackgroundWidth = Config.Bind("AdvSubtitle",
-            "AdvSubtitleBackgroundWidth/ADV字幕背景宽度",
-            1f,
-            "Adv Subtitle Background Width, less than 1 is relative, otherwise is pixel/ADV背景幕宽度，小于 1 时为相对比例反之为像素");
-
-
-        AdvSubtitleBackgroundHeight = Config.Bind("AdvSubtitle",
-            "AdvSubtitleBackgroundHeight/ADV字幕背景高度",
-            0.015f,
-            "Adv Subtitle Background Height, less than 1 is relative, otherwise is pixel/ADV背景幕高度，小于 1 时为相对比例反之为像素");
+            1050f,
+            "Distance to bottom of screen (0 is bottom, 1 is top, note 1080 will go out of screen, should subtract background height)/到屏幕底部的距离（0为底部，1080为顶部，注意1080会超出屏幕，应减去背景高度）");
 
         EnableAdvSubtitleAnimation = Config.Bind("AdvSubtitle",
             "AdvSubtitleAnimation/ADV字幕动画",
@@ -640,20 +657,25 @@ public class JustAnotherTranslator : BaseUnityPlugin
             0.1f,
             "Lyric Subtitle Background Opacity (0-1)/歌词字幕背景不透明度（0-1）");
 
+        LyricSubtitleWidth = Config.Bind("LyricSubtitle",
+            "LyricSubtitleWidth/歌词字幕背景宽度",
+            1920f,
+            "Subtitle Width(pixel), reference resolution is 1920x1080, so set to 1920 will fill the whole screen width/字幕宽度(像素)，参考分辨率为1920x1080，因此设置为1920时将填满整个屏幕宽");
+
+        LyricSubtitleHeight = Config.Bind("LyricSubtitle",
+            "LyricSubtitleHeight/歌词字幕背景高度",
+            30f,
+            "Subtitle Height(pixel), reference resolution is 1920x1080, so set to 1080 will fill the whole screen height/字幕高度(像素)，参考分辨率为1920x1080，因此设置为1080时将填满整个屏幕高");
+
+        LyricSubtitleHorizontalPosition = Config.Bind("LyricSubtitle",
+            "LyricSubtitleHorizontalPosition/歌词字幕水平位置",
+            0f,
+            "Distance to the left side of the screen (0 is the left, 1920 is the right)/到屏幕左边的距离（0为左边，1920为最右边）");
+
         LyricSubtitleVerticalPosition = Config.Bind("LyricSubtitle",
             "LyricSubtitleVerticalPosition/歌词字幕垂直位置",
-            0.97f,
-            "Lyric Subtitle Vertical Position (0-1, 0 is bottom, 1 is top)/歌词字幕垂直位置（0-1，0为底部，1为顶部）");
-
-        LyricSubtitleBackgroundWidth = Config.Bind("LyricSubtitle",
-            "LyricSubtitleBackgroundWidth/歌词字幕背景宽度",
-            0.6f,
-            "Lyric Subtitle Background Width, less than 1 is relative, otherwise is pixel/歌词背景幕宽度，小于 1 时为相对比例反之为像素");
-
-        LyricSubtitleBackgroundHeight = Config.Bind("LyricSubtitle",
-            "LyricSubtitleBackgroundHeight/歌词字幕背景高度",
-            0.015f,
-            "Lyric Subtitle Background Height, less than 1 is relative, otherwise is pixel/歌词背景幕高度，小于 1 时为相对比例反之为像素");
+            1050f,
+            "Distance to bottom of screen (0 is bottom, 1 is top, note 1080 will go out of screen, should subtract background height)/到屏幕底部的距离（0为底部，1080为顶部，注意1080会超出屏幕，应减去背景高度）");
 
         EnableLyricSubtitleAnimation = Config.Bind("LyricSubtitle",
             "LyricSubtitleAnimation/歌词字幕动画",
@@ -963,6 +985,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             // 不需要重新加载
             LogManager.Info($"Log level changed to {LogLevelConfig.Value}/日志级别已更改为 {LogLevelConfig.Value}");
+            if (LogLevelConfig.Value >= LogLevel.Debug)
+                LogManager.Info("some debug patches require a game restart/部分 debug 补丁需要重启游戏生效");
         };
 
         // 注册贴图缓存大小变更事件
@@ -1171,7 +1195,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景宽度变更事件
-        BaseSubtitleBackgroundWidth.SettingChanged += (sender, args) =>
+        BaseSubtitleWidth.SettingChanged += (sender, args) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1181,7 +1205,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕高度变更事件
-        BaseSubtitleBackgroundHeight.SettingChanged += (sender, args) =>
+        BaseSubtitleHeight.SettingChanged += (sender, args) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1357,7 +1381,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景宽度变更事件
-        YotogiSubtitleBackgroundWidth.SettingChanged += (sender, args) =>
+        YotogiSubtitleWidth.SettingChanged += (sender, args) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1367,7 +1391,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕高度变更事件
-        YotogiSubtitleBackgroundHeight.SettingChanged += (sender, args) =>
+        YotogiSubtitleHeight.SettingChanged += (sender, args) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1543,7 +1567,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景宽度变更事件
-        AdvSubtitleBackgroundWidth.SettingChanged += (sender, args) =>
+        AdvSubtitleWidth.SettingChanged += (sender, args) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1553,7 +1577,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕高度变更事件
-        AdvSubtitleBackgroundHeight.SettingChanged += (sender, args) =>
+        AdvSubtitleHeight.SettingChanged += (sender, args) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1739,7 +1763,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景宽度变更事件
-        LyricSubtitleBackgroundWidth.SettingChanged += (sender, args) =>
+        LyricSubtitleWidth.SettingChanged += (sender, args) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1749,7 +1773,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕高度变更事件
-        LyricSubtitleBackgroundHeight.SettingChanged += (sender, args) =>
+        LyricSubtitleHeight.SettingChanged += (sender, args) =>
         {
             if (EnableLyricSubtitle.Value)
             {

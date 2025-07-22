@@ -100,6 +100,9 @@ public static class TextureReplacePatch
     {
         try
         {
+            if (__result.name.StartsWith("JAT_"))
+                return;
+
             LogManager.Debug(
                 $"UIWidget_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
 

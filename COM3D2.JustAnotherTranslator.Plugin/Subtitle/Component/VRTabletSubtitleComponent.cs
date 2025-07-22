@@ -72,7 +72,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         backgroundRect.anchorMin = new Vector2(0, Config.VerticalPosition);
         backgroundRect.anchorMax = new Vector2(1, Config.VerticalPosition);
         backgroundRect.pivot = new Vector2(0.5f, 0);
-        backgroundRect.sizeDelta = new Vector2(0, Config.BackgroundHeight);
+        backgroundRect.sizeDelta = new Vector2(0, Config.SubtitleHeight);
 
 
         // 创建文本对象

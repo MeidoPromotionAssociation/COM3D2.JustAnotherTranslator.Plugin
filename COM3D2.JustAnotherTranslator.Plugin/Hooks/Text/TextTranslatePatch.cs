@@ -126,7 +126,8 @@ public static class TextTranslatePatch
                 var text = traverse.GetValue() as string;
 
                 // Just too much logs
-                if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
+                if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text) ||
+                    text.Contains(XUATInterop.XuatSpicalMaker))
                     return;
 
                 LogManager.Debug($"Graphic SetVerticesDirty called: {text}");

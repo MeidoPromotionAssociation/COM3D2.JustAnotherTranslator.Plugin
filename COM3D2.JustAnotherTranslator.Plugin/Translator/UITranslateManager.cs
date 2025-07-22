@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Threading;
 using BepInEx.Logging;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
@@ -38,7 +37,7 @@ public static class UITranslateManager
     /// 缓存已创建的替换 Atlas，避免重复创建
     private static readonly Dictionary<string, UIAtlas> ReplacementAtlasCache = new(); // spriteName -> UIAtlas
 
-    private static Thread _textLoaderThread;
+    /// 异步 UI 文本加载器
     private static AsyncUiTextLoader _uiTextLoader;
 
     public static void Init()

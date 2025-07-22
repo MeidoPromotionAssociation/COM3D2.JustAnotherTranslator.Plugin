@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
@@ -52,10 +53,19 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     protected Text TextComponent;
 
     /// <summary>
+    ///     销毁字幕组件
+    /// </summary>
+    public virtual void OnDestroy()
+    {
+        SubtitleComponentManager.DestroySubtitleComponent(this);
+    }
+
+    /// <summary>
     ///     初始化字幕组件
     /// </summary>
     /// <param name="config">字幕配置</param>
-    public virtual void Init(SubtitleConfig config)
+    /// <param name="subtitleId">字幕ID</param>
+    public virtual void Init(SubtitleConfig config, string subtitleId)
     {
         if (config is null)
         {
@@ -64,16 +74,28 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             return;
         }
 
-        Config = config;
+        try
+        {
+            Config = config;
 
-        // 创建UI
-        CreateSubtitleUI();
+            // 创建UI
+            CreateSubtitleUI();
 
-        // 应用配置
-        ApplyConfig();
+            // 应用配置
+            ApplyConfig();
 
-        gameObject.SetActive(false);
-        LogManager.Debug($"{gameObject.name} initialized");
+            if (gameObject == null)
+                throw new NullReferenceException(
+                    "GameObject is null after creating UI, cannot initialize base subtitle component/创建UI后GameObject为空，无法初始化基础字幕组件");
+
+            gameObject.name = subtitleId;
+            gameObject.SetActive(false);
+            LogManager.Debug($"base subtitle component {subtitleId} initialized");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to initialize base subtitle component/基础字幕组件初始化失败: {e.Message}");
+        }
     }
 
     /// <summary>
@@ -200,13 +222,33 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         return SpeakerName ?? string.Empty;
     }
 
+    /// <summary>
+    ///     设置字幕ID
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public bool SetSubtitleId(string text)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(text))
+                return false;
+            gameObject.name = text;
+            return true;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to set subtitle id/设置字幕ID失败: {e.Message}");
+            return false;
+        }
+    }
 
     /// <summary>
     ///     获取当前字幕ID
     /// </summary>
     public string GetSubtitleId()
     {
-        return GetGameObject().name;
+        return gameObject.name;
     }
 
     /// <summary>
@@ -243,7 +285,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     ///     获取当前垂直位置
     /// </summary>
     /// <returns>垂直位置</returns>
-    public virtual float GetVerticalPosition()
+    public virtual float GetCurrentVerticalPosition()
     {
         return Config?.CurrentVerticalPosition ?? 0f;
     }
@@ -267,12 +309,9 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <returns>高度</returns>
     public virtual float GetHeight()
     {
-        if (Config == null) return 0.015f;
+        if (Config == null) return 0f;
 
-        var height = Config.CurrentBackgroundHeight;
-
-        // 如果大于1，说明是像素值，转换为屏幕比例
-        if (height > 1.0f) height = height / Screen.height;
+        var height = Config.SubtitleHeight;
 
         return height;
     }
@@ -321,12 +360,17 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         var verticalPosition = Config.VerticalPosition;
         Config.CurrentVerticalPosition = verticalPosition;
 
-        var backgroundHeight = Config.BackgroundHeight;
-        Config.CurrentBackgroundHeight = backgroundHeight;
+        // 应用背景配置
+        if (BackgroundImageComponents is not null)
+        {
+            BackgroundImageComponents.color = Config.BackgroundColor;
 
-        var backgroundWidth = Config.BackgroundWidth;
-        Config.CurrentBackgroundWidth = backgroundWidth;
+            BackgroundImageComponents.rectTransform.sizeDelta = new Vector2(
+                Config.SubtitleWidth, Config.SubtitleHeight);
 
+            BackgroundImageComponents.rectTransform.anchoredPosition3D = new Vector3(
+                Config.HorizontalPosition, verticalPosition, 0f);
+        }
 
         // 应用文本组件配置
         if (TextComponent is not null)
@@ -337,40 +381,14 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             TextComponent.fontSize = Config.FontSize;
             TextComponent.color = Config.TextColor;
             TextComponent.alignment = Config.TextAlignment;
+
+            TextComponent.rectTransform.sizeDelta = new Vector2(
+                Config.SubtitleWidth, Config.SubtitleHeight);
+
+            // 注意可以跟随父级移动，因此只需要移动背景即可
+            TextComponent.rectTransform.anchoredPosition3D = new Vector3(0f, 0f, 0f);
         }
 
-        // 应用背景配置
-        if (BackgroundImageComponents is not null)
-        {
-            BackgroundImageComponents.color = Config.BackgroundColor;
-
-            // 设置背景大小
-            var backgroundRect = BackgroundImageComponents.rectTransform;
-
-            // 计算高度 - 如果BackgroundHeight <= 1则作为百分比处理，否则作为绝对像素值
-            float height;
-            if (backgroundHeight <= 1.0f)
-                height = Screen.height * backgroundHeight;
-            else
-                height = backgroundHeight;
-
-            // 宽度设置 - 如果BackgroundWidth <= 1则作为百分比处理，否则作为绝对像素值
-            var width = backgroundWidth;
-            if (width <= 1.0f)
-            {
-                // 作为屏幕宽度的百分比，保持原来的锚点设置
-                backgroundRect.anchorMin = new Vector2((1 - width) / 2, Config.CurrentVerticalPosition);
-                backgroundRect.anchorMax = new Vector2((1 + width) / 2, Config.CurrentVerticalPosition);
-                backgroundRect.sizeDelta = new Vector2(0, height);
-            }
-            else
-            {
-                // 绝对像素宽度，需要调整锚点为中心
-                backgroundRect.anchorMin = new Vector2(0.5f, Config.CurrentVerticalPosition);
-                backgroundRect.anchorMax = new Vector2(0.5f, Config.CurrentVerticalPosition);
-                backgroundRect.sizeDelta = new Vector2(width, height);
-            }
-        }
 
         // 应用描边配置
         if (OutlineComponents is not null)
@@ -384,38 +402,13 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             }
         }
 
-        // 应用画布配置
-        if (CanvasComponents is not null)
-            // 根据字幕类型设置画布属性
-            if (Config.SubtitleType == JustAnotherTranslator.SubtitleTypeEnum.Base)
-            {
-                // 设置垂直位置
-                var rectTransform = CanvasComponents.GetComponent<RectTransform>();
-                if (rectTransform is not null)
-                {
-                    // 0是底部，1是顶部，调整字幕的垂直位置
-                    rectTransform.anchorMin = new Vector2(0.5f, Config.CurrentVerticalPosition);
-                    rectTransform.anchorMax = new Vector2(0.5f, Config.CurrentVerticalPosition);
-                    rectTransform.pivot = new Vector2(0.5f, 0.5f);
-                }
-            }
-
-        // 应用画布缩放器配置
-        if (CanvasScalerComponents is not null)
-        {
-            // 设置UI缩放模式和参考分辨率
-            CanvasScalerComponents.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            CanvasScalerComponents.referenceResolution = new Vector2(1920, 1080);
-            CanvasScalerComponents.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-            CanvasScalerComponents.matchWidthOrHeight = 0.5f; // 0是宽度，1是高度，0.5是两者平衡
-        }
-
         LogManager.Debug($"Applied subtitle config to {gameObject.name}");
     }
 
 
     /// <summary>
-    ///     应用新的位置，包括垂直位置，背景高度，背景宽度
+    ///     应用新的位置，包括 水平位置，垂直位置，背景高度，背景宽度
+    ///     水平位置使用 Config.CurrentVerticalPosition
     /// </summary>
     public virtual void ApplyNewPosition()
     {
@@ -428,34 +421,21 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         // 应用背景配置
         if (BackgroundImageComponents is not null)
         {
-            BackgroundImageComponents.color = Config.BackgroundColor;
+            BackgroundImageComponents.rectTransform.sizeDelta = new Vector2(
+                Config.SubtitleWidth, Config.SubtitleHeight);
 
-            // 设置背景大小
-            var backgroundRect = BackgroundImageComponents.rectTransform;
+            BackgroundImageComponents.rectTransform.anchoredPosition3D = new Vector3(
+                Config.HorizontalPosition, Config.CurrentVerticalPosition, 0f);
+        }
 
-            // 计算高度 - 如果BackgroundHeight <= 1则作为百分比处理，否则作为绝对像素值
-            float height;
-            if (Config.CurrentBackgroundHeight <= 1.0f)
-                height = Screen.height * Config.CurrentBackgroundHeight;
-            else
-                height = Config.CurrentBackgroundHeight;
+        // 应用文本组件配置
+        if (TextComponent is not null)
+        {
+            TextComponent.rectTransform.sizeDelta = new Vector2(
+                Config.SubtitleWidth, Config.SubtitleHeight);
 
-            // 宽度设置 - 如果BackgroundWidth <= 1则作为百分比处理，否则作为绝对像素值
-            var width = Config.CurrentBackgroundWidth;
-            if (width <= 1.0f)
-            {
-                // 作为屏幕宽度的百分比，保持原来的锚点设置
-                backgroundRect.anchorMin = new Vector2((1 - width) / 2, Config.CurrentVerticalPosition);
-                backgroundRect.anchorMax = new Vector2((1 + width) / 2, Config.CurrentVerticalPosition);
-                backgroundRect.sizeDelta = new Vector2(0, height);
-            }
-            else
-            {
-                // 绝对像素宽度，需要调整锚点为中心
-                backgroundRect.anchorMin = new Vector2(0.5f, Config.CurrentVerticalPosition);
-                backgroundRect.anchorMax = new Vector2(0.5f, Config.CurrentVerticalPosition);
-                backgroundRect.sizeDelta = new Vector2(width, height);
-            }
+            // 注意可以跟随父级移动，因此只需要移动背景即可
+            TextComponent.rectTransform.anchoredPosition3D = new Vector3(0f, 0f, 0f);
         }
     }
 

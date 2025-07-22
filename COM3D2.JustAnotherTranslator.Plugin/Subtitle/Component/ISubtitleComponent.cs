@@ -11,7 +11,8 @@ public interface ISubtitleComponent
     ///     初始化字幕组件
     /// </summary>
     /// <param name="config">字幕配置</param>
-    void Init(SubtitleConfig config);
+    /// <param name="subtitleId">字幕ID</param>
+    void Init(SubtitleConfig config, string subtitleId);
 
     /// <summary>
     ///     显示字幕
@@ -51,16 +52,23 @@ public interface ISubtitleComponent
     string GetSpeakerName();
 
     /// <summary>
+    ///     设置字幕ID
+    /// </summary>
+    /// <param name="text">字幕ID</param>
+    /// <returns>是否设置成功</returns>
+    bool SetSubtitleId(string text);
+
+    /// <summary>
     ///     获取字幕ID
     /// </summary>
     /// <returns>字幕ID</returns>
     string GetSubtitleId();
 
     /// <summary>
-    ///     获取垂直位置
+    ///     获取当前垂直位置
     /// </summary>
     /// <returns>垂直位置</returns>
-    float GetVerticalPosition();
+    float GetCurrentVerticalPosition();
 
     /// <summary>
     ///     设置垂直位置

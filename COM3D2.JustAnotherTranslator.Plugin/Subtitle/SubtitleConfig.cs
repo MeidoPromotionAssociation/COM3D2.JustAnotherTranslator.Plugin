@@ -118,6 +118,15 @@ public class SubtitleConfig
                 () => JustAnotherTranslator.LyricSubtitleOutlineWidth.Value,
                 1f),
 
+            // 水平位置
+            HorizontalPosition = GetSubtitleTypeConfig(
+                subtitleType,
+                () => JustAnotherTranslator.BaseSubtitleHorizontalPosition.Value,
+                () => JustAnotherTranslator.YotogiSubtitleHorizontalPosition.Value,
+                () => JustAnotherTranslator.AdvSubtitleHorizontalPosition.Value,
+                () => JustAnotherTranslator.LyricSubtitleHorizontalPosition.Value,
+                0f),
+
             // 垂直位置
             VerticalPosition = GetSubtitleTypeConfig(
                 subtitleType,
@@ -127,22 +136,22 @@ public class SubtitleConfig
                 () => JustAnotherTranslator.LyricSubtitleVerticalPosition.Value,
                 1f),
 
-            // 背景宽度
-            BackgroundWidth = GetSubtitleTypeConfig(
+            // 字幕宽度
+            SubtitleWidth = GetSubtitleTypeConfig(
                 subtitleType,
-                () => JustAnotherTranslator.BaseSubtitleBackgroundWidth.Value,
-                () => JustAnotherTranslator.YotogiSubtitleBackgroundWidth.Value,
-                () => JustAnotherTranslator.AdvSubtitleBackgroundWidth.Value,
-                () => JustAnotherTranslator.LyricSubtitleBackgroundWidth.Value,
+                () => JustAnotherTranslator.BaseSubtitleWidth.Value,
+                () => JustAnotherTranslator.YotogiSubtitleWidth.Value,
+                () => JustAnotherTranslator.AdvSubtitleWidth.Value,
+                () => JustAnotherTranslator.LyricSubtitleWidth.Value,
                 1f),
 
-            // 背景高度
-            BackgroundHeight = GetSubtitleTypeConfig(
+            // 字幕高度
+            SubtitleHeight = GetSubtitleTypeConfig(
                 subtitleType,
-                () => JustAnotherTranslator.BaseSubtitleBackgroundHeight.Value,
-                () => JustAnotherTranslator.YotogiSubtitleBackgroundHeight.Value,
-                () => JustAnotherTranslator.AdvSubtitleBackgroundHeight.Value,
-                () => JustAnotherTranslator.LyricSubtitleBackgroundHeight.Value,
+                () => JustAnotherTranslator.BaseSubtitleHeight.Value,
+                () => JustAnotherTranslator.YotogiSubtitleHeight.Value,
+                () => JustAnotherTranslator.AdvSubtitleHeight.Value,
+                () => JustAnotherTranslator.LyricSubtitleHeight.Value,
                 0.1f),
 
             // 是否启用动画效果
@@ -349,23 +358,20 @@ public class SubtitleConfig
     /// 描边粗细
     public float OutlineWidth { get; set; } = 1f;
 
-    /// 垂直位置（0-1，0表示底部，1表示顶部）
-    public float VerticalPosition { get; set; } = 1f;
+    /// 水平位置
+    public float HorizontalPosition { get; set; }
+
+    /// 垂直位置
+    public float VerticalPosition { get; set; } = 1050f;
 
     /// 当前垂直位置
-    public float CurrentVerticalPosition { get; set; } = 1f;
+    public float CurrentVerticalPosition { get; set; } = 1050f;
 
-    /// 背景宽度
-    public float BackgroundWidth { get; set; } = 1f;
-
-    /// 当前背景宽度
-    public float CurrentBackgroundWidth { get; set; } = 1f;
+    /// 字幕宽度
+    public float SubtitleWidth { get; set; } = 1920f;
 
     /// 背景高度
-    public float BackgroundHeight { get; set; } = 0.1f;
-
-    /// 当前背景高度
-    public float CurrentBackgroundHeight { get; set; } = 0.1f;
+    public float SubtitleHeight { get; set; } = 30f;
 
     /// 是否启用动画效果
     public bool EnableAnimation { get; set; } = true;

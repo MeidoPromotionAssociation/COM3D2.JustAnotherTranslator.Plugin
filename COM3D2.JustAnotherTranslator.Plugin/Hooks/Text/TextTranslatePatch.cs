@@ -75,15 +75,27 @@ public static class TextTranslatePatch
     {
         try
         {
-            if (__result == null || string.IsNullOrEmpty(__result[Product.Language.Japanese])) return;
+            if (__result == null) return;
 
             // 提取日文原文
             var originalText = __result[Product.Language.Japanese];
 
+            if (string.IsNullOrEmpty(originalText) || TextTranslateManger.IsNumeric(originalText))
+                return;
+
             LogManager.Debug($"LocalizationManager GetTranslationText called: {originalText}");
+
+            // 如果包含特殊符号，就不翻译
+            // 例如翻译到纯 [HF] 时如果被添加了特殊标记，会导致游戏崩溃，游戏还有其他的特殊标记，因此这里直接检查 [
+            if (originalText.Contains("["))
+            {
+                LogManager.Debug($"LocalizationManager GetTranslationText skip: {originalText}");
+                return;
+            }
 
             if (TextTranslateManger.GetTranslateText(originalText, out var translatedText))
             {
+                // WARNING: If the game tries to translate a special tag and it is marked by XUAT, it may crash the game
                 __result[Product.Language.Japanese] = translatedText;
                 __result[Product.baseScenarioLanguage] = translatedText;
                 __result[Product.subTitleScenarioLanguage] = translatedText;

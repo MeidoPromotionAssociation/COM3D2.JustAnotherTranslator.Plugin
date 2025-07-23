@@ -304,10 +304,10 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     }
 
     /// <summary>
-    ///     获取当前高度
+    ///     获取当前字幕高度
     /// </summary>
     /// <returns>高度</returns>
-    public virtual float GetHeight()
+    public virtual float GetSubtitleHeight()
     {
         if (Config == null) return 0f;
 

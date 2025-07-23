@@ -23,7 +23,7 @@ public static class SubtitleComponentManager
         SubtitleConfigs = new(); // 字幕类型 -> 字幕配置
 
     /// 活跃字幕列表
-    private static readonly List<SubtitlePositionInfo> _activeSubtitles = new();
+    private static readonly List<SubtitlePositionInfo> ActiveSubtitles = new();
 
     /// <summary>
     ///     初始化字幕组件管理器
@@ -154,11 +154,9 @@ public static class SubtitleComponentManager
             }
         }
 
-        CalculateNewPosition(subtitleComponent, subtitleType);
+        CalculateNewPosition(subtitleComponent);
 
         subtitleComponent.ShowSubtitle(text, speakerName, duration);
-
-        LogManager.Debug($"Try to show subtitle: [{speakerName}] {text}");
     }
 
     /// <summary>
@@ -173,7 +171,7 @@ public static class SubtitleComponentManager
         if (SubtitleIdComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
             subtitleComponent.HideSubtitle();
 
-        _activeSubtitles.RemoveAll(s => s.Id == subtitleId);
+        ActiveSubtitles.RemoveAll(s => s.Id == subtitleId);
     }
 
     /// <summary>
@@ -203,8 +201,7 @@ public static class SubtitleComponentManager
     /// <summary>
     ///     计算字幕可用位置
     /// </summary>
-    public static void CalculateNewPosition(ISubtitleComponent subtitleComponent,
-        JustAnotherTranslator.SubtitleTypeEnum subtitleType)
+    public static void CalculateNewPosition(ISubtitleComponent subtitleComponent)
     {
         if (!_initialized)
             Init();
@@ -222,21 +219,27 @@ public static class SubtitleComponentManager
         try
         {
             // 获取当前字幕类型的高度
-            var subtitleHeight = subtitleComponent.GetHeight();
+            var subtitleHeight = subtitleComponent.GetSubtitleHeight();
             var currentSubtitleId = subtitleComponent.GetSubtitleId();
 
-            // 在查找新位置之前，删除此字幕的现有条目
-            _activeSubtitles.RemoveAll(s => s.Id == currentSubtitleId);
+            // 查找现有条目以确定初始位置
+            var existingEntry = ActiveSubtitles.FirstOrDefault(s => s.Id == currentSubtitleId);
+            // 如果已存在条目，尝试放回已记录的位置
+            var initialY = existingEntry.Id != null ? existingEntry.InitialVerticalPosition : config.CurrentVerticalPosition;
 
-            var initialY = config.VerticalPosition;
+            // 在查找新位置之前，删除此字幕的现有条目
+            ActiveSubtitles.RemoveAll(s => s.Id == currentSubtitleId);
+
             var finalY = initialY;
 
             const int maxSearchDistance = 1080; // 上下最大搜索距离
             const int screenHeight = 1080; // 参考屏幕高度
 
             // 检查初始位置是否与任何活动字幕重叠
-            var overlaps = _activeSubtitles.Any(s =>
+            var overlaps = ActiveSubtitles.Any(s =>
                 initialY < s.VerticalPosition + s.Height && s.VerticalPosition < initialY + subtitleHeight);
+
+            LogManager.Debug($"Checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {overlaps}");
 
             if (overlaps)
             {
@@ -247,7 +250,7 @@ public static class SubtitleComponentManager
                     var testY = initialY - offset;
                     if (testY < 0) break; // 到达屏幕底部
 
-                    if (!_activeSubtitles.Any(s =>
+                    if (!ActiveSubtitles.Any(s =>
                             testY < s.VerticalPosition + s.Height && s.VerticalPosition < testY + subtitleHeight))
                     {
                         finalY = testY;
@@ -263,11 +266,10 @@ public static class SubtitleComponentManager
                         var testY = initialY + offset;
                         if (testY + subtitleHeight > screenHeight) break; // 到达屏幕顶部
 
-                        if (!_activeSubtitles.Any(s =>
+                        if (!ActiveSubtitles.Any(s =>
                                 testY < s.VerticalPosition + s.Height && s.VerticalPosition < testY + subtitleHeight))
                         {
                             finalY = testY;
-                            foundPosition = true;
                             break;
                         }
                     }
@@ -278,19 +280,20 @@ public static class SubtitleComponentManager
             config.CurrentVerticalPosition = finalY;
             subtitleComponent.SetVerticalPosition(finalY);
 
-            _activeSubtitles.Add(new SubtitlePositionInfo
+            ActiveSubtitles.Add(new SubtitlePositionInfo
             {
                 Id = currentSubtitleId,
                 VerticalPosition = finalY,
-                Height = subtitleHeight
+                Height = subtitleHeight,
+                InitialVerticalPosition = initialY
             });
         }
         catch (Exception ex)
         {
             LogManager.Error(
-                $"Calculate subtitle position error, using default position/计算字幕位置错误，使用默认位置: {ex.Message}\n{ex.StackTrace}");
+                $"Calculate subtitle position failed, using default position/计算字幕位置失败，使用默认位置: {ex.Message}\n{ex.StackTrace}");
             config.CurrentVerticalPosition = config.VerticalPosition;
-            subtitleComponent.UpdateConfig(config);
+            subtitleComponent.SetVerticalPosition(config.CurrentVerticalPosition);
         }
     }
 
@@ -364,7 +367,7 @@ public static class SubtitleComponentManager
 
         component.Destroy();
 
-        _activeSubtitles.RemoveAll(s => s.Id == subtitleId);
+        ActiveSubtitles.RemoveAll(s => s.Id == subtitleId);
 
         LogManager.Debug("Subtitle component destroyed");
     }
@@ -381,7 +384,7 @@ public static class SubtitleComponentManager
             subtitleComponent.Destroy();
         }
 
-        _activeSubtitles.RemoveAll(s => s.Id == subtitleId);
+        ActiveSubtitles.RemoveAll(s => s.Id == subtitleId);
     }
 
     /// <summary>
@@ -395,7 +398,7 @@ public static class SubtitleComponentManager
         SubtitleIdComponentsMap.Clear();
         LogManager.Debug("All subtitle components destroyed");
 
-        _activeSubtitles.Clear();
+        ActiveSubtitles.Clear();
     }
 
     /// 活跃字幕的位置信息结构
@@ -404,5 +407,6 @@ public static class SubtitleComponentManager
         public string Id { get; set; }
         public float VerticalPosition { get; set; }
         public float Height { get; set; }
+        public float InitialVerticalPosition { get; set; }
     }
 }

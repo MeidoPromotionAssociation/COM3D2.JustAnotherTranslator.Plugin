@@ -79,7 +79,7 @@ public interface ISubtitleComponent
     ///     获取字幕高度
     /// </summary>
     /// <returns>字幕高度</returns>
-    float GetHeight();
+    float GetSubtitleHeight();
 
     /// <summary>
     ///     检查字幕是否可见

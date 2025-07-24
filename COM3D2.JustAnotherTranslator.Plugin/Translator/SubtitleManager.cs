@@ -86,9 +86,15 @@ public static class SubtitleManager
     /// </summary>
     private static void OnSceneUnloaded(Scene scene)
     {
-        LogManager.Debug($"Scene {scene.name} - {scene.buildIndex}, unloaded  cleaning up");
-
-        CleanResources();
+        try
+        {
+            LogManager.Debug($"Scene {scene.name} - {scene.buildIndex}, unloaded  cleaning up");
+            CleanResources();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Error during cleanup scene resources/清理场景资源失败: {e.Message}");
+        }
     }
 
 

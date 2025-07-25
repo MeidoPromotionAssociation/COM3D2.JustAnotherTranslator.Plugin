@@ -225,7 +225,9 @@ public static class SubtitleComponentManager
             // 查找现有条目以确定初始位置
             var existingEntry = ActiveSubtitles.FirstOrDefault(s => s.Id == currentSubtitleId);
             // 如果已存在条目，尝试放回已记录的位置
-            var initialY = existingEntry.Id != null ? existingEntry.InitialVerticalPosition : config.CurrentVerticalPosition;
+            var initialY = existingEntry.Id != null
+                ? existingEntry.InitialVerticalPosition
+                : config.CurrentVerticalPosition;
 
             // 在查找新位置之前，删除此字幕的现有条目
             ActiveSubtitles.RemoveAll(s => s.Id == currentSubtitleId);
@@ -239,7 +241,8 @@ public static class SubtitleComponentManager
             var overlaps = ActiveSubtitles.Any(s =>
                 initialY < s.VerticalPosition + s.Height && s.VerticalPosition < initialY + subtitleHeight);
 
-            LogManager.Debug($"Checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {overlaps}");
+            LogManager.Debug(
+                $"Checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {overlaps}");
 
             if (overlaps)
             {

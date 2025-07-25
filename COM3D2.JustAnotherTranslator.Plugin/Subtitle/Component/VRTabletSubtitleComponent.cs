@@ -27,8 +27,8 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
     {
         if (GameMain.Instance.OvrMgr != null && GameMain.Instance.OvrMgr.SystemUICamera != null)
         {
-            UICamera vrUiCamera = GameMain.Instance.OvrMgr.SystemUICamera;
-            Camera uiCameraComponent = vrUiCamera.GetComponent<Camera>();
+            var vrUiCamera = GameMain.Instance.OvrMgr.SystemUICamera;
+            var uiCameraComponent = vrUiCamera.GetComponent<Camera>();
             if (uiCameraComponent != null)
             {
                 _uiCamera = uiCameraComponent;
@@ -36,7 +36,8 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
             }
             else
             {
-                LogManager.Warning("Cannot find UI Camera, VR tablet subtitle component will not be enabled/找不到 UI 相机，VR 平板字幕组件无法启用");
+                LogManager.Warning(
+                    "Cannot find UI Camera, VR tablet subtitle component will not be enabled/找不到 UI 相机，VR 平板字幕组件无法启用");
             }
         }
     }
@@ -68,7 +69,8 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         }
         else
         {
-            LogManager.Warning("Cannot find UI Camera, VR tablet subtitle component will not be enabled/找不到 UI 相机，VR 平板字幕组件无法启用");
+            LogManager.Warning(
+                "Cannot find UI Camera, VR tablet subtitle component will not be enabled/找不到 UI 相机，VR 平板字幕组件无法启用");
             return;
         }
 

@@ -94,8 +94,15 @@ public static class LyricManger
     /// <param name="scene"></param>
     private static void OnSceneUnloaded(Scene scene)
     {
-        ClearSceneResources();
-        SubtitleComponentManager.DestroyAllSubtitleComponents();
+        try
+        {
+            ClearSceneResources();
+            SubtitleComponentManager.DestroyAllSubtitleComponents();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Clear scene resources failed/清理场景资源失败: {e.Message}");
+        }
     }
 
 

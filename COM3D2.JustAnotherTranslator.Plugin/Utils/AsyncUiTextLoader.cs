@@ -146,7 +146,7 @@ public class AsyncUiTextLoader
         try
         {
             LogManager.Info(
-                "Loading UI translation files asynchronously, other plugins can load at the same time/正在异步加载ui翻译文件，其他插件可以同时进行加载");
+                "Loading UI translation files asynchronously, other plugins can load at the same time/正在异步加载UI翻译文件，其他插件可以同时进行加载");
 
             var allFiles = FileTool.GetAllTranslationFiles(_translationPath, new[] { ".csv", ".zip" });
             totalFiles = allFiles.Count;

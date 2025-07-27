@@ -919,7 +919,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         // Tip for people who using ConfigurationManager
         _dumpTip1 = Config.Bind("Dump",
-            "this section is for translators. If you are not planning to change translate file, please don't enable it",
+            "this section is for translators. If you are not planning to change translate file, please do not enable it",
             true,
             new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 9000 }));
 

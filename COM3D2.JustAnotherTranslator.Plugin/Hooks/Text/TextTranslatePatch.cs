@@ -80,7 +80,7 @@ public static class TextTranslatePatch
             // 提取日文原文
             var originalText = __result[Product.Language.Japanese];
 
-            if (string.IsNullOrEmpty(originalText) || TextTranslateManger.IsNumeric(originalText))
+            if (StringTool.IsNullOrWhiteSpace(originalText) || StringTool.IsNumeric(originalText))
                 return;
 
             LogManager.Debug($"LocalizationManager GetTranslationText called: {originalText}");
@@ -126,8 +126,12 @@ public static class TextTranslatePatch
                 var text = traverse.GetValue() as string;
 
                 // Just too much logs
-                if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text) ||
-                    text.Contains(XUATInterop.XuatSpicalMaker))
+                if (StringTool.IsNullOrWhiteSpace(text) || StringTool.IsNumeric(text))
+                {
+                    return;
+                }
+
+                if (text.Contains(XUATInterop.XuatSpicalMaker))
                     return;
 
                 LogManager.Debug($"Graphic SetVerticesDirty called: {text}");
@@ -154,10 +158,10 @@ public static class TextTranslatePatch
         try
         {
             // Just too much logs
-            if (string.IsNullOrEmpty(text) || TextTranslateManger.IsNumeric(text))
+            if (StringTool.IsNullOrWhiteSpace(text) || StringTool.IsNumeric(text))
                 return;
 
-            LogManager.Debug("NGUIText WrapText(string, out string) called: " + text);
+            LogManager.Debug($"NGUIText WrapText(string, out string) called: {text}");
 
             if (TextTranslateManger.GetTranslateText(text, out var translated))
             {

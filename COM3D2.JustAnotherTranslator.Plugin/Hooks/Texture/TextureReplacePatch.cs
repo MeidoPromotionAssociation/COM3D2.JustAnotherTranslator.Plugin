@@ -33,7 +33,7 @@ public static class TextureReplacePatch
             // LogManager.Debug("IsExistentFile called: " + file_name);
             // LogManager.Debug("IsExistentFile result: " + __result);
 
-            if (string.IsNullOrEmpty(file_name) ||
+            if (StringTool.IsNullOrWhiteSpace(file_name) ||
                 !Path.GetExtension(file_name).Equals(".tex", StringComparison.InvariantCultureIgnoreCase))
                 return;
 
@@ -67,7 +67,7 @@ public static class TextureReplacePatch
 
             var fileName = Path.GetFileNameWithoutExtension(f_strFileName);
 
-            if (string.IsNullOrEmpty(fileName))
+            if (StringTool.IsNullOrWhiteSpace(fileName))
                 return true;
 
             if (!TextureReplaceManger.GetReplaceTexture(fileName, out var newTexture))
@@ -108,7 +108,7 @@ public static class TextureReplacePatch
 
             var tex = __instance.material?.mainTexture;
 
-            if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
+            if (tex == null || StringTool.IsNullOrWhiteSpace(tex.name) || tex.name.StartsWith("JAT_"))
                 return;
 
             if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
@@ -149,13 +149,17 @@ public static class TextureReplacePatch
     {
         try
         {
+            var tex = __instance.sprite2D?.texture;
+
+            if (tex == null || __result == null)
+                return;
+
+            if (tex == null || StringTool.IsNullOrWhiteSpace(tex.name) || __result == null || tex.name.StartsWith("JAT_"))
+                return;
+
             LogManager.Debug(
                 $"UI2DSprite_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
 
-            var tex = __instance.sprite2D?.texture;
-
-            if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
-                return;
 
             if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
                 return;
@@ -192,7 +196,7 @@ public static class TextureReplacePatch
 
             var tex = ___mTexture ?? __instance.material?.mainTexture;
 
-            if (tex == null || string.IsNullOrEmpty(tex.name) || tex.name.StartsWith("JAT_"))
+            if (tex == null || StringTool.IsNullOrWhiteSpace(tex.name) || tex.name.StartsWith("JAT_"))
                 return;
 
             if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
@@ -233,12 +237,12 @@ public static class TextureReplacePatch
         {
             LogManager.Debug("Image_sprite_Setter_Prefix called: " + value?.name);
 
-            if (value is null || value.texture is null || string.IsNullOrEmpty(value.texture.name) ||
+            if (value is null || value.texture is null || StringTool.IsNullOrWhiteSpace(value.texture.name) ||
                 value.texture.name.StartsWith("JAT_"))
                 return;
 
             byte[] newTexture = null;
-            if (!string.IsNullOrEmpty(value.texture.name))
+            if (!StringTool.IsNullOrWhiteSpace(value.texture.name))
                 TextureReplaceManger.GetReplaceTexture(value.texture.name, out newTexture);
 
             if (newTexture == null)

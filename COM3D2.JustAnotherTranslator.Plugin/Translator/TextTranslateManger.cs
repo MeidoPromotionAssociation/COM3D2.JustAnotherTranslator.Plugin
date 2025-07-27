@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
@@ -275,5 +274,4 @@ public static class TextTranslateManger
 
         return false;
     }
-
 }

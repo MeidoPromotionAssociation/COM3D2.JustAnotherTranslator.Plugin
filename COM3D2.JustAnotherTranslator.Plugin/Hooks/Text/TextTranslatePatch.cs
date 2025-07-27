@@ -126,10 +126,7 @@ public static class TextTranslatePatch
                 var text = traverse.GetValue() as string;
 
                 // Just too much logs
-                if (StringTool.IsNullOrWhiteSpace(text) || StringTool.IsNumeric(text))
-                {
-                    return;
-                }
+                if (StringTool.IsNullOrWhiteSpace(text) || StringTool.IsNumeric(text)) return;
 
                 if (text.Contains(XUATInterop.XuatSpicalMaker))
                     return;

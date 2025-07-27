@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
@@ -67,6 +66,6 @@ public static class StringTool
     /// <returns>如果字符串为空或者只包含空白字符，则返回 true；否则返回 false</returns>
     public static bool IsNullOrWhiteSpace(string text)
     {
-        return String.IsNullOrEmpty(text) || text.Trim().Length == 0;
+        return string.IsNullOrEmpty(text) || text.Trim().Length == 0;
     }
 }

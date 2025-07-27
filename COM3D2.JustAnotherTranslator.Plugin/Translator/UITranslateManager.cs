@@ -7,7 +7,6 @@ using COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;

@@ -61,6 +61,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     public static bool IsVrMode;
 
+    // 提示信息
+    public static ConfigEntry<bool> Tip1;
+    public static ConfigEntry<bool> Tip2;
+    public static ConfigEntry<bool> Tip3;
+    public static ConfigEntry<bool> Tip4;
+
     // 通用配置
     public static ConfigEntry<string> TargetLanguage;
     public static ConfigEntry<bool> EnableTextTranslation;
@@ -197,30 +203,28 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         IsVrMode = Environment.CommandLine.ToLower().Contains("/vr");
 
-        # region Note
+        # region Tips
 
         // Tips for people who using ConfigurationManager
-
-        var note1 = Config.Bind("1Note",
+        Tip1 = Config.Bind("Tips",
             "Configuration options tips do not prompt in the game, please open the configuration file to view", true,
             new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 1000 }));
 
-        var note2 = Config.Bind("2Note",
+        Tip2 = Config.Bind("Tips",
             "configuration file location is COM3D2/BepInEx/config/Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg",
             true,
             new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 1010 }));
 
-        var note3 = Config.Bind("3Note",
+        Tip3 = Config.Bind("Tips",
             "配置选项提示不会在游戏内提示，请打开配置文件查看", true,
             new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 1020 }));
 
-        var note4 = Config.Bind("4Note",
+        Tip4 = Config.Bind("Tips",
             "配置文件位于 /COM3D2/BepInEx/config/Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg",
             true,
             new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 1030 }));
 
         # endregion
-
 
         # region GeneralSettings
 
@@ -888,7 +892,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 new ConfigurationManagerAttributes { Order = 8060 }));
 
         # endregion
-
+        
         LogManager.Debug($"IsVrMode: {IsVrMode}, CommandLine: {Environment.CommandLine}");
 
         // Create translation folder

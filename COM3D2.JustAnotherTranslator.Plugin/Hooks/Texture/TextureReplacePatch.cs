@@ -95,38 +95,33 @@ public static class TextureReplacePatch
     /// <param name="__result"></param>
     [HarmonyPatch(typeof(UIWidget), nameof(UIWidget.mainTexture), MethodType.Getter)]
     [HarmonyPostfix]
-    private static void UIWidget_mainTexture_Getter_Postfix(UIWidget __instance,
-        ref UnityEngine.Texture __result)
+    private static void UIWidget_mainTexture_Getter_Postfix(UIWidget __instance, ref UnityEngine.Texture __result)
     {
         try
         {
-            if (__result.name.StartsWith("JAT_"))
+            if (__result == null || StringTool.IsNullOrWhiteSpace(__result.name) || __result.name.StartsWith("JAT_") ||
+                __result.name == "Font Texture")
                 return;
 
             LogManager.Debug(
                 $"UIWidget_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
 
-            var tex = __instance.material?.mainTexture;
-
-            if (tex == null || StringTool.IsNullOrWhiteSpace(tex.name) || tex.name.StartsWith("JAT_"))
-                return;
-
-            if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
+            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture))
                 return;
 
             // 检查并转换为 Texture2D
-            if (tex is Texture2D tex2d)
+            if (__result is Texture2D tex2d)
             {
-                tex2d.LoadImage(EmptyBytes);
+                tex2d.LoadImage(EmptyBytes); // 部分情况下可能出现尺寸不符，需要先清空
                 tex2d.LoadImage(newTexture);
                 // add JAT_ prefix to avoid infinite loop
                 tex2d.name = $"JAT_{tex2d.name}";
-                LogManager.Debug($"UIWidget Texture replaced: {tex.name}");
+                LogManager.Debug($"UIWidget Texture replaced: {__result.name}");
             }
             else
             {
                 LogManager.Warning(
-                    $"UIWidget_mainTexture_Getter_Postfix Texture {tex.name} is of type {tex.GetType().FullName}, which is unexpected, please report this issue/贴图 {tex.name} 类型为未预期的 {tex.GetType().FullName}，请报告此问题");
+                    $"UIWidget_mainTexture_Getter_Postfix Texture {__result.name} is of type {__result.GetType().FullName}, which is unexpected, please report this issue/贴图 {__result.name} 类型为未预期的 {__result.GetType().FullName}，请报告此问题");
             }
         }
         catch (Exception e)
@@ -144,31 +139,34 @@ public static class TextureReplacePatch
     /// <param name="__result"></param>
     [HarmonyPatch(typeof(UI2DSprite), nameof(UI2DSprite.mainTexture), MethodType.Getter)]
     [HarmonyPostfix]
-    private static void UI2DSprite_mainTexture_Getter_Postfix(UI2DSprite __instance,
-        ref UnityEngine.Texture __result)
+    private static void UI2DSprite_mainTexture_Getter_Postfix(UI2DSprite __instance, ref UnityEngine.Texture __result)
     {
         try
         {
-            var tex = __instance.sprite2D?.texture;
-
-            if (tex == null || __result == null)
-                return;
-
-            if (tex == null || StringTool.IsNullOrWhiteSpace(tex.name) || __result == null || tex.name.StartsWith("JAT_"))
+            if (__result == null || StringTool.IsNullOrWhiteSpace(__result.name) || __result.name.StartsWith("JAT_") ||
+                __result.name == "Font Texture")
                 return;
 
             LogManager.Debug(
-                $"UI2DSprite_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
+                $"UI2DSprite_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result.name}");
 
-
-            if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
+            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture))
                 return;
 
-            tex.LoadImage(EmptyBytes);
-            tex.LoadImage(newTexture);
-            // add JAT_ prefix to avoid infinite loop
-            tex.name = $"JAT_{tex.name}";
-            LogManager.Debug($"UI2DSprite Texture replaced: {tex.name}");
+            // 检查并转换为 Texture2D
+            if (__result is Texture2D tex2d)
+            {
+                tex2d.LoadImage(EmptyBytes);
+                tex2d.LoadImage(newTexture);
+                // add JAT_ prefix to avoid infinite loop
+                tex2d.name = $"JAT_{__result.name}";
+                LogManager.Debug($"UI2DSprite Texture replaced: {__result.name}");
+            }
+            else
+            {
+                LogManager.Warning(
+                    $"UI2DSprite_mainTexture_Getter_Postfix Texture {__result.name} is of type {__result.GetType().FullName}, which is unexpected, please report this issue/贴图 {__result.name} 类型为未预期的 {__result.GetType().FullName}，请报告此问题");
+            }
         }
         catch (Exception e)
         {
@@ -183,38 +181,34 @@ public static class TextureReplacePatch
     /// </summary>
     /// <param name="__instance"></param>
     /// <param name="__result"></param>
-    /// <param name="___mTexture"></param>
     [HarmonyPatch(typeof(UITexture), nameof(UITexture.mainTexture), MethodType.Getter)]
     [HarmonyPostfix]
-    private static void UITexture_mainTexture_Getter_Postfix(UITexture __instance, ref UnityEngine.Texture __result,
-        ref UnityEngine.Texture ___mTexture)
+    private static void UITexture_mainTexture_Getter_Postfix(UITexture __instance, ref UnityEngine.Texture __result)
     {
         try
         {
+            if (__result == null || StringTool.IsNullOrWhiteSpace(__result.name) ||
+                __result.name.StartsWith("JAT_")) return;
+
             LogManager.Debug(
                 $"UITexture_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
 
-            var tex = ___mTexture ?? __instance.material?.mainTexture;
-
-            if (tex == null || StringTool.IsNullOrWhiteSpace(tex.name) || tex.name.StartsWith("JAT_"))
-                return;
-
-            if (!TextureReplaceManger.GetReplaceTexture(tex.name, out var newTexture))
+            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture))
                 return;
 
             // 检查并转换为 Texture2D
-            if (tex is Texture2D tex2d)
+            if (__result is Texture2D tex2d)
             {
                 tex2d.LoadImage(EmptyBytes);
                 tex2d.LoadImage(newTexture);
                 // add JAT_ prefix to avoid infinite loop
-                tex2d.name = $"JAT_{tex2d.name}";
-                LogManager.Debug($"UITexture Texture replaced: {tex.name}");
+                tex2d.name = $"JAT_{__result.name}";
+                LogManager.Debug($"UITexture Texture replaced: {__result.name}");
             }
             else
             {
                 LogManager.Warning(
-                    $"GetMainTexturePostTex Texture {tex.name} is of type {tex.GetType().FullName}, which is unexpected, which is unexpected, please report this issue/贴图 {tex.name} 类型为未预期的 {tex.GetType().FullName}，请报告此问题");
+                    $"GetMainTexturePostTex Texture {__result.name} is of type {__result.GetType().FullName}, which is unexpected, which is unexpected, please report this issue/贴图 {__result.name} 类型为未预期的 {__result.GetType().FullName}，请报告此问题");
             }
         }
         catch (Exception e)
@@ -237,7 +231,7 @@ public static class TextureReplacePatch
         {
             LogManager.Debug("Image_sprite_Setter_Prefix called: " + value?.name);
 
-            if (value is null || value.texture is null || StringTool.IsNullOrWhiteSpace(value.texture.name) ||
+            if (value == null || value.texture == null || StringTool.IsNullOrWhiteSpace(value.texture.name) ||
                 value.texture.name.StartsWith("JAT_"))
                 return;
 

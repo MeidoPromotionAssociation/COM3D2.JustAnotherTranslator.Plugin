@@ -14,6 +14,13 @@ namespace COM3D2.JustAnotherTranslator.Plugin;
     "COM3D2.JustAnotherTranslator.Plugin", "0.0.1")]
 public class JustAnotherTranslator : BaseUnityPlugin
 {
+    // To discover this plugin
+    // The Hooks folder is where we interact with the game code
+    // The Translator folder is where we load translation data and process data passed in by Hooks
+    // The Subtitle folder contains subtitle manager, configuration, components
+    // The Utils folder contains helper functions
+    // This file is mainly for configuration
+
     public enum LyricSubtitleTypeEnum
     {
         [Description("OriginalOnly/仅原文")] OriginalOnly,
@@ -62,10 +69,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static bool IsVrMode;
 
     // 提示信息
-    public static ConfigEntry<bool> Tip1;
-    public static ConfigEntry<bool> Tip2;
-    public static ConfigEntry<bool> Tip3;
-    public static ConfigEntry<bool> Tip4;
+    private static ConfigEntry<bool> _tip1;
+    private static ConfigEntry<bool> _tip2;
+    private static ConfigEntry<bool> _tip3;
+    private static ConfigEntry<bool> _tip4;
 
     // 通用配置
     public static ConfigEntry<string> TargetLanguage;
@@ -179,8 +186,15 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> VRInSpaceSubtitleHeight;
     public static ConfigEntry<float> VRSubtitleScale;
 
+    // dump相关配置
+    private static ConfigEntry<bool> _dumpTip1;
+    private static ConfigEntry<bool> _dumpTip2;
+    public static ConfigEntry<bool> EnableTexturesDump;
+    public static ConfigEntry<bool> EnableTextDump;
+
+
     // translation folder path
-    public static readonly string TranslationRootPath = Paths.BepInExRootPath + "/JustAnotherTranslator";
+    public static readonly string TranslationRootPath = Path.Combine(Paths.BepInExRootPath, "JustAnotherTranslator");
     public static string TargetLanguePath;
     public static string TranslationTextPath;
     public static string TranslationTexturePath;
@@ -188,6 +202,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string UIPath;
     public static string UITextPath;
     public static string UISpritePath;
+    public static string DumpPath;
+    public static string TextDumpPath;
+    public static string TextureDumpPath;
 
     private void Awake()
     {
@@ -206,20 +223,20 @@ public class JustAnotherTranslator : BaseUnityPlugin
         # region Tips
 
         // Tips for people who using ConfigurationManager
-        Tip1 = Config.Bind("Tips",
+        _tip1 = Config.Bind("Tips",
             "Configuration options tips do not prompt in the game, please open the configuration file to view", true,
             new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 1000 }));
 
-        Tip2 = Config.Bind("Tips",
+        _tip2 = Config.Bind("Tips",
             "configuration file location is COM3D2/BepInEx/config/Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg",
             true,
             new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 1010 }));
 
-        Tip3 = Config.Bind("Tips",
+        _tip3 = Config.Bind("Tips",
             "配置选项提示不会在游戏内提示，请打开配置文件查看", true,
             new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 1020 }));
 
-        Tip4 = Config.Bind("Tips",
+        _tip4 = Config.Bind("Tips",
             "配置文件位于 /COM3D2/BepInEx/config/Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg",
             true,
             new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 1030 }));
@@ -235,13 +252,18 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 "Target Language, only affect the path of reading translation files/目标语言，只控制读取翻译文件的路径", null,
                 new ConfigurationManagerAttributes { Order = 2000 }));
 
-        TargetLanguePath = TranslationRootPath + "/" + TargetLanguage.Value;
-        TranslationTextPath = TargetLanguePath + "/Text";
-        TranslationTexturePath = TargetLanguePath + "/Texture";
-        LyricPath = TargetLanguePath + "/Lyric";
-        UIPath = TargetLanguePath + "/UI";
-        UITextPath = UIPath + "/Text";
-        UISpritePath = UIPath + "/Sprite";
+
+        TargetLanguePath = Path.Combine(TranslationRootPath, TargetLanguage.Value);
+        TranslationTextPath = Path.Combine(TargetLanguePath, "Text");
+        TranslationTexturePath = Path.Combine(TargetLanguePath, "Texture");
+        LyricPath = Path.Combine(TargetLanguePath, "Lyric");
+        UIPath = Path.Combine(TargetLanguePath, "UI");
+        UITextPath = Path.Combine(UIPath, "Text");
+        UISpritePath = Path.Combine(UIPath, "Sprite");
+        DumpPath = Path.Combine(TranslationRootPath, "Dump");
+        TextDumpPath = Path.Combine(DumpPath, "Text");
+        TextureDumpPath = Path.Combine(DumpPath, "Texture");
+
 
         EnableTextTranslation = Config.Bind("General",
             "EnableTextTranslation/启用文本翻译",
@@ -892,7 +914,32 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 new ConfigurationManagerAttributes { Order = 8060 }));
 
         # endregion
-        
+
+        # region DumpSettings
+
+        // Tip for people who using ConfigurationManager
+        _dumpTip1 = Config.Bind("Dump",
+            "this section is for translators. If you are not planning to change translate file, please don't enable it",
+            true,
+            new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 9000 }));
+
+        _dumpTip2 = Config.Bind("Dump",
+            "这个部分是为翻译者准备的,如果您不计划改动翻译文件，请不要启用它",
+            true,
+            new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 9010 }));
+
+        EnableTexturesDump = Config.Bind("Dump",
+            "EnableDumpTexture/是否启用纹理导出",
+            false,
+            new ConfigDescription("Only export textures that have not been replaced/仅导出未替换过的纹理", null, new ConfigurationManagerAttributes { Order = 9020 }));
+
+        EnableTextDump = Config.Bind("Dump",
+            "EnableDumpText/是否启用文本导出",
+            false,
+            new ConfigDescription("Only export text that has not been replaced/仅导出未替换过的文本", null, new ConfigurationManagerAttributes { Order = 9030 }));
+
+        # endregion
+
         LogManager.Debug($"IsVrMode: {IsVrMode}, CommandLine: {Environment.CommandLine}");
 
         // Create translation folder
@@ -906,6 +953,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
             Directory.CreateDirectory(UIPath);
             Directory.CreateDirectory(UITextPath);
             Directory.CreateDirectory(UISpritePath);
+            Directory.CreateDirectory(DumpPath);
+            Directory.CreateDirectory(TextDumpPath);
+            Directory.CreateDirectory(TextureDumpPath);
         }
         catch (Exception e)
         {
@@ -1015,6 +1065,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         UITranslateManager.Unload();
         TextureReplaceManger.Unload();
         SubtitleManager.Unload();
+        LyricManger.Unload();
     }
 
     # region ConfigEvents
@@ -1030,13 +1081,16 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogManager.Info($"Target language changed to {TargetLanguage.Value}/目标语言已更改为 {TargetLanguage.Value}");
 
             // 更新翻译路径
-            TargetLanguePath = TranslationRootPath + "/" + TargetLanguage.Value;
-            TranslationTextPath = TargetLanguePath + "/Text";
-            TranslationTexturePath = TargetLanguePath + "/Texture";
-            LyricPath = TargetLanguePath + "/Lyric";
-            UIPath = TargetLanguePath + "/UI";
-            UITextPath = UIPath + "/Text";
-            UISpritePath = UIPath + "/Sprite";
+            TargetLanguePath = Path.Combine(TranslationRootPath, TargetLanguage.Value);
+            TranslationTextPath = Path.Combine(TargetLanguePath, "Text");
+            TranslationTexturePath = Path.Combine(TargetLanguePath, "Texture");
+            LyricPath = Path.Combine(TargetLanguePath, "Lyric");
+            UIPath = Path.Combine(TargetLanguePath, "UI");
+            UITextPath = Path.Combine(UIPath, "Text");
+            UISpritePath = Path.Combine(UIPath, "Sprite");
+            DumpPath = Path.Combine(TranslationRootPath, "Dump");
+            TextDumpPath = Path.Combine(DumpPath, "Text");
+            TextureDumpPath = Path.Combine(DumpPath, "Texture");
             // 创建目录
             try
             {
@@ -1047,6 +1101,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 Directory.CreateDirectory(UIPath);
                 Directory.CreateDirectory(UITextPath);
                 Directory.CreateDirectory(UISpritePath);
+                Directory.CreateDirectory(DumpPath);
+                Directory.CreateDirectory(TextDumpPath);
+                Directory.CreateDirectory(TextureDumpPath);
             }
             catch (Exception e)
             {
@@ -1065,6 +1122,20 @@ public class JustAnotherTranslator : BaseUnityPlugin
             {
                 TextureReplaceManger.Unload();
                 TextureReplaceManger.Init();
+            }
+
+            // 重新加载UI翻译
+            if (EnableUITranslation.Value)
+            {
+                UITranslateManager.Unload();
+                UITranslateManager.Init();
+            }
+
+            // 重新加载歌词翻译
+            if (EnableLyricSubtitle.Value)
+            {
+                LyricManger.Unload();
+                LyricManger.Init();
             }
         };
 

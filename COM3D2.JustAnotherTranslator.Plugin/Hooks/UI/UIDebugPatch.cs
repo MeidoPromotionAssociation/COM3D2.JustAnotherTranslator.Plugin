@@ -89,7 +89,7 @@ public class UIDebugPatch
             catch (Exception e)
             {
                 LogManager.Error(
-                    $"LocalizeTargetPatcher.ApplyPatch unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                    $"LocalizeTargetPatcher.ApplyPatch unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
             }
         }
     }
@@ -118,7 +118,7 @@ public class UIDebugPatch
             catch (Exception e)
             {
                 LogManager.Error(
-                    $"LogDoLocalizeCallPrefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                    $"LogDoLocalizeCallPrefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
             }
         }
     }

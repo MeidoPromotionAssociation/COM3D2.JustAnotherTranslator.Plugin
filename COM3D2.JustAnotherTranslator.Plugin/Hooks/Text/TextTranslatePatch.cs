@@ -32,7 +32,7 @@ public static class TextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"KagScript_GetText_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"KagScript_GetText_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -54,7 +54,7 @@ public static class TextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"ScriptManager_ReplaceCaraName_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"ScriptManager_ReplaceCaraName_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -104,7 +104,7 @@ public static class TextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"LocalizationManager_GetTranslationText_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"LocalizationManager_GetTranslationText_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -140,7 +140,7 @@ public static class TextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"Graphic_SetVerticesDirty_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"Graphic_SetVerticesDirty_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -169,7 +169,7 @@ public static class TextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"NGUIText_WrapText_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"NGUIText_WrapText_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -206,7 +206,7 @@ public static class TextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"RegisterNGUITextPatches unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"RegisterNGUITextPatches unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 }

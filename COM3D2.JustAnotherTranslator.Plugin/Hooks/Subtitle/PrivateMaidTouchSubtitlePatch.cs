@@ -50,7 +50,7 @@ public static class PrivateMaidTouchSubtitlePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"PrivateMaidTouchKagManager_TagTalk_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"PrivateMaidTouchKagManager_TagTalk_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -81,7 +81,7 @@ public static class PrivateMaidTouchSubtitlePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"PrivateMaidTouchKagManager_HitRet_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"PrivateMaidTouchKagManager_HitRet_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 }

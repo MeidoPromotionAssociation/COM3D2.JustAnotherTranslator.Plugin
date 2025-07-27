@@ -24,7 +24,7 @@ public static class SubtitleDebugPatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"KagScriptCallTag_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"KagScriptCallTag_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 }

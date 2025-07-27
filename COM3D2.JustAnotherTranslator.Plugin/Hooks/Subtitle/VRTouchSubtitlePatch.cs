@@ -57,7 +57,7 @@ public static class VRTouchSubtitlePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"VRTouchKagManager_TagTalk_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"VRTouchKagManager_TagTalk_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 }

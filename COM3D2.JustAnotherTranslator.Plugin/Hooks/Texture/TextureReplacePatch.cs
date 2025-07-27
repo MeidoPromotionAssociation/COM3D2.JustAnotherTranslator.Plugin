@@ -43,7 +43,7 @@ public static class TextureReplacePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"IsExistentFile_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"IsExistentFile_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -82,7 +82,7 @@ public static class TextureReplacePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"ImportCM_LoadTexture_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"ImportCM_LoadTexture_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
             return true;
         }
     }
@@ -104,7 +104,7 @@ public static class TextureReplacePatch
                 return;
 
             LogManager.Debug(
-                $"UIWidget_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
+                $"UIWidget_mainTexture_Getter_Postfix called: {__instance?.name}, mainTexture name: {__result?.name}");
 
             if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture))
                 return;
@@ -127,7 +127,7 @@ public static class TextureReplacePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"UIWidget_mainTexture_Getter_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"UIWidget_mainTexture_Getter_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -148,7 +148,7 @@ public static class TextureReplacePatch
                 return;
 
             LogManager.Debug(
-                $"UI2DSprite_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result.name}");
+                $"UI2DSprite_mainTexture_Getter_Postfix called: {__instance?.name}, mainTexture name: {__result.name}");
 
             if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture))
                 return;
@@ -171,7 +171,7 @@ public static class TextureReplacePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"UI2DSprite_mainTexture_Getter_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"UI2DSprite_mainTexture_Getter_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -191,7 +191,7 @@ public static class TextureReplacePatch
                 __result.name.StartsWith("JAT_")) return;
 
             LogManager.Debug(
-                $"UITexture_mainTexture_Getter_Postfix called: {__instance.name}, mainTexture name: {__result?.name}");
+                $"UITexture_mainTexture_Getter_Postfix called: {__instance?.name}, mainTexture name: {__result?.name}");
 
             if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture))
                 return;
@@ -214,7 +214,7 @@ public static class TextureReplacePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"UITexture_mainTexture_Getter_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"UITexture_mainTexture_Getter_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -250,7 +250,7 @@ public static class TextureReplacePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"Image_sprite_Setter_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"Image_sprite_Setter_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -275,7 +275,7 @@ public static class TextureReplacePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"OnMaskableGraphicEnable unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"OnMaskableGraphicEnable unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 }

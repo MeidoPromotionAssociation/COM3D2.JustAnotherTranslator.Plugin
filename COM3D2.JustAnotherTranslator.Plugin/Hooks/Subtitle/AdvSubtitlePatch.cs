@@ -49,7 +49,7 @@ public static class AdvSubtitlePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"ADVKagManager_TagTalk_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"ADVKagManager_TagTalk_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -80,7 +80,7 @@ public static class AdvSubtitlePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"ADVKagManager_HitRet_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"ADVKagManager_HitRet_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 }

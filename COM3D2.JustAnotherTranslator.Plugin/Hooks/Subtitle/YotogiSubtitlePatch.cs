@@ -62,7 +62,7 @@ public static class YotogiSubtitlePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"YotogiKagManager_TagTalk_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"YotogiKagManager_TagTalk_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -93,7 +93,7 @@ public static class YotogiSubtitlePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"YotogiKagManager_HitRet_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"YotogiKagManager_HitRet_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 }

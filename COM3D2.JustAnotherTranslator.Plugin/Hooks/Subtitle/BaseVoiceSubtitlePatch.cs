@@ -54,7 +54,7 @@ public static class BaseVoiceSubtitlePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"BaseKagManager_TagPlayVoice_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"BaseKagManager_TagPlayVoice_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 }

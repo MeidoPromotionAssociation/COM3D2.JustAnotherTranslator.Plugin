@@ -56,7 +56,7 @@ public static class UITranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"LocalizationManager_GetTranslation_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"LocalizationManager_GetTranslation_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
 
         return true;
@@ -95,7 +95,7 @@ public static class UITranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"UIButton_SetSprite_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"UIButton_SetSprite_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 

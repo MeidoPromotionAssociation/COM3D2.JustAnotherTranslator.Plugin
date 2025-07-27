@@ -25,7 +25,7 @@ public static class MaidInfo
         {
             // Because there is a stack, it would rather be caught
             LogManager.Error(
-                $"GetMaidFullName unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+                $"GetMaidFullName unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
             return "";
         }
     }

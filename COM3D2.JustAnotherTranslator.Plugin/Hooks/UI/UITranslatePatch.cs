@@ -65,6 +65,7 @@ public static class UITranslatePatch
     /// <summary>
     ///     挂钩到 UIButton.SetSprite 中以拦截精灵变化并应用替换
     ///     当 L2 Localization 翻译图片时，最后会得到 SpriteName 然后此方法会被调用
+    ///     当然，不通过 L2 Localization 翻译时也会调用
     /// </summary>
     [HarmonyPatch(typeof(UIButton), "SetSprite", typeof(string))]
     [HarmonyPostfix]
@@ -72,11 +73,24 @@ public static class UITranslatePatch
     {
         try
         {
+            if (__instance == null || string.IsNullOrEmpty(sp)) return;
+
             LogManager.Debug($"UIButton_SetSprite_Postfix called with sp: {sp}");
 
-            if (__instance.mSprite == null) return;
+            // 检查 atlas 名称
+            var sprite = __instance.mSprite;
+            if (sprite != null && sprite.atlas != null && sprite.atlas.name.StartsWith("JAT_"))
+            {
+                // 如果 atlas 已经被替换，并且 spriteName 也匹配，就无需任何操作
+                if (sprite.spriteName == sp) return;
 
-            UITranslateManager.ProcessSpriteReplacementWithNewAtlas(__instance.mSprite, sp);
+                // 如果 spriteName 不匹配（例如按钮状态改变），只需更新 spriteName 即可，无需重新创建图集
+                sprite.spriteName = sp;
+                return;
+            }
+
+            // 如果 atlas 不是我们的动态图集，则按需判断是否替换
+            UITranslateManager.ProcessSpriteReplacementWithNewAtlas(__instance, sp);
         }
         catch (Exception e)
         {

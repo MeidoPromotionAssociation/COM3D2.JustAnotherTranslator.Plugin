@@ -30,13 +30,6 @@ public static class UITranslateManager
     /// LRU缓存已加载的图片纹理
     private static LRUCache<string, Texture2D> _spriteCache; // filename -> texture
 
-    /// 缓存原始精灵图信息
-    private static readonly Dictionary<UISprite, OriginalSpriteInfoStruct>
-        OriginalSpriteInfo = new(); // UISprite -> OriginalSpriteInfo
-
-    /// 缓存已创建的替换 Atlas，避免重复创建
-    private static readonly Dictionary<string, UIAtlas> ReplacementAtlasCache = new(); // spriteName -> UIAtlas
-
     /// 异步 UI 文本加载器
     private static AsyncUiTextLoader _uiTextLoader;
 
@@ -45,8 +38,6 @@ public static class UITranslateManager
         if (_initialized) return;
 
         _spriteCache = new LRUCache<string, Texture2D>(JustAnotherTranslator.UICacheSize.Value);
-
-        SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         LoadTextTranslationsAsync();
         LoadSpriteTextures();
@@ -69,10 +60,6 @@ public static class UITranslateManager
     {
         if (!_initialized) return;
 
-        SceneManager.sceneUnloaded -= OnSceneUnloaded;
-
-        CleanupSceneResources();
-
         _uiTextLoader?.Cancel();
         _uiTextLoader = null;
 
@@ -90,6 +77,8 @@ public static class UITranslateManager
 
         _initialized = false;
     }
+
+    #region Text
 
     /// <summary>
     ///     处理UI文本翻译
@@ -125,8 +114,6 @@ public static class UITranslateManager
 
         return "";
     }
-
-    #region Text
 
     /// <summary>
     ///     异步加载翻译文件
@@ -190,15 +177,117 @@ public static class UITranslateManager
     #region Sprite
 
     /// <summary>
-    ///     存储原始精灵图信息的结构
+    ///     替换整个 Atlas，创建包含单个精灵图的新 Atlas
+    ///     请确保已检查 atlas 名称是否以 JAT_ 开头
     /// </summary>
-    private struct OriginalSpriteInfoStruct
+    public static void ProcessSpriteReplacementWithNewAtlas(UIButton uiButton, string spriteName)
     {
-        public UIAtlas OriginalAtlas;
-        public string OriginalSpriteName;
-        public UISpriteData OriginalSpriteData;
-        public Material OriginalMaterial;
+        try
+        {
+            if (IsSpriteReplaceAvailable(spriteName))
+            {
+                var replacementTexture = GetSpriteTexture(spriteName);
+
+                // 获取目标 UISprite 组件
+                var sprite = uiButton.tweenTarget?.GetComponent<UISprite>();
+                if (sprite == null)
+                {
+                    sprite = uiButton.GetComponent<UISprite>(); // 备用方案
+                    LogManager.Debug($"use backup method to find UISprite component on UIButton '{uiButton.name}'.");
+                }
+
+                if (sprite == null)
+                {
+                    LogManager.Error(
+                        $"Unable to find UISprite component on UIButton/无法找到 UISprite 组件： '{uiButton.name}'");
+                    return;
+                }
+
+                ReplaceSprite(sprite, replacementTexture, spriteName);
+
+                LogManager.Debug($"Successfully replaced UIButton '{uiButton.name}' sprite with '{spriteName}'.");
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"ProcessSpriteReplacementWithNewAtlas unknown error, please report this issue/未知错误，请报告此错误 {e.Message}/n{e.StackTrace}");
+        }
     }
+
+
+    /// <summary>
+    ///     通过创建新的 UIAtlas 来替换 UISprite
+    /// </summary>
+    /// <param name="sprite">The UISprite to modify.</param>
+    /// <param name="newTexture">The new Texture2D to apply.</param>
+    /// <param name="spriteName">A unique name for the new sprite. If null, the texture's name will be used.</param>
+    public static void ReplaceSprite(UISprite sprite, Texture2D newTexture, string spriteName)
+    {
+        if (sprite == null || newTexture == null)
+        {
+            LogManager.Error(
+                $"Sprite or new Texture is null, please report this issue/精灵图或新纹理为空，请报告此问题  spriteName: {spriteName}");
+            return;
+        }
+
+        var originalAtlas = sprite.atlas;
+        if (originalAtlas == null)
+        {
+            LogManager.Error(
+                $"The original sprite does not have an atlas, please report this issue/原始精灵图没有 Atlas，请报告此问题 sprite.name: {sprite.name}");
+            return;
+        }
+
+        // 创建一个新的 GameObject 来承载 UIAtlas
+        var atlasGO = new GameObject($"JAT_ReplacementAtlas_{spriteName}");
+        atlasGO.transform.SetParent(sprite.transform, false); // 设置为子对象，以便跟随销毁
+
+        var newAtlas = atlasGO.AddComponent<UIAtlas>();
+
+        // 复制旧材质可以确保 Shader 和其他属性（如 premultiplied alpha）保持一致
+        var newMaterial = new Material(originalAtlas.spriteMaterial);
+        newMaterial.mainTexture = newTexture;
+        newAtlas.spriteMaterial = newMaterial;
+        newAtlas.pixelSize = originalAtlas.pixelSize;
+
+        // 创建新的 UISpriteData
+        if (string.IsNullOrEmpty(spriteName)) spriteName = newTexture.name;
+
+        var spriteData = new UISpriteData
+        {
+            name = spriteName,
+            x = 0,
+            y = 0,
+            width = newTexture.width,
+            height = newTexture.height,
+            borderLeft = 0,
+            borderRight = 0,
+            borderTop = 0,
+            borderBottom = 0,
+            paddingLeft = 0,
+            paddingRight = 0,
+            paddingTop = 0,
+            paddingBottom = 0
+        };
+
+        // 将 SpriteData 添加到新图集
+        // UIAtlas.spriteList 返回的是一个副本，所以我们需要获取、修改再赋值回去
+        var spriteList = newAtlas.spriteList;
+        spriteList.Add(spriteData);
+        newAtlas.spriteList = spriteList;
+
+        // 将新图集和精灵名赋给目标 UISprite
+        sprite.atlas = newAtlas;
+        sprite.spriteName = spriteName;
+        // 确保 atlas 具有 JAT_ 前缀
+        // Component.name 实际上是 GameObject.name 的快捷方式，但我们只是明确意图+确保
+        sprite.atlas.name = atlasGO.name;
+
+
+        sprite.MarkAsChanged();
+    }
+
 
     /// <summary>
     ///     同步扫描可替换的图片文件路径
@@ -212,7 +301,7 @@ public static class UITranslateManager
         {
             if (!Directory.Exists(JustAnotherTranslator.UISpritePath))
             {
-                LogManager.Warning(
+                LogManager.Info(
                     $"Translation UISpritePath directory not found, try to create/未找到UI精灵图目录，尝试创建: {JustAnotherTranslator.UISpritePath}");
                 try
                 {
@@ -279,7 +368,6 @@ public static class UITranslateManager
 
             var fileData = File.ReadAllBytes(path);
             var texture = new Texture2D(1, 1);
-            texture.LoadImage(new byte[0]); // 强制刷新内部纹理
             texture.LoadImage(fileData); // LoadImage会自动调整纹理大小
             LogManager.Debug($"Loaded texture {spriteName} from {path}");
             _spriteCache.Set(spriteName, texture);
@@ -287,249 +375,10 @@ public static class UITranslateManager
         }
         catch (Exception e)
         {
-            LogManager.Error($"Failed to load texture: {spriteName}/加载材质失败: {spriteName}  {e.Message}");
+            LogManager.Error($"Failed to load texture/加载材质失败: {spriteName}  {e.Message}");
         }
 
         return null;
-    }
-
-    /// <summary>
-    ///     替换整个 Atlas，创建包含单个精灵图的新 Atlas
-    /// </summary>
-    public static void ProcessSpriteReplacementWithNewAtlas(UISprite sprite, string spriteName)
-    {
-        if (sprite == null) return;
-
-        // 检查是否为空字符串调用
-        if (string.IsNullOrEmpty(spriteName))
-        {
-            LogManager.Debug("Sprite replacement restore for empty sprite name");
-            RestoreOriginalSprite(sprite);
-            return;
-        }
-
-        if (IsSpriteReplaceAvailable(spriteName))
-        {
-            var replacementTexture = GetSpriteTexture(spriteName);
-            if (replacementTexture != null)
-            {
-                // 保存原始信息（仅在第一次替换时保存）
-                if (!OriginalSpriteInfo.ContainsKey(sprite))
-                    OriginalSpriteInfo[sprite] = new OriginalSpriteInfoStruct
-                    {
-                        OriginalAtlas = sprite.atlas,
-                        OriginalSpriteName = sprite.spriteName,
-                        OriginalSpriteData = sprite.GetAtlasSprite(),
-                        OriginalMaterial = sprite.material
-                    };
-
-                // 尝试从缓存获取 Atlas，如果没有则创建新的
-                var newAtlas = GetOrCreateReplacementAtlas(replacementTexture, sprite.material, spriteName);
-
-                if (newAtlas != null)
-                {
-                    sprite.atlas = newAtlas;
-                    sprite.spriteName = spriteName;
-
-                    // 强制刷新精灵图
-                    sprite.MarkAsChanged();
-
-                    LogManager.Debug($"Applied new atlas for {spriteName} on {sprite.name}");
-                }
-                else
-                {
-                    LogManager.Warning($"Failed to create replacement atlas for {spriteName}");
-                }
-            }
-        }
-        else
-        {
-            // 恢复原始精灵图，因为按钮可能会被复用，如果不还原可能导致显示错误
-            LogManager.Debug($"Sprite replacement restore for {spriteName}");
-            RestoreOriginalSprite(sprite);
-        }
-    }
-
-    /// <summary>
-    ///     获取或创建替换 Atlas（带缓存）
-    /// </summary>
-    private static UIAtlas GetOrCreateReplacementAtlas(Texture2D texture, Material originalMaterial, string spriteName)
-    {
-        // 使用纹理实例ID和精灵名称作为缓存键
-        var cacheKey = $"{texture.GetInstanceID()}_{spriteName}";
-
-        if (ReplacementAtlasCache.TryGetValue(cacheKey, out var cachedAtlas))
-        {
-            // 检查缓存的 Atlas 是否仍然有效
-            if (cachedAtlas != null && cachedAtlas.spriteMaterial != null) return cachedAtlas;
-
-            // 清理无效缓存时也要清理对应的GameObject
-            if (cachedAtlas != null && cachedAtlas.gameObject != null) Object.DestroyImmediate(cachedAtlas.gameObject);
-            ReplacementAtlasCache.Remove(cacheKey);
-        }
-
-        // 创建新的 Atlas
-        var newAtlas = CreateSingleSpriteAtlas(texture, originalMaterial, spriteName);
-        if (newAtlas != null) ReplacementAtlasCache[cacheKey] = newAtlas;
-
-        return newAtlas;
-    }
-
-    /// <summary>
-    ///     创建包含单个精灵图的 Atlas
-    /// </summary>
-    private static UIAtlas CreateSingleSpriteAtlas(Texture2D texture, Material originalMaterial, string spriteName)
-    {
-        try
-        {
-            if (texture == null)
-            {
-                LogManager.Warning($"Texture is null for sprite {spriteName}");
-                return null;
-            }
-
-            if (originalMaterial == null)
-            {
-                LogManager.Warning($"Original material is null for sprite {spriteName}");
-                return null;
-            }
-
-            if (texture.width <= 0 || texture.height <= 0)
-            {
-                LogManager.Warning(
-                    $"Invalid texture dimensions for sprite {spriteName}: {texture.width}x{texture.height}");
-                return null;
-            }
-
-            // 创建 Atlas GameObject
-            var atlasGo = new GameObject($"JAT_ReplacementAtlas_{spriteName}");
-            var atlas = atlasGo.AddComponent<UIAtlas>();
-
-            if (originalMaterial == null)
-            {
-                LogManager.Warning($"Original material is null for sprite {spriteName}");
-                return null;
-            }
-
-            // 复制材质，并使用新的纹理
-            var newMaterial = new Material(originalMaterial.shader);
-            newMaterial.mainTexture = texture;
-
-            // 复制原始材质的其他属性
-            newMaterial.color = originalMaterial.color;
-            newMaterial.renderQueue = originalMaterial.renderQueue;
-            newMaterial.globalIlluminationFlags = originalMaterial.globalIlluminationFlags;
-            newMaterial.enableInstancing = originalMaterial.enableInstancing;
-            newMaterial.doubleSidedGI = originalMaterial.doubleSidedGI;
-            newMaterial.hideFlags = originalMaterial.hideFlags;
-
-            atlas.spriteMaterial = newMaterial;
-
-            // 创建精灵图数据 - 覆盖整个纹理
-            var spriteData = new UISpriteData();
-            spriteData.name = spriteName;
-            spriteData.x = 0;
-            spriteData.y = 0;
-            spriteData.width = texture.width;
-            spriteData.height = texture.height;
-
-            // 设置边框为0（禁用九宫格拉伸）
-            spriteData.borderLeft = 0;
-            spriteData.borderRight = 0;
-            spriteData.borderTop = 0;
-            spriteData.borderBottom = 0;
-
-            // 设置填充为0
-            spriteData.paddingLeft = 0;
-            spriteData.paddingRight = 0;
-            spriteData.paddingTop = 0;
-            spriteData.paddingBottom = 0;
-
-            // 添加到 Atlas
-            atlas.spriteList = new List<UISpriteData> { spriteData };
-
-            // 设置 Atlas 不被销毁
-            // UnityEngine.Object.DontDestroyOnLoad(atlasGo);
-
-            return atlas;
-        }
-        catch (Exception e)
-        {
-            LogManager.Error($"Failed to create single sprite atlas for {spriteName}: {e.Message}");
-            return null;
-        }
-    }
-
-    /// <summary>
-    ///     恢复原始精灵图
-    /// </summary>
-    private static void RestoreOriginalSprite(UISprite sprite)
-    {
-        if (sprite == null) return;
-
-        if (OriginalSpriteInfo.TryGetValue(sprite, out var info))
-            try
-            {
-                // 恢复原始属性
-                sprite.atlas = info.OriginalAtlas;
-                sprite.spriteName = info.OriginalSpriteName;
-
-                // 安全地恢复精灵数据
-                if (info.OriginalSpriteData != null) sprite.SetAtlasSprite(info.OriginalSpriteData);
-
-                // 恢复材质
-                if (info.OriginalMaterial != null) sprite.material = info.OriginalMaterial;
-
-                // 强制刷新精灵图
-                sprite.MarkAsChanged();
-
-                // 移除缓存的原始信息
-                OriginalSpriteInfo.Remove(sprite);
-
-                LogManager.Debug($"Restored original sprite for {sprite.name}");
-            }
-            catch (Exception e)
-            {
-                LogManager.Error($"Failed to restore original sprite for {sprite.name}: {e.Message}");
-            }
-    }
-
-    /// <summary>
-    ///     场景卸载时的清理
-    /// </summary>
-    /// <param name="scene"></param>
-    private static void OnSceneUnloaded(Scene scene)
-    {
-        CleanupSceneResources();
-    }
-
-    /// <summary>
-    ///     清理场景资源
-    /// </summary>
-    private static void CleanupSceneResources()
-    {
-        try
-        {
-            // 清理所有替换的Atlas和相关资源
-            foreach (var atlas in ReplacementAtlasCache.Values)
-                if (atlas != null)
-                {
-                    if (atlas.spriteMaterial != null)
-                        Object.DestroyImmediate(atlas.spriteMaterial);
-                    if (atlas.gameObject != null)
-                        Object.DestroyImmediate(atlas.gameObject);
-                }
-
-            // 清理缓存
-            ReplacementAtlasCache.Clear();
-            OriginalSpriteInfo.Clear();
-
-            LogManager.Debug("Scene resources cleaned up");
-        }
-        catch (Exception e)
-        {
-            LogManager.Error($"Error during scene cleanup: {e.Message}");
-        }
     }
 
     /// <summary>

@@ -115,7 +115,7 @@ public static class TextureReplacePatch
                 tex2d.LoadImage(EmptyBytes); // 部分情况下可能出现尺寸不符，需要先清空
                 tex2d.LoadImage(newTexture);
                 // add JAT_ prefix to avoid infinite loop
-                tex2d.name = $"JAT_{tex2d.name}";
+                tex2d.name = $"JAT_{__result.name}";
                 LogManager.Debug($"UIWidget Texture replaced: {__result.name}");
             }
             else

@@ -189,6 +189,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
     // dump相关配置
     private static ConfigEntry<bool> _dumpTip1;
     private static ConfigEntry<bool> _dumpTip2;
+    private static ConfigEntry<bool> _dumpTip3;
+    private static ConfigEntry<bool> _dumpTip4;
     public static ConfigEntry<bool> EnableTexturesDump;
     public static ConfigEntry<bool> EnableTextDump;
     public static ConfigEntry<int> TextDumpThreshold;
@@ -930,31 +932,42 @@ public class JustAnotherTranslator : BaseUnityPlugin
             true,
             new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 9010 }));
 
+        _dumpTip3 = Config.Bind("Dump",
+            "Turn log level to Debug to make it easier to debug and find problems",
+            true,
+            new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 9020 }));
+
+        _dumpTip4 = Config.Bind("Dump",
+            "在通用设置内将日志等级调至 Debug 能让您更方便的调试，以及排查各类不生效原因",
+            true,
+            new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 9030 }));
+
+
         EnableTexturesDump = Config.Bind("Dump",
             "EnableDumpTexture/是否启用纹理导出",
             false,
             new ConfigDescription("Only export textures that have not been replaced/仅导出未替换过的纹理", null,
-                new ConfigurationManagerAttributes { Order = 9020 }));
+                new ConfigurationManagerAttributes { Order = 9040 }));
 
         EnableTextDump = Config.Bind("Dump",
             "EnableDumpText/是否启用文本导出",
             false,
             new ConfigDescription(
                 "Only export text that has not been replaced, write out when the threshold is reached or switching scenes or the game correct exits/仅导出未替换过的文本，达到阈值或切换场景或正确退出游戏时写出",
-                null, new ConfigurationManagerAttributes { Order = 9030 }));
+                null, new ConfigurationManagerAttributes { Order = 9050 }));
 
         TextDumpThreshold = Config.Bind("Dump",
             "TextDumpThreshold/文本导出阈值",
             20,
             new ConfigDescription("How many lines of text to write out at once/累计多少条文本后写出一次", null,
-                new ConfigurationManagerAttributes { Order = 9040 }));
+                new ConfigurationManagerAttributes { Order = 9060 }));
 
         FlushTextDumpNow = Config.Bind("Dump",
             "FlushTextDumpNow/立即写出文本",
             false,
             new ConfigDescription(
                 "Immediately write out all cached text when the option status changes/立即写出所有已缓存的文本，选项状态变更时立即写出", null,
-                new ConfigurationManagerAttributes { Order = 9050 }));
+                new ConfigurationManagerAttributes { Order = 9070 }));
 
         # endregion
 

@@ -192,7 +192,7 @@ public static class UITranslateManager
                 if (sprite == null)
                 {
                     sprite = uiButton.GetComponent<UISprite>(); // 备用方案
-                    LogManager.Debug($"use backup method to find UISprite component on UIButton '{uiButton.name}'.");
+                    LogManager.Debug($"Use backup method to find UISprite component on UIButton '{uiButton.name}'.");
                 }
 
                 if (sprite == null)
@@ -359,7 +359,11 @@ public static class UITranslateManager
     {
         if (!IsSpriteReplaceAvailable(spriteName)) return null;
 
-        if (_spriteCache.TryGet(spriteName, out var cachedTexture)) return cachedTexture;
+        if (_spriteCache.TryGet(spriteName, out var cachedTexture))
+        {
+            LogManager.Debug($"GetSpriteTexture cache hit {spriteName}");
+            return cachedTexture;
+        }
 
         try
         {

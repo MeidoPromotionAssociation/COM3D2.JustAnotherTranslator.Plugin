@@ -228,7 +228,7 @@ public static class LyricManger
         _currentLyricIndex = 0;
 
         // 音频文件是通过 PlayDanceBGM 的形式加载的（m_strMasterAudioFileName）
-        // 不存在歌唱的 Maid，因此 SpeakerName 显示始终为主 Maid
+        // 不存在歌唱的 Maid，因此 SpeakerName 显示始终为舞蹈主 Maid
         if (JustAnotherTranslator.EnableLyricSubtitleSpeakerName.Value)
             _mainDanceMaidName = MaidInfo.GetMaidFullName(_rhythmActionMgr.DanceMaid[0]);
         else

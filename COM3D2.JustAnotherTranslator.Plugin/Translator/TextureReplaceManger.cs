@@ -4,6 +4,8 @@ using System.IO;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Texture;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
@@ -21,6 +23,9 @@ public static class TextureReplaceManger
 
     /// 纹理数据缓存
     private static LRUCache<string, byte[]> _textureCache; // filename -> texture
+
+    /// 已经导出的纹理
+    private static readonly HashSet<string> _dumpedTextures = new();
 
     public static void Init()
     {
@@ -86,16 +91,35 @@ public static class TextureReplaceManger
         _initialized = false;
     }
 
+    /// <summary>
+    ///     从缓存中检查替换纹理是否存在
+    /// </summary>
+    /// <param name="filename"></param>
+    /// <returns></returns>
+    public static bool IsTextureExist(string filename)
+    {
+        if (string.IsNullOrEmpty(filename))
+            return false;
+
+        if (filename.EndsWith(".tex")) filename = filename.Replace(".tex", ".png");
+
+
+        if (Path.GetExtension(filename) == string.Empty) filename += ".png";
+
+
+        return FilePathCache.ContainsKey(filename);
+    }
 
     /// <summary>
     ///     尝试从文件中获取纹理数据
     /// </summary>
     /// <param name="filename"></param>
-    /// <param name="replaced"></param>
+    /// <param name="originalTexture"></param>
+    /// <param name="replacedTexture"></param>
     /// <returns></returns>
-    public static bool GetReplaceTexture(string filename, out byte[] replaced)
+    public static bool GetReplaceTexture(string filename, out byte[] replacedTexture, Texture originalTexture = null)
     {
-        replaced = null;
+        replacedTexture = null;
 
         if (string.IsNullOrEmpty(filename))
             return false;
@@ -105,7 +129,7 @@ public static class TextureReplaceManger
         if (Path.GetExtension(filename) == string.Empty) filename += ".png";
 
         // 首先尝试从LRU缓存中获取纹理数据
-        if (_textureCache != null && _textureCache.TryGet(filename, out replaced))
+        if (_textureCache != null && _textureCache.TryGet(filename, out replacedTexture))
         {
             LogManager.Debug($"Texture cache hit: {filename}");
             return true;
@@ -115,12 +139,12 @@ public static class TextureReplaceManger
         if (FilePathCache.TryGetValue(filename, out var cachePath))
             try
             {
-                replaced = File.ReadAllBytes(cachePath);
+                replacedTexture = File.ReadAllBytes(cachePath);
 
                 // 将读取的纹理数据添加到LRU缓存中
                 if (_textureCache != null)
                 {
-                    _textureCache.Set(filename, replaced);
+                    _textureCache.Set(filename, replacedTexture);
                     LogManager.Debug($"Texture added to cache: {filename}");
                 }
 
@@ -133,23 +157,81 @@ public static class TextureReplaceManger
                 return false;
             }
 
+        // 如果未找到替换，则转储原始纹理
+        if (originalTexture is Texture2D tex2d)
+        {
+            var bytes = GetTextureBytes(tex2d);
+            if (bytes != null)
+                DumpTexture(filename, bytes);
+        }
+
         return false;
     }
 
     /// <summary>
-    ///     从缓存中检查纹理是否存在
+    ///     将未翻译的纹理写入文件
     /// </summary>
-    /// <param name="filename"></param>
-    /// <returns></returns>
-    public static bool IsTextureExist(string filename)
+    /// <param name="textureName"></param>
+    /// <param name="textureData"></param>
+    private static void DumpTexture(string textureName, byte[] textureData)
     {
-        if (string.IsNullOrEmpty(filename))
-            return false;
+        if (!JustAnotherTranslator.EnableTexturesDump.Value)
+            return;
 
-        if (filename.EndsWith(".tex")) filename = filename.Replace(".tex", ".png");
+        // 如果纹理是新的 (之前未 dump 过), addResult 会是 true
+        var added = _dumpedTextures.Add(textureName);
 
-        if (Path.GetExtension(filename) == string.Empty) filename += ".png";
+        // 只有当纹理是新的，才执行写入文件的操作
+        if (added)
+        {
+            if (Path.GetExtension(textureName) != ".png")
+                textureName = Path.GetFileName(textureName) + ".png";
 
-        return FilePathCache.ContainsKey(filename);
+            LogManager.Debug($"Texture not translated, dumping: {textureName}");
+            var filePath = Path.Combine(JustAnotherTranslator.TranslationTexturePath, textureName);
+            File.WriteAllBytes(filePath, textureData);
+        }
+    }
+
+    /// <summary>
+    ///     获取 .png 格式的纹理数据
+    /// </summary>
+    /// <param name="originalTex"></param>
+    /// <returns></returns>
+    private static byte[] GetTextureBytes(Texture2D originalTex)
+    {
+        try
+        {
+            // 尝试直接获取
+            return originalTex.EncodeToPNG();
+        }
+        catch
+        {
+            // 如果失败（例如，纹理不可读），则创建副本
+            try
+            {
+                var renderTex = RenderTexture.GetTemporary(
+                    originalTex.width, originalTex.height, 0,
+                    RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
+
+                Graphics.Blit(originalTex, renderTex);
+                var previous = RenderTexture.active;
+                RenderTexture.active = renderTex;
+                var readableText = new Texture2D(originalTex.width, originalTex.height);
+                readableText.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
+                readableText.Apply();
+                RenderTexture.active = previous;
+                RenderTexture.ReleaseTemporary(renderTex);
+
+                var bytes = readableText.EncodeToPNG();
+                Object.Destroy(readableText);
+                return bytes;
+            }
+            catch (Exception e)
+            {
+                LogManager.Error($"Failed to get texture bytes for {originalTex.name}: {e.Message}");
+                return null;
+            }
+        }
     }
 }

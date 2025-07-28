@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using MaidCafe;
+using UnityEngine.SceneManagement;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
@@ -30,10 +32,20 @@ public static class TextTranslateManger
     private static AsyncTextLoader _asyncLoader;
 
     /// 翻译是否已加载完成
-    public static bool IsTranslationLoaded;
+    private static bool IsTranslationLoaded;
+
+    /// 已导出文本
+    private static readonly HashSet<string> _dumpedTexts = new();
+
+    /// 导出文本缓冲区
+    private static readonly List<string> DumpBuffer = new();
+
+    /// 导出目标路径
+    private static readonly string DumpFilePath =
+        Path.Combine(JustAnotherTranslator.TextDumpPath, "untranslatedText.txt");
 
     /// 加载状态
-    public static bool IsLoading { get; private set; }
+    private static bool IsLoading { get; set; }
 
     public static void Init()
     {
@@ -67,7 +79,7 @@ public static class TextTranslateManger
                     Harmony.HasAnyPatches("com.github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
                     Harmony.HasAnyPatches("github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
                     Harmony.HasAnyPatches(
-                        "github.meidopromotionassociation.com3d2_scripts_901.maidcafelinebreakcommentfix");
+                        "github.meidopromotionassociation.com3d2_scripts.maidcafelinebreakcommentfix");
 
                 if (isPatchedByLegacy || isPatchedByOthers)
                     LogManager.Warning(
@@ -83,6 +95,9 @@ public static class TextTranslateManger
                 LogManager.Warning(
                     $"Failed to patch MaidCafeDlcLineBreakCommentFix/补丁 MaidCafeDlcLineBreakCommentFix 失败: {e.Message}");
             }
+
+
+        if (JustAnotherTranslator.EnableTextDump.Value) SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _initialized = true;
     }
@@ -108,6 +123,8 @@ public static class TextTranslateManger
         _translationDict.Clear();
         _regexTranslationDict.Clear();
         IsTranslationLoaded = false;
+
+        FlushDumpBuffer();
 
         _initialized = false;
     }
@@ -185,12 +202,18 @@ public static class TextTranslateManger
 
         if (!IsTranslationLoaded)
         {
+            if (!_initialized)
+            {
+                LogManager.Warning("Text translation is not enabled, return original text/未启用文本翻译，返回原文");
+                return false;
+            }
+
             LogManager.Warning("Translation not loaded yet, return original text/翻译未加载或是加载中，返回原文");
             return false;
         }
 
         // 考虑到音频文件可能是数字，这里不进行数字检查
-        if (string.IsNullOrEmpty(original))
+        if (StringTool.IsNullOrWhiteSpace(original))
             return false;
 
         LogManager.Debug($"Translating text: {original}");
@@ -272,6 +295,71 @@ public static class TextTranslateManger
             return true;
         }
 
+        DumpText(original);
+
         return false;
+    }
+
+
+    /// <summary>
+    ///     导出未翻译的文本
+    /// </summary>
+    /// <param name="text"></param>
+    private static void DumpText(string text)
+    {
+        if (!JustAnotherTranslator.EnableTextDump.Value)
+            return;
+
+        // 如果文本是新的 (之前未 dump 过), addResult 会是 true
+        var added = _dumpedTexts.Add(text);
+
+        // 只有当文本是新的，才执行写入文件的操作
+        if (added)
+        {
+            LogManager.Debug($"Text not translated, dumping: {text}");
+            DumpBuffer.Add(text);
+
+            if (DumpBuffer.Count >= JustAnotherTranslator.TextDumpThreshold.Value) FlushDumpBuffer();
+        }
+    }
+
+    /// <summary>
+    ///     将缓存中的未翻译文本写入文件
+    /// </summary>
+    public static void FlushDumpBuffer()
+    {
+        if (DumpBuffer.Count == 0)
+            return;
+
+        try
+        {
+            // .NET 3.5 framework don't have AppendAllLines
+            using (var streamWriter = new StreamWriter(DumpFilePath, true))
+            {
+                foreach (var line in DumpBuffer) streamWriter.WriteLine(line);
+            }
+
+            DumpBuffer.Clear();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to dump text to file/写入文件失败: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    ///     场景卸载时清理资源
+    /// </summary>
+    /// <param name="scene"></param>
+    private static void OnSceneUnloaded(Scene scene)
+    {
+        try
+        {
+            FlushDumpBuffer();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Error during cleanup scene resources/清理场景资源失败: {e.Message}");
+        }
     }
 }

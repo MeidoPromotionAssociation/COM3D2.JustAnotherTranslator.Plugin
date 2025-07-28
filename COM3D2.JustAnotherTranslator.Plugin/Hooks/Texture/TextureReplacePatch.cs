@@ -99,14 +99,15 @@ public static class TextureReplacePatch
     {
         try
         {
-            if (__result == null || StringTool.IsNullOrWhiteSpace(__result.name) || __result.name.StartsWith("JAT_") ||
+            if (__result == null || StringTool.IsNullOrWhiteSpace(__result.name) ||
+                __result.name.StartsWith("JAT_") ||
                 __result.name == "Font Texture")
                 return;
 
             LogManager.Debug(
                 $"UIWidget_mainTexture_Getter_Postfix called: {__instance?.name}, mainTexture name: {__result?.name}");
 
-            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture))
+            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture, __result))
                 return;
 
             // 检查并转换为 Texture2D
@@ -150,7 +151,7 @@ public static class TextureReplacePatch
             LogManager.Debug(
                 $"UI2DSprite_mainTexture_Getter_Postfix called: {__instance?.name}, mainTexture name: {__result.name}");
 
-            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture))
+            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture, __result))
                 return;
 
             // 检查并转换为 Texture2D
@@ -193,7 +194,7 @@ public static class TextureReplacePatch
             LogManager.Debug(
                 $"UITexture_mainTexture_Getter_Postfix called: {__instance?.name}, mainTexture name: {__result?.name}");
 
-            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture))
+            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture, __result))
                 return;
 
             // 检查并转换为 Texture2D
@@ -235,9 +236,8 @@ public static class TextureReplacePatch
                 value.texture.name.StartsWith("JAT_"))
                 return;
 
-            byte[] newTexture = null;
-            if (!StringTool.IsNullOrWhiteSpace(value.texture.name))
-                TextureReplaceManger.GetReplaceTexture(value.texture.name, out newTexture);
+            if (!TextureReplaceManger.GetReplaceTexture(value.texture.name, out var newTexture))
+                return;
 
             if (newTexture == null)
                 return;

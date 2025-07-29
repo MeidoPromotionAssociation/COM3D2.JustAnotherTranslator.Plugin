@@ -871,6 +871,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         # region VRSubtitleSettings
 
+        //TODO 重做VR 字幕配置
+        //TODO 是序号越大的排序越靠前
+
         // VR悬浮字幕相关配置
         VRSubtitleMode = Config.Bind("8VRSubtitle",
             "VRSubtitleMode/VR字幕模式",

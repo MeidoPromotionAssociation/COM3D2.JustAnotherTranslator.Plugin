@@ -194,13 +194,10 @@ public class SubtitleConfig
             VRSubtitleHorizontalOffset = JustAnotherTranslator.VRSubtitleHorizontalOffset.Value,
 
             // VR悬浮字幕背景宽度
-            VRSubtitleBackgroundWidth = JustAnotherTranslator.VRInSpaceSubtitleWidth.Value,
+            VRSubtitleWidth = JustAnotherTranslator.VRInSpaceSubtitleWidth.Value,
 
             // VR悬浮字幕高度
-            VRSubtitleBackgroundHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value,
-
-            // VR悬浮字幕缩放比率
-            VRSubtitleScale = JustAnotherTranslator.VRSubtitleScale.Value
+            VRSubtitleHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value
         };
 
         return config;
@@ -395,20 +392,11 @@ public class SubtitleConfig
     /// VR悬浮字幕水平偏移（度，相对于视线中心）
     public float VRSubtitleHorizontalOffset { get; set; }
 
-    /// VR悬浮字幕背景宽度（米）
-    public float VRSubtitleBackgroundWidth { get; set; } = 1.5f;
+    /// VR悬浮字幕宽度
+    public float VRSubtitleWidth { get; set; } = 1000f;
 
-    /// 当前VR悬浮字幕背景宽度
-    public float CurrentVRSubtitleBackgroundWidth { get; set; } = 1.5f;
-
-    /// VR悬浮字幕背景高度（米）
-    public float VRSubtitleBackgroundHeight { get; set; } = 0.1f;
-
-    /// 当前VR悬浮字幕背景高度
-    public float CurrentVRSubtitleBackgroundHeight { get; set; } = 0.1f;
-
-    /// VR悬浮字幕缩放比率
-    public float VRSubtitleScale { get; set; } = 1f;
+    /// VR悬浮字幕高度
+    public float VRSubtitleHeight { get; set; } = 30f;
 
     # endregion
 }

@@ -193,10 +193,11 @@ public static class TextTranslateManger
     /// <summary>
     ///     尝试获取翻译文本
     /// </summary>
-    /// <param name="original"></param>
-    /// <param name="translated"></param>
-    /// <returns></returns>
-    public static bool GetTranslateText(string original, out string translated)
+    /// <param name="original">原文</param>
+    /// <param name="translated">译文输出</param>
+    /// <param name="skipMark">跳过已翻译标记</param>
+    /// <returns>是否翻译成功</returns>
+    public static bool GetTranslateText(string original, out string translated, bool skipMark = false)
     {
         translated = original;
 
@@ -227,8 +228,8 @@ public static class TextTranslateManger
             return false;
         }
 
-        // 注意：翻译到纯 [HF] 时如果被添加了特殊标记，会导致游戏崩溃，游戏还有其他的特殊标记，因此这里直接检查 [
-        if (original.StartsWith("["))
+        // 注意：翻译到纯 [HF] 时如果被添加了特殊标记，会导致游戏崩溃，游戏还有其他的特殊标记，因此这里直接检查 []
+        if (original.StartsWith("[") & original.EndsWith("]"))
         {
             LogManager.Debug($"Text StartsWith special mark, skipping: {original}");
             return false;
@@ -237,7 +238,7 @@ public static class TextTranslateManger
         if (_translationDict.TryGetValue(original, out var value))
         {
             LogManager.Debug($"Translated text: {value}");
-            translated = XUATInterop.MarkTranslated(value);
+            translated = XUATInterop.MarkTranslated(value, skipMark);
             return true;
         }
 
@@ -249,7 +250,7 @@ public static class TextTranslateManger
                 out var lowerValue))
         {
             LogManager.Debug($"Translated text (to upper, replace and trimmed): {lowerValue}");
-            translated = XUATInterop.MarkTranslated(lowerValue);
+            translated = XUATInterop.MarkTranslated(lowerValue, skipMark);
             return true;
         }
 
@@ -291,7 +292,7 @@ public static class TextTranslateManger
             });
 
             LogManager.Debug($"translated text (Regex): {translated}");
-            translated = XUATInterop.MarkTranslated(translated);
+            translated = XUATInterop.MarkTranslated(translated, skipMark);
             return true;
         }
 

@@ -101,12 +101,18 @@ public static class XUATInterop
     ///     实际上只是检查是否有 \u180e，但是我们选择更安全的方式
     /// </summary>
     /// <param name="text">要标记的文本</param>
+    /// <param name="skipMark">是否跳过标记</param>
     /// <returns>标记后的文本</returns>
-    public static string MarkTranslated(string text)
+    public static string MarkTranslated(string text, bool skipMark = false)
     {
         // 如果初始化失败则进行手动标记（插件本身也依靠此进行标记），否则调用 XUAT 的标记方法
         // 需要使用标记后的文本，否则 XUAT 会重复翻译
-        if (!Initialize()) return string.Concat(text, XuatSpicalMaker);
+        if (!Initialize())
+        {
+            if (skipMark) return text;
+            return string.Concat(text, XuatSpicalMaker);
+        }
+        if (skipMark) return text;
         return _markTranslated(text);
     }
 

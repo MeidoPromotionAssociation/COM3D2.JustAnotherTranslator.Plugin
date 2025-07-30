@@ -926,12 +926,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         // Tip for people who using ConfigurationManager
         _dumpTip1 = Config.Bind("9Dump",
-            "this section is for translators. If you are not planning to change translate file, please do not enable it",
+            "this section is for translators. If you are not planning to change translate file, please do not enable it, it will slow down the game",
             true,
             new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 9000 }));
 
         _dumpTip2 = Config.Bind("9Dump",
-            "这个部分是为翻译者准备的,如果您不计划改动翻译文件，请不要启用它",
+            "这个部分是为翻译者准备的，如果您不计划改动翻译文件，请不要启用它, 会减慢游戏速度",
             true,
             new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 9010 }));
 

@@ -37,7 +37,7 @@ public static class TextureReplacePatch
                 !Path.GetExtension(file_name).Equals(".tex", StringComparison.InvariantCultureIgnoreCase))
                 return;
 
-            if (TextureReplaceManger.IsTextureExist(file_name))
+            if (TextureReplaceManger.IsReplaceTextureExist(file_name))
                 __result = true;
         }
         catch (Exception e)

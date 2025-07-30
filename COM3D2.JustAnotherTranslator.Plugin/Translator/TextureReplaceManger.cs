@@ -96,7 +96,7 @@ public static class TextureReplaceManger
     /// </summary>
     /// <param name="filename"></param>
     /// <returns></returns>
-    public static bool IsTextureExist(string filename)
+    public static bool IsReplaceTextureExist(string filename)
     {
         if (string.IsNullOrEmpty(filename))
             return false;
@@ -104,7 +104,8 @@ public static class TextureReplaceManger
         if (filename.EndsWith(".tex")) filename = filename.Replace(".tex", ".png");
 
 
-        if (Path.GetExtension(filename) == string.Empty) filename += ".png";
+        if (Path.GetExtension(filename) == string.Empty)
+            filename = string.Concat(filename, ".png");
 
 
         return FilePathCache.ContainsKey(filename);
@@ -126,7 +127,24 @@ public static class TextureReplaceManger
 
         if (filename.EndsWith(".tex")) filename = filename.Replace(".tex", ".png");
 
-        if (Path.GetExtension(filename) == string.Empty) filename += ".png";
+        if (Path.GetExtension(filename) == string.Empty)
+            filename = string.Concat(filename, ".png");
+
+        if (!IsReplaceTextureExist(filename))
+        {
+            if (JustAnotherTranslator.EnableTexturesDump.Value)
+            {
+                // 则转储原始纹理
+                if (originalTexture is Texture2D tex2d)
+                {
+                    var bytes = GetTextureBytes(tex2d);
+                    if (bytes != null)
+                        DumpTexture(filename, bytes);
+                }
+            }
+
+            return false;
+        }
 
         // 首先尝试从LRU缓存中获取纹理数据
         if (_textureCache != null && _textureCache.TryGet(filename, out replacedTexture))
@@ -156,14 +174,6 @@ public static class TextureReplaceManger
                     $"Failed to read texture file: {cachePath}, error: {e.Message}/读取贴图文件失败: {cachePath}, 错误: {e.Message}");
                 return false;
             }
-
-        // 如果未找到替换，则转储原始纹理
-        if (originalTexture is Texture2D tex2d)
-        {
-            var bytes = GetTextureBytes(tex2d);
-            if (bytes != null)
-                DumpTexture(filename, bytes);
-        }
 
         return false;
     }

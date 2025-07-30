@@ -793,7 +793,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         LyricSubtitleBackgroundOpacity = Config.Bind("7LyricSubtitle",
             "LyricSubtitleBackgroundOpacity/歌词字幕背景不透明度",
-            0.1f,
+            0f,
             new ConfigDescription("Lyric Subtitle Background Opacity (0-1)/歌词字幕背景不透明度（0-1）", null,
                 new ConfigurationManagerAttributes { Order = 7080 }));
 
@@ -806,7 +806,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         LyricSubtitleHeight = Config.Bind("7LyricSubtitle",
             "LyricSubtitleHeight/歌词字幕背景高度",
-            30f,
+            70f,
             new ConfigDescription(
                 "Subtitle Height(pixel), reference resolution is 1920x1080, so set to 1080 will fill the whole screen height/字幕高度(像素)，参考分辨率为1920x1080，因此设置为1080时将填满整个屏幕高",
                 null, new ConfigurationManagerAttributes { Order = 7100 }));
@@ -820,7 +820,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         LyricSubtitleVerticalPosition = Config.Bind("7LyricSubtitle",
             "LyricSubtitleVerticalPosition/歌词字幕垂直位置",
-            1050f,
+            200f,
             new ConfigDescription(
                 "Distance to bottom of screen (0 is bottom, 1 is top, note 1080 will go out of screen, should subtract background height)/到屏幕底部的距离（0为底部，1080为顶部，注意1080会超出屏幕，应减去背景高度）",
                 null, new ConfigurationManagerAttributes { Order = 7120 }));

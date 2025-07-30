@@ -155,7 +155,7 @@ public static class TextTranslatePatch
         try
         {
             // Just too much logs
-            if (StringTool.IsNullOrWhiteSpace(text) || StringTool.IsNumeric(text))
+            if (StringTool.IsNullOrWhiteSpace(text) || StringTool.IsNumeric(text) || text.Contains(XUATInterop.XuatSpicalMaker))
                 return;
 
             LogManager.Debug($"NGUIText WrapText(string, out string) called: {text}");

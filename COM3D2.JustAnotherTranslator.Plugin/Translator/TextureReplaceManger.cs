@@ -25,7 +25,7 @@ public static class TextureReplaceManger
     private static LRUCache<string, byte[]> _textureCache; // filename -> texture
 
     /// 已经导出的纹理
-    private static readonly HashSet<string> _dumpedTextures = new();
+    private static readonly HashSet<string> DumpedTextures = new();
 
     public static void Init()
     {
@@ -121,7 +121,7 @@ public static class TextureReplaceManger
     {
         replacedTexture = null;
 
-        if (string.IsNullOrEmpty(filename))
+        if (StringTool.IsNullOrWhiteSpace(filename))
             return false;
 
         if (filename.EndsWith(".tex")) filename = filename.Replace(".tex", ".png");
@@ -179,7 +179,7 @@ public static class TextureReplaceManger
             return;
 
         // 如果纹理是新的 (之前未 dump 过), addResult 会是 true
-        var added = _dumpedTextures.Add(textureName);
+        var added = DumpedTextures.Add(textureName);
 
         // 只有当纹理是新的，才执行写入文件的操作
         if (added)

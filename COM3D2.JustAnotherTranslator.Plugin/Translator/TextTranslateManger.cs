@@ -32,10 +32,10 @@ public static class TextTranslateManger
     private static AsyncTextLoader _asyncLoader;
 
     /// 翻译是否已加载完成
-    private static bool IsTranslationLoaded;
+    private static bool _isTranslationLoaded;
 
     /// 已导出文本
-    private static readonly HashSet<string> _dumpedTexts = new();
+    private static readonly HashSet<string> DumpedTexts = new();
 
     /// 导出文本缓冲区
     private static readonly List<string> DumpBuffer = new();
@@ -52,7 +52,7 @@ public static class TextTranslateManger
         if (_initialized) return;
 
         // 加载翻译
-        IsTranslationLoaded = false;
+        _isTranslationLoaded = false;
         LoadTextAsync();
 
         // 创建 Harmony 实例
@@ -122,7 +122,7 @@ public static class TextTranslateManger
 
         _translationDict.Clear();
         _regexTranslationDict.Clear();
-        IsTranslationLoaded = false;
+        _isTranslationLoaded = false;
 
         FlushDumpBuffer();
 
@@ -179,7 +179,7 @@ public static class TextTranslateManger
     {
         // 更新状态
         IsLoading = false;
-        IsTranslationLoaded = true;
+        _isTranslationLoaded = true;
 
         // 更新翻译字典
         _translationDict = result;
@@ -201,7 +201,7 @@ public static class TextTranslateManger
     {
         translated = original;
 
-        if (!IsTranslationLoaded)
+        if (!_isTranslationLoaded)
         {
             if (!_initialized)
             {
@@ -312,7 +312,7 @@ public static class TextTranslateManger
             return;
 
         // 如果文本是新的 (之前未 dump 过), addResult 会是 true
-        var added = _dumpedTexts.Add(text);
+        var added = DumpedTexts.Add(text);
 
         // 只有当文本是新的，才执行写入文件的操作
         if (added)

@@ -112,6 +112,7 @@ public static class XUATInterop
             if (skipMark) return text;
             return string.Concat(text, XuatSpicalMaker);
         }
+
         if (skipMark) return text;
         return _markTranslated(text);
     }

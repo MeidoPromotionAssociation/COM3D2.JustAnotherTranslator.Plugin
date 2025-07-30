@@ -21,7 +21,7 @@ public static class UITranslateManager
     private static bool _initialized;
 
     /// 存储翻译数据的字典
-    private static readonly Dictionary<string, TranslationData> _translations = new(); // term -> TranslationData
+    private static readonly Dictionary<string, TranslationData> Translations = new(); // term -> TranslationData
 
     /// 缓存文件名到完整路径的映射
     private static readonly Dictionary<string, string> SpritePathCache = new(); // filename -> path
@@ -70,7 +70,7 @@ public static class UITranslateManager
             if (texture != null)
                 Object.DestroyImmediate(texture);
 
-        _translations.Clear();
+        Translations.Clear();
         _spriteCache.Clear();
         SpritePathCache.Clear();
 
@@ -89,7 +89,7 @@ public static class UITranslateManager
         if (string.IsNullOrEmpty(term)) return term;
 
         // SceneDaily/ボタン文字/男エディット
-        if (_translations.TryGetValue(term, out var translation))
+        if (Translations.TryGetValue(term, out var translation))
         {
             var markedTranslation = XUATInterop.MarkTranslated(translation.Translation);
             LogManager.Debug($"Found translation for term: {term}, translation: {markedTranslation}");
@@ -102,7 +102,7 @@ public static class UITranslateManager
         if (slashIndex > -1)
         {
             var newTerm = term.Substring(slashIndex + 1);
-            if (_translations.TryGetValue(newTerm, out translation))
+            if (Translations.TryGetValue(newTerm, out translation))
             {
                 var markedTranslation = XUATInterop.MarkTranslated(translation.Translation);
                 LogManager.Debug(
@@ -153,7 +153,7 @@ public static class UITranslateManager
         long elapsedMilliseconds
     )
     {
-        foreach (var pair in result) _translations[pair.Key] = pair.Value;
+        foreach (var pair in result) Translations[pair.Key] = pair.Value;
 
         if (totalEntries > 0)
             LogManager.Info(
@@ -239,10 +239,10 @@ public static class UITranslateManager
         }
 
         // 创建一个新的 GameObject 来承载 UIAtlas
-        var atlasGO = new GameObject($"JAT_ReplacementAtlas_{spriteName}");
-        atlasGO.transform.SetParent(sprite.transform, false); // 设置为子对象，以便跟随销毁
+        var atlasGo = new GameObject($"JAT_ReplacementAtlas_{spriteName}");
+        atlasGo.transform.SetParent(sprite.transform, false); // 设置为子对象，以便跟随销毁
 
-        var newAtlas = atlasGO.AddComponent<UIAtlas>();
+        var newAtlas = atlasGo.AddComponent<UIAtlas>();
 
         // 复制旧材质可以确保 Shader 和其他属性（如 premultiplied alpha）保持一致
         var newMaterial = new Material(originalAtlas.spriteMaterial);
@@ -281,7 +281,7 @@ public static class UITranslateManager
         sprite.spriteName = spriteName;
         // 确保 atlas 具有 JAT_ 前缀
         // Component.name 实际上是 GameObject.name 的快捷方式，但我们只是明确意图+确保
-        sprite.atlas.name = atlasGO.name;
+        sprite.atlas.name = atlasGo.name;
 
 
         sprite.MarkAsChanged();
@@ -422,6 +422,7 @@ public static class UITranslateManager
         }
         catch
         {
+            // Make IDE happy
         }
     }
 

@@ -65,6 +65,12 @@ For COM3D2.5 3.41 and above, please download `COM3D2_5.JustAnotherTranslator.Plu
 
 <br>
 
+To modify configuration files in-game, install the Configuration Manager plugin at https://github.com/BepInEx/BepInEx.ConfigurationManager . The default shortcut key is F1.
+
+The ConfigurationManagerWrapper.dll provided here (https://github.com/DeathWeasel1337/COM3D2_Plugins) displays a button in the game's gear menu to open the Configuration Manager.
+
+<br>
+
 For legal and copyright reasons, this plugin does not provide translation files. Please obtain them from other sources.
 
 <br>
@@ -208,6 +214,12 @@ COM3D2.5 大于 3.41.0 的版本将在正式版发布后支持，低于 3.41.0 �
 COM3D2 2.xx 以及 COM3D2.5 3.41 以下版本请下载 COM3D2.JustAnotherTranslator.Plugin.zip
 
 COM3D2 3.41 及以上版本请下载 COM3D2_5.JustAnotherTranslator.Plugin.zip
+
+<br>
+
+要在游戏内修改配置文件，请安装 https://github.com/BepInEx/BepInEx.ConfigurationManager 配置管理器插件，其默认快捷键是 F1
+
+[这里](https://github.com/DeathWeasel1337/COM3D2_Plugins)提供的 ConfigurationManagerWrapper.dll 可以在游戏的齿轮菜单显示一个按钮以打开配置管理器。
 
 <br>
 

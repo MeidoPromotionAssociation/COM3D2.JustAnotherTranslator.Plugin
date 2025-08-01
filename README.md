@@ -47,15 +47,35 @@ However, JAT does load all translated text into memory, which does lead to highe
 
 ## Getting Started
 
+### Version Compatibility
+
+Open `COM3D2.exe` to see your game version in the upper right corner.
+
+Tested and passed on COM3D2 2.44.0 / COM3D2 2.44.5.
+
+Versions of COM3D2.5 greater than 3.41.0 will be supported after the official release. Versions below 3.41.0 have not been tested, but should theoretically work.
+
+### Installation
+
 Go to the Release page to download the compressed package.
+
+For COM3D2 2.xx and COM3D2.5 below 3.41, please download `COM3D2.JustAnotherTranslator.Plugin.zip`
+
+For COM3D2.5 3.41 and above, please download `COM3D2_5.JustAnotherTranslator.Plugin.zip`
+
+<br>
+
+For legal and copyright reasons, this plugin does not provide translation files. Please obtain them from other sources.
+
+<br>
 
 The compressed package has been organized by folder, just put it into the corresponding folder in the COM3D2 directory.
 
-That is, COM3D2.JustAnotherTranslator.Plugin.dll should be located at the following path
+That is, `COM3D2.JustAnotherTranslator.Plugin.dll` should be located at the following path
 
 `COM3D2\BepInEx\plugins\COM3D2.JustAnotherTranslator\COM3D2.JustAnotherTranslator.Plugin.dll`
 
-The COM3D2 folder at the beginning refers to your game root directory, which is the folder where COM3D2.exe is located.
+The COM3D2 folder at the beginning refers to your game root directory, which is the folder where `COM3D2.exe` is located.
 
 After installation, start the game once, and the plugin will automatically generate the required files.
 
@@ -173,11 +193,31 @@ Part of the code is from [https://github.com/ghorsington/CM3D2.YATranslator](htt
 
 ## 入门
 
+### 版本兼容性
+
+打开 COM3D2.exe 即可在右上角看见您的游戏版本。
+
+于 COM3D2 2.44.0 / COM3D2 2.44.5 测试通过。
+
+COM3D2.5 大于 3.41.0 的版本将在正式版发布后支持，低于 3.41.0 的版本未经测试，理论上可用。
+
+### 安装
+
 前往 Release 页面下载压缩包。
+
+COM3D2 2.xx 以及 COM3D2.5 3.41 以下版本请下载 COM3D2.JustAnotherTranslator.Plugin.zip
+
+COM3D2 3.41 及以上版本请下载 COM3D2_5.JustAnotherTranslator.Plugin.zip
+
+<br>
+
+由于法律与版权原因，本插件不提供翻译文件，请自行从其他地方获取。
+
+<br>
 
 压缩包内已按文件夹组织好，放入 COM3D2 目录对应文件夹即可。
 
-即 COM3D2.JustAnotherTranslator.Plugin.dll 应该位于以下路径
+即 `COM3D2.JustAnotherTranslator.Plugin.dll` 应该位于以下路径
 
 `COM3D2\BepInEx\plugins\COM3D2.JustAnotherTranslator\COM3D2.JustAnotherTranslator.Plugin.dll`
 

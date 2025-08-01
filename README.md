@@ -1,16 +1,132 @@
-# COM3D2.JustAnotherTranslator.Plugin
+[English](#english) | [简体中文](#%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87)
 
-Just Another COM3D2 Translator Plugin
+# English
 
-Part of the code is from https://github.com/Pain-Brioche/COM3D2.i18nEx under the MIT license
+## COM3D2.JustAnotherTranslator.Plugin
 
-Part of the code is from https://github.com/ghorsington/CM3D2.YATranslator under The Unlicense license (for
-compatibility)
+This plugin is still under active development and is currently in an early beta stage.
+
+Please report issues via Discord: [https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
+
+## Why another translation plugin?
+
+There are some things I'm not satisfied with in the existing translation plugins.
+
+### LBWtranslation/LBWmodifier
+
+- It is not public, hidden in a forum that does not open for registration, and requires points to obtain, so it does not exist for most people.
+- It has a built-in modifier, and many modifiers are enabled by default, such as AllMaidInPrivate, which may cause the game to crash, and some modifiers that may cause NTR are enabled by default.
+- It is not open source.
+- It is not internationalized.
+- It has no documentation.
+
+### i18nEX
+
+- It uses too many in-game resources, for example, the csv format is the same as the official one, and there are too many redundancies and unclear places.
+- Although it can be partially internationalized, it is mainly designed for English users, and there are some behaviors to obtain built-in resources in _en.
+- It is not compatible with existing translation resources, and due to the design of loading by script, migrating existing files is a difficult task.
+- It is highly coupled with the game implementation. For users of other languages, after enabling the built-in internationalization of COM3D2, you can choose English, Simplified Chinese, and Traditional Chinese in the game, while the translation file needs to use the English entry, which is confusing for users of other languages.
+- It can only use the official subtitle system.
+
+### YATranslator
+
+- It is not maintained and seems to be broken in recent versions.
+- It has no subtitle system.
+
+## Highlights of JAT
+
+- It has a self-implemented, highly customizable subtitle system, including a dance subtitle system.
+- It can provide you with subtitles in various scenes without subtitles, such as dancing, fishing minigames, VR karaoke, shooting minigames, night battles, etc.
+- It has specially designed VR subtitles, which are suspended in world space like other games.
+- It has a dedicated UI translation system inspired by i18nEX, which is almost unaffected by version updates. There is no need to redo the UI translation due to game version updates, because we have seen too many users who cannot use the UI translation after the game is updated.
+- Its translation files are loaded asynchronously, which means it will not slow down your game startup speed.
+- It does not use any in-game resources.
+- It does not enable the in-game multi-language support.
+
+However, JAT does load all translated text into memory, which does lead to higher memory usage.
+
+## Getting Started
+
+Go to the Release page to download the compressed package.
+
+The compressed package has been organized by folder, just put it into the corresponding folder in the COM3D2 directory.
+
+That is, COM3D2.JustAnotherTranslator.Plugin.dll should be located at the following path
+
+`COM3D2\BepInEx\plugins\COM3D2.JustAnotherTranslator\COM3D2.JustAnotherTranslator.Plugin.dll`
+
+The COM3D2 folder at the beginning refers to your game root directory, which is the folder where COM3D2.exe is located.
+
+After installation, start the game once, and the plugin will automatically generate the required files.
+
+The configuration file is located at `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`
+
+The translation folder is located at `COM3D2\BepInEx\JustAnotherTranslator`
+
+### Initial Configuration
+
+After starting the game once, a Dump folder and a zh-CN folder will be generated in the translation folder.
+
+The Dump folder is used to dump in-game files, and general users don't need to care about it.
+
+The zh-CN folder is used to place translation files. Open the configuration file and find the following configuration. The target language here is which folder to read the translation files from.
+
+You can change it to en-US, etc., and then restart the game.
+
+This configuration does not affect the actual language. The actual language is determined by the translation file you provide. It only controls which folder to read the files from.
+
+```
+[2General]
+
+## Target Language, only affect the path of reading translation files/目标语言，只控制读取翻译文件的路径
+# Setting type: String
+# Default value: zh-CN
+TargetLanguage/目标语言 = zh-CN
+```
+
+### How the plugin reads translation files
+
+For detailed instructions, please refer to the documentation here [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document)
+
+Including translation instructions and instructions for migrating from other plugins.
+
+```
+COM3D2\BepInEx\JustAnotherTranslator\<your target language>
+├─Lyric
+├─Text
+├─Texture
+└─UI
+    ├─Sprite
+    └─Text
+```
+
+There are 4 main folders in the translation folder of the corresponding language: Text, Texture, UI, and Lyric.
+
+- The `Text` folder is where the main text translations are located. The translatable content includes daily ADV dialogues, NGUI text, uGUI text, and in-game multi-language support text.
+- The `Texture` folder is used to replace in-game textures (various images).
+- The `Lyric` folder is for files dedicated to lyric subtitles.
+- The `UI` folder is a dedicated folder for interface translation. Sprite is used to replace a single sprite, and Text is used to translate UI text.
+
+## Credits
+
+Part of the code is from [https://github.com/Pain-Brioche/COM3D2.i18nEx](https://github.com/Pain-Brioche/COM3D2.i18nEx) under the MIT license
+
+Part of the code is from [https://github.com/ghorsington/CM3D2.YATranslator](https://github.com/ghorsington/CM3D2.YATranslator) under The Unlicense license (for compatibility)
 
 
 <br>
+<br>
+<br>
 
-# COM3D2.JustAnotherTranslator.Plugin
+---
+
+<br>
+<br>
+<br>
+
+# 简体中文
+
+## COM3D2.JustAnotherTranslator.Plugin
 
 只是另一个 COM3D2 翻译插件
 
@@ -119,7 +235,7 @@ COM3D2\BepInEx\JustAnotherTranslator\<你设置的目标语言>
 
 
 
-## 鸣谢
+## Credits
 
 部分代码来自 [https://github.com/Pain-Brioche/COM3D2.i18nEx](https://github.com/Pain-Brioche/COM3D2.i18nEx) 基于 MIT 许可证
 

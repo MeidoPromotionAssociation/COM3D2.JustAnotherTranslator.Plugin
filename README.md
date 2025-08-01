@@ -59,6 +59,14 @@ Versions of COM3D2.5 greater than 3.41.0 will be supported after the official re
 
 ### Installation
 
+This is a BepinEX plugin. If you have a `BepinEX` folder in your game folder, you're good to go.
+
+Otherwise, we recommend using [CMI](https://github.com/krypto5863/COM-Modular-Installer) to get a basic plugin environment.
+
+<br>
+
+Please download the zip archive from the [Release](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/releases) page.
+
 Go to the Release page to download the compressed package.
 
 For COM3D2 2.xx and COM3D2.5 below 3.41, please download `COM3D2.JustAnotherTranslator.Plugin.zip`
@@ -211,7 +219,13 @@ COM3D2.5 大于 3.41.0 的版本将在正式版发布后支持，低于 3.41.0 �
 
 ### 安装
 
-前往 Release 页面下载压缩包。
+这是一个 BepinEX 插件，如果您的游戏文件夹中有 `BepinEX` 文件夹，那么您就可以开始了。
+
+否则推荐使用 [CMI](https://github.com/krypto5863/COM-Modular-Installer) 来获得一个基本的插件环境（有中文说明）。
+
+<br>
+
+请前往 [Release](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/releases) 页面下载压缩包。
 
 COM3D2 2.xx 以及 COM3D2.5 3.41 以下版本请下载 COM3D2.JustAnotherTranslator.Plugin.zip
 

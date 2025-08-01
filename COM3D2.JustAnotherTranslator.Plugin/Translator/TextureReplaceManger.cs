@@ -130,19 +130,19 @@ public static class TextureReplaceManger
 
         if (!IsReplaceTextureExist(filename))
         {
+            // 如果替换纹理不存在，则 Dump
             if (JustAnotherTranslator.EnableTexturesDump.Value)
             {
-                LogManager.Debug($"Texture replace for {filename} not found, try to dump original texture");
-                // 则转储原始纹理
-                if (originalTexture is Texture2D tex2d)
+                if (originalTexture != null)
                 {
-                    var bytes = GetTextureBytes(tex2d);
+                    LogManager.Debug($"Texture replace for {filename} not found, try to dump original texture");
+                    var bytes = GetTextureBytes(originalTexture);
                     if (bytes != null)
                         DumpTexture(filename, bytes);
                 }
                 else
                 {
-                    LogManager.Warning($"original texture {filename} is not Texture2D");
+                    LogManager.Debug("cannot dump texture, original texture is null");
                 }
             }
 
@@ -200,8 +200,8 @@ public static class TextureReplaceManger
             if (Path.GetExtension(textureName) != ".png")
                 textureName = string.Concat(Path.GetFileName(textureName), ".png");
 
-            LogManager.Debug($"Texture not translated, dumping: {textureName}");
-            var filePath = Path.Combine(JustAnotherTranslator.TranslationTexturePath, textureName);
+            LogManager.Debug($"Writing texture: {textureName}");
+            var filePath = Path.Combine(JustAnotherTranslator.TextureDumpPath, textureName);
             File.WriteAllBytes(filePath, textureData);
         }
     }
@@ -211,40 +211,48 @@ public static class TextureReplaceManger
     /// </summary>
     /// <param name="originalTex"></param>
     /// <returns></returns>
-    private static byte[] GetTextureBytes(Texture2D originalTex)
+    private static byte[] GetTextureBytes(Texture originalTex)
     {
-        try
+        if (originalTex is Texture2D tex2d)
         {
-            // 尝试直接获取
-            return originalTex.EncodeToPNG();
-        }
-        catch
-        {
-            // 如果失败（例如，纹理不可读），则创建副本
             try
             {
-                var renderTex = RenderTexture.GetTemporary(
-                    originalTex.width, originalTex.height, 0,
-                    RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
-
-                Graphics.Blit(originalTex, renderTex);
-                var previous = RenderTexture.active;
-                RenderTexture.active = renderTex;
-                var readableText = new Texture2D(originalTex.width, originalTex.height);
-                readableText.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
-                readableText.Apply();
-                RenderTexture.active = previous;
-                RenderTexture.ReleaseTemporary(renderTex);
-
-                var bytes = readableText.EncodeToPNG();
-                Object.Destroy(readableText);
-                return bytes;
+                // 尝试直接获取
+                return tex2d.EncodeToPNG();
             }
-            catch (Exception e)
+            catch
             {
-                LogManager.Error($"Failed to get texture bytes for {originalTex.name}: {e.Message}");
-                return null;
+                // 失败则走通用逻辑
             }
+        }
+
+        // 如果失败（例如，纹理不可读），则创建副本
+        try
+        {
+            // 创建临时渲染纹理
+            var renderTex = RenderTexture.GetTemporary(
+                originalTex.width, originalTex.height, 0,
+                RenderTextureFormat.Default, RenderTextureReadWrite.Linear);
+
+            // 复制原始纹理到渲染纹理
+            Graphics.Blit(originalTex, renderTex);
+            var previous = RenderTexture.active;
+            RenderTexture.active = renderTex;
+            var readableText = new Texture2D(originalTex.width, originalTex.height);
+            readableText.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
+            readableText.Apply();
+            RenderTexture.active = previous;
+            RenderTexture.ReleaseTemporary(renderTex);
+
+            // 返回纹理数据
+            var bytes = readableText.EncodeToPNG();
+            Object.Destroy(readableText);
+            return bytes;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to get texture bytes for {originalTex.name}: {e.Message}");
+            return null;
         }
     }
 }

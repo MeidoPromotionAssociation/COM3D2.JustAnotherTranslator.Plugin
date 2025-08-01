@@ -567,6 +567,8 @@ As is not widely known, our game uses a modified Kirikiri KAG script for most of
 
 Translation extraction software should unpack arc files, scan all .ks files, and extract the text.
 
+The subtitle module depends on the general text translation module and will only be displayed when there is a translation. JAT will not display the original text when there is no translation.
+
 ## How It Works Overview
 
 JAT's subtitle system uses Harmony patches to intercept various methods in the game that handle story scripts (KAG). The core manager is `SubtitleManager`, which is responsible for coordinating the display of all subtitles.

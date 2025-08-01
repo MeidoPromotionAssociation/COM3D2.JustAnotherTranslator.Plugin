@@ -89,7 +89,7 @@ public static class XUATInterop
         }
         catch (Exception e)
         {
-            LogManager.Error("XUAT interop failed: " + e.Message);
+            LogManager.Error($"XUAT interop failed: {e.Message}");
             return false;
         }
 

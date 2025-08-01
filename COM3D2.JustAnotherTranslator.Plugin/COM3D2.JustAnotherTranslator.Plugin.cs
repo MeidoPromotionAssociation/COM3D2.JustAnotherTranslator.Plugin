@@ -993,7 +993,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         catch (Exception e)
         {
             LogManager.Error(
-                "Create translation folder failed, plugin may not work/创建翻译文件夹失败，插件可能无法运行: " + e.Message);
+                $"Create translation folder failed, plugin may not work/创建翻译文件夹失败，插件可能无法运行: {e.Message}");
         }
 
         // Init modules

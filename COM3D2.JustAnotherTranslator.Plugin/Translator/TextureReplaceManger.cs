@@ -35,8 +35,7 @@ public static class TextureReplaceManger
         if (!Directory.Exists(JustAnotherTranslator.TranslationTexturePath))
         {
             LogManager.Warning(
-                "Translation texture directory not found, try to create/未找到翻译贴图目录，尝试创建: " +
-                JustAnotherTranslator.TranslationTexturePath);
+                "Translation texture directory not found, try to create/未找到翻译贴图目录，尝试创建");
             try
             {
                 Directory.CreateDirectory(JustAnotherTranslator.TranslationTexturePath);
@@ -44,8 +43,7 @@ public static class TextureReplaceManger
             catch (Exception e)
             {
                 LogManager.Error(
-                    "Create translation texture folder failed, plugin may not work/创建翻译贴图文件夹失败，插件可能无法运行: " +
-                    e.Message);
+                    $"Create translation texture folder failed, plugin may not work/创建翻译贴图文件夹失败，插件可能无法运行: {e.Message}");
                 return;
             }
         }
@@ -134,12 +132,17 @@ public static class TextureReplaceManger
         {
             if (JustAnotherTranslator.EnableTexturesDump.Value)
             {
+                LogManager.Debug($"Texture replace for {filename} not found, try to dump original texture");
                 // 则转储原始纹理
                 if (originalTexture is Texture2D tex2d)
                 {
                     var bytes = GetTextureBytes(tex2d);
                     if (bytes != null)
                         DumpTexture(filename, bytes);
+                }
+                else
+                {
+                    LogManager.Warning($"original texture {filename} is not Texture2D");
                 }
             }
 
@@ -195,7 +198,7 @@ public static class TextureReplaceManger
         if (added)
         {
             if (Path.GetExtension(textureName) != ".png")
-                textureName = Path.GetFileName(textureName) + ".png";
+                textureName = string.Concat(Path.GetFileName(textureName), ".png");
 
             LogManager.Debug($"Texture not translated, dumping: {textureName}");
             var filePath = Path.Combine(JustAnotherTranslator.TranslationTexturePath, textureName);

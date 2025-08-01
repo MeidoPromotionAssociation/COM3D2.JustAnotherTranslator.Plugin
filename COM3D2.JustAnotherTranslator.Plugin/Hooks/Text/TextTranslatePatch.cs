@@ -24,7 +24,7 @@ public static class TextTranslatePatch
     {
         try
         {
-            LogManager.Debug("KagScript_GetText_Postfix called: " + __result);
+            LogManager.Debug($"KagScript_GetText_Postfix called: {__result}");
 
             if (TextTranslateManger.GetTranslateText(__result, out var translated))
                 __result = translated;
@@ -46,7 +46,7 @@ public static class TextTranslatePatch
     {
         try
         {
-            LogManager.Debug("ScriptManager ReplaceCharaName called: " + text);
+            LogManager.Debug($"ScriptManager ReplaceCharaName called: {text}");
 
             if (TextTranslateManger.GetTranslateText(text, out var translated))
                 text = translated;
@@ -163,7 +163,7 @@ public static class TextTranslatePatch
 
             if (TextTranslateManger.GetTranslateText(text, out var translated))
             {
-                LogManager.Debug("NGUIText WrapText translated: " + translated);
+                LogManager.Debug($"NGUIText WrapText translated: {translated}");
                 text = translated;
             }
         }

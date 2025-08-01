@@ -123,7 +123,7 @@ public class AsyncTextLoader
                 catch (Exception e)
                 {
                     LogManager.Error(
-                        "Create translation Text folder failed, plugin may not work/创建翻译翻译目录失败，插件可能无法运行: " + e.Message);
+                        $"Create translation Text folder failed, plugin may not work/创建翻译翻译目录失败，插件可能无法运行: {e.Message}");
                     _completionCallback?.Invoke(TranslationDict, RegexTranslationDict, 0, 0, 0);
                     return;
                 }
@@ -169,7 +169,7 @@ public class AsyncTextLoader
         }
         catch (Exception e)
         {
-            LogManager.Error("Error loading translation files/加载翻译文件时出错: " + e.Message);
+            LogManager.Error($"Error loading translation files/加载翻译文件时出错: {e.Message}");
         }
         finally
         {

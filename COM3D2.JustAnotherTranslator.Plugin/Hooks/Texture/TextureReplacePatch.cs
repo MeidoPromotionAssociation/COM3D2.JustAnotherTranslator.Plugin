@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
@@ -63,7 +63,7 @@ public static class TextureReplacePatch
     {
         try
         {
-            LogManager.Debug("ImportCM_LoadTexture_Prefix called: " + f_strFileName);
+            LogManager.Debug($"ImportCM_LoadTexture_Prefix called: {f_strFileName}");
 
             var fileName = Path.GetFileNameWithoutExtension(f_strFileName);
 
@@ -76,7 +76,7 @@ public static class TextureReplacePatch
             // create new texture
             __result = new TextureResource(1, 1, TextureFormat.ARGB32, __result?.uvRects, newTexture);
 
-            LogManager.Debug("ImportCM_LoadTexture_Prefix Texture replaced: " + f_strFileName);
+            LogManager.Debug($"ImportCM_LoadTexture_Prefix Texture replaced: {f_strFileName}");
             return false;
         }
         catch (Exception e)
@@ -230,13 +230,13 @@ public static class TextureReplacePatch
     {
         try
         {
-            LogManager.Debug("Image_sprite_Setter_Prefix called: " + value?.name);
+            LogManager.Debug($"Image_sprite_Setter_Prefix called: {value?.name}");
 
             if (value == null || value.texture == null || StringTool.IsNullOrWhiteSpace(value.texture.name) ||
                 value.texture.name.StartsWith("JAT_"))
                 return;
 
-            if (!TextureReplaceManger.GetReplaceTexture(value.texture.name, out var newTexture))
+            if (!TextureReplaceManger.GetReplaceTexture(value.texture.name, out var newTexture, value.texture))
                 return;
 
             if (newTexture == null)

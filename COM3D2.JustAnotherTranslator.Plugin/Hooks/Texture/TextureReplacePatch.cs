@@ -113,7 +113,7 @@ public static class TextureReplacePatch
             // 检查并转换为 Texture2D
             if (__result is Texture2D tex2d)
             {
-                tex2d.LoadImage(EmptyBytes); // 部分情况下可能出现尺寸不符，需要先清空
+                tex2d.LoadImage(EmptyBytes); // I don't know why, but i18nEx did, so
                 tex2d.LoadImage(newTexture);
                 // add JAT_ prefix to avoid infinite loop
                 tex2d.name = $"JAT_{__result.name}";
@@ -157,7 +157,7 @@ public static class TextureReplacePatch
             // 检查并转换为 Texture2D
             if (__result is Texture2D tex2d)
             {
-                tex2d.LoadImage(EmptyBytes);
+                tex2d.LoadImage(EmptyBytes); // I don't know why, but i18nEx did, so
                 tex2d.LoadImage(newTexture);
                 // add JAT_ prefix to avoid infinite loop
                 tex2d.name = $"JAT_{__result.name}";
@@ -200,7 +200,7 @@ public static class TextureReplacePatch
             // 检查并转换为 Texture2D
             if (__result is Texture2D tex2d)
             {
-                tex2d.LoadImage(EmptyBytes);
+                tex2d.LoadImage(EmptyBytes); // I don't know why, but i18nEx did, so
                 tex2d.LoadImage(newTexture);
                 // add JAT_ prefix to avoid infinite loop
                 tex2d.name = $"JAT_{__result.name}";
@@ -242,7 +242,7 @@ public static class TextureReplacePatch
             if (newTexture == null)
                 return;
 
-            value.texture.LoadImage(EmptyBytes);
+            value.texture.LoadImage(EmptyBytes); // I don't know why, but i18nEx did, so
             value.texture.LoadImage(newTexture);
             value.texture.name = $"JAT_{value.texture.name}";
             LogManager.Debug($"Texture replaced: {value.texture.name}");

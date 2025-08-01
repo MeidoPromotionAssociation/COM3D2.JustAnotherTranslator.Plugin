@@ -188,23 +188,31 @@ public static class TextureReplaceManger
     /// <param name="textureData"></param>
     private static void DumpTexture(string textureName, byte[] textureData)
     {
-        if (!JustAnotherTranslator.EnableTexturesDump.Value)
-            return;
-
-        // 如果纹理是新的 (之前未 dump 过), addResult 会是 true
-        var added = DumpedTextures.Add(textureName);
-
-        // 只有当纹理是新的，才执行写入文件的操作
-        if (added)
+        try
         {
-            if (Path.GetExtension(textureName) != ".png")
-                textureName = string.Concat(Path.GetFileName(textureName), ".png");
+            if (!JustAnotherTranslator.EnableTexturesDump.Value)
+                return;
 
-            LogManager.Debug($"Writing texture: {textureName}");
-            var filePath = Path.Combine(JustAnotherTranslator.TextureDumpPath, textureName);
-            File.WriteAllBytes(filePath, textureData);
+            // 如果纹理是新的 (之前未 dump 过), addResult 会是 true
+            var added = DumpedTextures.Add(textureName);
+
+            // 只有当纹理是新的，才执行写入文件的操作
+            if (added)
+            {
+                if (Path.GetExtension(textureName) != ".png")
+                    textureName = string.Concat(Path.GetFileName(textureName), ".png");
+
+                LogManager.Debug($"Writing texture: {textureName}");
+                var filePath = Path.Combine(JustAnotherTranslator.TextureDumpPath, textureName);
+                File.WriteAllBytes(filePath, textureData);
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to write texture file: {textureName}/写入贴图文件失败: {textureName}, 错误: {e.Message}");
         }
     }
+
 
     /// <summary>
     ///     获取 .png 格式的纹理数据
@@ -214,7 +222,6 @@ public static class TextureReplaceManger
     private static byte[] GetTextureBytes(Texture originalTex)
     {
         if (originalTex is Texture2D tex2d)
-        {
             try
             {
                 // 尝试直接获取
@@ -224,7 +231,6 @@ public static class TextureReplaceManger
             {
                 // 失败则走通用逻辑
             }
-        }
 
         // 如果失败（例如，纹理不可读），则创建副本
         try
@@ -246,7 +252,7 @@ public static class TextureReplaceManger
 
             // 返回纹理数据
             var bytes = readableText.EncodeToPNG();
-            Object.Destroy(readableText);
+            Object.Destroy(readableText); // 销毁临时纹理
             return bytes;
         }
         catch (Exception e)

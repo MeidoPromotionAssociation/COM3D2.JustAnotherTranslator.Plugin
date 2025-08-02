@@ -3,7 +3,7 @@
 # Function: 将歌词时间轴CSV格式转换为包含翻译字段的格式 Convert lyric timeline CSV format to format with translation fields
 # Author: claude 4 & 90135
 # Creation date: 2025-07-19
-# Version: 2025-08-01_01
+# Version: 2025-08-02_01
 # License: Bsd-3
 
 import csv
@@ -354,17 +354,36 @@ def main():
         print(f"错误：路径 {args[1]} 不存在")
 
 if __name__ == "__main__":
-    # 方式一：使用命令行参数
+    # 使用命令行参数
     if len(sys.argv) > 1:
         main()
     else:
-        # 方式二：使用默认设置（可根据需要修改）
-        input_path = "./lyrics.csv"          # 修改为您的文件路径
-        output_path = "./converted_lyrics.csv"  # 修改为您的输出路径
-        
-        print(f"使用默认设置:")
-        print(f"输入文件: {input_path}")
-        print(f"输出文件: {output_path}")
+        print("歌词CSV格式转换工具")
+        print("将歌词时间轴CSV格式转换为包含翻译字段的格式")
         print()
-        
-        convert_single_file(input_path, output_path)
+        print("使用方法:")
+        print("  转换单个文件:")
+        print("    python script.py <输入文件> [输出文件]")
+        print("  批量转换文件夹:")
+        print("    python script.py <输入文件夹> [输出文件夹] [输出后缀] [--no-recursive]")
+        print()
+        print("示例:")
+        print("  python script.py song.csv")
+        print("  python script.py song.csv converted_song.csv")
+        print("  python script.py ./lyrics_folder")
+        print("  python script.py ./lyrics_folder ./output_folder")
+        print("  python script.py ./lyrics_folder ./output_folder _new")
+        print("  python script.py ./lyrics_folder --no-recursive")
+        print()
+        print("参数说明:")
+        print("  输入文件/文件夹: 要转换的CSV文件或包含CSV文件的文件夹路径")
+        print("  输出文件夹: 输出文件夹路径（可选，默认为输入文件夹）")
+        print("  输出后缀: 输出文件名后缀（可选，默认为空）")
+        print("  --no-recursive: (可选标志) 如果使用，将不会递归处理子文件夹")
+        print()
+        print("支持的输入格式:")
+        print("  格式1: 开始时间(秒),结束时间(秒),歌词")
+        print("  格式2: ID,開始時間,終了時間,ローカライズ用キー名")
+        print()
+        print("输出格式: StartTime,EndTime,OriginalLyric,TranslatedLyric")
+        print()

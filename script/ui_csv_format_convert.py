@@ -3,7 +3,7 @@
 # Function: 将从官方提取的 csv 文件格式或 I18nEx 的 csv 文件格式转换为 JustAnotherTranslator 使用的格式 Convert the csv file format extracted from the official website or I18nEx to the format used by JustAnotherTranslator
 # Author: claude 4 & 90135
 # Creation date: 2025-07-04
-# Version: 2025-07-19_01
+# Version: 2025-08-02_01
 # License: Bsd-3
 
 import csv
@@ -275,21 +275,38 @@ def main():
     else:
         print(f"错误：路径 {args[1]} 不存在")
 
-# 如果直接运行脚本，也可以在这里设置默认文件夹
+
 if __name__ == "__main__":
-    # 方式一：使用命令行参数
+    # 使用命令行参数
     if len(sys.argv) > 1:
         main()
     else:
-        # 方式二：使用默认文件夹（可根据需要修改）
-        input_folder = "./csv_files"          # 修改为您的文件夹路径
-        output_folder = "./converted_files"   # 可选：指定输出文件夹
-        add_prefix_default = True             # 修改为 False 则不添加前缀
-        
-        print(f"使用默认设置:")
-        print(f"输入文件夹: {input_folder}")
-        print(f"输出文件夹: {output_folder}")
-        print(f"在Term前添加文件名前缀: {add_prefix_default}")
+        print("多语言CSV格式转换工具")
+        print("将多语言CSV格式转换为术语对照表格式")
         print()
-        
-        process_folder(input_folder, output_folder, add_prefix=add_prefix_default)
+        print("使用方法:")
+        print("  转换单个文件:")
+        print("    python script.py <输入文件> [输出文件] [--no-prefix]")
+        print("  批量转换文件夹:")
+        print("    python script.py <输入文件夹> [输出文件夹] [输出后缀] [--no-prefix] [--no-recursive]")
+        print()
+        print("示例:")
+        print("  python script.py terms.csv")
+        print("  python script.py terms.csv converted_terms.csv")
+        print("  python script.py ./input_folder")
+        print("  python script.py ./input_folder ./output_folder")
+        print("  python script.py ./input_folder ./output_folder _new")
+        print("  python script.py ./input_folder --no-prefix")
+        print("  python script.py ./input_folder --no-recursive")
+        print("  python script.py ./input_folder --no-prefix --no-recursive")
+        print()
+        print("参数说明:")
+        print("  输入文件/文件夹: 要转换的CSV文件或包含CSV文件的文件夹路径")
+        print("  输出文件夹: 输出文件夹路径（可选，默认为输入文件夹）")
+        print("  输出后缀: 输出文件名后缀（可选，默认为空）")
+        print("  --no-prefix: (可选标志) 如果使用，将不会在Term前添加文件名前缀")
+        print("  --no-recursive: (可选标志) 如果使用，将不会递归处理子文件夹")
+        print()
+        print("输入格式: Key,Type,Desc,Japanese,English,Chinese (Simplified),Chinese (Traditional)")
+        print("输出格式: Term,Original,Translation")
+        print()

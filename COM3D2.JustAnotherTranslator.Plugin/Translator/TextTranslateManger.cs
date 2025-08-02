@@ -126,6 +126,8 @@ public static class TextTranslateManger
 
         FlushDumpBuffer();
 
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+
         _initialized = false;
     }
 
@@ -357,6 +359,7 @@ public static class TextTranslateManger
         try
         {
             FlushDumpBuffer();
+            DumpedTexts.Clear();
         }
         catch (Exception e)
         {

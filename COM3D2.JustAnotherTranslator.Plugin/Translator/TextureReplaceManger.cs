@@ -5,6 +5,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Hooks.Texture;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
@@ -69,6 +70,8 @@ public static class TextureReplaceManger
         _textureReplacePatch = Harmony.CreateAndPatchAll(typeof(TextureReplacePatch),
             "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.texture.texturereplacepatch");
 
+        if (JustAnotherTranslator.EnableTexturesDump.Value) SceneManager.sceneUnloaded += OnSceneUnloaded;
+
         _initialized = true;
     }
 
@@ -85,6 +88,8 @@ public static class TextureReplaceManger
             _textureCache.Clear();
             _textureCache = null;
         }
+
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
         _initialized = false;
     }
@@ -135,10 +140,14 @@ public static class TextureReplaceManger
             {
                 if (originalTexture != null)
                 {
-                    LogManager.Debug($"Texture replace for {filename} not found, try to dump original texture");
-                    var bytes = GetTextureBytes(originalTexture);
-                    if (bytes != null)
-                        DumpTexture(filename, bytes);
+                    // 添加成功则为 true
+                    if (DumpedTextures.Add(filename))
+                    {
+                        LogManager.Debug($"Texture replace for {filename} not found, try to dump original texture");
+                        var bytes = GetTextureBytes(originalTexture);
+                        if (bytes != null)
+                            DumpTexture(filename, bytes);
+                    }
                 }
                 else
                 {
@@ -190,22 +199,14 @@ public static class TextureReplaceManger
     {
         try
         {
-            if (!JustAnotherTranslator.EnableTexturesDump.Value)
-                return;
+            if (Path.GetExtension(textureName) != ".png")
+                textureName = string.Concat(Path.GetFileName(textureName), ".png");
 
-            // 如果纹理是新的 (之前未 dump 过), addResult 会是 true
-            var added = DumpedTextures.Add(textureName);
+            LogManager.Debug($"Writing texture: {textureName}");
+            var filePath = Path.Combine(JustAnotherTranslator.TextureDumpPath, textureName);
 
-            // 只有当纹理是新的，才执行写入文件的操作
-            if (added)
-            {
-                if (Path.GetExtension(textureName) != ".png")
-                    textureName = string.Concat(Path.GetFileName(textureName), ".png");
-
-                LogManager.Debug($"Writing texture: {textureName}");
-                var filePath = Path.Combine(JustAnotherTranslator.TextureDumpPath, textureName);
+            if (!File.Exists(filePath))
                 File.WriteAllBytes(filePath, textureData);
-            }
         }
         catch (Exception e)
         {
@@ -259,6 +260,23 @@ public static class TextureReplaceManger
         {
             LogManager.Error($"Failed to get texture bytes for {originalTex.name}: {e.Message}");
             return null;
+        }
+    }
+
+
+    /// <summary>
+    ///     场景卸载时清理资源
+    /// </summary>
+    /// <param name="scene"></param>
+    private static void OnSceneUnloaded(Scene scene)
+    {
+        try
+        {
+            DumpedTextures.Clear();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Error during cleanup scene resources/清理场景资源失败: {e.Message}");
         }
     }
 }

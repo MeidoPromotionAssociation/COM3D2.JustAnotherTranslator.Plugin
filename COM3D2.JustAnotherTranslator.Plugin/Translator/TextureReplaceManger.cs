@@ -33,42 +33,16 @@ public static class TextureReplaceManger
         if (_initialized)
             return;
 
-        if (!Directory.Exists(JustAnotherTranslator.TranslationTexturePath))
-        {
-            LogManager.Warning(
-                "Translation texture directory not found, try to create/未找到翻译贴图目录，尝试创建");
-            try
-            {
-                Directory.CreateDirectory(JustAnotherTranslator.TranslationTexturePath);
-            }
-            catch (Exception e)
-            {
-                LogManager.Error(
-                    $"Create translation texture folder failed, plugin may not work/创建翻译贴图文件夹失败，插件可能无法运行: {e.Message}");
-                return;
-            }
-        }
+        ScanReplaceTextures();
+
+        // Apply patch
+        _textureReplacePatch = Harmony.CreateAndPatchAll(typeof(TextureReplacePatch),
+            "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.texture.texturereplacepatch");
 
         // 初始化LRU缓存
         _textureCache = new LRUCache<string, byte[]>(JustAnotherTranslator.TextureCacheSize.Value);
         LogManager.Debug(
             $"Texture LRU cache initialized with capacity {JustAnotherTranslator.TextureCacheSize.Value}");
-
-        var files = Directory.GetFiles(JustAnotherTranslator.TranslationTexturePath, "*.png",
-            SearchOption.AllDirectories);
-        LogManager.Info(
-            $"Found {files.Length} texture files in translation texture directory/在翻译贴图目录中找到 {files.Length} 个贴图文件");
-
-        // Cache all texture file path
-        foreach (var path in files)
-        {
-            var fileName = Path.GetFileName(path);
-            FilePathCache[fileName] = path;
-        }
-
-        // Apply patch
-        _textureReplacePatch = Harmony.CreateAndPatchAll(typeof(TextureReplacePatch),
-            "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.texture.texturereplacepatch");
 
         if (JustAnotherTranslator.EnableTexturesDump.Value) SceneManager.sceneUnloaded += OnSceneUnloaded;
 
@@ -82,17 +56,45 @@ public static class TextureReplaceManger
 
         _textureReplacePatch?.UnpatchSelf();
 
-        // 清空缓存
-        if (_textureCache != null)
-        {
-            _textureCache.Clear();
-            _textureCache = null;
-        }
-
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
         _initialized = false;
     }
+
+    /// <summary>
+    ///     同步扫描替换纹理
+    /// </summary>
+    private static void ScanReplaceTextures()
+    {
+        if (!Directory.Exists(JustAnotherTranslator.TextureReplacePath))
+        {
+            LogManager.Warning(
+                "Texture replace directory not found, try to create/未找到纹理替换目录，尝试创建");
+            try
+            {
+                Directory.CreateDirectory(JustAnotherTranslator.TextureReplacePath);
+            }
+            catch (Exception e)
+            {
+                LogManager.Error(
+                    $"Create Texture replace folder failed, plugin may not work/创建纹理替换文件夹失败，插件可能无法运行: {e.Message}");
+                return;
+            }
+        }
+
+        var files = Directory.GetFiles(JustAnotherTranslator.TextureReplacePath, "*.png",
+            SearchOption.AllDirectories);
+        LogManager.Info(
+            $"Found {files.Length} texture files in translation texture directory/在翻译贴图目录中找到 {files.Length} 个贴图文件");
+
+        // Cache all texture file path
+        foreach (var path in files)
+        {
+            var fileName = Path.GetFileName(path);
+            FilePathCache[fileName] = path;
+        }
+    }
+
 
     /// <summary>
     ///     从缓存中检查替换纹理是否存在

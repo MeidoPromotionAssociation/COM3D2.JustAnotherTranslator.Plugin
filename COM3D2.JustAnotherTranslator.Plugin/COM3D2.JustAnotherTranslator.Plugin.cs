@@ -202,7 +202,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static readonly string TranslationRootPath = Path.Combine(Paths.BepInExRootPath, "JustAnotherTranslator");
     public static string TargetLanguePath;
     public static string TranslationTextPath;
-    public static string TranslationTexturePath;
+    public static string TextureReplacePath;
     public static string LyricPath;
     public static string UIPath;
     public static string UITextPath;
@@ -261,7 +261,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         TargetLanguePath = Path.Combine(TranslationRootPath, TargetLanguage.Value);
         TranslationTextPath = Path.Combine(TargetLanguePath, "Text");
-        TranslationTexturePath = Path.Combine(TargetLanguePath, "Texture");
+        TextureReplacePath = Path.Combine(TargetLanguePath, "Texture");
         LyricPath = Path.Combine(TargetLanguePath, "Lyric");
         UIPath = Path.Combine(TargetLanguePath, "UI");
         UITextPath = Path.Combine(UIPath, "Text");
@@ -990,7 +990,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             Directory.CreateDirectory(TranslationRootPath);
             Directory.CreateDirectory(TargetLanguePath);
             Directory.CreateDirectory(TranslationTextPath);
-            Directory.CreateDirectory(TranslationTexturePath);
+            Directory.CreateDirectory(TextureReplacePath);
             Directory.CreateDirectory(LyricPath);
             Directory.CreateDirectory(UIPath);
             Directory.CreateDirectory(UITextPath);
@@ -1128,7 +1128,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             // 更新翻译路径
             TargetLanguePath = Path.Combine(TranslationRootPath, TargetLanguage.Value);
             TranslationTextPath = Path.Combine(TargetLanguePath, "Text");
-            TranslationTexturePath = Path.Combine(TargetLanguePath, "Texture");
+            TextureReplacePath = Path.Combine(TargetLanguePath, "Texture");
             LyricPath = Path.Combine(TargetLanguePath, "Lyric");
             UIPath = Path.Combine(TargetLanguePath, "UI");
             UITextPath = Path.Combine(UIPath, "Text");
@@ -1142,7 +1142,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             {
                 Directory.CreateDirectory(TargetLanguePath);
                 Directory.CreateDirectory(TranslationTextPath);
-                Directory.CreateDirectory(TranslationTexturePath);
+                Directory.CreateDirectory(TextureReplacePath);
                 Directory.CreateDirectory(LyricPath);
                 Directory.CreateDirectory(UIPath);
                 Directory.CreateDirectory(UITextPath);

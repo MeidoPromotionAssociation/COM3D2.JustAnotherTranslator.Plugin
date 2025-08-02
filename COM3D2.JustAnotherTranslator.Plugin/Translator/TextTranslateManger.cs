@@ -51,51 +51,10 @@ public static class TextTranslateManger
     {
         if (_initialized) return;
 
-        // 加载翻译
         _isTranslationLoaded = false;
         LoadTextAsync();
 
-        // 创建 Harmony 实例
-        _textTranslatePatch = Harmony.CreateAndPatchAll(typeof(TextTranslatePatch),
-            "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.text.texttranslatepatch");
-
-        // 手动注册 NGUIText.WrapText 方法的补丁
-        TextTranslatePatch.RegisterNGUITextPatches(_textTranslatePatch);
-
-        if (MaidCafeManagerHelper.IsMaidCafeAvailable())
-            try
-            {
-                var original = typeof(MaidCafeComment).GetMethod("LineBreakComment",
-                    BindingFlags.Instance | BindingFlags.NonPublic);
-
-                var isPatchedByOthers = false;
-                if (original != null)
-                {
-                    var patches = Harmony.GetPatchInfo(original);
-                    isPatchedByOthers = patches?.Owners?.Count > 0;
-                }
-
-                var isPatchedByLegacy =
-                    Harmony.HasAnyPatches("com.github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
-                    Harmony.HasAnyPatches("github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
-                    Harmony.HasAnyPatches(
-                        "github.meidopromotionassociation.com3d2_scripts.maidcafelinebreakcommentfix");
-
-                if (isPatchedByLegacy || isPatchedByOthers)
-                    LogManager.Warning(
-                        "MaidCafeDlcLineBreakCommentFix patch already applied by someone else, skipping/MaidCafeDlcLineBreakCommentFix 已被其他人应用，跳过\n" +
-                        "if you got maid_cafe_line_break_fix.cs in your scripts folder, please remove it/如果你在 scripts 脚本文件夹中有 maid_cafe_line_break_fix.cs，请删除它");
-                else
-                    _maidCafeDlcLineBreakCommentFixPatch = Harmony.CreateAndPatchAll(
-                        typeof(MaidCafeDlcLineBreakCommentFix),
-                        "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.text.maidcafedlclinebreakcommentfix");
-            }
-            catch (Exception e)
-            {
-                LogManager.Warning(
-                    $"Failed to patch MaidCafeDlcLineBreakCommentFix/补丁 MaidCafeDlcLineBreakCommentFix 失败: {e.Message}");
-            }
-
+        RegisterPatch();
 
         if (JustAnotherTranslator.EnableTextDump.Value) SceneManager.sceneUnloaded += OnSceneUnloaded;
 
@@ -136,7 +95,6 @@ public static class TextTranslateManger
     /// </summary>
     private static void LoadTextAsync()
     {
-        // 重置状态
         IsLoading = true;
 
         // 创建异步加载器
@@ -148,10 +106,55 @@ public static class TextTranslateManger
 
         LogManager.Info("Starting asynchronous translation loading/开始异步加载翻译");
 
-        // 开始异步加载
         _asyncLoader.StartLoading();
     }
 
+
+    /// <summary>
+    ///     注册补丁
+    /// </summary>
+    private static void RegisterPatch()
+    {
+        _textTranslatePatch = Harmony.CreateAndPatchAll(typeof(TextTranslatePatch),
+            "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.text.texttranslatepatch");
+
+        // 手动注册 NGUIText.WrapText 方法的补丁
+        TextTranslatePatch.RegisterNGUITextPatches(_textTranslatePatch);
+
+        if (MaidCafeManagerHelper.IsMaidCafeAvailable())
+            try
+            {
+                var original = typeof(MaidCafeComment).GetMethod("LineBreakComment",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+
+                var isPatchedByOthers = false;
+                if (original != null)
+                {
+                    var patches = Harmony.GetPatchInfo(original);
+                    isPatchedByOthers = patches?.Owners?.Count > 0;
+                }
+
+                var isPatchedByLegacy =
+                    Harmony.HasAnyPatches("com.github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
+                    Harmony.HasAnyPatches("github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
+                    Harmony.HasAnyPatches(
+                        "github.meidopromotionassociation.com3d2_scripts.maidcafelinebreakcommentfix");
+
+                if (isPatchedByLegacy || isPatchedByOthers)
+                    LogManager.Warning(
+                        "MaidCafeDlcLineBreakCommentFix patch already applied by someone else, skipping/MaidCafeDlcLineBreakCommentFix 已被其他人应用，跳过\n" +
+                        "if you got maid_cafe_line_break_fix.cs in your scripts folder, please remove it/如果你在 scripts 脚本文件夹中有 maid_cafe_line_break_fix.cs，请删除它");
+                else
+                    _maidCafeDlcLineBreakCommentFixPatch = Harmony.CreateAndPatchAll(
+                        typeof(MaidCafeDlcLineBreakCommentFix),
+                        "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.text.maidcafedlclinebreakcommentfix");
+            }
+            catch (Exception e)
+            {
+                LogManager.Warning(
+                    $"Failed to patch MaidCafeDlcLineBreakCommentFix/补丁 MaidCafeDlcLineBreakCommentFix 失败: {e.Message}");
+            }
+    }
 
     /// <summary>
     ///     异步加载进度回调

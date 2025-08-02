@@ -1,3 +1,13 @@
+This guide is translate by AI.
+
+If you have any questions, please refer to the Chinese version. 
+
+We welcome any improvements and fixes.
+
+repo url:  https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin
+
+<br>
+
 # Migrate from LBWtranslation/LBWmodifier
 
 ## Preparation before migration

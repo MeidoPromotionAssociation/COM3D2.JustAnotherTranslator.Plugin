@@ -2,6 +2,16 @@
 
 This document will detail how to create and manage translation files for the JustAnotherTranslator plugin.
 
+This guide is translate by AI.
+
+If you have any questions, please refer to the Chinese version.
+
+We welcome any improvements and fixes.
+
+repo url:  https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin
+
+<br>
+
 # Integration with XUnity.AutoTranslator
 
 JAT automatically integrates with [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator). Text translated by JAT will not be translated again by XUAT.

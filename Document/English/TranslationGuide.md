@@ -431,6 +431,11 @@ When a UI image needs to be replaced, JAT dynamically creates a new, independent
 
 However, creating a separate Atlas does increase draw calls, which can lead to a negligible performance decrease.
 
+### **How do I obtain sprites? **
+
+Use an unpacking tool like [AssetStudio](https://github.com/Perfare/AssetStudio) to open the `COM3D2\COM3D2x64_Data` folder.
+
+Alternatively, you can set the log level to `Debug` in the plugin configuration, enable `EnableDumpSprite/是否启用精灵图导出` in the settings, and then trigger the UI you want to translate in-game.
 
 # Texture Replacement
 

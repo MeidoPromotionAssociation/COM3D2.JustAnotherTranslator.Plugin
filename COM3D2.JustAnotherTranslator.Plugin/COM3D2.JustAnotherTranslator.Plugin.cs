@@ -966,7 +966,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         LogManager.Debug($"IsVrMode: {IsVrMode}, CommandLine: {Environment.CommandLine}");
 
-        // Create translation folder
+        // Create the translation folder
         try
         {
             Directory.CreateDirectory(TranslationRootPath);
@@ -1103,7 +1103,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     private void RegisterGeneralConfigEvents()
     {
         // 注册目标语言变更事件
-        TargetLanguage.SettingChanged += (sender, args) =>
+        TargetLanguage.SettingChanged += (_, _) =>
         {
             LogManager.Info($"Target language changed to {TargetLanguage.Value}/目标语言已更改为 {TargetLanguage.Value}");
 
@@ -1169,7 +1169,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册文本翻译启用状态变更事件
-        EnableTextTranslation.SettingChanged += (sender, args) =>
+        EnableTextTranslation.SettingChanged += (_, _) =>
         {
             if (EnableTextTranslation.Value)
             {
@@ -1185,7 +1185,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册UI翻译启用状态变更事件
-        EnableUITranslation.SettingChanged += (sender, args) =>
+        EnableUITranslation.SettingChanged += (_, _) =>
         {
             if (EnableUITranslation.Value)
             {
@@ -1200,7 +1200,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册贴图替换启用状态变更事件
-        EnableTextureReplace.SettingChanged += (sender, args) =>
+        EnableTextureReplace.SettingChanged += (_, _) =>
         {
             if (EnableTextureReplace.Value)
             {
@@ -1214,13 +1214,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
-        MaidNameStyle.SettingChanged += (_sender, args) =>
+        MaidNameStyle.SettingChanged += (_, _) =>
         {
             LogManager.Info("Not Support change maid name style during runtime/不支持在运行时更改角色名字样式");
         };
 
         // 注册日志级别变更事件
-        LogLevelConfig.SettingChanged += (sender, args) =>
+        LogLevelConfig.SettingChanged += (_, _) =>
         {
             // 不需要重新加载
             LogManager.Info($"Log level changed to {LogLevelConfig.Value}/日志级别已更改为 {LogLevelConfig.Value}");
@@ -1234,7 +1234,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     /// </summary>
     private void RegisterEnableSubtitleEvents()
     {
-        EnableBaseSubtitle.SettingChanged += (sender, args) =>
+        EnableBaseSubtitle.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1249,7 +1249,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
-        EnableYotogiSubtitle.SettingChanged += (sender, args) =>
+        EnableYotogiSubtitle.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1264,7 +1264,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
-        EnableAdvSubtitle.SettingChanged += (sender, args) =>
+        EnableAdvSubtitle.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1280,7 +1280,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
 
-        ForceEnableAdvSubtitle.SettingChanged += (sender, args) =>
+        ForceEnableAdvSubtitle.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1295,7 +1295,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
-        EnableLyricSubtitle.SettingChanged += (sender, args) =>
+        EnableLyricSubtitle.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1317,7 +1317,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     private void RegisterBaseSubtitleConfigEvents()
     {
         // 注册字幕说话人名启用状态变更事件
-        EnableBaseSubtitleSpeakerName.SettingChanged += (sender, args) =>
+        EnableBaseSubtitleSpeakerName.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1327,7 +1327,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕字体变更事件
-        BaseSubtitleFont.SettingChanged += (sender, args) =>
+        BaseSubtitleFont.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1337,7 +1337,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕字体大小变更事件
-        BaseSubtitleFontSize.SettingChanged += (sender, args) =>
+        BaseSubtitleFontSize.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1347,7 +1347,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕文本对齐方式变更事件
-        BaseSubtitleTextAlignment.SettingChanged += (sender, args) =>
+        BaseSubtitleTextAlignment.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1357,7 +1357,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕颜色变更事件
-        BaseSubtitleColor.SettingChanged += (sender, args) =>
+        BaseSubtitleColor.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1367,7 +1367,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕透明度变更事件
-        BaseSubtitleOpacity.SettingChanged += (sender, args) =>
+        BaseSubtitleOpacity.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1377,7 +1377,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景颜色变更事件
-        BaseSubtitleBackgroundColor.SettingChanged += (sender, args) =>
+        BaseSubtitleBackgroundColor.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1387,7 +1387,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景不透明度变更事件
-        BaseSubtitleBackgroundOpacity.SettingChanged += (sender, args) =>
+        BaseSubtitleBackgroundOpacity.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1397,7 +1397,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕位置变更事件
-        BaseSubtitleVerticalPosition.SettingChanged += (sender, args) =>
+        BaseSubtitleVerticalPosition.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1407,7 +1407,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景宽度变更事件
-        BaseSubtitleWidth.SettingChanged += (sender, args) =>
+        BaseSubtitleWidth.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1417,7 +1417,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕高度变更事件
-        BaseSubtitleHeight.SettingChanged += (sender, args) =>
+        BaseSubtitleHeight.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1427,7 +1427,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕动画变更事件
-        EnableBaseSubtitleAnimation.SettingChanged += (sender, args) =>
+        EnableBaseSubtitleAnimation.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1437,7 +1437,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕淡入时长变更事件
-        BaseSubtitleFadeInDuration.SettingChanged += (sender, args) =>
+        BaseSubtitleFadeInDuration.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1447,7 +1447,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕淡出时长变更事件
-        BaseSubtitleFadeOutDuration.SettingChanged += (sender, args) =>
+        BaseSubtitleFadeOutDuration.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1457,7 +1457,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边启用变更事件
-        EnableBaseSubtitleOutline.SettingChanged += (sender, args) =>
+        EnableBaseSubtitleOutline.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1467,7 +1467,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边颜色变更事件
-        BaseSubtitleOutlineColor.SettingChanged += (sender, args) =>
+        BaseSubtitleOutlineColor.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1477,7 +1477,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边不透明度变更事件
-        BaseSubtitleOutlineOpacity.SettingChanged += (sender, args) =>
+        BaseSubtitleOutlineOpacity.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1487,7 +1487,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边宽度变更事件
-        BaseSubtitleOutlineWidth.SettingChanged += (sender, args) =>
+        BaseSubtitleOutlineWidth.SettingChanged += (_, _) =>
         {
             if (EnableBaseSubtitle.Value)
             {
@@ -1503,7 +1503,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     private void RegisterYotogiSubtitleConfigEvents()
     {
         // 注册字幕说话人名启用状态变更事件
-        EnableYotogiSubtitleSpeakerName.SettingChanged += (sender, args) =>
+        EnableYotogiSubtitleSpeakerName.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1513,7 +1513,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕字体变更事件
-        YotogiSubtitleFont.SettingChanged += (sender, args) =>
+        YotogiSubtitleFont.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1523,7 +1523,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕字体大小变更事件
-        YotogiSubtitleFontSize.SettingChanged += (sender, args) =>
+        YotogiSubtitleFontSize.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1533,7 +1533,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕文本对齐方式变更事件
-        YotogiSubtitleTextAlignment.SettingChanged += (sender, args) =>
+        YotogiSubtitleTextAlignment.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1543,7 +1543,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕颜色变更事件
-        YotogiSubtitleColor.SettingChanged += (sender, args) =>
+        YotogiSubtitleColor.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1553,7 +1553,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕透明度变更事件
-        YotogiSubtitleOpacity.SettingChanged += (sender, args) =>
+        YotogiSubtitleOpacity.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1563,7 +1563,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景颜色变更事件
-        YotogiSubtitleBackgroundColor.SettingChanged += (sender, args) =>
+        YotogiSubtitleBackgroundColor.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1573,7 +1573,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景不透明度变更事件
-        YotogiSubtitleBackgroundOpacity.SettingChanged += (sender, args) =>
+        YotogiSubtitleBackgroundOpacity.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1583,7 +1583,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕位置变更事件
-        YotogiSubtitleVerticalPosition.SettingChanged += (sender, args) =>
+        YotogiSubtitleVerticalPosition.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1593,7 +1593,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景宽度变更事件
-        YotogiSubtitleWidth.SettingChanged += (sender, args) =>
+        YotogiSubtitleWidth.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1603,7 +1603,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕高度变更事件
-        YotogiSubtitleHeight.SettingChanged += (sender, args) =>
+        YotogiSubtitleHeight.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1613,7 +1613,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕动画变更事件
-        EnableYotogiSubtitleAnimation.SettingChanged += (sender, args) =>
+        EnableYotogiSubtitleAnimation.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1623,7 +1623,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕淡入时长变更事件
-        YotogiSubtitleFadeInDuration.SettingChanged += (sender, args) =>
+        YotogiSubtitleFadeInDuration.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1633,7 +1633,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕淡出时长变更事件
-        YotogiSubtitleFadeOutDuration.SettingChanged += (sender, args) =>
+        YotogiSubtitleFadeOutDuration.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1643,7 +1643,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边启用变更事件
-        EnableYotogiSubtitleOutline.SettingChanged += (sender, args) =>
+        EnableYotogiSubtitleOutline.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1653,7 +1653,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边颜色变更事件
-        YotogiSubtitleOutlineColor.SettingChanged += (sender, args) =>
+        YotogiSubtitleOutlineColor.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1663,7 +1663,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边不透明度变更事件
-        YotogiSubtitleOutlineOpacity.SettingChanged += (sender, args) =>
+        YotogiSubtitleOutlineOpacity.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1673,7 +1673,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边宽度变更事件
-        YotogiSubtitleOutlineWidth.SettingChanged += (sender, args) =>
+        YotogiSubtitleOutlineWidth.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -1689,7 +1689,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     private void RegisterAdvSubtitleConfigEvents()
     {
         // 注册字幕说话人名启用状态变更事件
-        EnableAdvSubtitleSpeakerName.SettingChanged += (sender, args) =>
+        EnableAdvSubtitleSpeakerName.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1699,7 +1699,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕字体变更事件
-        AdvSubtitleFont.SettingChanged += (sender, args) =>
+        AdvSubtitleFont.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1709,7 +1709,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕字体大小变更事件
-        AdvSubtitleFontSize.SettingChanged += (sender, args) =>
+        AdvSubtitleFontSize.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1719,7 +1719,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕文本对齐方式变更事件
-        AdvSubtitleTextAlignment.SettingChanged += (sender, args) =>
+        AdvSubtitleTextAlignment.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1729,7 +1729,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕颜色变更事件
-        AdvSubtitleColor.SettingChanged += (sender, args) =>
+        AdvSubtitleColor.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1739,7 +1739,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕透明度变更事件
-        AdvSubtitleOpacity.SettingChanged += (sender, args) =>
+        AdvSubtitleOpacity.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1749,7 +1749,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景颜色变更事件
-        AdvSubtitleBackgroundColor.SettingChanged += (sender, args) =>
+        AdvSubtitleBackgroundColor.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1759,7 +1759,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景不透明度变更事件
-        AdvSubtitleBackgroundOpacity.SettingChanged += (sender, args) =>
+        AdvSubtitleBackgroundOpacity.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1769,7 +1769,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕位置变更事件
-        AdvSubtitleVerticalPosition.SettingChanged += (sender, args) =>
+        AdvSubtitleVerticalPosition.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1779,7 +1779,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景宽度变更事件
-        AdvSubtitleWidth.SettingChanged += (sender, args) =>
+        AdvSubtitleWidth.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1789,7 +1789,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕高度变更事件
-        AdvSubtitleHeight.SettingChanged += (sender, args) =>
+        AdvSubtitleHeight.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1799,7 +1799,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕动画变更事件
-        EnableAdvSubtitleAnimation.SettingChanged += (sender, args) =>
+        EnableAdvSubtitleAnimation.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1809,7 +1809,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕淡入时长变更事件
-        AdvSubtitleFadeInDuration.SettingChanged += (sender, args) =>
+        AdvSubtitleFadeInDuration.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1819,7 +1819,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕淡出时长变更事件
-        AdvSubtitleFadeOutDuration.SettingChanged += (sender, args) =>
+        AdvSubtitleFadeOutDuration.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1829,7 +1829,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边启用变更事件
-        EnableAdvSubtitleOutline.SettingChanged += (sender, args) =>
+        EnableAdvSubtitleOutline.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1839,7 +1839,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边颜色变更事件
-        AdvSubtitleOutlineColor.SettingChanged += (sender, args) =>
+        AdvSubtitleOutlineColor.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1849,7 +1849,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边不透明度变更事件
-        AdvSubtitleOutlineOpacity.SettingChanged += (sender, args) =>
+        AdvSubtitleOutlineOpacity.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1859,7 +1859,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边宽度变更事件
-        AdvSubtitleOutlineWidth.SettingChanged += (sender, args) =>
+        AdvSubtitleOutlineWidth.SettingChanged += (_, _) =>
         {
             if (EnableAdvSubtitle.Value)
             {
@@ -1875,7 +1875,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     private void RegisterLyricSubtitleConfigEvents()
     {
         // 注册字幕说话人名启用状态变更事件
-        EnableLyricSubtitleSpeakerName.SettingChanged += (sender, args) =>
+        EnableLyricSubtitleSpeakerName.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1885,7 +1885,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕类型变更事件
-        LyricSubtitleType.SettingChanged += (sender, args) =>
+        LyricSubtitleType.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1895,7 +1895,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕字体变更事件
-        LyricSubtitleFont.SettingChanged += (sender, args) =>
+        LyricSubtitleFont.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1905,7 +1905,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕字体大小变更事件
-        LyricSubtitleFontSize.SettingChanged += (sender, args) =>
+        LyricSubtitleFontSize.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1915,7 +1915,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕文本对齐方式变更事件
-        LyricSubtitleTextAlignment.SettingChanged += (sender, args) =>
+        LyricSubtitleTextAlignment.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1925,7 +1925,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕颜色变更事件
-        LyricSubtitleColor.SettingChanged += (sender, args) =>
+        LyricSubtitleColor.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1935,7 +1935,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕透明度变更事件
-        LyricSubtitleOpacity.SettingChanged += (sender, args) =>
+        LyricSubtitleOpacity.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1945,7 +1945,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景颜色变更事件
-        LyricSubtitleBackgroundColor.SettingChanged += (sender, args) =>
+        LyricSubtitleBackgroundColor.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1955,7 +1955,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景不透明度变更事件
-        LyricSubtitleBackgroundOpacity.SettingChanged += (sender, args) =>
+        LyricSubtitleBackgroundOpacity.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1965,7 +1965,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕位置变更事件
-        LyricSubtitleVerticalPosition.SettingChanged += (sender, args) =>
+        LyricSubtitleVerticalPosition.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1975,7 +1975,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕背景宽度变更事件
-        LyricSubtitleWidth.SettingChanged += (sender, args) =>
+        LyricSubtitleWidth.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1985,7 +1985,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕高度变更事件
-        LyricSubtitleHeight.SettingChanged += (sender, args) =>
+        LyricSubtitleHeight.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -1995,7 +1995,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕动画变更事件
-        EnableLyricSubtitleAnimation.SettingChanged += (sender, args) =>
+        EnableLyricSubtitleAnimation.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -2005,7 +2005,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕淡入时长变更事件
-        LyricSubtitleFadeInDuration.SettingChanged += (sender, args) =>
+        LyricSubtitleFadeInDuration.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -2015,7 +2015,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕淡出时长变更事件
-        LyricSubtitleFadeOutDuration.SettingChanged += (sender, args) =>
+        LyricSubtitleFadeOutDuration.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -2025,7 +2025,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边启用变更事件
-        EnableLyricSubtitleOutline.SettingChanged += (sender, args) =>
+        EnableLyricSubtitleOutline.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -2035,7 +2035,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边颜色变更事件
-        LyricSubtitleOutlineColor.SettingChanged += (sender, args) =>
+        LyricSubtitleOutlineColor.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -2045,7 +2045,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边不透明度变更事件
-        LyricSubtitleOutlineOpacity.SettingChanged += (sender, args) =>
+        LyricSubtitleOutlineOpacity.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -2055,7 +2055,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册字幕描边宽度变更事件
-        LyricSubtitleOutlineWidth.SettingChanged += (sender, args) =>
+        LyricSubtitleOutlineWidth.SettingChanged += (_, _) =>
         {
             if (EnableLyricSubtitle.Value)
             {
@@ -2071,7 +2071,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     private void RegisterVRSubtitleConfigEvents()
     {
         // 注册VR字幕模式变更事件
-        VRSubtitleMode.SettingChanged += (sender, args) =>
+        VRSubtitleMode.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -2081,7 +2081,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册VR字幕距离变更事件
-        VRSubtitleDistance.SettingChanged += (sender, args) =>
+        VRSubtitleDistance.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -2091,7 +2091,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册VR字幕垂直偏移变更事件
-        VRSubtitleVerticalOffset.SettingChanged += (sender, args) =>
+        VRSubtitleVerticalOffset.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -2101,7 +2101,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册VR字幕水平偏移变更事件
-        VRSubtitleHorizontalOffset.SettingChanged += (sender, args) =>
+        VRSubtitleHorizontalOffset.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -2111,7 +2111,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册VR悬浮字幕宽度变更事件
-        VRInSpaceSubtitleWidth.SettingChanged += (sender, args) =>
+        VRInSpaceSubtitleWidth.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -2121,7 +2121,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册VR悬浮字幕高度变更事件
-        VRInSpaceSubtitleHeight.SettingChanged += (sender, args) =>
+        VRInSpaceSubtitleHeight.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
@@ -2131,7 +2131,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册VR字幕缩放变更事件
-        VRSubtitleScale.SettingChanged += (sender, args) =>
+        VRSubtitleScale.SettingChanged += (_, _) =>
         {
             LogManager.Info("VR Subtitle scale changed/VR字幕缩放已更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
@@ -2145,7 +2145,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     private void RegisterDumpConfigEvents()
     {
         // 注册Dump文本启用状态变更事件
-        EnableTextDump.SettingChanged += (sender, args) =>
+        EnableTextDump.SettingChanged += (_, _) =>
         {
             if (EnableTextDump.Value)
                 LogManager.Info("Text dump enabled/启用文本导出");
@@ -2154,7 +2154,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册Dump纹理启用状态变更事件
-        EnableTexturesDump.SettingChanged += (sender, args) =>
+        EnableTexturesDump.SettingChanged += (_, _) =>
         {
             if (EnableTexturesDump.Value)
                 LogManager.Info("Texture dump enabled/启用纹理导出");
@@ -2163,7 +2163,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册DumpSprite启用状态变更事件
-        EnableSpriteDump.SettingChanged += (sender, args) =>
+        EnableSpriteDump.SettingChanged += (_, _) =>
         {
             if (EnableSpriteDump.Value)
                 LogManager.Info("Sprite dump enabled/启用Sprite导出");
@@ -2172,13 +2172,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册Dump文本阈值变更事件
-        TextDumpThreshold.SettingChanged += (sender, args) =>
+        TextDumpThreshold.SettingChanged += (_, _) =>
         {
             LogManager.Info("Text dump threshold changed/文本导出阈值已更改");
         };
 
         // 注册Dump文本立即写出变更事件
-        FlushTextDumpNow.SettingChanged += (sender, args) =>
+        FlushTextDumpNow.SettingChanged += (_, _) =>
         {
             TextTranslateManger.FlushDumpBuffer();
             LogManager.Info("Text dump flushed/文本导出缓存已写出");

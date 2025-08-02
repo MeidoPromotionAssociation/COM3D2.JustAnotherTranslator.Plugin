@@ -223,28 +223,33 @@ John	约翰 (John)
     -   **Rule**: `^Character: (?<name>.+), Level: (?<level>\d+)$\tCharacter: ${name} (Level: ${level})`
     -   **With regular translation**: If there is also a regular translation `Alice\t爱丽丝 (Alice)`, the final result will be `角色：爱丽丝 (等级: 99)` (Character: 爱丽丝 (Level: 99)). This is very useful for formatting complex strings.
 
-## 4. Performance Recommendations
+## 4. Performance recommendations and some notes
 
 -   The plugin uses asynchronous loading and will not block the game's startup. If your game loads too quickly before the translation files are fully loaded, you might see some untranslated text.
 -   If you have a large number of small `.txt` files, loading can be very slow. To improve performance, it is recommended to **merge them into one or a few larger `.txt` files**, or **pack them into a `.zip` archive**.
 -   Note: Due to the nature of regular expressions, JAT must iterate through every loaded regex to find a valid match. Therefore, it is best to avoid using regular expressions as much as possible.
-
+-   For text with special tags like `[HF]` and `[SF]`, just keep the tags in the correct position and the text will be replaced before being processed by the official code, which will then correctly replace them with the corresponding words.
 
 # UI Translation
 
-As is not widely known, COM3D2 has Japanese, English, and Chinese versions.
+# UI Translation
 
-When the English and Chinese versions of COM3D2 were added, the game incorporated the [I2 Localization](https://assetstore.unity.com/packages/tools/localization/i2-localization-14884?srsltid=AfmBOorKpDQZLJZeLg1wD6AiS0o4UnFXVaJ2doFDtCaI-EI2Fq7e-fM5) plugin for translation.
+JAT's UI translation module aims to provide a flexible, precise, and game-update-resistant solution for UI translation. It is divided into two parts: UI text translation and UI image translation.
 
-The COM3D2.i18nEx plugin is almost entirely based on this for translation. However, I believe i18nEx overuses in-game resources, leading to the need for extra fixes and some confusing aspects.
+The official Chinese and English versions of COM3D2 use the Unity plugin [I2.Localization](https://assetstore.unity.com/packages/tools/localization/i2-localization-14884?srsltid=AfmBOorKpDQZLJZeLg1wD6AiS0o4UnFXVaJ2doFDtCaI-EI2Fq7e-fM5) 
+to manage localization content. Since all versions share the same base code, the Japanese version we play also includes this plugin.
 
-Therefore, in JAT, we do not fully use the official method for translation, nor do we care about the CSV format used by the officials, nor how in-game resources are handled. We simply maintain our own.
+JAT's UI translation system works by hooking into the low-level functions where this plugin interacts with the official code. When the game requests a piece of UI text or an image, JAT intercepts this request, looks up the corresponding content in its own translation database, and returns the translated result.
 
-JAT's UI translation system works by hooking the game's underlying `I2.Localization` plugin. When the game needs to get a piece of UI text or a UI image, JAT intercepts this request, looks for a corresponding translation in our own translation files, and returns it. This method is more flexible and **unaffected by game updates**.
+We believe this "interception" model has advantages over other solutions. For example, the COM3D2.i18nEx plugin appends translations to the official database. This method is not only highly dependent on game resources but can also lead to unexpected issues.
 
-However, this module can only be used for translation after the official developers have added the corresponding UI icon or text to I2.Localization, giving it a corresponding Term.
+In contrast, JAT maintains its translation resources independently, without relying on the official CSV format or internal game resources. This makes it more flexible, effectively mitigating the negative impacts of game updates and ensuring the accuracy and consistency of translations.
 
-Although some text-based UI can also be translated using the general text translation module, using this module provides translations that are resistant to updates, consistent, accurate, and resistant to homonyms with different meanings.
+Please note that for a UI element (text or image) to be translatable by this module, it must first be added to the I2.Localization database by the developers and have a corresponding "Term".
+
+Although some UI text can also be translated by the generic text translation module, using this dedicated module provides a more stable and accurate translation that can handle homonyms correctly.
+
+<br>
 
 UI translation is divided into two parts: **UI Text Translation** and **UI Image Translation**.
 

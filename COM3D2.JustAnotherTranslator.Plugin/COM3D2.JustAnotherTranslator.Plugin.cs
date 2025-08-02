@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.IO;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -192,6 +193,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     private static ConfigEntry<bool> _dumpTip3;
     private static ConfigEntry<bool> _dumpTip4;
     public static ConfigEntry<bool> EnableTexturesDump;
+    public static ConfigEntry<bool> EnableSpriteDump;
     public static ConfigEntry<bool> EnableTextDump;
     public static ConfigEntry<int> TextDumpThreshold;
     public static ConfigEntry<bool> FlushTextDumpNow;
@@ -209,6 +211,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string DumpPath;
     public static string TextDumpPath;
     public static string TextureDumpPath;
+    public static string SpriteDumpPath;
 
     private void Awake()
     {
@@ -267,6 +270,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         DumpPath = Path.Combine(TranslationRootPath, "Dump");
         TextDumpPath = Path.Combine(DumpPath, "Text");
         TextureDumpPath = Path.Combine(DumpPath, "Texture");
+        SpriteDumpPath = Path.Combine(DumpPath, "Sprite");
 
 
         EnableTextTranslation = Config.Bind("2General",
@@ -951,25 +955,31 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription("Only export textures that have not been replaced/仅导出未替换过的纹理", null,
                 new ConfigurationManagerAttributes { Order = 9040 }));
 
+        EnableSpriteDump = Config.Bind("9Dump",
+            "EnableDumpSprite/是否启用精灵图导出",
+            false,
+            new ConfigDescription("Only export sprites that have not been replaced/仅导出未替换过的精灵图", null,
+                new ConfigurationManagerAttributes { Order = 9050 }));
+
         EnableTextDump = Config.Bind("9Dump",
             "EnableDumpText/是否启用文本导出",
             false,
             new ConfigDescription(
                 "Only export text that has not been replaced, write out when the threshold is reached or switching scenes or the game correct exits/仅导出未替换过的文本，达到阈值或切换场景或正确退出游戏时写出",
-                null, new ConfigurationManagerAttributes { Order = 9050 }));
+                null, new ConfigurationManagerAttributes { Order = 9060 }));
 
         TextDumpThreshold = Config.Bind("9Dump",
             "TextDumpThreshold/文本导出阈值",
             20,
             new ConfigDescription("How many lines of text to write out at once/累计多少条文本后写出一次", null,
-                new ConfigurationManagerAttributes { Order = 9060 }));
+                new ConfigurationManagerAttributes { Order = 9070 }));
 
         FlushTextDumpNow = Config.Bind("9Dump",
             "FlushTextDumpNow/立即写出文本",
             false,
             new ConfigDescription(
                 "Immediately write out all cached text when the option status changes/立即写出所有已缓存的文本，选项状态变更时立即写出", null,
-                new ConfigurationManagerAttributes { Order = 9070 }));
+                new ConfigurationManagerAttributes { Order = 9080 }));
 
         # endregion
 
@@ -989,6 +999,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             Directory.CreateDirectory(DumpPath);
             Directory.CreateDirectory(TextDumpPath);
             Directory.CreateDirectory(TextureDumpPath);
+            Directory.CreateDirectory(SpriteDumpPath);
         }
         catch (Exception e)
         {
@@ -1124,6 +1135,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             DumpPath = Path.Combine(TranslationRootPath, "Dump");
             TextDumpPath = Path.Combine(DumpPath, "Text");
             TextureDumpPath = Path.Combine(DumpPath, "Texture");
+            SpriteDumpPath = Path.Combine(DumpPath, "Sprite");
             // 创建目录
             try
             {
@@ -1137,6 +1149,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 Directory.CreateDirectory(DumpPath);
                 Directory.CreateDirectory(TextDumpPath);
                 Directory.CreateDirectory(TextureDumpPath);
+                Directory.CreateDirectory(SpriteDumpPath);
             }
             catch (Exception e)
             {

@@ -7,6 +7,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
@@ -32,6 +33,9 @@ public static class UITranslateManager
     /// 异步 UI 文本加载器
     private static AsyncUiTextLoader _uiTextLoader;
 
+    /// 记录已经 dump 过的精灵图
+    private static readonly HashSet<string> DumpedSprite = new();
+
     public static void Init()
     {
         if (_initialized) return;
@@ -51,6 +55,8 @@ public static class UITranslateManager
                     "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uidebugpatch");
             UIDebugPatch.LocalizeTargetPatcher.ApplyPatch(_uiDebugPatch);
         }
+
+        if (JustAnotherTranslator.EnableSpriteDump.Value) SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _initialized = true;
     }
@@ -75,6 +81,22 @@ public static class UITranslateManager
         SpritePathCache.Clear();
 
         _initialized = false;
+    }
+
+    /// <summary>
+    ///     场景卸载时清理资源
+    /// </summary>
+    /// <param name="scene"></param>
+    private static void OnSceneUnloaded(Scene scene)
+    {
+        try
+        {
+            DumpedSprite.Clear();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Error during cleanup scene resources/清理场景资源失败: {e.Message}");
+        }
     }
 
     #region Text
@@ -187,13 +209,7 @@ public static class UITranslateManager
             {
                 var replacementTexture = GetSpriteTexture(spriteName);
 
-                // 获取目标 UISprite 组件
-                var sprite = uiButton.tweenTarget?.GetComponent<UISprite>();
-                if (sprite == null)
-                {
-                    sprite = uiButton.GetComponent<UISprite>(); // 备用方案
-                    LogManager.Debug($"Use backup method to find UISprite component on UIButton '{uiButton.name}'.");
-                }
+                var sprite = GetUISpriteFromUIButton(uiButton);
 
                 if (sprite == null)
                 {
@@ -206,12 +222,43 @@ public static class UITranslateManager
 
                 LogManager.Debug($"Successfully replaced UIButton '{uiButton.name}' sprite with '{spriteName}'.");
             }
+            else
+            {
+                if (JustAnotherTranslator.EnableSpriteDump.Value)
+                    // 添加成功则为 true
+                    if (DumpedSprite.Add(spriteName))
+                    {
+                        LogManager.Debug($"Sprite replace for {spriteName} not found, try to dump it.");
+
+                        var sprite = GetUISpriteFromUIButton(uiButton);
+
+                        if (sprite != null) DumpSprite(sprite, spriteName);
+                    }
+            }
         }
         catch (Exception e)
         {
             LogManager.Error(
                 $"ProcessSpriteReplacementWithNewAtlas unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
+    }
+
+    /// <summary>
+    ///     从 UIButton 获取 UISprite
+    /// </summary>
+    /// <param name="uiButton"></param>
+    /// <returns></returns>
+    private static UISprite GetUISpriteFromUIButton(UIButton uiButton)
+    {
+        var sprite = uiButton.tweenTarget?.GetComponent<UISprite>();
+        if (sprite == null)
+        {
+            sprite = uiButton.GetComponent<UISprite>(); // 备用方案
+            LogManager.Debug(
+                $"Use backup method to find UISprite component on UIButton '{uiButton.name}'.");
+        }
+
+        return sprite;
     }
 
 
@@ -221,7 +268,7 @@ public static class UITranslateManager
     /// <param name="sprite">The UISprite to modify.</param>
     /// <param name="newTexture">The new Texture2D to apply.</param>
     /// <param name="spriteName">A unique name for the new sprite. If null, the texture's name will be used.</param>
-    public static void ReplaceSprite(UISprite sprite, Texture2D newTexture, string spriteName)
+    private static void ReplaceSprite(UISprite sprite, Texture2D newTexture, string spriteName)
     {
         if (sprite == null || newTexture == null)
         {
@@ -355,7 +402,7 @@ public static class UITranslateManager
     /// </summary>
     /// <param name="spriteName">图片名称</param>
     /// <returns>加载的Texture2D对象，如果失败则返回null</returns>
-    public static Texture2D GetSpriteTexture(string spriteName)
+    private static Texture2D GetSpriteTexture(string spriteName)
     {
         if (!IsSpriteReplaceAvailable(spriteName)) return null;
 
@@ -371,6 +418,7 @@ public static class UITranslateManager
 
             var fileData = File.ReadAllBytes(path);
             var texture = new Texture2D(1, 1);
+            texture.LoadImage(new byte[0]); // I don't know why, but i18nEx did, so
             texture.LoadImage(fileData); // LoadImage会自动调整纹理大小
             LogManager.Debug($"Loaded texture {spriteName} from {path}");
             _spriteCache.Set(spriteName, texture);
@@ -426,5 +474,88 @@ public static class UITranslateManager
         }
     }
 
-    #endregion
+    /// <summary>
+    ///     dump single sprite
+    /// </summary>
+    /// <param name="sprite"></param>
+    /// <param name="spriteName"></param>
+    private static void DumpSprite(UISprite sprite, string spriteName)
+    {
+        try
+        {
+            var pngData = GetSpriteBytes(sprite, spriteName);
+            if (pngData != null)
+            {
+                if (Path.GetExtension(spriteName) != ".png")
+                    spriteName = string.Concat(Path.GetFileName(spriteName), ".png");
+
+                LogManager.Debug($"Writing sprite: {spriteName}");
+                var filePath = Path.Combine(JustAnotherTranslator.SpriteDumpPath, spriteName);
+
+                if (!File.Exists(filePath)) File.WriteAllBytes(filePath, pngData);
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to write sprite: {spriteName}/写出 sprite: {spriteName} 失败 : {e.Message}");
+        }
+    }
+
+
+    /// <summary>
+    ///     获取精灵图的图片数据
+    /// </summary>
+    /// <param name="sprite"></param>
+    /// <param name="spriteName"></param>
+    /// <returns></returns>
+    private static byte[] GetSpriteBytes(UISprite sprite, string spriteName)
+    {
+        if (sprite != null)
+            try
+            {
+                // 获取当前 UIButton 实例正在使用的 spriteName
+                var currentSpriteName = sprite.spriteName;
+
+                var atlas = sprite.atlas;
+                if (atlas != null)
+                {
+                    // NGUI 的 atlas.GetSprite(name) 返回 UISpriteData，而不是 Unity 的 Sprite
+                    var spriteData = atlas.GetSprite(currentSpriteName);
+                    if (spriteData != null)
+                    {
+                        // 获取图集的大纹理
+                        var atlasTexture = atlas.texture as Texture2D;
+                        if (atlasTexture != null)
+                        {
+                            var readableTexture = TextureUtils.GetReadableTexture(atlasTexture);
+
+                            var x = spriteData.x;
+                            var y = spriteData.y;
+                            var width = spriteData.width;
+                            var height = spriteData.height;
+
+                            var destTexture = new Texture2D(width, height);
+                            // NGUI 图集的坐标系原点在左上角，而 Unity Texture2D.GetPixels 方法的坐标系原点在左下角
+                            destTexture.SetPixels(readableTexture.GetPixels(x, readableTexture.height - y - height,
+                                width, height));
+                            destTexture.Apply();
+
+                            var pngData = destTexture.EncodeToPNG();
+                            Object.Destroy(destTexture); // 销毁临时纹理
+                            return pngData;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                LogManager.Error(
+                    $"Failed to get bytes for sprite '{spriteName}'/获取 '{spriteName}' 精灵图的图片数据失败：{e.Message}");
+                return null;
+            }
+
+        return null;
+    }
+
+    # endregion
 }

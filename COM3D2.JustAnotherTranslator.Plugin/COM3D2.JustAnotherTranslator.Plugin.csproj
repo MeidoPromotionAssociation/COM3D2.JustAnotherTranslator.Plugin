@@ -5,7 +5,6 @@
         <Company>MeidoPromotionAssociation</Company>
         <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
         <Copyright>MeidoPromotionAssociation released under the Bsd 3-Clause License</Copyright>
-        <RepositoryUrl>https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin</RepositoryUrl>
     </PropertyGroup>
 
     <PropertyGroup>

@@ -1093,6 +1093,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         RegisterLyricSubtitleConfigEvents();
         // 注册VR字幕配置变更事件
         RegisterVRSubtitleConfigEvents();
+        // 注册Dump配置变更事件
+        RegisterDumpConfigEvents();
     }
 
     private void Start()
@@ -2205,12 +2207,20 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 LogManager.Info("Texture dump disabled/禁用纹理导出");
         };
 
+        // 注册DumpSprite启用状态变更事件
+        EnableSpriteDump.SettingChanged += (sender, args) =>
+        {
+            if (EnableSpriteDump.Value)
+                LogManager.Info("Sprite dump enabled/启用Sprite导出");
+            else
+                LogManager.Info("Sprite dump disabled/禁用Sprite导出");
+        };
+
         // 注册Dump文本阈值变更事件
         TextDumpThreshold.SettingChanged += (sender, args) =>
         {
             LogManager.Info("Text dump threshold changed/文本导出阈值已更改");
         };
-
 
         // 注册Dump文本立即写出变更事件
         FlushTextDumpNow.SettingChanged += (sender, args) =>

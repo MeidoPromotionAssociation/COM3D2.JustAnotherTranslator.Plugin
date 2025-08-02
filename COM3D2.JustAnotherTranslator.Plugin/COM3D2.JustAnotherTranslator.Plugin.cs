@@ -81,8 +81,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<bool> EnableTextureReplace;
     public static ConfigEntry<MaidNameStyleEnum> MaidNameStyle;
     public static ConfigEntry<LogLevel> LogLevelConfig;
-    public static ConfigEntry<int> TextureCacheSize;
-    public static ConfigEntry<int> UICacheSize;
     public static ConfigEntry<bool> AllowFilesInZipLoadInOrder;
 
     // 字幕启用相关配置
@@ -313,22 +311,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogLevel.Info,
             new ConfigDescription("Log Level, DEBUG will log more information/日志级别，DEBUG 级别将记录详细信息", null,
                 new ConfigurationManagerAttributes { Order = 2060 }));
-
-
-        TextureCacheSize = Config.Bind("2General",
-            "TextureCacheSize/贴图缓存大小",
-            30,
-            new ConfigDescription(
-                "Texture Replace Cache Size, larger value will use more memory but improve performance/贴图替换缓存大小，较大的值会使用更多内存但提高性能",
-                null, new ConfigurationManagerAttributes { Order = 2070 }));
-
-
-        UICacheSize = Config.Bind("2General",
-            "UICacheSize/UI缓存大小",
-            30,
-            new ConfigDescription(
-                "UI Sprite Cache Size, larger value will use more memory but improve performance/UI精灵图缓存大小，较大的值会使用更多内存但提高性能",
-                null, new ConfigurationManagerAttributes { Order = 2080 }));
 
         # endregion
 
@@ -1232,7 +1214,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
-        MaidNameStyle.SettingChanged += (sender, args) =>
+        MaidNameStyle.SettingChanged += (_sender, args) =>
         {
             LogManager.Info("Not Support change maid name style during runtime/不支持在运行时更改角色名字样式");
         };
@@ -1244,33 +1226,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogManager.Info($"Log level changed to {LogLevelConfig.Value}/日志级别已更改为 {LogLevelConfig.Value}");
             if (LogLevelConfig.Value >= LogLevel.Debug)
                 LogManager.Info("some debug patches require a game restart/部分 debug 补丁需要重启游戏生效");
-        };
-
-        // 注册贴图缓存大小变更事件
-        TextureCacheSize.SettingChanged += (sender, args) =>
-        {
-            LogManager.Info(
-                $"Texture replace cache size changed to {TextureCacheSize.Value}/贴图替换缓存大小已更改为 {TextureCacheSize.Value}");
-
-            // 重新加载贴图替换模块以应用新的缓存大小
-            if (EnableTextureReplace.Value)
-            {
-                TextureReplaceManger.Unload();
-                TextureReplaceManger.Init();
-            }
-        };
-
-        // 注册UI精灵图缓存大小变更事件
-        UICacheSize.SettingChanged += (sender, args) =>
-        {
-            LogManager.Info($"UI Sprite cache size changed to {UICacheSize.Value}/UI精灵图缓存大小已更改为 {UICacheSize.Value}");
-
-            // 重新加载贴图替换模块以应用新的缓存大小
-            if (EnableUITranslation.Value)
-            {
-                UITranslateManager.Unload();
-                UITranslateManager.Init();
-            }
         };
     }
 

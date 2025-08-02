@@ -27,9 +27,6 @@ public static class UITranslateManager
     /// 缓存文件名到完整路径的映射
     private static readonly Dictionary<string, string> SpritePathCache = new(); // filename -> path
 
-    /// LRU缓存已加载的图片纹理
-    private static LRUCache<string, Texture2D> _spriteCache; // filename -> texture
-
     /// 异步 UI 文本加载器
     private static AsyncUiTextLoader _uiTextLoader;
 
@@ -39,8 +36,6 @@ public static class UITranslateManager
     public static void Init()
     {
         if (_initialized) return;
-
-        _spriteCache = new LRUCache<string, Texture2D>(JustAnotherTranslator.UICacheSize.Value);
 
         LoadTextTranslationsAsync();
         LoadSpriteTextures();
@@ -71,13 +66,7 @@ public static class UITranslateManager
         _uiTranslatePatch?.UnpatchSelf();
         _uiTranslatePatch = null;
 
-        // 清理纹理缓存
-        foreach (var texture in _spriteCache.GetAllValues())
-            if (texture != null)
-                Object.DestroyImmediate(texture);
-
         Translations.Clear();
-        _spriteCache.Clear();
         SpritePathCache.Clear();
 
         _initialized = false;
@@ -404,16 +393,10 @@ public static class UITranslateManager
     /// <returns>加载的Texture2D对象，如果失败则返回null</returns>
     private static Texture2D GetSpriteTexture(string spriteName)
     {
-        if (!IsSpriteReplaceAvailable(spriteName)) return null;
-
-        if (_spriteCache.TryGet(spriteName, out var cachedTexture))
-        {
-            LogManager.Debug($"GetSpriteTexture cache hit {spriteName}");
-            return cachedTexture;
-        }
-
         try
         {
+            if (!IsSpriteReplaceAvailable(spriteName)) return null;
+
             if (!SpritePathCache.TryGetValue(spriteName, out var path)) return null;
 
             var fileData = File.ReadAllBytes(path);
@@ -421,7 +404,6 @@ public static class UITranslateManager
             texture.LoadImage(new byte[0]); // I don't know why, but i18nEx did, so
             texture.LoadImage(fileData); // LoadImage会自动调整纹理大小
             LogManager.Debug($"Loaded texture {spriteName} from {path}");
-            _spriteCache.Set(spriteName, texture);
             return texture;
         }
         catch (Exception e)

@@ -22,9 +22,6 @@ public static class TextureReplaceManger
     /// 文件路径缓存
     private static readonly Dictionary<string, string> FilePathCache = new(); // filename -> path
 
-    /// 纹理数据缓存
-    private static LRUCache<string, byte[]> _textureCache; // filename -> texture
-
     /// 已经导出的纹理
     private static readonly HashSet<string> DumpedTextures = new();
 
@@ -38,11 +35,6 @@ public static class TextureReplaceManger
         // Apply patch
         _textureReplacePatch = Harmony.CreateAndPatchAll(typeof(TextureReplacePatch),
             "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.texture.texturereplacepatch");
-
-        // 初始化LRU缓存
-        _textureCache = new LRUCache<string, byte[]>(JustAnotherTranslator.TextureCacheSize.Value);
-        LogManager.Debug(
-            $"Texture LRU cache initialized with capacity {JustAnotherTranslator.TextureCacheSize.Value}");
 
         if (JustAnotherTranslator.EnableTexturesDump.Value) SceneManager.sceneUnloaded += OnSceneUnloaded;
 
@@ -160,25 +152,10 @@ public static class TextureReplaceManger
             return false;
         }
 
-        // 首先尝试从LRU缓存中获取纹理数据
-        if (_textureCache != null && _textureCache.TryGet(filename, out replacedTexture))
-        {
-            LogManager.Debug($"Texture cache hit: {filename}");
-            return true;
-        }
-
-        // 如果缓存中没有，则从文件中读取
         if (FilePathCache.TryGetValue(filename, out var cachePath))
             try
             {
                 replacedTexture = File.ReadAllBytes(cachePath);
-
-                // 将读取的纹理数据添加到LRU缓存中
-                if (_textureCache != null)
-                {
-                    _textureCache.Set(filename, replacedTexture);
-                    LogManager.Debug($"Texture added to cache: {filename}");
-                }
 
                 return true;
             }

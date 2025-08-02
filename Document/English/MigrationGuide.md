@@ -55,17 +55,14 @@ Find the `COM3D2\LBWtranslation` folder.
 
 Download the conversion script [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/lyric_csv_format_convert.py](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/lyric_csv_format_convert.py)
 
-Place the script in the `COM3D2\LBWtranslation` folder.
+- Make sure you have Python 3 installed.
+- Right-click in the blank area next to the script and select Open in Terminal.
+- In the terminal, enter `python lyric_csv_format_convert.py COM3D2/LBWtranslation/DanceSubtitle/csv_rhythm_action COM3D2/BepInEx/JustAnotherTranslator/<your language>/Lyric`.
+- Remember to replace the path with your actual path.
+- For example, `python ui_csv_format_convert.py X:/HG/maid/COM3D2/LBWtranslation/DanceSubtitle/csv_rhythm_action X:/HG/maid/COM3D2/BepInEx/JustAnotherTranslator/<your language>/Lyric`.
+- You can just run `python lyric_csv_format_convert.py` and it will give you some instructions
 
-Create two folders, one named `output` and one named `input`.
-
-Run the script.
-
-`python lyric_csv_format_convert.py ./input ./output`
-
-Then copy the files from `./output` to `COM3D2\BepInEx\JustAnotherTranslator\<Your set language>\Lyric\`.
-
-Alternatively, after manual conversion, copy the converted files to `COM3D2\BepInEx\JustAnotherTranslator\Lyric\`.
+For most users, using Python scripts can be daunting. If you don't know how, copy the script contents to AI and let it teach you.
 
 ## Cleanup
 
@@ -140,15 +137,14 @@ Find the `COM3D2\i18nEx\<Your set language>\UI` folder.
 
 Download the conversion script [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/ui_csv_format_convert.py](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/ui_csv_format_convert.py)
 
-Place the script in the `COM3D2\i18nEx\<Your set language>` folder.
+- Make sure you have Python 3 installed.
+- Right-click in the blank area next to the script and select Open in Terminal.
+- In the terminal, enter `python ui_csv_format_convert.py COM3D2/i18nEx/<your language>/UI COM3D2/BepInEx/JustAnotherTranslator/<your language>/UI/Text`
+- Remember to replace the path with your actual path.
+- For example, `python ui_csv_format_convert.py X:/HG/maid/COM3D2/i18nEx/English/UI X:/HG/maid/COM3D2/BepInEx/JustAnotherTranslator/English/UI/Text`
+- You can just run `python ui_csv_format_convert.py` and it will give you some instructions
 
-Create two folders, one named `output` and one named `input`.
-
-Run the script in the `COM3D2\i18nEx\<Your set language>` folder.
-
-`python ui_csv_format_convert.py ./input ./output`
-
-Then copy the files from `./output` to `COM3D2\BepInEx\JustAnotherTranslator\<Your set language>\UI`.
+For most users, using Python scripts can be daunting. If you don't know how, copy the script contents to AI and let it teach you.
 
 ## Cleanup
 

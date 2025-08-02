@@ -1,6 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <Authors>MeidoPromotionAssociation</Authors>
+        <Company>MeidoPromotionAssociation</Company>
+        <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+        <Copyright>MeidoPromotionAssociation released under the Bsd 3-Clause License</Copyright>
+        <RepositoryUrl>https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin</RepositoryUrl>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <TargetFramework>net35</TargetFramework>
         <AssemblyName>COM3D2.JustAnotherTranslator.Plugin</AssemblyName>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -14,15 +23,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="UnityEngine.Modules" Version="5.6.4" IncludeAssets="compile"/>
         <PackageReference Include="COM3D2.GameLibs" Version="2.44.1-r.0"/>
         <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
         <PackageReference Include="BepInEx.Core" Version="5.*"/>
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
         <PackageReference Include="CsvHelper" Version="2.16.3"/>
-        <PackageReference Include="SharpZipLib" Version="0.86.0"/>
-        <!--  SharpZipLib 0.86.0 has 2 known severity vulnerability, but we have no choice  ！-->
+        <!--  SharpZipLib 0.86.0 has 2 known severity vulnerability, but we have no choice, and this lib is already in the game  ！-->
         <!--  However, these two vulnerabilities seem to occur only during decompression. We only decompress to memory because the impact may be smaller. ！-->
-        <PackageReference Include="UnityEngine.Modules" Version="5.6.4" IncludeAssets="compile"/>
+        <!--  And we add zip path security check when decompressing, so we should be fine -->
+        <PackageReference Include="SharpZipLib" Version="0.86.0"/>
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">

@@ -387,9 +387,9 @@ For replacement details, please refer to the next section.
 
 Please consider using TranslationExtract.dll provided by https://github.com/Pain-Brioche/COM3D2.i18nEx and follow the instructions to extract: https://github.com/Pain-Brioche/COM3D2.i18nEx#extracting-translations-from-the-english-game
 
-We provide a script to convert the extracted csv files to the format used by JAT:
+We provide a script to convert the extracted csv files to the format used by JAT `ui_csv_format_convert_English.py`:
 
-[https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/ui_csv_format_convert.py](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/ui_csv_format_convert.py)
+[https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Script](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Script)
 
 > You can set the log level to `Debug` in the plugin configuration, then trigger the UI you want to translate in the game. You will see output like `LocalizationManager_GetTranslation_Prefix Term: SceneDaily/ボタン文字/男エディット` in the console or log file. This is the `Term` you need.
 
@@ -528,9 +528,9 @@ ID,開始時間,終了時間,ローカライズ用キー名
 4,35.4,42,優しさを滲ませた 陽射しのマキアート
 ```
 
-We provide a script to convert the official timeline file into JAT's lyric translation file:
+We provide a script to convert the official timeline file into JAT's lyric translation file `lyric_csv_format_convert_English.py`:
 
-[https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/lyric_csv_format_convert.py](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/lyric_csv_format_convert.py)
+[https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Script](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Script)
 
 Please note that you need to convert the .nei file to a .csv file first, and then use the script for conversion.
 

@@ -63,14 +63,16 @@ You may not need to migrate this, as JAT is released with lyrics included.
 
 Find the `COM3D2\LBWtranslation` folder.
 
-Download the conversion script [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/lyric_csv_format_convert.py](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/lyric_csv_format_convert.py)
+Download the conversion script `lyric_csv_format_convert_English.py`
+
+[https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Script](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Script)
 
 - Make sure you have Python 3 installed.
 - Right-click in the blank area next to the script and select Open in Terminal.
-- In the terminal, enter `python lyric_csv_format_convert.py COM3D2/LBWtranslation/DanceSubtitle/csv_rhythm_action COM3D2/BepInEx/JustAnotherTranslator/<your language>/Lyric`.
+- In the terminal, enter `python lyric_csv_format_convert_English.py COM3D2/LBWtranslation/DanceSubtitle/csv_rhythm_action COM3D2/BepInEx/JustAnotherTranslator/<your language>/Lyric`.
 - Remember to replace the path with your actual path.
-- For example, `python ui_csv_format_convert.py X:/HG/maid/COM3D2/LBWtranslation/DanceSubtitle/csv_rhythm_action X:/HG/maid/COM3D2/BepInEx/JustAnotherTranslator/<your language>/Lyric`.
-- You can just run `python lyric_csv_format_convert.py` and it will give you some instructions
+- For example, `python lyric_csv_format_convert_English.py X:/HG/maid/COM3D2/LBWtranslation/DanceSubtitle/csv_rhythm_action X:/HG/maid/COM3D2/BepInEx/JustAnotherTranslator/<your language>/Lyric`.
+- You can just run `python lyric_csv_format_convert_English.py` and it will give you some instructions
 
 For most users, using Python scripts can be daunting. If you don't know how, copy the script contents to AI and let it teach you.
 
@@ -145,14 +147,16 @@ Copy the files from `COM3D2\i18nEx\<Your set language>\Textures` to `COM3D2\BepI
 
 Find the `COM3D2\i18nEx\<Your set language>\UI` folder.
 
-Download the conversion script [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/ui_csv_format_convert.py](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/script/ui_csv_format_convert.py)
+Download the conversion script `ui_csv_format_convert_English.py`
+
+[https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Script](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Script)
 
 - Make sure you have Python 3 installed.
 - Right-click in the blank area next to the script and select Open in Terminal.
-- In the terminal, enter `python ui_csv_format_convert.py COM3D2/i18nEx/<your language>/UI COM3D2/BepInEx/JustAnotherTranslator/<your language>/UI/Text`
+- In the terminal, enter `python ui_csv_format_convert_English.py COM3D2/i18nEx/<your language>/UI COM3D2/BepInEx/JustAnotherTranslator/<your language>/UI/Text`
 - Remember to replace the path with your actual path.
-- For example, `python ui_csv_format_convert.py X:/HG/maid/COM3D2/i18nEx/English/UI X:/HG/maid/COM3D2/BepInEx/JustAnotherTranslator/English/UI/Text`
-- You can just run `python ui_csv_format_convert.py` and it will give you some instructions
+- For example, `python ui_csv_format_convert_English.py X:/HG/maid/COM3D2/i18nEx/English/UI X:/HG/maid/COM3D2/BepInEx/JustAnotherTranslator/English/UI/Text`
+- You can just run `python ui_csv_format_convert_English.py` and it will give you some instructions
 
 For most users, using Python scripts can be daunting. If you don't know how, copy the script contents to AI and let it teach you.
 

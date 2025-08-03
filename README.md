@@ -26,6 +26,7 @@ Meido Promotion Association is committed to making Meidou more accessible to eve
 - It is not open source.
 - It is not internationalized.
 - It has no documentation.
+- It has no dump.
 
 ### i18nEX
 
@@ -184,6 +185,7 @@ MeidoPromotionAssociation 始终致力于让每个人都能更容易的享受妹
 - 它不是开源的
 - 它不是国际化的
 - 它没有文档
+- 他没有转储功能
 
 ### i18nEX 
 

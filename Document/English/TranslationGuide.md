@@ -20,6 +20,20 @@ If you are developing software and want to integrate with JAT, please check http
 
 JAT uses the same special tags as XUAT.
 
+# Integrating with XUnity.AutoTranslator/Integrating with JAT
+
+JAT automatically integrates with [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator). Text translated by JAT will not be translated again by XUAT.
+
+If you have developed a plugin and would like to integrate with JAT, please check https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/COM3D2.JustAnotherTranslator.Plugin/Utils/XUATInterop.cs
+
+JAT uses the same special tags as XUAT.
+
+All Harmony patches have fixed IDs. Please check https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/COM3D2.JustAnotherTranslator.Plugin/Translator
+
+Harmony patches are registered in each Init() method.
+
+If you have additional requirements, please file an issue.
+
 # General Text Translation
 
 General Text Translation module is the primary location for text translations, including daily ADV dialogues, NGUI text, uGUI text, and in-game multilingual support text.

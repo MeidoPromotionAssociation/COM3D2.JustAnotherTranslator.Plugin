@@ -2,11 +2,15 @@
 
 [![Github All Releases](https://img.shields.io/github/downloads/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/total.svg)]() [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin)
 
+
+
+
+
 # English
 
 ## COM3D2.JustAnotherTranslator.Plugin
 
-This plugin is still under active development and is currently in an early beta stage.
+This plugin is still under active development and is currently in an early beta stage, therefore, release download is not available yet.
 
 Please report issues via Discord: [https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
 
@@ -81,9 +85,9 @@ For COM3D2.5 3.41 and above, please download `COM3D2_5.JustAnotherTranslator.Plu
 
 <br>
 
-To modify configuration files in-game, install the Configuration Manager plugin at https://github.com/BepInEx/BepInEx.ConfigurationManager . The default shortcut key is F1.
+To modify configuration files in-game, install the Configuration Manager plugin at [BepInEx.ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager) . The default shortcut key is F1.
 
-The ConfigurationManagerWrapper.dll provided here (https://github.com/DeathWeasel1337/COM3D2_Plugins) displays a button in the game's gear menu to open the Configuration Manager.
+The ConfigurationManagerWrapper.dll provided here [https://github.com/DeathWeasel1337/COM3D2_Plugins](https://github.com/DeathWeasel1337/COM3D2_Plugins) displays a button in the game's gear menu to open the Configuration Manager.
 
 <br>
 
@@ -165,7 +169,7 @@ There are 4 main folders in the translation folder of the corresponding language
 
 只是另一个 COM3D2 翻译插件
 
-此插件仍在积极开发者，目前处于早期测试版状态。
+此插件仍在积极开发中，目前处于早期测试版状态，因此暂未提供 release 下载。
 
 请通过 Discord 反馈问题：[https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
 
@@ -238,7 +242,7 @@ COM3D2 3.41 及以上版本请下载 COM3D2_5.JustAnotherTranslator.Plugin.zip
 
 <br>
 
-要在游戏内修改配置文件，请安装 https://github.com/BepInEx/BepInEx.ConfigurationManager 配置管理器插件，其默认快捷键是 F1
+要在游戏内修改配置文件，请安装 [BepInEx.ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager) 配置管理器插件，其默认快捷键是 F1
 
 [这里](https://github.com/DeathWeasel1337/COM3D2_Plugins)提供的 ConfigurationManagerWrapper.dll 可以在游戏的齿轮菜单显示一个按钮以打开配置管理器。
 

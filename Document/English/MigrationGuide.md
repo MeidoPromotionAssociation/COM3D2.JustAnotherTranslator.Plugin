@@ -74,6 +74,16 @@ Delete the `COM3D2\BepInEx\plugins\LBWmodifier-Transator D4V.dll` file; this is 
 
 Delete `COM3D2\LBWtranslation`; this is your translation folder (optional).
 
+<br>
+<br>
+<br>
+
+---
+
+<br>
+<br>
+<br>
+
 # Migrate from COM3D2.i18nEx
 
 ## Preparation before migration
@@ -157,6 +167,17 @@ For most users, using Python scripts can be daunting. If you don't know how, cop
 Delete the `COM3D2\BepInEx\plugins\I18N` folder; this is where the plugin DLL is located.
 
 Delete `COM3D2\i18nEx`; this is your translation folder (optional).
+
+<br>
+<br>
+<br>
+
+---
+
+<br>
+<br>
+<br>
+
 
 # Migrate from COM3D2.YATranslator / CM3D2.YATranslator
 

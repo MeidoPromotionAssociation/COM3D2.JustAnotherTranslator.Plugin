@@ -125,11 +125,7 @@ Go to the [**Releases**](https://github.com/MeidoPromotionAssociation/COM3D2.Jus
 - If prompted to merge folders, select "Yes".
 - The correct installation path for the plugin should be: `COM3D2\BepInEx\plugins\COM3D2.JustAnotherTranslator\COM3D2.JustAnotherTranslator.Plugin.dll`
 
-<br>
-
-**Install Translation Files:**
-- For legal and copyright reasons, this plugin does not provide any translation files beyond the basics. You will need to obtain them from other sources.
-- Place your translation files (usually folders named `Text`, `UI`, `Texture`, etc.) into the `COM3D2\BepInEx\JustAnotherTranslator\<target_language>\` directory. See below for how to configure `<target_language>`.
+The `COM3D2\` at the beginning of the path refers to your game's root directory, which is where `COM3D2.exe` is located.
 
 ### Initial Setup
 
@@ -165,7 +161,14 @@ Example Configuration:
 TargetLanguage/目标语言 = zh-CN
 ```
 
-### Migrating from other plugins
+## Installing Translation Files
+
+- Due to legal and copyright reasons, this plugin does not provide translation files beyond the base translations. You will need to obtain them from elsewhere.
+- Place the translation files you obtained (usually folders like `Text`, `UI`, and `Texture`) in the `COM3D2\BepInEx\JustAnotherTranslator\<target language>\` directory.
+- This plugin's text translation and texture replacement features are compatible with `LBWtranslation` and `YATranslator`. If you have obtained translation files for these plugins, refer to the "How Plugins Read Translation Files" section and place them in the corresponding directories.
+- For a more detailed migration guide, please refer to the [Migration Guide](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document)
+
+## Migrating from other plugins
 
 Please refer to the documentation here [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document)
 
@@ -321,11 +324,7 @@ MeidoPromotionAssociation 始终致力于让每个人都能更容易的享受妹
 - 如果提示合并文件夹，请选择“是”。
 - 正确的安装路径应为：`COM3D2\BepInEx\plugins\COM3D2.JustAnotherTranslator\COM3D2.JustAnotherTranslator.Plugin.dll`
 
-<br>
-
-**安装翻译文件**:
-- 由于法律与版权原因，本插件不提供基础翻译以外的翻译文件，您需要自行从其他地方获取。
-- 将您获取的翻译文件（通常是 `Text`, `UI`, `Texture` 等文件夹）放入 `COM3D2\BepInEx\JustAnotherTranslator\<目标语言>\` 路径下。下文会说明如何配置 <目标语言>。
+路径开头的 `COM3D2\` 都是指您的游戏根目录，也就是 `COM3D2.exe` 所在的位置。
 
 ### 初始化配置
 
@@ -363,7 +362,15 @@ MeidoPromotionAssociation 始终致力于让每个人都能更容易的享受妹
 TargetLanguage/目标语言 = zh-CN
 ```
 
-### 从其他插件迁移
+## 安装翻译文件
+
+- 由于法律与版权原因，本插件不提供基础翻译以外的翻译文件，您需要自行从其他地方获取。
+- 将您获取的翻译文件（通常是 `Text`, `UI`, `Texture` 等文件夹）放入 `COM3D2\BepInEx\JustAnotherTranslator\<目标语言>\` 路径下。
+- 本插件的文本翻译和纹理替换功能兼容 `LBWtranslation` 和 `YATranslator`。如果你获取了适用于这些插件的翻译文件，参考《插件如何读取翻译文件》章节放入对应路径即可。
+- 更详细的迁移指南请参考此处的 [迁移指南](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document)
+
+
+## 从其他插件迁移
 
 请参考此处的文档 [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document)
 
@@ -384,7 +391,7 @@ COM3D2\BepInEx\JustAnotherTranslator\<你设置的目标语言>
     └─Text
 ```
 
-对应语言的翻译文件夹中有 Text、Texture、UI、Lyric 4 个主要文件夹
+对应语言的翻译文件夹中有 `Text`、`Texture`、`UI`、`Lyric` 4 个主要文件夹
 
 - `Text` 文件夹是主要的文本翻译所在，可翻译内容包括日常 ADV 对话、NGUI 文本、uGUI 文本、游戏内置多语言支持文本。
 - `Texture` 文件夹用于替换游戏内纹理（各种图片）

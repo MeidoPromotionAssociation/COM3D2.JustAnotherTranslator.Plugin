@@ -6,11 +6,47 @@
 
 ## COM3D2.JustAnotherTranslator.Plugin
 
-This plugin is still under active development and is currently in an early beta stage, therefore, release download is
-not available yet.
+Just Another COM3D2 Translator plugin, or JAT for short.
 
-Please report issues via
-Discord: [https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
+This plugin is still under active development and is currently in an early beta stage, so no official release is available for download yet. The download link below is just a placeholder.
+
+Please join our Discord channel: [https://discord.gg/custommaid](https://discord.gg/custommaid)
+
+And report issues in the JAT sub-channel: [https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
+
+You can also raise issues or start discussions in the Issues or Discussions tabs.
+
+When reporting an issue, please set the plugin's log level to DEBUG, restart the game to reproduce the issue, and then attach the log file located at `COM3D2\COM3D2x64_Data\output_log.txt` with your submission.
+
+## Highlights of JAT
+
+**Robust and Independent UI Translation:**
+- A dedicated UI translation system inspired by i18nEx. JAT hooks into the game's underlying I2.Localization to intercept requests for UI text and images, rather than modifying or appending to the official translation database.
+- This approach does not rely on internal game resources, making UI translations resilient to game updates and avoiding issues caused by version changes.
+
+**Advanced Sprite Replacement:**
+- For UI sprite replacement, JAT dynamically creates a new, independent UIAtlas for your `.png` files instead of replacing the game's original atlas.
+- This completely avoids touching native game resources, fundamentally preventing issues like misplaced images or broken UI layouts caused by changes to the original atlas after a game update.
+
+**Flexible Translation Override System:**
+- JAT recursively loads translation files from the translation folder, sorting both files and folders by Unicode character order. Translations loaded later will override those loaded earlier.
+- Users can create folders like `01-MachineTrans`, `02-AITrans`, `03-Proofread`, `99-PersonalFixes` to precisely control translation priority, easily managing and layering translations of different quality.
+
+**Lyrics and Subtitles:**
+- A completely self-implemented subtitle system: The subtitle feature (including general subtitles and dance lyrics) is fully implemented by JAT and does not depend on any in-game resources or official systems, requiring no official support.
+- It can provide subtitles in various scenes that lack them, such as dances, the fishing minigame, VR karaoke, the shooting minigame, night scenes (Yotogi), etc.
+- It also features specially designed VR subtitles, with options to display them on a virtual tablet or in world space, floating just like in other VR games.
+
+**Performance Optimizations:**
+- Translation files for UI and general text are loaded asynchronously, so it won't slow down your game's startup.
+- Supports using `.zip` archives to speed up the loading of many small files.
+
+**Other Features:**
+- JAT does not enable the game's built-in multilingual support, reducing user confusion and potential bugs.
+- JAT does not use any in-game resources, avoiding some potential bugs.
+
+**Drawbacks:**
+- JAT loads all translation text into memory, which does lead to higher memory usage.
 
 ## Why another translation plugin?
 
@@ -52,21 +88,6 @@ open source translation plugin.
 
 - It is not maintained and seems to be broken in recent versions.
 - It has no subtitle system.
-
-## Highlights of JAT
-
-- It has a self-implemented, highly customizable subtitle system, including a dance subtitle system.
-- It can provide you with subtitles in various scenes without subtitles, such as dancing, fishing minigames, VR karaoke,
-  shooting minigames, night battles, etc.
-- It has specially designed VR subtitles, which are suspended in world space like other games.
-- It has a dedicated UI translation system inspired by i18nEX, which is almost unaffected by version updates. There is
-  no need to redo the UI translation due to game version updates, because we have seen too many users who cannot use the
-  UI translation after the game is updated.
-- Its translation files are loaded asynchronously, which means it will not slow down your game startup speed.
-- It does not use any in-game resources.
-- It does not enable the in-game multi-language support.
-
-However, JAT does load all translated text into memory, which does lead to higher memory usage.
 
 ## Getting Started
 
@@ -192,12 +213,47 @@ There are 4 main folders in the translation folder of the corresponding language
 
 ## COM3D2.JustAnotherTranslator.Plugin
 
-只是另一个 COM3D2 翻译插件
+只是另一个 COM3D2 翻译插件，JustAnotherTranslator，简称 JAT。
 
-此插件仍在积极开发中，目前处于早期测试版状态，因此暂未提供 release 下载。
+此插件仍在积极开发中，目前处于早期测试版状态，因此暂未提供正式版本下载，下面的下载链接只是提前写完了。
 
-请通过 Discord
-反馈问题：[https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
+请加入 Discord 频道：[https://discord.gg/custommaid](https://discord.gg/custommaid)
+
+并通过 JAT 子区反馈问题：[https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
+
+您也可以在 Issue 或 Discussions 中提出问题。
+
+在您反馈问题时，请将插件日志等级调至 DEBUG，重启游戏后复现该问题，然后在提交时附上位于 `COM3D2\COM3D2x64_Data\output_log.txt` 的日志文件。
+
+## JAT 的亮点
+
+健壮且独立的 UI 翻译：
+- 受 i18nEX 启发的专用 UI 翻译系统，JAT 通过挂钩（Hook）游戏底层的 I2.Localization 来拦截 UI 文本和图片的请求，而不是修改或追加到官方的翻译数据库。
+- 这种方式不依赖游戏内部资源，使得 UI 翻译能有效抵抗游戏更新带来的影响，避免了因游戏版本更新导致的翻译失效问题。
+
+精灵图（Sprite）替换：
+- 对于 UI 精灵图的替换，JAT 会为用户的 `.png` 文件动态创建一个全新的、独立的 UI 图集（UIAtlas），而不是替换游戏原有的图集。
+- 完全不触及游戏原生资源，从根本上避免了因游戏更新导致原图集布局变化而引发的图片错位、UI 错乱等问题。
+
+灵活的翻译覆盖系统：
+- JAT 会递归加载翻译文件夹内的翻译文件，并根据 Unicode 字符顺序对文件和文件夹进行排序。后加载的翻译会覆盖先加载的。
+- 用户可以通过创建如 `01-机翻`, `02-AI翻译`, `03-人工校对`, `99-个人修正` 这样的文件夹，来精确控制翻译的优先级，轻松管理和分层不同质量的翻译。
+
+歌词与字幕：
+- 完全自实现的字幕系统：字幕功能（包括普通字幕和舞蹈歌词）完全由 JAT 实现，不依赖任何游戏内资源或官方系统，无需官方系统支持。
+- 可以在各种无字幕场景下为您提供字幕，例如舞蹈、钓鱼小游戏、VR卡拉OK、射击小游戏、夜伽等。
+- 它还拥有专门设计的 VR 字幕，可选显示在虚拟平板电脑上或世界空间中，就像其他 VR 游戏一样，它是悬浮在世界空间中的。
+
+性能优化：
+- UI 与通用文本翻译的翻译文件是异步加载的，它不会减慢你的游戏启动速度。
+- 支持使用 `.zip` 压缩包来加快小文件加载速度。
+
+其他：
+- JAT 不启用游戏内的多语言支持，减少了使用户困惑的内容和可能出现的 BUG。
+- JAT 不使用任何游戏内资源，避免了一些可能出现的 BUG。
+
+缺点：
+- JAT 确实会将所有翻译文本加载到内存，这确实会导致较高的内存占用。
 
 ## 为什么需要另一个翻译插件
 
@@ -231,19 +287,6 @@ MeidoPromotionAssociation 始终致力于让每个人都能更容易的享受妹
 
 - 它未被维护，在最近的版本中似乎坏了
 - 它没有字幕系统
-
-## JAT 的亮点
-
-- 它拥有一个自行实现的高度可自定义的字幕系统，包括一个舞蹈字幕系统
-- 可以在各种无字幕场景下为您提供字幕，例如舞蹈、钓鱼小游戏、VR卡拉OK、射击小游戏、夜战等
-- 它拥有专门设计的 VR 字幕，就像其他游戏一样，它是悬浮在世界空间中的
-- 它拥有一个受 i18nEX 启发的专用 UI 翻译系统，它几乎不受版本更新影响，不会因为游戏版本更新而需要重做 UI
-  翻译，因为我们看到了平时太多用户因为游戏更新后 UI 翻译不可用
-- 它的翻译文件是异步加载的，这意味着它不会减慢你的游戏启动速度
-- 它不使用任何游戏内资源
-- 它不启用游戏内的多语言支持
-
-不过，JAT 确实会将所有翻译文本加载到内存，这确实会导致较高的内存占用。
 
 ## 入门
 

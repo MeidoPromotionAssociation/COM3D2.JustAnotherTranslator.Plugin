@@ -92,7 +92,7 @@
                 <Optimize>false</Optimize>
                 <AssemblyName>COM3D2_5.JustAnotherTranslator.Plugin</AssemblyName>
                 <DefineConstants>COM3D2_5_UNITY_2022;DEBUG;TRACE</DefineConstants>
-                <AssemblyTitle>COM3D2.JustAnotherTranslator.Plugin COM3D2.5 Unity2022.3</AssemblyTitle>
+                <AssemblyTitle>COM3D2_5.JustAnotherTranslator.Plugin COM3D2.5 Unity2022.3</AssemblyTitle>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
             </PropertyGroup>
@@ -105,7 +105,7 @@
                 <Optimize>true</Optimize>
                 <AssemblyName>COM3D2_5.JustAnotherTranslator.Plugin</AssemblyName>
                 <DefineConstants>COM3D2_5_UNITY_2022</DefineConstants>
-                <AssemblyTitle>COM3D2.JustAnotherTranslator.Plugin COM3D2.5 Unity2022.3</AssemblyTitle>
+                <AssemblyTitle>COM3D2_5.JustAnotherTranslator.Plugin COM3D2.5 Unity2022.3</AssemblyTitle>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
             </PropertyGroup>

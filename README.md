@@ -83,6 +83,7 @@ open source translation plugin.
   internationalization of COM3D2, you can choose English, Simplified Chinese, and Traditional Chinese in the game, while
   the translation file needs to use the English entry, which is confusing for users of other languages.
 - It can only use the official subtitle system.
+- It has poor support for languages other than English.
 
 ### YATranslator
 
@@ -282,6 +283,7 @@ MeidoPromotionAssociation 始终致力于让每个人都能更容易的享受妹
 - 它与游戏实现高度耦合，对于其他语言用户来说，启用 COM3D2 内置国际化后游戏中可以选择 英文、简体中文、繁体中文，而翻译文件需要使用
   English 条目，这对其他语言用户来说是迷惑的
 - 它只能使用官方的字幕系统
+- 它对于英文以外的语言支持较差
 
 ### YATranslator
 

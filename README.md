@@ -116,7 +116,7 @@ Go to the [**Releases**](https://github.com/MeidoPromotionAssociation/COM3D2.Jus
 - COM3D2:`2.44.0` or lower -> Download `COM3D2.JustAnotherTranslator.Plugin.zip` (Untested, should work in theory)
 - COM3D2: `2.44.0` or higher -> Download `COM3D2.JustAnotherTranslator.Plugin.zip`
 - COM3D2.5: `3.41.0` or lower -> Download `COM3D2.JustAnotherTranslator.Plugin.zip` (Untested, should work in theory)
-- COM3D2.5: `3.41.0` or higher -> Download `COM3D2_5.JustAnotherTranslator.Plugin.zip` (Currently unavailable, support will be added after the release)
+- COM3D2.5: `3.41.0` or higher -> Download `COM3D25.JustAnotherTranslator.Plugin.zip` (Note it is: COM3D25)
 
 <br>
 
@@ -315,7 +315,7 @@ MeidoPromotionAssociation 始终致力于让每个人都能更容易的享受妹
 - COM3D2: `2.44.0`  或更低版本：请下载 `COM3D2.JustAnotherTranslator.Plugin.zip` (未经测试，理论可用)
 - COM3D2: `2.44.0`  或更高版本：请下载 `COM3D2.JustAnotherTranslator.Plugin.zip`
 - COM3D2.5: `3.41.0` 或更低版本：请下载 `COM3D2.JustAnotherTranslator.Plugin.zip` (未经测试，理论可用)
-- COM3D2.5: `3.41.0` 或更高版本：请下载 `COM3D2_5.JustAnotherTranslator.Plugin.zip` （目前尚不可用，在正式版推出后支持）
+- COM3D2.5: `3.41.0` 或更高版本：请下载 `COM3D25.JustAnotherTranslator.Plugin.zip` (注意是 COM3D25)
 
 <br>
 

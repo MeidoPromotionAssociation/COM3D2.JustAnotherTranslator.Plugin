@@ -17,7 +17,7 @@
             https://nuget.samboy.dev/v3/index.json
         </RestoreAdditionalProjectSources>
         <RootNamespace>COM3D2.JustAnotherTranslator.Plugin</RootNamespace>
-        <Configurations>COM3D2-Debug;COM3D2-Release;COM3D2_5_UNITY_2022-Debug;COM3D2_5_UNITY_2022-Release</Configurations>
+        <Configurations>COM3D2-Debug;COM3D2-Release;COM3D25_UNITY_2022-Debug;COM3D25_UNITY_2022-Release</Configurations>
     </PropertyGroup>
 
     <Choose>
@@ -39,7 +39,7 @@
 
 
         <!-- Configure COM3D2.5 related dependencies -->
-        <When Condition="$(Configuration.Contains('COM3D2_5_UNITY_2022-'))">
+        <When Condition="$(Configuration.Contains('COM3D25_UNITY_2022-'))">
             <ItemGroup>
                 <PackageReference Include="UnityEngine.Modules" Version="2022.3.35" />
                 <PackageReference Include="COM3D2.GameLibs" Version="3.44.1-r.0"/>
@@ -84,28 +84,28 @@
         </When>
 
         <!-- COM3D2.5 related configuration -->
-        <When Condition="'$(Configuration)|$(Platform)' == 'COM3D2_5_UNITY_2022-Debug|AnyCPU'">
+        <When Condition="'$(Configuration)|$(Platform)' == 'COM3D25_UNITY_2022-Debug|AnyCPU'">
             <PropertyGroup>
                 <TargetFramework>net48</TargetFramework>
                 <Deterministic>true</Deterministic>
-                <OutputPath>bin\Debug\COM3D2_5\</OutputPath>
+                <OutputPath>bin\Debug\COM3D25\</OutputPath>
                 <Optimize>false</Optimize>
-                <AssemblyName>COM3D2_5.JustAnotherTranslator.Plugin</AssemblyName>
-                <DefineConstants>COM3D2_5_UNITY_2022;DEBUG;TRACE</DefineConstants>
-                <AssemblyTitle>COM3D2_5.JustAnotherTranslator.Plugin COM3D2.5 Unity2022.3</AssemblyTitle>
+                <DefineConstants>COM3D25_UNITY_2022;DEBUG;TRACE</DefineConstants>
+                <AssemblyName>COM3D25.JustAnotherTranslator.Plugin</AssemblyName>
+                <AssemblyTitle>COM3D25.JustAnotherTranslator.Plugin COM3D2.5 Unity2022.3</AssemblyTitle>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
             </PropertyGroup>
         </When>
-        <When Condition="'$(Configuration)|$(Platform)' == 'COM3D2_5_UNITY_2022-Release|AnyCPU'">
+        <When Condition="'$(Configuration)|$(Platform)' == 'COM3D25_UNITY_2022-Release|AnyCPU'">
             <PropertyGroup>
                 <TargetFramework>net48</TargetFramework>
                 <Deterministic>true</Deterministic>
-                <OutputPath>bin\Release\COM3D2_5\</OutputPath>
+                <OutputPath>bin\Release\COM3D25\</OutputPath>
                 <Optimize>true</Optimize>
-                <AssemblyName>COM3D2_5.JustAnotherTranslator.Plugin</AssemblyName>
-                <DefineConstants>COM3D2_5_UNITY_2022</DefineConstants>
-                <AssemblyTitle>COM3D2_5.JustAnotherTranslator.Plugin COM3D2.5 Unity2022.3</AssemblyTitle>
+                <DefineConstants>COM3D25_UNITY_2022</DefineConstants>
+                <AssemblyName>COM3D25.JustAnotherTranslator.Plugin</AssemblyName>
+                <AssemblyTitle>COM3D25.JustAnotherTranslator.Plugin COM3D2.5 Unity2022.3</AssemblyTitle>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
             </PropertyGroup>

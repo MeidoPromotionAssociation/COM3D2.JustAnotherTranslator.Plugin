@@ -381,9 +381,7 @@ public class AsyncUiTextLoader
             var records = csv.GetRecords<CsvEntry>();
             foreach (var record in records)
             {
-                if (StringTool.IsNullOrWhiteSpace(record.Term) ||
-                    StringTool.IsNullOrWhiteSpace(record.Translation)) continue;
-                // 使用精简结构以节省内存
+                if (string.IsNullOrEmpty(record.Term) || string.IsNullOrEmpty(record.Translation)) continue;
                 Translations[record.Term] = record.Translation;
                 entriesLoaded++;
             }

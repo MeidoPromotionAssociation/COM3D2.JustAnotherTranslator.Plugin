@@ -28,8 +28,8 @@ jobs:
         with:
           name: COM3D2.JustAnotherTranslator.Plugin
           path: |
-            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/COM3D2.JustAnotherTranslator.Plugin.dll
-            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/CsvHelper.dll
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/COM3D2.JustAnotherTranslator.Plugin.dll
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/CsvHelper.dll
 
       - name: Build COM3D2.5
         run: |
@@ -40,5 +40,5 @@ jobs:
         with:
           name: COM3D25.JustAnotherTranslator.Plugin
           path: |
-            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/COM3D25.JustAnotherTranslator.Plugin.dll
-            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/CsvHelper.dll
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/COM3D25.JustAnotherTranslator.Plugin.dll
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/CsvHelper.dll

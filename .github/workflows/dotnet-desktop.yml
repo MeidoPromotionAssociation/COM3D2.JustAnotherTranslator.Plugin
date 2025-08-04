@@ -9,29 +9,19 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: Ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup MSBuild.exe path
-        run: |
-          sudo apt-get install -y apt-transport-https
-          sudo apt-get update
-          sudo apt-get install -y mono-devel
-          sudo apt-get install -y msbuild
-          echo "msbuild: $(which msbuild)"
-
-      - uses: nuget/setup-nuget@v2
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
         with:
-          nuget-api-key: ${{ secrets.NuGetAPIKey }}
-          nuget-version: '5.x'
-
+          dotnet-version: '9.x'
 
       - name: Build COM3D2
         run: |
-          msbuild /t:Restore /p:Configuration=COM3D2-Release /p:TargetFrameworkVersion=v3.5
-          msbuild /t:Build /p:Configuration=COM3D2-Release /p:TargetFrameworkVersion=v3.5
+          dotnet build -c COM3D2-Release
 
       - name: Publish Artifact
         uses: actions/upload-artifact@v4
@@ -43,8 +33,7 @@ jobs:
 
       - name: Build COM3D2.5
         run: |
-          msbuild /t:Restore /p:Configuration=COM3D25_UNITY_2022-Release /p:TargetFrameworkVersion=v4.8
-          msbuild /t:Build /p:Configuration=COM3D25_UNITY_2022-Release /p:TargetFrameworkVersion=v4.8
+          dotnet build -c COM3D25_UNITY_2022-Release
 
       - name: Publish Artifact
         uses: actions/upload-artifact@v4

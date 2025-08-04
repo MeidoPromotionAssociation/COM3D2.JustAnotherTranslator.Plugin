@@ -1,0 +1,54 @@
+name: Build
+
+on:
+  push:
+    branches: [ "master","main" ]
+  pull_request:
+    branches: [ "master","main" ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup MSBuild.exe path
+        run: |
+          sudo apt-get install -y apt-transport-https
+          sudo apt-get update
+          sudo apt-get install -y mono-devel
+          sudo apt-get install -y msbuild
+          echo "msbuild: $(which msbuild)"
+
+      - uses: nuget/setup-nuget@v2
+        with:
+          nuget-api-key: ${{ secrets.NuGetAPIKey }}
+          nuget-version: '5.x'
+      - run: nuget restore COM3D2.JustAnotherTranslator.Plugin.sln
+
+      - name: Build COM3D2
+        run: |
+          msbuild /p:Configuration=COM3D2-Release /p:TargetFrameworkVersion=v3.5
+
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: COM3D2.JustAnotherTranslator.Plugin
+          path: |
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/COM3D2.JustAnotherTranslator.Plugin.dll
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/CsvHelper.dll
+
+      - name: Build COM3D2.5
+        run: |
+          msbuild /p:Configuration=COM3D25_UNITY_2022-Release /p:TargetFrameworkVersion=v4.8
+
+      - name: Publish Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: COM3D25.JustAnotherTranslator.Plugin
+          path: |
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/COM3D25.JustAnotherTranslator.Plugin.dll
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/CsvHelper.dll
+          

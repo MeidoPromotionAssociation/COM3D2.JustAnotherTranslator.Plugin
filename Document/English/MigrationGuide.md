@@ -14,34 +14,14 @@ repo url:  https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTransl
 
 ## Preparation before migration
 
-After installing JustAnotherTranslator, start the game once and then exit. This is to allow the plugin to generate the necessary files.
+Please first complete the initial configuration of the plugin by following the instructions in the [README](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin).
 
-<br>
+That means the files should already exist in these two directories.
 
-The COM3D2 folder refers to your game's root directory, which is the folder where `COM3D2.exe` is located.
+- The configuration file is located at: `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`
+- The translation folder root is located at: `COM3D2\BepInEx\JustAnotherTranslator`
 
-The `zh-CN` in the path is variable and depends on your settings.
-
-The translation folder is located at `COM3D2\BepInEx\JustAnotherTranslator`.
-
-<br>
-
-The configuration file is located at `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`.
-
-The `zh-CN` folder is used for placing translation files. Open the configuration file and find the setting below. The target language here determines which folder's translation files will be read.
-
-You can change it to `en-US`, etc., and then restart the game.
-
-This setting does not affect the actual language, which is determined by the translation files you provide. It only controls which folder's files are read.
-
-```
-[2General]
-
-## Target Language, only affect the path of reading translation files/目标语言，只控制读取翻译文件的路径
-# Setting type: String
-# Default value: zh-CN
-TargetLanguage/目标语言 = zh-CN
-```
+The `COM3D2\` at the beginning of the path refers to your game's root directory, which is where `COM3D2.exe` is located.
 
 ## Start Migration
 
@@ -98,34 +78,14 @@ Delete `COM3D2\LBWtranslation`; this is your translation folder (optional).
 
 ## Preparation before migration
 
-After installing JustAnotherTranslator, start the game once and then exit. This is to allow the plugin to generate the necessary files.
+Please first complete the initial configuration of the plugin by following the instructions in the [README](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin).
 
-<br>
+That means the files should already exist in these two directories.
 
-The COM3D2 folder refers to your game's root directory, which is the folder where `COM3D2.exe` is located.
+- The configuration file is located at: `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`
+- The translation folder root is located at: `COM3D2\BepInEx\JustAnotherTranslator`
 
-The `zh-CN` in the path is variable and depends on your settings.
-
-The translation folder is located at `COM3D2\BepInEx\JustAnotherTranslator`.
-
-<br>
-
-The configuration file is located at `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`.
-
-The `zh-CN` folder is used for placing translation files. Open the configuration file and find the setting below. The target language here determines which folder's translation files will be read.
-
-You can change it to `en-US`, etc., and then restart the game.
-
-This setting does not affect the actual language, which is determined by the translation files you provide. It only controls which folder's files are read.
-
-```
-[2General]
-
-## Target Language, only affect the path of reading translation files/目标语言，只控制读取翻译文件的路径
-# Setting type: String
-# Default value: zh-CN
-TargetLanguage/目标语言 = zh-CN
-```
+The `COM3D2\` at the beginning of the path refers to your game's root directory, which is where `COM3D2.exe` is located.
 
 ## Start Migration
 
@@ -202,34 +162,14 @@ Delete `COM3D2\i18nEx`; this is your translation folder (optional).
 
 ## Preparation before migration
 
-After installing JustAnotherTranslator, start the game once and then exit. This is to allow the plugin to generate the necessary files.
+Please first complete the initial configuration of the plugin by following the instructions in the [README](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin).
 
-<br>
+That means the files should already exist in these two directories.
 
-The COM3D2 folder refers to your game's root directory, which is the folder where `COM3D2.exe` is located.
+- The configuration file is located at: `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`
+- The translation folder root is located at: `COM3D2\BepInEx\JustAnotherTranslator`
 
-The `zh-CN` in the path is variable and depends on your settings.
-
-The translation folder is located at `COM3D2\BepInEx\JustAnotherTranslator`.
-
-<br>
-
-The configuration file is located at `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`.
-
-The `zh-CN` folder is used for placing translation files. Open the configuration file and find the setting below. The target language here determines which folder's translation files will be read.
-
-You can change it to `en-US`, etc., and then restart the game.
-
-This setting does not affect the actual language, which is determined by the translation files you provide. It only controls which folder's files are read.
-
-```
-[2General]
-
-## Target Language, only affect the path of reading translation files/目标语言，只控制读取翻译文件的路径
-# Setting type: String
-# Default value: zh-CN
-TargetLanguage/目标语言 = zh-CN
-```
+The `COM3D2\` at the beginning of the path refers to your game's root directory, which is where `COM3D2.exe` is located.
 
 ## Start Migration
 

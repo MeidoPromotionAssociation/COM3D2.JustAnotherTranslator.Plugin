@@ -22,7 +22,7 @@ public static class UITranslateManager
     private static bool _initialized;
 
     /// 存储翻译数据的字典
-    private static readonly Dictionary<string, TranslationData> Translations = new(); // term -> TranslationData
+    private static Dictionary<string, string> _translations = new(); // term -> translation
 
     /// 缓存文件名到完整路径的映射
     private static readonly Dictionary<string, string> SpritePathCache = new(); // filename -> path
@@ -66,7 +66,7 @@ public static class UITranslateManager
         _uiTranslatePatch?.UnpatchSelf();
         _uiTranslatePatch = null;
 
-        Translations.Clear();
+        _translations.Clear();
         SpritePathCache.Clear();
 
         _initialized = false;
@@ -100,9 +100,9 @@ public static class UITranslateManager
         if (string.IsNullOrEmpty(term)) return term;
 
         // SceneDaily/ボタン文字/男エディット
-        if (Translations.TryGetValue(term, out var translation))
+        if (_translations.TryGetValue(term, out var translation))
         {
-            var markedTranslation = XUATInterop.MarkTranslated(translation.Translation);
+            var markedTranslation = XUATInterop.MarkTranslated(translation);
             LogManager.Debug($"Found translation for term: {term}, translation: {markedTranslation}");
             return markedTranslation;
         }
@@ -113,9 +113,9 @@ public static class UITranslateManager
         if (slashIndex > -1)
         {
             var newTerm = term.Substring(slashIndex + 1);
-            if (Translations.TryGetValue(newTerm, out translation))
+            if (_translations.TryGetValue(newTerm, out translation))
             {
-                var markedTranslation = XUATInterop.MarkTranslated(translation.Translation);
+                var markedTranslation = XUATInterop.MarkTranslated(translation);
                 LogManager.Debug(
                     $"Found translation for term: {term} (as {newTerm}), translation: {markedTranslation}");
                 return markedTranslation;
@@ -158,28 +158,17 @@ public static class UITranslateManager
     /// <param name="totalFiles"></param>
     /// <param name="elapsedMilliseconds"></param>
     private static void OnUiTextLoadComplete(
-        Dictionary<string, TranslationData> result,
+        Dictionary<string, string> result,
         int totalEntries,
         int totalFiles,
         long elapsedMilliseconds
     )
     {
-        foreach (var pair in result) Translations[pair.Key] = pair.Value;
+        _translations = result;
 
         if (totalEntries > 0)
             LogManager.Info(
                 $"UI translation loading completed! Total entries: {totalEntries}, from {totalFiles} files, took {elapsedMilliseconds} ms/UI翻译文件加载完成！总计加载 {totalEntries} 条翻译条目，来自 {totalFiles} 个文件, 耗时 {elapsedMilliseconds} ms");
-    }
-
-    // 翻译数据
-    public readonly struct TranslationData
-    {
-        public string Translation { get; } // 译文
-
-        public TranslationData(string translation)
-        {
-            Translation = translation;
-        }
     }
 
     #endregion

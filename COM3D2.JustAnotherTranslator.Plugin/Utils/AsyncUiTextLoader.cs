@@ -5,7 +5,6 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
-using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using CsvHelper;
 using CsvHelper.Configuration;
 using ICSharpCode.SharpZipLib.Zip;
@@ -19,7 +18,7 @@ public class AsyncUiTextLoader
 {
     /// 加载完成委托
     public delegate void CompletionCallback(
-        Dictionary<string, UITranslateManager.TranslationData> result,
+        Dictionary<string, string> result,
         int totalEntries,
         int totalFiles,
         long elapsedMilliseconds
@@ -45,14 +44,13 @@ public class AsyncUiTextLoader
     };
 
     /// 压缩文件缓冲区大小
-    private static readonly int ZipBuffsize = 131072;
+    private static readonly int ZipBuffSize = 131072;
 
     /// 压缩文件流缓冲区大小
     private static readonly int ZipSteamCacheSize = 4096;
 
     /// 翻译结果字典
-    private static readonly Dictionary<string, UITranslateManager.TranslationData>
-        _translations = new(); // Term -> translation
+    private static readonly Dictionary<string, string> Translations = new(); // Term -> translation
 
     /// 取消标志
     private static volatile bool _cancelRequested;
@@ -74,7 +72,8 @@ public class AsyncUiTextLoader
     ///     创建一个新的异步文件加载器
     /// </summary>
     /// <param name="translationPath"></param>
-    /// <param name="completionCallback"></param>
+    /// <param name="completionCallback"></param>3
+    /// <param name="progressCallback"></param>
     public AsyncUiTextLoader(string translationPath, ProgressCallback progressCallback,
         CompletionCallback completionCallback)
     {
@@ -95,7 +94,7 @@ public class AsyncUiTextLoader
             return;
         }
 
-        _translations.Clear();
+        Translations.Clear();
 
         _cancelRequested = false;
         _loaderThread = new Thread(LoadTranslationsThread)
@@ -138,7 +137,7 @@ public class AsyncUiTextLoader
             {
                 LogManager.Error(
                     $"Create translation UI folder failed, plugin may not work/创建翻译UI翻译目录失败，插件可能无法运行: {e.Message}");
-                _completionCallback?.Invoke(_translations, 0, 0, 0);
+                _completionCallback?.Invoke(Translations, 0, 0, 0);
                 return;
             }
         }
@@ -154,7 +153,7 @@ public class AsyncUiTextLoader
             if (allFiles.Count == 0)
             {
                 LogManager.Info("No UI translation files found/未找到UI翻译文件");
-                _completionCallback?.Invoke(_translations, 0, 0, 0);
+                _completionCallback?.Invoke(Translations, 0, 0, 0);
                 return;
             }
 
@@ -183,7 +182,7 @@ public class AsyncUiTextLoader
         finally
         {
             sw.Stop();
-            _completionCallback?.Invoke(_translations, totalEntries, filesProcessed, sw.ElapsedMilliseconds);
+            _completionCallback?.Invoke(Translations, totalEntries, filesProcessed, sw.ElapsedMilliseconds);
         }
     }
 
@@ -296,7 +295,7 @@ public class AsyncUiTextLoader
             LogManager.Info($"Processing ZIP archive {fileName} text files/正在处理ZIP压缩包: {fileName})");
 
             using var fileStream = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read, FileShare.Read,
-                ZipBuffsize);
+                ZipBuffSize);
             using var zipStream = new ZipInputStream(fileStream);
 
             ZipEntry entry;
@@ -383,7 +382,7 @@ public class AsyncUiTextLoader
             {
                 if (string.IsNullOrEmpty(record.Term) || string.IsNullOrEmpty(record.Translation)) continue;
                 // 使用精简结构以节省内存
-                _translations[record.Term] = new UITranslateManager.TranslationData(record.Translation);
+                Translations[record.Term] = record.Translation;
                 entriesLoaded++;
             }
         }

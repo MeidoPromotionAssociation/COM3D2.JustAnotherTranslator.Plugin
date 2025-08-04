@@ -64,7 +64,7 @@ public static class TextTranslatePatch
     ///     部分插件例如 COM3D2.WildParty，会直接调用 MessageClass SetText
     ///     然后 MessageClass SetText 再调用 LocalizationManager.GetTranslationText
     ///     注意这个LocalizationManager 不是 I2.Loc 的，是 Scourt.Loc
-    ///     该方法传入形如此的多语言标记文本：'这是日文原文lt;e&gt;This is English text&lt;sc&gt;这是中文文本
+    ///     该方法传入形如此的多语言标记文本：'这是日文原文&lt;e&gt;This is English text&lt;sc&gt;这是简体中文文本
     ///     然后将其解析到 LocalizationString 对象中，LocalizationString 可以用语言为键来访问文本
     ///     所以我们获取日文原文后再翻译
     /// </summary>

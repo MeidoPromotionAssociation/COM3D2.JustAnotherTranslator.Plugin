@@ -276,7 +276,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription("Enable Text Translation/启用文本翻译", null,
                 new ConfigurationManagerAttributes { Order = 2010 }));
 
-
         EnableUITranslation = Config.Bind("2General",
             "EnableUITranslation/启用 UI 翻译",
             true,
@@ -2172,10 +2171,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册Dump文本阈值变更事件
-        TextDumpThreshold.SettingChanged += (_, _) =>
-        {
-            LogManager.Info("Text dump threshold changed/文本导出阈值已更改");
-        };
+        TextDumpThreshold.SettingChanged += (_, _) => { LogManager.Info("Text dump threshold changed/文本导出阈值已更改"); };
 
         // 注册Dump文本立即写出变更事件
         FlushTextDumpNow.SettingChanged += (_, _) =>

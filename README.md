@@ -2,17 +2,15 @@
 
 [![Github All Releases](https://img.shields.io/github/downloads/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/total.svg)]() [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin)
 
-
-
-
-
 # English
 
 ## COM3D2.JustAnotherTranslator.Plugin
 
-This plugin is still under active development and is currently in an early beta stage, therefore, release download is not available yet.
+This plugin is still under active development and is currently in an early beta stage, therefore, release download is
+not available yet.
 
-Please report issues via Discord: [https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
+Please report issues via
+Discord: [https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
 
 ## Why another translation plugin?
 
@@ -20,13 +18,18 @@ By observing questions from new community members, we've discovered some issues 
 
 These include not being open source, UI translations being susceptible to updates, and a focus on English translation.
 
-Meido Promotion Association is committed to making Meidou more accessible to everyone, so we've decided to develop a new open source translation plugin.
+Meido Promotion Association is committed to making Meidou more accessible to everyone, so we've decided to develop a new
+open source translation plugin.
 
 ### LBWtranslation/LBWmodifier
 
-- It is not public, hidden in a forum that does not open for registration, and requires points to obtain, so it does not exist for most people.
-- It has a built-in modifier, For example, private mode allows all characters, which may cause the game to crash, and some mods that may cause NTR are enabled by default. (In the latest version, it seems that the modifier and translator have finally been separated)
-- UI translation uses the old YATranslator method, and there are issues with UI translation implementation caused by version updates.
+- It is not public, hidden in a forum that does not open for registration, and requires points to obtain, so it does not
+  exist for most people.
+- It has a built-in modifier, For example, private mode allows all characters, which may cause the game to crash, and
+  some mods that may cause NTR are enabled by default. (In the latest version, it seems that the modifier and translator
+  have finally been separated)
+- UI translation uses the old YATranslator method, and there are issues with UI translation implementation caused by
+  version updates.
 - It is not open source.
 - It is not internationalized.
 - It has no documentation.
@@ -34,10 +37,15 @@ Meido Promotion Association is committed to making Meidou more accessible to eve
 
 ### i18nEX
 
-- It uses too many in-game resources, for example, the csv format is the same as the official one, and there are too many redundancies and unclear places.
-- Although it can be partially internationalized, it is mainly designed for English users, and there are some behaviors to obtain built-in resources in _en.
-- It is not compatible with existing translation resources, and due to the design of loading by script, migrating existing files is a difficult task.
-- It is highly coupled with the game implementation. For users of other languages, after enabling the built-in internationalization of COM3D2, you can choose English, Simplified Chinese, and Traditional Chinese in the game, while the translation file needs to use the English entry, which is confusing for users of other languages.
+- It uses too many in-game resources, for example, the csv format is the same as the official one, and there are too
+  many redundancies and unclear places.
+- Although it can be partially internationalized, it is mainly designed for English users, and there are some behaviors
+  to obtain built-in resources in _en.
+- It is not compatible with existing translation resources, and due to the design of loading by script, migrating
+  existing files is a difficult task.
+- It is highly coupled with the game implementation. For users of other languages, after enabling the built-in
+  internationalization of COM3D2, you can choose English, Simplified Chinese, and Traditional Chinese in the game, while
+  the translation file needs to use the English entry, which is confusing for users of other languages.
 - It can only use the official subtitle system.
 
 ### YATranslator
@@ -48,9 +56,12 @@ Meido Promotion Association is committed to making Meidou more accessible to eve
 ## Highlights of JAT
 
 - It has a self-implemented, highly customizable subtitle system, including a dance subtitle system.
-- It can provide you with subtitles in various scenes without subtitles, such as dancing, fishing minigames, VR karaoke, shooting minigames, night battles, etc.
+- It can provide you with subtitles in various scenes without subtitles, such as dancing, fishing minigames, VR karaoke,
+  shooting minigames, night battles, etc.
 - It has specially designed VR subtitles, which are suspended in world space like other games.
-- It has a dedicated UI translation system inspired by i18nEX, which is almost unaffected by version updates. There is no need to redo the UI translation due to game version updates, because we have seen too many users who cannot use the UI translation after the game is updated.
+- It has a dedicated UI translation system inspired by i18nEX, which is almost unaffected by version updates. There is
+  no need to redo the UI translation due to game version updates, because we have seen too many users who cannot use the
+  UI translation after the game is updated.
 - Its translation files are loaded asynchronously, which means it will not slow down your game startup speed.
 - It does not use any in-game resources.
 - It does not enable the in-game multi-language support.
@@ -65,17 +76,20 @@ Open `COM3D2.exe` to see your game version in the upper right corner.
 
 Tested and passed on COM3D2 2.44.0 / COM3D2 2.44.5.
 
-Versions of COM3D2.5 greater than 3.41.0 will be supported after the official release. Versions below 3.41.0 have not been tested, but should theoretically work.
+Versions of COM3D2.5 greater than 3.41.0 will be supported after the official release. Versions below 3.41.0 have not
+been tested, but should theoretically work.
 
 ### Installation
 
 This is a BepinEX plugin. If you have a `BepinEX` folder in your game folder, you're good to go.
 
-Otherwise, we recommend using [CMI](https://github.com/krypto5863/COM-Modular-Installer) to get a basic plugin environment.
+Otherwise, we recommend using [CMI](https://github.com/krypto5863/COM-Modular-Installer) to get a basic plugin
+environment.
 
 <br>
 
-Please download the zip archive from the [Release](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/releases) page.
+Please download the zip archive from
+the [Release](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/releases) page.
 
 Go to the Release page to download the compressed package.
 
@@ -85,9 +99,13 @@ For COM3D2.5 3.41 and above, please download `COM3D2_5.JustAnotherTranslator.Plu
 
 <br>
 
-To modify configuration files in-game, install the Configuration Manager plugin at [BepInEx.ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager) . The default shortcut key is F1.
+To modify configuration files in-game, install the Configuration Manager plugin
+at [BepInEx.ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager) . The default shortcut key is
+F1.
 
-The ConfigurationManagerWrapper.dll provided here [https://github.com/DeathWeasel1337/COM3D2_Plugins](https://github.com/DeathWeasel1337/COM3D2_Plugins) displays a button in the game's gear menu to open the Configuration Manager.
+The ConfigurationManagerWrapper.dll provided
+here [https://github.com/DeathWeasel1337/COM3D2_Plugins](https://github.com/DeathWeasel1337/COM3D2_Plugins) displays a
+button in the game's gear menu to open the Configuration Manager.
 
 <br>
 
@@ -101,11 +119,13 @@ That is, `COM3D2.JustAnotherTranslator.Plugin.dll` should be located at the foll
 
 `COM3D2\BepInEx\plugins\COM3D2.JustAnotherTranslator\COM3D2.JustAnotherTranslator.Plugin.dll`
 
-The COM3D2 folder at the beginning refers to your game root directory, which is the folder where `COM3D2.exe` is located.
+The COM3D2 folder at the beginning refers to your game root directory, which is the folder where `COM3D2.exe` is
+located.
 
 After installation, start the game once, and the plugin will automatically generate the required files.
 
-The configuration file is located at `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`
+The configuration file is located at
+`COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`
 
 The translation folder is located at `COM3D2\BepInEx\JustAnotherTranslator`
 
@@ -115,11 +135,13 @@ After starting the game once, a Dump folder and a zh-CN folder will be generated
 
 The Dump folder is used to dump in-game files, and general users don't need to care about it.
 
-The zh-CN folder is used to place translation files. Open the configuration file and find the following configuration. The target language here is which folder to read the translation files from.
+The zh-CN folder is used to place translation files. Open the configuration file and find the following configuration.
+The target language here is which folder to read the translation files from.
 
 You can change it to en-US, etc., and then restart the game.
 
-This configuration does not affect the actual language. The actual language is determined by the translation file you provide. It only controls which folder to read the files from.
+This configuration does not affect the actual language. The actual language is determined by the translation file you
+provide. It only controls which folder to read the files from.
 
 ```
 [2General]
@@ -132,7 +154,8 @@ TargetLanguage/目标语言 = zh-CN
 
 ### How the plugin reads translation files
 
-For detailed instructions, please refer to the documentation here [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document)
+For detailed instructions, please refer to the documentation
+here [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document)
 
 Including translation instructions and instructions for migrating from other plugins.
 
@@ -148,10 +171,12 @@ COM3D2\BepInEx\JustAnotherTranslator\<your target language>
 
 There are 4 main folders in the translation folder of the corresponding language: Text, Texture, UI, and Lyric.
 
-- The `Text` folder is where the main text translations are located. The translatable content includes daily ADV dialogues, NGUI text, uGUI text, and in-game multi-language support text.
+- The `Text` folder is where the main text translations are located. The translatable content includes daily ADV
+  dialogues, NGUI text, uGUI text, and in-game multi-language support text.
 - The `Texture` folder is used to replace in-game textures (various images).
 - The `Lyric` folder is for files dedicated to lyric subtitles.
-- The `UI` folder is a dedicated folder for interface translation. Sprite is used to replace a single sprite, and Text is used to translate UI text.
+- The `UI` folder is a dedicated folder for interface translation. Sprite is used to replace a single sprite, and Text
+  is used to translate UI text.
 
 <br>
 <br>
@@ -171,7 +196,8 @@ There are 4 main folders in the translation folder of the corresponding language
 
 此插件仍在积极开发中，目前处于早期测试版状态，因此暂未提供 release 下载。
 
-请通过 Discord 反馈问题：[https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
+请通过 Discord
+反馈问题：[https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
 
 ## 为什么需要另一个翻译插件
 
@@ -184,19 +210,21 @@ MeidoPromotionAssociation 始终致力于让每个人都能更容易的享受妹
 ### LBWtranslation/LBWmodifier
 
 - 它不是公开的，藏在不开放注册的论坛，且需要积分获取，因此对大多数人来说它不存在
-- 它内置了修改器，且很多修改器是默认开启的，例如私人模式允许所有性格可能会导致游戏崩溃，以及一些可能导致 NTR 的修改器是默认开启的（在最近的版本中似乎终于将修改器与翻译器分离了）
+- 它内置了修改器，且很多修改器是默认开启的，例如私人模式允许所有性格可能会导致游戏崩溃，以及一些可能导致 NTR
+  的修改器是默认开启的（在最近的版本中似乎终于将修改器与翻译器分离了）
 - UI 翻译沿用旧的 YATranslator 方法，存在版本更新导致 UI 翻译实现问题
 - 它不是开源的
 - 它不是国际化的
 - 它没有文档
 - 他没有转储功能
 
-### i18nEX 
+### i18nEX
 
 - 它使用了太多的游戏内资源，例如 csv 格式与官方相同，有太多的冗余和不清楚的地方
 - 虽然可以部分国际化，但它主要是为英文用户设计的，存在一些获取 _en 内置资源的行为
 - 它与现有翻译资源不兼容，且由于按脚本加载的设计，迁移现有文件是一个艰巨的任务
-- 它与游戏实现高度耦合，对于其他语言用户来说，启用 COM3D2 内置国际化后游戏中可以选择 英文、简体中文、繁体中文，而翻译文件需要使用 English 条目，这对其他语言用户来说是迷惑的
+- 它与游戏实现高度耦合，对于其他语言用户来说，启用 COM3D2 内置国际化后游戏中可以选择 英文、简体中文、繁体中文，而翻译文件需要使用
+  English 条目，这对其他语言用户来说是迷惑的
 - 它只能使用官方的字幕系统
 
 ### YATranslator
@@ -209,7 +237,8 @@ MeidoPromotionAssociation 始终致力于让每个人都能更容易的享受妹
 - 它拥有一个自行实现的高度可自定义的字幕系统，包括一个舞蹈字幕系统
 - 可以在各种无字幕场景下为您提供字幕，例如舞蹈、钓鱼小游戏、VR卡拉OK、射击小游戏、夜战等
 - 它拥有专门设计的 VR 字幕，就像其他游戏一样，它是悬浮在世界空间中的
-- 它拥有一个受 i18nEX 启发的专用 UI 翻译系统，它几乎不受版本更新影响，不会因为游戏版本更新而需要重做 UI 翻译，因为我们看到了平时太多用户因为游戏更新后 UI 翻译不可用
+- 它拥有一个受 i18nEX 启发的专用 UI 翻译系统，它几乎不受版本更新影响，不会因为游戏版本更新而需要重做 UI
+  翻译，因为我们看到了平时太多用户因为游戏更新后 UI 翻译不可用
 - 它的翻译文件是异步加载的，这意味着它不会减慢你的游戏启动速度
 - 它不使用任何游戏内资源
 - 它不启用游戏内的多语言支持
@@ -242,9 +271,11 @@ COM3D2 3.41 及以上版本请下载 COM3D2_5.JustAnotherTranslator.Plugin.zip
 
 <br>
 
-要在游戏内修改配置文件，请安装 [BepInEx.ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager) 配置管理器插件，其默认快捷键是 F1
+要在游戏内修改配置文件，请安装 [BepInEx.ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager)
+配置管理器插件，其默认快捷键是 F1
 
-[这里](https://github.com/DeathWeasel1337/COM3D2_Plugins)提供的 ConfigurationManagerWrapper.dll 可以在游戏的齿轮菜单显示一个按钮以打开配置管理器。
+[这里](https://github.com/DeathWeasel1337/COM3D2_Plugins)提供的 ConfigurationManagerWrapper.dll
+可以在游戏的齿轮菜单显示一个按钮以打开配置管理器。
 
 <br>
 
@@ -310,7 +341,6 @@ COM3D2\BepInEx\JustAnotherTranslator\<你设置的目标语言>
 - `Lyric` 文件夹放置歌词字幕专用的文件。
 - `UI` 文件夹是界面翻译专用的文件夹，Sprite 用于替换单个精灵图、Text 则用于翻译 UI 文本。
 
-
 <br>
 <br>
 <br>
@@ -327,11 +357,10 @@ COM3D2\BepInEx\JustAnotherTranslator\<你设置的目标语言>
 <br>
 <br>
 
-
-
 # Disclaimer
 
-By downloading this software, you agree to read, accept and abide by this Disclaimer, this is a developer protection measure and we apologize for any inconvenience this may cause.
+By downloading this software, you agree to read, accept and abide by this Disclaimer, this is a developer protection
+measure and we apologize for any inconvenience this may cause.
 
 下载此软件即表示您已阅读且接受并同意遵守此免责声明，这是为了保护开发人员而采取的措施，对于由此造成的不便，我们深表歉意。
 
@@ -555,10 +584,11 @@ In case of any discrepancy between the translated versions, the Simplified Chine
 <br>
 <br>
 
-
-
 ## Credits
 
-Part of the code is from [https://github.com/Pain-Brioche/COM3D2.i18nEx](https://github.com/Pain-Brioche/COM3D2.i18nEx) under the MIT license
+Part of the code is from [https://github.com/Pain-Brioche/COM3D2.i18nEx](https://github.com/Pain-Brioche/COM3D2.i18nEx)
+under the MIT license
 
-Part of the code is from [https://github.com/ghorsington/CM3D2.YATranslator](https://github.com/ghorsington/CM3D2.YATranslator) under The Unlicense license (for compatibility)
+Part of the code is
+from [https://github.com/ghorsington/CM3D2.YATranslator](https://github.com/ghorsington/CM3D2.YATranslator) under The
+Unlicense license (for compatibility)

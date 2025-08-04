@@ -645,6 +645,8 @@ JAT uses Harmony patches to intercept the game's dance management module (`Rhyth
 
 # Other Subtitles
 
+i18nEX enabled the game's built-in subtitle system by enabling the game's built-in multilingual system. JAT believed that enabling the multilingual system would cause many unnecessary problems, so JAT chose to implement the subtitle system on its own.
+
 Like other parts, JAT does not use any in-game resources. The subtitle system is implemented by JAT itself, is unrelated to the official options, and does not care what format the official subtitles use.
 
 As is not widely known, our game uses a modified Kirikiri KAG script for most of the story, i.e., .ks files.

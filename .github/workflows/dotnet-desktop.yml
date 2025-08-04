@@ -11,6 +11,10 @@ jobs:
   build:
     runs-on: ubuntu-22.04
 
+    defaults:
+      run:
+        working-directory: COM3D2.JustAnotherTranslator.Plugin
+
     steps:
       - uses: actions/checkout@v4
 
@@ -29,24 +33,24 @@ jobs:
 
       - name: Build COM3D2
         run: |
-          msbuild /t:Restore /p:Configuration=COM3D2-Release /p:TargetFrameworkVersion=v3.5
+          msbuild COM3D2.JustAnotherTranslator.Plugin.sln /t:Restore /p:Configuration=COM3D2-Release /p:TargetFrameworkVersion=v3.5
 
       - name: Publish Artifact
         uses: actions/upload-artifact@v4
         with:
           name: COM3D2.JustAnotherTranslator.Plugin
           path: |
-            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/COM3D2.JustAnotherTranslator.Plugin.dll
-            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/CsvHelper.dll
+            COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/COM3D2.JustAnotherTranslator.Plugin.dll
+            COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/CsvHelper.dll
 
       - name: Build COM3D2.5
         run: |
-          msbuild /t:Restore /p:Configuration=COM3D25_UNITY_2022-Release /p:TargetFrameworkVersion=v4.8
+          msbuild COM3D2.JustAnotherTranslator.Plugin.sln /t:Restore /p:Configuration=COM3D25_UNITY_2022-Release /p:TargetFrameworkVersion=v4.8
 
       - name: Publish Artifact
         uses: actions/upload-artifact@v4
         with:
           name: COM3D25.JustAnotherTranslator.Plugin
           path: |
-            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/COM3D25.JustAnotherTranslator.Plugin.dll
-            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/CsvHelper.dll
+            COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/COM3D25.JustAnotherTranslator.Plugin.dll
+            COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/CsvHelper.dll

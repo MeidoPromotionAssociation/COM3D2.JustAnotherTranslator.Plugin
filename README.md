@@ -92,78 +92,69 @@ open source translation plugin.
 
 ## Getting Started
 
-### Version Compatibility
+### Prerequisites
 
-Open `COM3D2.exe` to see your game version in the upper right corner.
+You can check your game version in the top-right corner of the game launcher (`COM3D2.exe`).
 
-Tested and passed on COM3D2 2.44.0 / COM3D2 2.44.5.
+**BepInEx Environment (Required):**
+- This is a BepInEx plugin, so you need to have [BepInEx](https://github.com/BepInEx/BepInEx) installed. If you have a `BepInEx` folder in your game's root directory (where `COM3D2.exe` is located), you are good to go.
+- If you don't have it installed, we recommend using [**COM-Modular-Installer (CMI)**](https://github.com/krypto5863/COM-Modular-Installer) to install BepInEx and other essential plugins with one click. CMI provides English instructions.
 
-Versions of COM3D2.5 greater than 3.41.0 will be supported after the official release. Versions below 3.41.0 have not
-been tested, but should theoretically work.
+**In-Game Configuration (Optional):**
+- To modify the configuration in-game, please install [**BepInEx.ConfigurationManager**](https://github.com/BepInEx/BepInEx.ConfigurationManager).
+- Download `BepInEx.ConfigurationManager_BepInEx5_vxx.xx.x.zip`. The archive is already structured, so just extract and merge its `BepInEx` folder with the one in your game's root directory.
+- The default hotkey to open it is `F1`.
 
-### Installation
+**Quick Access to Configuration Manager (Optional):**
+- The `ConfigurationManagerWrapper.dll` provided [**here**](https://github.com/DeathWeasel1337/COM3D2_Plugins) can add a button to the in-game settings menu (the gear icon) to open the Configuration Manager.
+- The `COM3D2.ConfigurationManagerWrapper.v1.0.zip` archive is already structured, so just extract and merge its `BepInEx` folder with the one in your game's root directory.
 
-This is a BepinEX plugin. If you have a `BepinEX` folder in your game folder, you're good to go.
+### Installation Steps
 
-Otherwise, we recommend using [CMI](https://github.com/krypto5863/COM-Modular-Installer) to get a basic plugin
-environment.
+Go to the [**Releases**](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/releases) page to download the plugin.
 
-<br>
-
-Please download the zip archive from
-the [Release](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/releases) page.
-
-Go to the Release page to download the compressed package.
-
-For COM3D2 2.xx and COM3D2.5 below 3.41, please download `COM3D2.JustAnotherTranslator.Plugin.zip`
-
-For COM3D2.5 3.41 and above, please download `COM3D2_5.JustAnotherTranslator.Plugin.zip`
-
-<br>
-
-To modify configuration files in-game, install the Configuration Manager plugin
-at [BepInEx.ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager) . The default shortcut key is
-F1.
-
-The ConfigurationManagerWrapper.dll provided
-here [https://github.com/DeathWeasel1337/COM3D2_Plugins](https://github.com/DeathWeasel1337/COM3D2_Plugins) displays a
-button in the game's gear menu to open the Configuration Manager.
+- COM3D2:`2.44.0` or lower -> Download `COM3D2.JustAnotherTranslator.Plugin.zip` (Untested, should work in theory)
+- COM3D2: `2.44.0` or higher -> Download `COM3D2.JustAnotherTranslator.Plugin.zip`
+- COM3D2.5: `3.41.0` or lower -> Download `COM3D2.JustAnotherTranslator.Plugin.zip` (Untested, should work in theory)
+- COM3D2.5: `3.41.0` or higher -> Download `COM3D2_5.JustAnotherTranslator.Plugin.zip` (Currently unavailable, support will be added after the release)
 
 <br>
 
-For legal and copyright reasons, this plugin does not provide translation files. Please obtain them from other sources.
+**Install the Plugin:**
+- Extract the downloaded archive and merge its `BepInEx` folder with the one in your game's root directory (where `COM3D2.exe` is located).
+- If prompted to merge folders, select "Yes".
+- The correct installation path for the plugin should be: `COM3D2\BepInEx\plugins\COM3D2.JustAnotherTranslator\COM3D2.JustAnotherTranslator.Plugin.dll`
 
 <br>
 
-The compressed package has been organized by folder, just put it into the corresponding folder in the COM3D2 directory.
+**Install Translation Files:**
+- For legal and copyright reasons, this plugin does not provide any translation files beyond the basics. You will need to obtain them from other sources.
+- Place your translation files (usually folders named `Text`, `UI`, `Texture`, etc.) into the `COM3D2\BepInEx\JustAnotherTranslator\<target_language>\` directory. See below for how to configure `<target_language>`.
 
-That is, `COM3D2.JustAnotherTranslator.Plugin.dll` should be located at the following path
+### Initial Setup
 
-`COM3D2\BepInEx\plugins\COM3D2.JustAnotherTranslator\COM3D2.JustAnotherTranslator.Plugin.dll`
+#### File Generation:
 
-The COM3D2 folder at the beginning refers to your game root directory, which is the folder where `COM3D2.exe` is
-located.
+After completing the installation, **launch the game once**.
 
-After installation, start the game once, and the plugin will automatically generate the required files.
+The plugin will automatically generate the default configuration file and translation folders inside the `COM3D2\BepInEx` directory.
 
-The configuration file is located at
-`COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`
+- **Configuration File:** `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`
+- **Root Translation Folder:** `COM3D2\BepInEx\JustAnotherTranslator`
 
-The translation folder is located at `COM3D2\BepInEx\JustAnotherTranslator`
+After the first launch, a default `zh-CN` folder and a `Dump` folder will be created inside `JustAnotherTranslator`. (The `Dump` folder is for translators to dump game assets and can be ignored by regular users).
 
-### Initial Configuration
+#### Set Target Language
 
-After starting the game once, a Dump folder and a zh-CN folder will be generated in the translation folder.
+Open the configuration file and find the `TargetLanguage/目标语言` option under `[2General]`.
 
-The Dump folder is used to dump in-game files, and general users don't need to care about it.
+This setting determines which language folder the plugin will load from the `COM3D2\BepInEx\JustAnotherTranslator\` directory. The default value is `zh-CN`.
 
-The zh-CN folder is used to place translation files. Open the configuration file and find the following configuration.
-The target language here is which folder to read the translation files from.
+For example, if you want to use English translations, you can place your translation files in a folder named `COM3D2\BepInEx\JustAnotherTranslator\en-US` and then change the value of this setting to `en-US`.
 
-You can change it to en-US, etc., and then restart the game.
+**Note:** This setting only specifies the folder path. The language actually displayed in-game depends entirely on the content of the translation files you provide. Therefore, you can also keep the setting as `zh-CN` and simply place your translation files into that folder.
 
-This configuration does not affect the actual language. The actual language is determined by the translation file you
-provide. It only controls which folder to read the files from.
+Example Configuration:
 
 ```
 [2General]
@@ -174,7 +165,11 @@ provide. It only controls which folder to read the files from.
 TargetLanguage/目标语言 = zh-CN
 ```
 
-### How the plugin reads translation files
+### Migrating from other plugins
+
+Please refer to the documentation here [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document)
+
+## How the plugin reads translation files
 
 For detailed instructions, please refer to the documentation
 here [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document)
@@ -292,67 +287,72 @@ MeidoPromotionAssociation 始终致力于让每个人都能更容易的享受妹
 
 ## 入门
 
-### 版本兼容性
+### 前置需求
 
-打开 COM3D2.exe 即可在右上角看见您的游戏版本。
+打开启动器（COM3D2.exe），在启动器右上角即可查看您的游戏版本。
 
-于 COM3D2 2.44.0 / COM3D2 2.44.5 测试通过。
+**BepInEx 环境（必须）**:
+- 这是一个 BepInEx 插件，您需要安装 [BepInEx](https://github.com/BepInEx/BepInEx)，如果您的游戏根目录（COM3D2.exe 所在位置）下有 BepInEx 文件夹，那么您应该已经安装了。
+- 如果您没有安装，推荐使用 [COM-Modular-Installer](https://github.com/krypto5863/COM-Modular-Installer) (CMI) 来一键安装 BepInEx 和其他基础插件（CMI 提供中文说明）。
 
-COM3D2.5 大于 3.41.0 的版本将在正式版发布后支持，低于 3.41.0 的版本未经测试，理论上可用。
+**游戏内修改配置文件（可选）**:
+- 要在游戏内修改配置文件，请安装 [BepInEx.ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager)（配置管理器插件）
+- 下载 `BepInEx.ConfigurationManager_BepInEx5_vxx.xx.x.zip` 压缩包内已按照文件夹组织，将解压出的 BepInEx 文件夹覆盖至游戏根目录即可。
+- 其默认快捷键是 F1
 
-### 安装
+**快捷访问配置管理器（可选）**:
+- [这里](https://github.com/DeathWeasel1337/COM3D2_Plugins)提供的 ConfigurationManagerWrapper.dll
+- 可以在游戏的齿轮菜单显示一个按钮以打开配置管理器。
+-  `COM3D2.ConfigurationManagerWrapper.v1.0.zip` 压缩包内已按照文件夹组织，将解压出的 BepInEx 文件夹覆盖至游戏根目录即可。
 
-这是一个 BepinEX 插件，如果您的游戏文件夹中有 `BepinEX` 文件夹，那么您就可以开始了。
-
-否则推荐使用 [CMI](https://github.com/krypto5863/COM-Modular-Installer) 来获得一个基本的插件环境（有中文说明）。
-
-<br>
+### 安装步骤
 
 请前往 [Release](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/releases) 页面下载压缩包。
 
-COM3D2 2.xx 以及 COM3D2.5 3.41 以下版本请下载 COM3D2.JustAnotherTranslator.Plugin.zip
-
-COM3D2 3.41 及以上版本请下载 COM3D2_5.JustAnotherTranslator.Plugin.zip
-
-<br>
-
-要在游戏内修改配置文件，请安装 [BepInEx.ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager)
-配置管理器插件，其默认快捷键是 F1
-
-[这里](https://github.com/DeathWeasel1337/COM3D2_Plugins)提供的 ConfigurationManagerWrapper.dll
-可以在游戏的齿轮菜单显示一个按钮以打开配置管理器。
+- COM3D2: `2.44.0`  或更低版本：请下载 `COM3D2.JustAnotherTranslator.Plugin.zip` (未经测试，理论可用)
+- COM3D2: `2.44.0`  或更高版本：请下载 `COM3D2.JustAnotherTranslator.Plugin.zip`
+- COM3D2.5: `3.41.0` 或更低版本：请下载 `COM3D2.JustAnotherTranslator.Plugin.zip` (未经测试，理论可用)
+- COM3D2.5: `3.41.0` 或更高版本：请下载 `COM3D2_5.JustAnotherTranslator.Plugin.zip` （目前尚不可用，在正式版推出后支持）
 
 <br>
 
-由于法律与版权原因，本插件不提供翻译文件，请自行从其他地方获取。
+**安装插件**:
+- 解压下载的压缩包，将其中的 BepInEx 文件夹直接放入您的游戏根目录（即 COM3D2.exe 所在的文件夹）。
+- 如果提示合并文件夹，请选择“是”。
+- 正确的安装路径应为：`COM3D2\BepInEx\plugins\COM3D2.JustAnotherTranslator\COM3D2.JustAnotherTranslator.Plugin.dll`
 
 <br>
 
-压缩包内已按文件夹组织好，放入 COM3D2 目录对应文件夹即可。
-
-即 `COM3D2.JustAnotherTranslator.Plugin.dll` 应该位于以下路径
-
-`COM3D2\BepInEx\plugins\COM3D2.JustAnotherTranslator\COM3D2.JustAnotherTranslator.Plugin.dll`
-
-开头的 COM3D2 文件夹指的是您的游戏根目录，也就是 COM3D2.exe 的所在文件夹。
-
-安装后启动一次游戏，插件会自动生成所需文件。
-
-配置文件位于 `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`
-
-翻译文件夹位于 `COM3D2\BepInEx\JustAnotherTranslator`
+**安装翻译文件**:
+- 由于法律与版权原因，本插件不提供基础翻译以外的翻译文件，您需要自行从其他地方获取。
+- 将您获取的翻译文件（通常是 `Text`, `UI`, `Texture` 等文件夹）放入 `COM3D2\BepInEx\JustAnotherTranslator\<目标语言>\` 路径下。下文会说明如何配置 <目标语言>。
 
 ### 初始化配置
 
-启动一次游戏后，翻译文件夹内会生成一个 Dump 文件夹，一个 zh-CN 文件夹。
+#### 生成文件:
 
-Dump 文件夹是用于转储游戏内文件的，一般用户不用管。
+完成上述安装后，启动一次游戏。
 
-zh-CN 文件夹是用于放置翻译文件的，打开配置文件，找到下面的配置，这里的目标语言即为读取哪一个文件夹内的翻译文件。
+插件会自动在 `COM3D2\BepInEx` 文件夹内生成默认的配置文件和翻译文件夹 。
 
-你可以改为 en-US 等，然后重启游戏。
+- **配置文件位于**: `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`
+- **翻译文件夹根目录位于**: `COM3D2\BepInEx\JustAnotherTranslator`
 
-这个配置不影响实际语言，实际语言由您提供的翻译文件决定，它只控制读取哪一个文件夹里的文件。
+首次启动后，JustAnotherTranslator 文件夹内会自动生成一个默认的 `zh-CN` 文件夹和一个 `Dump` 文件夹（用于翻译者转储资源，普通用户无需关心）。
+
+#### 设置目标语言
+
+打开配置文件，找到 `[2General]` 下的 `TargetLanguage/目标语言` 选项。
+
+此设置项决定了插件会读取 `COM3D2\BepInEx\JustAnotherTranslator\` 目录下的哪一个语言文件夹。默认值为 `zh-CN`。
+
+例如，如果您想使用英文翻译，可以将翻译文件放入 `COM3D2\BepInEx\JustAnotherTranslator\en-US` 文件夹，然后将此配置项的值修改为 `en-US`。
+
+请注意：此设置仅用于指定文件夹路径，您游戏中实际显示的语言完全取决于您所提供的翻译文件内容。
+
+因此您保留原始 `zh-CN` 设置也无妨，只需将翻译文件放到对于文件夹即可。
+
+配置示例：
 
 ```
 [2General]
@@ -363,7 +363,12 @@ zh-CN 文件夹是用于放置翻译文件的，打开配置文件，找到下�
 TargetLanguage/目标语言 = zh-CN
 ```
 
-### 插件如何读取翻译文件
+### 从其他插件迁移
+
+请参考此处的文档 [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document)
+
+
+## 插件如何读取翻译文件
 
 详细说明请参考此处的文档 [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/Document)
 
@@ -402,7 +407,7 @@ COM3D2\BepInEx\JustAnotherTranslator\<你设置的目标语言>
 <br>
 <br>
 
-# Disclaimer
+## Disclaimer
 
 By downloading this software, you agree to read, accept and abide by this Disclaimer, this is a developer protection
 measure and we apologize for any inconvenience this may cause.

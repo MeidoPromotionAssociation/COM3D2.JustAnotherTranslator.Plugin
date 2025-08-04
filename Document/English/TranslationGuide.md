@@ -2,13 +2,23 @@
 
 This document will detail how to create and manage translation files for the JustAnotherTranslator plugin.
 
-This guide is translate by AI.
+This guide is translated by AI.
 
 If you have any questions, please refer to the Chinese version.
 
 We welcome any improvements and fixes.
 
 repo url:  https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin
+
+<br>
+
+JAT adopts a modular design, where each module can be enabled or disabled independently. However, the standard subtitles module depends on the general text translation module.
+
+- General Text Translation
+- Texture Replacement
+- UI Translation
+- Lyrics Subtitles
+- Standard Subtitles
 
 <br>
 
@@ -36,15 +46,17 @@ If you have additional requirements, please file an issue.
 
 # General Text Translation
 
-General Text Translation module is the primary location for text translations, including daily ADV dialogues, NGUI text, uGUI text, and in-game multilingual support text.
+The General Text Translation module is where the main text translation occurs. It can translate content including daily ADV dialogues, NGUI text, uGUI text, and the game's built-in multi-language support text.
 
-Subtitles other than lyrics also rely on this module.
+Subtitles, excluding lyrics, also depend on this module.
 
-Unlike COM3D2.i18nEx, JAT does not care about translation filenames. You do not need to create translation files according to scripts.
+Unlike COM3D2.i18nEx, JAT does not care about translation filenames; you do not need to create translation files according to scripts.
 
-JAT loads all translation files into a single large translation table at startup and then translates based on this table at runtime.
+JAT loads all translation files into a single, large in-memory database upon startup and then translates based on this database during runtime.
 
 This approach has its advantages and disadvantages.
+
+The most notable is that it will consume more memory than i18nEx.
 
 ## 1. Translation File Location
 
@@ -237,14 +249,32 @@ John	约翰 (John)
     -   **Rule**: `^Character: (?<name>.+), Level: (?<level>\d+)$\tCharacter: ${name} (Level: ${level})`
     -   **With regular translation**: If there is also a regular translation `Alice\t爱丽丝 (Alice)`, the final result will be `角色：爱丽丝 (等级: 99)` (Character: 爱丽丝 (Level: 99)). This is very useful for formatting complex strings.
 
-## 4. Performance recommendations and some notes
+### 5. Multi-language Strings
+
+Sometimes, especially in other language versions of the game, script text is written in the format `这是日文原文<e>This is English text<sc>这是简体中文文本`.
+
+Text containing tags like `<e>` is actually a piece of official text containing multiple languages.
+
+In this case, the official code will parse it into the corresponding language text and then decide which one to use based on the current game language.
+
+JAT will translate using the original Japanese text *after* the official code has parsed it into the corresponding language; it cannot use the entire string.
+
+For example, if the original text is `这是日文原文<e>This is English text<sc>这是简体中文文本`,
+
+in JAT, it should be written as `这是日文原文         This is target language text`.
+
+Note that this is a tab, not spaces.
+
+The [i18nEx guide](https://github.com/ghorsington/COM3D2.i18nEx/wiki/How-to-translate#script-translations) mentions replacing `<E>` with a tab. This seems to treat only the Japanese part as the original and the English part as the translation, without considering other languages.
+
+Once again, I believe this exposes the flaw of i18nEx being primarily aimed at English users.
+
+## Performance recommendations and some notes
 
 -   The plugin uses asynchronous loading and will not block the game's startup. If your game loads too quickly before the translation files are fully loaded, you might see some untranslated text.
 -   If you have a large number of small `.txt` files, loading can be very slow. To improve performance, it is recommended to **merge them into one or a few larger `.txt` files**, or **pack them into a `.zip` archive**.
 -   Note: Due to the nature of regular expressions, JAT must iterate through every loaded regex to find a valid match. Therefore, it is best to avoid using regular expressions as much as possible.
 -   For text with special tags like `[HF]` and `[SF]`, just keep the tags in the correct position and the text will be replaced before being processed by the official code, which will then correctly replace them with the corresponding words.
-
-# UI Translation
 
 # UI Translation
 
@@ -267,7 +297,7 @@ Although some UI text can also be translated by the generic text translation mod
 
 UI translation is divided into two parts: **UI Text Translation** and **UI Image Translation**.
 
-## 1. UI Text Translation
+## UI Text Translation
 
 ### 1. File Location
 
@@ -280,12 +310,11 @@ UI text translation files should be placed in the following directory:
 -   **File Type**: Supports `.csv` and `.zip` files.
 -   **File Format**: Must be a comma-separated CSV file, must be **UTF-8-BOM** encoded, must have a header, and ideally should conform to [RFC 4180](https://datatracker.ietf.org/doc/html/rfc4180).
 -   **Header**: Must include the following fields:
-    -   `Term`: The translation term (Key).
-    -   `Original`: The original text (for reference only, not used by the plugin).
-    -   `Translation`: The translated text.
+    -   `Term`: The term to translate (cannot be empty)。
+    -   `Original`: Original text, for reference only, plugins do not use this field (can be empty)。
+    -   `Translation`: Translation (can be empty, otherwise the entry will be skipped)。
 -   **Reading Order**: Exactly the same as general text translation. The plugin recursively loads all files and directories in Unicode order, and later-loaded `Term`s will override earlier ones.
 -   **Filename**: Unlike i18nEx, JAT does not care about the filename.
--   `Term` cannot be empty, `Original` can be empty, `Translation` can be empty. If `Translation` is empty, the entry will be skipped.
 
 **Example `SceneDaily.csv`**:
 ```csv
@@ -296,19 +325,39 @@ SceneDaily/リザルト/クラブ評価,クラブ評価,Club Evaluation
 
 ### 3. How It Works
 
-`I2.Localization` can be used to translate text or images.
+The UI Translation module can be used to translate content that has been officially added to the `I2.Localization` database and has a corresponding Term, usually UI text or images.
 
-UI text in the game is usually retrieved via a unique "Term", for example, `SceneDaily/ボタン文字/男エディット`.
+Translations are retrieved using a unique "Term", for example, `SceneDaily/ボタン文字/男エディット`.
+
+The format of the translation database extracted from the official source is:
+
+config.csv:
+```csv
+Key,Type,Desc,Japanese,English,Chinese (Simplified),Chinese (Traditional)
+FPS表示,Text,,FPS表示,,,
+VR/VR空間優先,Text,,VR/VR空間優先,,,
+```
+
+Note that the first column is `Key`. `Filename + Key = Term`.
+
+For example, the term for the second row (including the header) is `config.csv + FPS表示 = config/FPS表示`.
+
+The term for the third row is `config.csv + VR/VR空間優先 = config/VR/VR空間優先`.
+
+<br>
+
+When designing JAT, we felt that using `Filename + Key` was not ideal. Therefore, the first column in JAT's CSV is `Term`.
 
 When JAT translates:
-1.  It first tries to find a matching `Term` in your CSV files using the full key (`SceneDaily/ボタン文字/男エディット`).
-2.  If not found, it removes the content before the first `/` and searches again with the remainder (`ボタン文字/男エディット`).
-3.  Once a match is found, it returns the corresponding `Translation` as the result.
+1.  During game loading, JAT reads all CSV files and builds a unified translation database in memory.
+2.  The value passed to JAT by the game is the full `Term` (`SceneDaily/ボタン文字/男エディット`), so JAT looks for a matching `Term` in its translation database.
+3.  If not found, it removes the content before the first `/` and searches again with the remainder (`ボタン文字/男エディット`).
+4.  After finding a match, it returns the corresponding `Translation` as the result.
+5.  The translated text is marked with the same special tags as XUnity.AutoTranslator, so it won't be translated again by other JAT modules or XUAT.
 
-Some of the UI on the main game screen consists of buttons with pre-rendered text, while others are blank buttons with text overlaid.
+<br>
 
-Here is some translation data extracted from the official game. You can see that `ボタン文字 (Button Text)` is mostly empty.
-However, `ボタン画像 (Button Image)` below it has entries, which means these buttons use icons.
+### 4. Translation Guide
 
 Use a unpacking tool like [AssetStudio](https://github.com/Perfare/AssetStudio) to open the `COM3D2\COM3D2x64_Data` folder.
 
@@ -347,10 +396,11 @@ The game can directly get a small image (Sprite) from the Atlas by calling the s
 
 Therefore, to translate this button, you have 5 options:
 1. Replace the entire Atlas (old method).
-2. In `SceneDaily/ボタン画像/男エディット`, replace the sprite with a blank button image, then add a translation for the corresponding text at `SceneDaily/ボタン文字/LOAD` (i18nEx's method).
-3. Replace the sprite specified in `SceneDaily/ボタン画像/男エディット` with another existing in-game sprite (some sprites have versions for other languages, usually ending in `_en`, `_ch_s`, etc.).
-4. Replace the sprite (JAT exclusive), by placing a replacement file in the `UI/Sprite` folder.
-5. Combine options 2 and 4.
+2. At `SceneDaily/ボタン画像/男エディット`, replace the sprite with the name of a blank button image, and then add the translation for the corresponding text at `SceneDaily/ボタン文字/LOAD` (the i18nEx method).
+3. Replace the sprite name specified in `SceneDaily/ボタン画像/男エディット` with the name of another existing in-game sprite (some sprites have other language versions, often ending in `_en`, `_ch_s`, etc., but I do not recommend using them directly).
+4. Replace the sprite directly (JAT exclusive) by placing a replacement file in the `UI/Sprite` folder.
+5. Combine methods 2 and 4.
+
 
 JAT supports whichever option you choose.
 

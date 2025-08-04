@@ -1,4 +1,6 @@
-This guide is translate by AI.
+# JustAnotherTranslator Migration Guide
+
+This guide is translated by AI.
 
 If you have any questions, please refer to the Chinese version. 
 
@@ -129,11 +131,37 @@ TargetLanguage/目标语言 = zh-CN
 
 ### Script Translations
 
-Find the `COM3D2\i18nEx\<Your set language>` folder.
+Find the `COM3D2\i18nEx\<Your set language>\Script` folder.
 
-Usually, this is `COM3D2\i18nEx\English`.
+Usually, this is `COM3D2\i18nEx\English\Script`.
 
-You will need to perform some format conversion. Since I do not use i18nEx, I cannot provide assistance. Pull requests are welcome.
+If you have a large number of .txt files, you can compress them and place the archive in `COM3D2\BepInEx\JustAnotherTranslator\<Your set language>\Text`.
+
+Broadly, the script translation format for i18nEx is the same as JAT, but there are some minor differences. For example, you don't need to replace `<E>` with a tab, [see here](https://github.com/ghorsington/COM3D2.i18nEx/wiki/How-to-translate#script-translations).
+
+Text containing tags like `<E>` is actually official text that includes multiple languages, for example: `这是日文原文<e>This is English text<sc>这是简体中文文本`.
+
+In this situation, the official game code parses it into the corresponding language text and then decides which one to use based on the current game language.
+
+JAT translates using the original Japanese text *after* the official code has parsed it; it cannot use the entire string.
+
+For example, if the original text is `这是日文原文<e>This is English text<sc>这是简体中文文本`,
+
+in JAT, it should be written as `这是日文原文         This is target language text`.
+
+Note that this is a tab, not spaces.
+
+Currently, there is no script to handle this situation directly; it needs to be done manually.
+
+<br>
+
+For subtitles, i18nEx uses the same tag format as the official game. JAT does not use this; please refer to the translation guide.
+
+<br>
+
+If you have a .zip or .zst file containing a .bson file,
+
+you will need to perform some format conversion. Since I do not use i18nEx, I cannot provide assistance. Pull requests are welcome.
 
 ### Texture Translations
 
@@ -146,6 +174,10 @@ Copy the files from `COM3D2\i18nEx\<Your set language>\Textures` to `COM3D2\BepI
 ### UI Translations
 
 Find the `COM3D2\i18nEx\<Your set language>\UI` folder.
+
+Please note that this script only handles .csv files.
+
+If you have a .zip or .zst file with a .bson file in it, the script won't handle it and you'll need to do some format conversion. Since I don't use i18nEX, I can't help you there, but you're welcome to submit a PR.
 
 Download the conversion script `ui_csv_format_convert_English.py`
 

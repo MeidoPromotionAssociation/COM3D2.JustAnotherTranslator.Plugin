@@ -9,7 +9,6 @@
 
     <PropertyGroup>
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-        <AssemblyName>COM3D2.JustAnotherTranslator.Plugin</AssemblyName>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <RestoreAdditionalProjectSources>
@@ -64,6 +63,7 @@
                 <OutputPath>bin\Debug\COM3D2\</OutputPath>
                 <Optimize>false</Optimize>
                 <DefineConstants>COM3D2;DEBUG;TRACE</DefineConstants>
+                <AssemblyName>COM3D2.JustAnotherTranslator.Plugin</AssemblyName>
                 <AssemblyTitle>COM3D2.JustAnotherTranslator.Plugin COM3D2</AssemblyTitle>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
@@ -76,6 +76,7 @@
                 <OutputPath>bin\Release\COM3D2\</OutputPath>
                 <Optimize>true</Optimize>
                 <DefineConstants>COM3D2</DefineConstants>
+                <AssemblyName>COM3D2.JustAnotherTranslator.Plugin</AssemblyName>
                 <AssemblyTitle>COM3D2.JustAnotherTranslator.Plugin COM3D2</AssemblyTitle>
                 <ErrorReport>prompt</ErrorReport>
                 <WarningLevel>4</WarningLevel>
@@ -89,6 +90,7 @@
                 <Deterministic>true</Deterministic>
                 <OutputPath>bin\Debug\COM3D2_5\</OutputPath>
                 <Optimize>false</Optimize>
+                <AssemblyName>COM3D2_5.JustAnotherTranslator.Plugin</AssemblyName>
                 <DefineConstants>COM3D2_5_UNITY_2022;DEBUG;TRACE</DefineConstants>
                 <AssemblyTitle>COM3D2.JustAnotherTranslator.Plugin COM3D2.5 Unity2022.3</AssemblyTitle>
                 <ErrorReport>prompt</ErrorReport>
@@ -101,6 +103,7 @@
                 <Deterministic>true</Deterministic>
                 <OutputPath>bin\Release\COM3D2_5\</OutputPath>
                 <Optimize>true</Optimize>
+                <AssemblyName>COM3D2_5.JustAnotherTranslator.Plugin</AssemblyName>
                 <DefineConstants>COM3D2_5_UNITY_2022</DefineConstants>
                 <AssemblyTitle>COM3D2.JustAnotherTranslator.Plugin COM3D2.5 Unity2022.3</AssemblyTitle>
                 <ErrorReport>prompt</ErrorReport>

@@ -31,6 +31,7 @@ jobs:
       - name: Build COM3D2
         run: |
           msbuild /t:Restore /p:Configuration=COM3D2-Release /p:TargetFrameworkVersion=v3.5
+          msbuild /t:Build /p:Configuration=COM3D2-Release /p:TargetFrameworkVersion=v3.5
 
       - name: Publish Artifact
         uses: actions/upload-artifact@v4
@@ -43,6 +44,7 @@ jobs:
       - name: Build COM3D2.5
         run: |
           msbuild /t:Restore /p:Configuration=COM3D25_UNITY_2022-Release /p:TargetFrameworkVersion=v4.8
+          msbuild /t:Build /p:Configuration=COM3D25_UNITY_2022-Release /p:TargetFrameworkVersion=v4.8
 
       - name: Publish Artifact
         uses: actions/upload-artifact@v4

@@ -8,6 +8,7 @@ using System.Threading;
 using CsvHelper;
 using CsvHelper.Configuration;
 using ICSharpCode.SharpZipLib.Zip;
+using JetBrains.Annotations;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
@@ -380,7 +381,8 @@ public class AsyncUiTextLoader
             var records = csv.GetRecords<CsvEntry>();
             foreach (var record in records)
             {
-                if (string.IsNullOrEmpty(record.Term) || string.IsNullOrEmpty(record.Translation)) continue;
+                if (StringTool.IsNullOrWhiteSpace(record.Term) ||
+                    StringTool.IsNullOrWhiteSpace(record.Translation)) continue;
                 // 使用精简结构以节省内存
                 Translations[record.Term] = record.Translation;
                 entriesLoaded++;
@@ -396,7 +398,7 @@ public class AsyncUiTextLoader
     private class CsvEntry
     {
         public string Term { get; set; } // 键名
-        public string Original { get; set; } // 原文
-        public string Translation { get; set; } // 译文
+        [CanBeNull] public string Original { get; set; } // 原文
+        [CanBeNull] public string Translation { get; set; } // 译文
     }
 }

@@ -47,6 +47,7 @@ public static class TextureReplaceManger
             return;
 
         _textureReplacePatch?.UnpatchSelf();
+        _textureReplacePatch = null;
 
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
 

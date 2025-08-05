@@ -76,8 +76,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     // 通用配置
     public static ConfigEntry<string> TargetLanguage;
-    public static ConfigEntry<bool> EnableTextTranslation;
-    public static ConfigEntry<bool> EnableUITranslation;
+    public static ConfigEntry<bool> EnableGeneralTextTranslation;
+    public static ConfigEntry<bool> EnableUITextTranslation;
+    public static ConfigEntry<bool> EnableUISpriteReplace;
     public static ConfigEntry<bool> EnableTextureReplace;
     public static ConfigEntry<MaidNameStyleEnum> MaidNameStyle;
     public static ConfigEntry<LogLevel> LogLevelConfig;
@@ -256,7 +257,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 "Target Language, only affect the path of reading translation files/目标语言，只控制读取翻译文件的路径", null,
                 new ConfigurationManagerAttributes { Order = 2000 }));
 
-
         TargetLanguePath = Path.Combine(TranslationRootPath, TargetLanguage.Value);
         TranslationTextPath = Path.Combine(TargetLanguePath, "Text");
         TextureReplacePath = Path.Combine(TargetLanguePath, "Texture");
@@ -269,33 +269,36 @@ public class JustAnotherTranslator : BaseUnityPlugin
         TextureDumpPath = Path.Combine(DumpPath, "Texture");
         SpriteDumpPath = Path.Combine(DumpPath, "Sprite");
 
-
-        EnableTextTranslation = Config.Bind("2General",
-            "EnableTextTranslation/启用文本翻译",
+        EnableGeneralTextTranslation = Config.Bind("2General",
+            "EnableGeneralTextTranslation/启用通用文本翻译",
             true,
             new ConfigDescription("Enable Text Translation/启用文本翻译", null,
                 new ConfigurationManagerAttributes { Order = 2010 }));
 
-        EnableUITranslation = Config.Bind("2General",
-            "EnableUITranslation/启用 UI 翻译",
+        EnableTextureReplace = Config.Bind("2General",
+            "EnableTextureReplace/启用纹理替换",
             true,
-            new ConfigDescription("Enable UI Translation/启用 UI 翻译", null,
+            new ConfigDescription("Enable Texture Replace/启用纹理替换", null,
                 new ConfigurationManagerAttributes { Order = 2020 }));
 
-        EnableTextureReplace = Config.Bind("2General",
-            "EnableTextureReplace/启用贴图替换",
+        EnableUITextTranslation = Config.Bind("2General",
+            "EnableUITextTranslation/启用UI文本翻译",
             true,
-            new ConfigDescription("Enable Texture Replace/启用贴图替换", null,
+            new ConfigDescription("Enable UI Translation/启用 UI 文本翻译", null,
                 new ConfigurationManagerAttributes { Order = 2030 }));
 
+        EnableUISpriteReplace = Config.Bind("2General",
+            "EnableUISpriteReplace/启用UI精灵图替换",
+            true,
+            new ConfigDescription("Enable UI Translation/启用 UI 精灵图替换", null,
+                new ConfigurationManagerAttributes { Order = 2040 }));
 
         AllowFilesInZipLoadInOrder = Config.Bind("2General",
             "AllowFilesInZipLoadInOrder/允许 ZIP 文件内文件按顺序加载",
             false,
             new ConfigDescription(
                 "Allow files In zip Load in order, This will lower the loading speed/允许 ZIP 文件内文件按顺序加载，这会降低加载速度", null,
-                new ConfigurationManagerAttributes { Order = 2040 }));
-
+                new ConfigurationManagerAttributes { Order = 2050 }));
 
         MaidNameStyle = Config.Bind("2General",
             "MaidNameStyle/女仆名字样式",
@@ -988,9 +991,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         }
 
         // Init modules
-        if (EnableTextTranslation.Value)
+        if (EnableGeneralTextTranslation.Value)
         {
-            LogManager.Info("Text Translation Enabled/文本翻译已启用");
+            LogManager.Info("General Text Translation Enabled/通用文本翻译已启用");
             TextTranslateManger.Init();
         }
         else
@@ -998,7 +1001,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogManager.Info("Text Translation Disabled/翻译已禁用");
         }
 
-        if (EnableUITranslation.Value)
+        if (EnableUITextTranslation.Value)
         {
             LogManager.Info("UI Translation Enabled/UI 翻译已启用");
             UITranslateManager.Init();
@@ -1006,6 +1009,16 @@ public class JustAnotherTranslator : BaseUnityPlugin
         else
         {
             LogManager.Info("UI Translation Disabled/UI 翻译已禁用");
+        }
+
+        if (EnableUISpriteReplace.Value)
+        {
+            LogManager.Info("UI Sprite Replace Enabled/UI 精灵图替换已启用");
+            UITranslateManager.Init();
+        }
+        else
+        {
+            LogManager.Info("UI Sprite Replace Disabled/UI 精灵图替换已禁用");
         }
 
         if (EnableTextureReplace.Value)
@@ -1017,7 +1030,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             LogManager.Info("Texture Replace Disabled/贴图替换已禁用");
         }
-
 
         if (EnableBaseSubtitle.Value)
         {
@@ -1080,7 +1092,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     private void Start()
     {
-        if (EnableTextTranslation.Value)
+        if (EnableGeneralTextTranslation.Value)
             // Init XUAT interop
             XUATInterop.Initialize();
     }
@@ -1139,7 +1151,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
 
             // 重新加载翻译
-            if (EnableTextTranslation.Value)
+            if (EnableGeneralTextTranslation.Value)
             {
                 TextTranslateManger.Unload();
                 TextTranslateManger.Init();
@@ -1153,7 +1165,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
 
             // 重新加载UI翻译
-            if (EnableUITranslation.Value)
+            if (EnableUITextTranslation.Value)
             {
                 UITranslateManager.Unload();
                 UITranslateManager.Init();
@@ -1168,9 +1180,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册文本翻译启用状态变更事件
-        EnableTextTranslation.SettingChanged += (_, _) =>
+        EnableGeneralTextTranslation.SettingChanged += (_, _) =>
         {
-            if (EnableTextTranslation.Value)
+            if (EnableGeneralTextTranslation.Value)
             {
                 LogManager.Info("Text Translation Enabled/文本翻译已启用");
                 TextTranslateManger.Init();
@@ -1183,18 +1195,37 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
-        // 注册UI翻译启用状态变更事件
-        EnableUITranslation.SettingChanged += (_, _) =>
+        // 注册UI文本翻译启用状态变更事件
+        EnableUITextTranslation.SettingChanged += (_, _) =>
         {
-            if (EnableUITranslation.Value)
+            if (EnableUITextTranslation.Value)
             {
-                LogManager.Info("UI Translation Enabled/UI 翻译已启用");
+                LogManager.Info("UI Translation Enabled/UI 文本翻译已启用");
+                UITranslateManager.Unload();
                 UITranslateManager.Init();
             }
             else
             {
-                LogManager.Info("UI Translation Disabled/UI 翻译已禁用");
+                LogManager.Info("UI Translation Disabled/UI 文本翻译已禁用");
                 UITranslateManager.Unload();
+                UITranslateManager.Init();
+            }
+        };
+
+        // 注册UI精灵图替换启用状态变更事件
+        EnableUITextTranslation.SettingChanged += (_, _) =>
+        {
+            if (EnableUITextTranslation.Value)
+            {
+                LogManager.Info("UI Sprite Replace Enabled/UI 精灵图替换已启用");
+                UITranslateManager.Unload();
+                UITranslateManager.Init();
+            }
+            else
+            {
+                LogManager.Info("UI Sprite Replace Disabled/UI 精灵图替换已禁用");
+                UITranslateManager.Unload();
+                UITranslateManager.Init();
             }
         };
 
@@ -1215,7 +1246,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         MaidNameStyle.SettingChanged += (_, _) =>
         {
-            LogManager.Info("Not Support change maid name style during runtime/不支持在运行时更改角色名字样式");
+            LogManager.Info(
+                "Not Support change maid name style during runtime, please restart game/不支持在运行时更改角色名字样式，请重启游戏");
         };
 
         // 注册日志级别变更事件
@@ -1245,6 +1277,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             {
                 LogManager.Info("Base Subtitle Disabled/基础字幕已禁用");
                 SubtitleManager.Unload();
+                SubtitleManager.Init();
             }
         };
 
@@ -1260,6 +1293,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             {
                 LogManager.Info("Yotogi Subtitle Disabled/夜伽字幕已禁用");
                 SubtitleManager.Unload();
+                SubtitleManager.Init();
             }
         };
 
@@ -1275,6 +1309,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             {
                 LogManager.Info("ADV Subtitle Disabled/ADV字幕已禁用");
                 SubtitleManager.Unload();
+                SubtitleManager.Init();
             }
         };
 
@@ -1291,6 +1326,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             {
                 LogManager.Info("Force ADV Subtitle Disabled/强制ADV字幕已禁用");
                 SubtitleManager.Unload();
+                SubtitleManager.Init();
             }
         };
 

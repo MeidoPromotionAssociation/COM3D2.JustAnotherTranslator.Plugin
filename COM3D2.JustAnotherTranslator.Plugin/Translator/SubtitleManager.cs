@@ -70,7 +70,7 @@ public static class SubtitleManager
         if (!_initialized) return;
 
         // 卸载字幕补丁
-        UnloadSubtitlePatches();
+        UnloadAllSubtitlePatches();
 
         // 取消事件订阅
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
@@ -136,7 +136,7 @@ public static class SubtitleManager
     /// <summary>
     ///     卸载字幕补丁
     /// </summary>
-    private static void UnloadSubtitlePatches()
+    private static void UnloadAllSubtitlePatches()
     {
         var patches = new[]
         {
@@ -157,7 +157,6 @@ public static class SubtitleManager
         _privateMaidTouchSubtitlePatch = null;
         _vrTouchSubtitlePatch = null;
     }
-
 
     /// <summary>
     ///     清理资源

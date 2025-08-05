@@ -73,7 +73,7 @@ public class AsyncUiTextLoader
     ///     创建一个新的异步文件加载器
     /// </summary>
     /// <param name="translationPath"></param>
-    /// <param name="completionCallback"></param>3
+    /// <param name="completionCallback"></param>
     /// <param name="progressCallback"></param>
     public AsyncUiTextLoader(string translationPath, ProgressCallback progressCallback,
         CompletionCallback completionCallback)

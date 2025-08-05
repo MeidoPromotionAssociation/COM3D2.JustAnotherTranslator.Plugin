@@ -17,7 +17,8 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 /// </summary>
 public static class UITranslateManager
 {
-    private static Harmony _uiTranslatePatch;
+    private static Harmony _uiTextTranslatePatch;
+    private static Harmony _uiSpriteReplacePatch;
     private static Harmony _uiDebugPatch;
     private static bool _initialized;
 
@@ -40,8 +41,13 @@ public static class UITranslateManager
         LoadTextTranslationsAsync();
         LoadSpriteTextures();
 
-        _uiTranslatePatch = Harmony.CreateAndPatchAll(typeof(UITranslatePatch),
-            "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitranslatepatch");
+        if (JustAnotherTranslator.EnableUITextTranslation.Value)
+            _uiTextTranslatePatch = Harmony.CreateAndPatchAll(typeof(UITextTranslatePatch),
+                "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitexttranslatepatch");
+
+        if (JustAnotherTranslator.EnableUISpriteReplace.Value)
+            _uiSpriteReplacePatch = Harmony.CreateAndPatchAll(typeof(UISpriteReplacePatch),
+                "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uispritereplacepatch");
 
         if (JustAnotherTranslator.LogLevelConfig.Value >= LogLevel.Debug)
         {
@@ -63,8 +69,14 @@ public static class UITranslateManager
         _uiTextLoader?.Cancel();
         _uiTextLoader = null;
 
-        _uiTranslatePatch?.UnpatchSelf();
-        _uiTranslatePatch = null;
+        _uiTextTranslatePatch?.UnpatchSelf();
+        _uiTextTranslatePatch = null;
+
+        _uiSpriteReplacePatch?.UnpatchSelf();
+        _uiSpriteReplacePatch = null;
+
+        _uiDebugPatch?.UnpatchSelf();
+        _uiDebugPatch = null;
 
         _translations.Clear();
         SpritePathCache.Clear();

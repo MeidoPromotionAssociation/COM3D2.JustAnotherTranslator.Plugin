@@ -10,7 +10,7 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 /// <summary>
 ///     Harmony patch to debug UI translations
 /// </summary>
-public class UIDebugPatch
+public static class UIDebugPatch
 {
     /// <summary>
     ///     Hooks into every ILocalizeTarget implementation to log calls to DoLocalize

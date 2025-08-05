@@ -16,10 +16,7 @@ public static class TextureUtils
     public static Texture2D GetReadableTexture(Texture2D texture)
     {
 #if COM3D25_UNITY_2022
-            if (texture.isReadable)
-            {
-                return texture;
-            }
+        if (texture.isReadable) return texture;
 #else
         try
         {

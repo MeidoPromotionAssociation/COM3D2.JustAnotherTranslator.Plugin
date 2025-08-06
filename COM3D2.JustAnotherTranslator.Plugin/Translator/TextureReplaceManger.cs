@@ -144,10 +144,6 @@ public static class TextureReplaceManger
                             DumpTexture(filename, bytes);
                     }
                 }
-                else
-                {
-                    LogManager.Debug("cannot dump texture, original texture is null");
-                }
             }
 
             return false;

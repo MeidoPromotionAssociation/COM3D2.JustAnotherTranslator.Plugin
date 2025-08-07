@@ -66,6 +66,15 @@ public static class CoroutineManager
     }
 
     /// <summary>
+    ///     检查指定标识符的协程是否正在运行
+    /// </summary>
+    /// <param name="id">协程的唯一标识符</param>
+    public static bool IsRunning(string id)
+    {
+        return _runner is not null && !string.IsNullOrEmpty(id) && _runner.IsRunning(id);
+    }
+
+    /// <summary>
     ///     协程运行器组件
     /// </summary>
     private class CoroutineRunner : MonoBehaviour
@@ -103,6 +112,15 @@ public static class CoroutineManager
         {
             base.StopAllCoroutines();
             _runningCoroutines.Clear();
+        }
+
+        /// <summary>
+        ///     检查指定标识符的协程是否正在运行
+        /// </summary>
+        public bool IsRunning(string id)
+        {
+            _runningCoroutines.TryGetValue(id, out var handle);
+            return handle != null;
         }
 
         /// <summary>

@@ -13,7 +13,8 @@ public class SubtitleConfig
     /// <summary>
     ///     从插件配置中创建字幕配置
     /// </summary>
-    public static SubtitleConfig CreateSubtitleConfig(JustAnotherTranslator.SubtitleTypeEnum subtitleType)
+    public static SubtitleConfig CreateSubtitleConfig(
+        JustAnotherTranslator.SubtitleTypeEnum subtitleType)
     {
         // 初始化字幕配置
         var config = new SubtitleConfig
@@ -56,7 +57,8 @@ public class SubtitleConfig
             TextAlignment = GetSubtitleTypeConfig(
                 subtitleType,
                 () => ConvertTextAnchorEnum(JustAnotherTranslator.BaseSubtitleTextAlignment.Value),
-                () => ConvertTextAnchorEnum(JustAnotherTranslator.YotogiSubtitleTextAlignment.Value),
+                () => ConvertTextAnchorEnum(JustAnotherTranslator.YotogiSubtitleTextAlignment
+                    .Value),
                 () => ConvertTextAnchorEnum(JustAnotherTranslator.AdvSubtitleTextAlignment.Value),
                 () => ConvertTextAnchorEnum(JustAnotherTranslator.LyricSubtitleTextAlignment.Value),
                 ConvertTextAnchorEnum(JustAnotherTranslator.TextAnchorEnum.MiddleCenter)),
@@ -193,11 +195,32 @@ public class SubtitleConfig
             // VR悬浮字幕水平偏移（度，相对于视线中心）
             VRSubtitleHorizontalOffset = JustAnotherTranslator.VRSubtitleHorizontalOffset.Value,
 
-            // VR悬浮字幕背景宽度
-            VRSubtitleWidth = JustAnotherTranslator.VRInSpaceSubtitleWidth.Value,
+            // VR悬浮字幕宽度
+            VRSapceSubtitleWidth = JustAnotherTranslator.VRInSpaceSubtitleWidth.Value,
 
             // VR悬浮字幕高度
-            VRSubtitleHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value
+            VRSpaceSubtitleHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value,
+
+            // VR平板电脑字幕宽度
+            VRTabletSubtitleWidth = JustAnotherTranslator.VRTabletSubtitleWidth.Value,
+
+            // VR平板电脑字幕高度
+            VRTabletSubtitleHeight = JustAnotherTranslator.VRTabletSubtitleHeight.Value,
+
+            // VR平板电脑字幕垂直位置
+            VRTabletSubtitleVerticalPosition =
+                JustAnotherTranslator.VRTabletSubtitleVerticalPosition.Value,
+
+            // VR平板电脑字幕水平位置
+            VRTabletSubtitleHorizontalPosition =
+                JustAnotherTranslator.VRTabletSubtitleHorizontalPosition.Value,
+
+            // VR平板电脑字幕字体大小倍数
+            VRTabletSubtitleTextSizeMultiplier =
+                JustAnotherTranslator.VRTabletSubtitleTextSizeMultiplier.Value,
+
+            // VR平板电脑字幕是否像素完美
+            VRTabletSubtitlePixelPerfect = JustAnotherTranslator.VRTabletSubtitlePixelPerfect.Value
         };
 
         return config;
@@ -234,11 +257,13 @@ public class SubtitleConfig
         try
         {
             if (ColorUtility.TryParseHtmlString(colorStr, out var color)) return color;
-            LogManager.Warning($"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
+            LogManager.Warning(
+                $"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
         }
         catch
         {
-            LogManager.Warning($"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
+            LogManager.Warning(
+                $"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
         }
 
         return Color.white;
@@ -261,11 +286,13 @@ public class SubtitleConfig
                 return color;
             }
 
-            LogManager.Warning($"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
+            LogManager.Warning(
+                $"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
         }
         catch
         {
-            LogManager.Warning($"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
+            LogManager.Warning(
+                $"Failed to parse color: {colorStr}, using default color/解析颜色失败: {colorStr}，使用默认颜色");
         }
 
         return Color.white;
@@ -280,13 +307,15 @@ public class SubtitleConfig
     /// <returns>字体</returns>
     private static Font GetFontByName(string name, int size)
     {
-        if (name == "Arial" || name == "Arial.ttf") return Resources.GetBuiltinResource<Font>("Arial.ttf");
+        if (name == "Arial" || name == "Arial.ttf")
+            return Resources.GetBuiltinResource<Font>("Arial.ttf");
         try
         {
             var font = Font.CreateDynamicFontFromOSFont(name, size);
             if (font is null)
             {
-                LogManager.Warning($"Failed to load font: {name}, using default font/无法加载字体：{name}。使用默认字体");
+                LogManager.Warning(
+                    $"Failed to load font: {name}, using default font/无法加载字体：{name}。使用默认字体");
                 return Resources.GetBuiltinResource<Font>("Arial.ttf");
             }
 
@@ -294,7 +323,8 @@ public class SubtitleConfig
         }
         catch (Exception e)
         {
-            LogManager.Warning($"Failed to load font: {name}, using default font{e.Message}/无法加载字体：{name}。使用默认字体");
+            LogManager.Warning(
+                $"Failed to load font: {name}, using default font{e.Message}/无法加载字体：{name}。使用默认字体");
             return Resources.GetBuiltinResource<Font>("Arial.ttf");
         }
     }
@@ -305,7 +335,8 @@ public class SubtitleConfig
     /// </summary>
     /// <param name="textAnchorEnum"></param>
     /// <returns></returns>
-    private static TextAnchor ConvertTextAnchorEnum(JustAnotherTranslator.TextAnchorEnum textAnchorEnum)
+    private static TextAnchor ConvertTextAnchorEnum(
+        JustAnotherTranslator.TextAnchorEnum textAnchorEnum)
     {
         return textAnchorEnum switch
         {
@@ -393,10 +424,28 @@ public class SubtitleConfig
     public float VRSubtitleHorizontalOffset { get; set; }
 
     /// VR悬浮字幕宽度
-    public float VRSubtitleWidth { get; set; } = 1000f;
+    public float VRSapceSubtitleWidth { get; set; } = 1000f;
 
     /// VR悬浮字幕高度
-    public float VRSubtitleHeight { get; set; } = 30f;
+    public float VRSpaceSubtitleHeight { get; set; } = 30f;
+
+    // VR平板电脑字幕垂直宽度
+    public float VRTabletSubtitleWidth { get; set; } = 650f;
+
+    // VR平板电脑字幕垂直高度
+    public float VRTabletSubtitleHeight { get; set; } = 100f;
+
+    // VR平板电脑字幕垂直位置
+    public float VRTabletSubtitleVerticalPosition { get; set; } = -0.9f;
+
+    // VR平板电脑字幕水平位置
+    public float VRTabletSubtitleHorizontalPosition { get; set; } = 0f;
+
+    // VR平板电脑字幕文本大小倍数
+    public float VRTabletSubtitleTextSizeMultiplier { get; set; } = 12f;
+
+    // VR平板电脑字幕是否像素完美
+    public bool VRTabletSubtitlePixelPerfect { get; set; } = false;
 
     # endregion
 }

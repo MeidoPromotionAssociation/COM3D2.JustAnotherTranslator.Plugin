@@ -183,7 +183,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> VRSubtitleHorizontalOffset;
     public static ConfigEntry<float> VRInSpaceSubtitleWidth;
     public static ConfigEntry<float> VRInSpaceSubtitleHeight;
-    public static ConfigEntry<float> VRSubtitleScale;
+    public static ConfigEntry<float> VRTabletSubtitleWidth;
+    public static ConfigEntry<float> VRTabletSubtitleHeight;
+    public static ConfigEntry<float> VRTabletSubtitleVerticalPosition;
+    public static ConfigEntry<float> VRTabletSubtitleHorizontalPosition;
+    public static ConfigEntry<float> VRTabletSubtitleTextSizeMultiplier;
+    public static ConfigEntry<bool> VRTabletSubtitlePixelPerfect;
+
 
     // dump相关配置
     private static ConfigEntry<bool> _dumpTip1;
@@ -198,7 +204,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
 
     // translation folder path
-    public static readonly string TranslationRootPath = Path.Combine(Paths.BepInExRootPath, "JustAnotherTranslator");
+    public static readonly string TranslationRootPath =
+        Path.Combine(Paths.BepInExRootPath, "JustAnotherTranslator");
+
     public static string TargetLanguePath;
     public static string TranslationTextPath;
     public static string TextureReplacePath;
@@ -229,22 +237,27 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         // Tips for people who using ConfigurationManager
         _tip1 = Config.Bind("1Tips",
-            "Configuration options tips do not prompt in the game, please open the configuration file to view", true,
-            new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 1000 }));
+            "Configuration options tips do not prompt in the game, please open the configuration file to view",
+            true,
+            new ConfigDescription("this config do nothing", null,
+                new ConfigurationManagerAttributes { Order = 1000 }));
 
         _tip2 = Config.Bind("1Tips",
             "configuration file location is COM3D2/BepInEx/config/Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg",
             true,
-            new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 1010 }));
+            new ConfigDescription("this config do nothing", null,
+                new ConfigurationManagerAttributes { Order = 1010 }));
 
         _tip3 = Config.Bind("1Tips",
             "配置选项提示不会在游戏内提示，请打开配置文件查看", true,
-            new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 1020 }));
+            new ConfigDescription("这个配置不做任何事情", null,
+                new ConfigurationManagerAttributes { Order = 1020 }));
 
         _tip4 = Config.Bind("1Tips",
             "配置文件位于 /COM3D2/BepInEx/config/Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg",
             true,
-            new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 1030 }));
+            new ConfigDescription("这个配置不做任何事情", null,
+                new ConfigurationManagerAttributes { Order = 1030 }));
 
         # endregion
 
@@ -254,7 +267,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "TargetLanguage/目标语言",
             "zh-CN",
             new ConfigDescription(
-                "Target Language, only affect the path of reading translation files/目标语言，只控制读取翻译文件的路径", null,
+                "Target Language, only affect the path of reading translation files/目标语言，只控制读取翻译文件的路径",
+                null,
                 new ConfigurationManagerAttributes { Order = 2000 }));
 
         TargetLanguePath = Path.Combine(TranslationRootPath, TargetLanguage.Value);
@@ -297,7 +311,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "AllowFilesInZipLoadInOrder/允许 ZIP 文件内文件按顺序加载",
             false,
             new ConfigDescription(
-                "Allow files In zip Load in order, This will lower the loading speed/允许 ZIP 文件内文件按顺序加载，这会降低加载速度", null,
+                "Allow files In zip Load in order, This will lower the loading speed/允许 ZIP 文件内文件按顺序加载，这会降低加载速度",
+                null,
                 new ConfigurationManagerAttributes { Order = 2050 }));
 
         MaidNameStyle = Config.Bind("2General",
@@ -311,7 +326,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         LogLevelConfig = Config.Bind("2General",
             "LogLevel/日志级别",
             LogLevel.Info,
-            new ConfigDescription("Log Level, DEBUG will log more information/日志级别，DEBUG 级别将记录详细信息", null,
+            new ConfigDescription("Log Level, DEBUG will log more information/日志级别，DEBUG 级别将记录详细信息",
+                null,
                 new ConfigurationManagerAttributes { Order = 2060 }));
 
         # endregion
@@ -341,7 +357,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         ForceEnableAdvSubtitle = Config.Bind("3Subtitle",
             "ForceEnableADVSubtitle/强制启用ADV字幕",
             false,
-            new ConfigDescription("Force Enable ADV subtitles, whether in VR mode or not/强制启用ADV字幕，无论是不是 VR 模式", null,
+            new ConfigDescription(
+                "Force Enable ADV subtitles, whether in VR mode or not/强制启用ADV字幕，无论是不是 VR 模式", null,
                 new ConfigurationManagerAttributes { Order = 3020 }));
 
         EnableLyricSubtitle = Config.Bind("3Subtitle",
@@ -365,7 +382,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "BaseSubtitleFont/基础字幕字体",
             "Arial",
             new ConfigDescription(
-                "Base Subtitle Font, need to already installed the font on the system/基础字幕字体，需要已经安装在系统中的字体", null,
+                "Base Subtitle Font, need to already installed the font on the system/基础字幕字体，需要已经安装在系统中的字体",
+                null,
                 new ConfigurationManagerAttributes { Order = 4010 }));
 
         BaseSubtitleFontSize = Config.Bind("4BaseSubtitle",
@@ -395,7 +413,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         BaseSubtitleBackgroundColor = Config.Bind("4BaseSubtitle",
             "BaseSubtitleBackgroundColor/基础字幕背景颜色",
             "#000000",
-            new ConfigDescription("Base Subtitle Background Color, use hex color code/基础字幕背景颜色，使用十六进制颜色代码", null,
+            new ConfigDescription(
+                "Base Subtitle Background Color, use hex color code/基础字幕背景颜色，使用十六进制颜色代码", null,
                 new ConfigurationManagerAttributes { Order = 4060 }));
 
         BaseSubtitleBackgroundOpacity = Config.Bind("4BaseSubtitle",
@@ -459,7 +478,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         BaseSubtitleOutlineColor = Config.Bind("4BaseSubtitle",
             "BaseSubtitleOutlineColor/基础字幕描边颜色",
             "#000000",
-            new ConfigDescription("Base Subtitle Outline Color, use hex color code/基础字幕描边颜色，使用十六进制颜色代码", null,
+            new ConfigDescription(
+                "Base Subtitle Outline Color, use hex color code/基础字幕描边颜色，使用十六进制颜色代码", null,
                 new ConfigurationManagerAttributes { Order = 4160 }));
 
         BaseSubtitleOutlineOpacity = Config.Bind("4BaseSubtitle",
@@ -489,7 +509,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "YotogiSubtitleFont/夜伽字幕字体",
             "Arial",
             new ConfigDescription(
-                "Yotogi Subtitle Font, need to already installed the font on the system/夜伽字幕字体，需要已经安装在系统中的字体", null,
+                "Yotogi Subtitle Font, need to already installed the font on the system/夜伽字幕字体，需要已经安装在系统中的字体",
+                null,
                 new ConfigurationManagerAttributes { Order = 5010 }));
 
         YotogiSubtitleFontSize = Config.Bind("5YotogiSubtitle",
@@ -507,7 +528,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         YotogiSubtitleColor = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleColor/夜伽字幕颜色",
             "#FFFFFF",
-            new ConfigDescription("Yotogi Subtitle Color, use hex color code/夜伽字幕颜色，使用十六进制颜色代码", null,
+            new ConfigDescription("Yotogi Subtitle Color, use hex color code/夜伽字幕颜色，使用十六进制颜色代码",
+                null,
                 new ConfigurationManagerAttributes { Order = 5040 }));
 
         YotogiSubtitleOpacity = Config.Bind("5YotogiSubtitle",
@@ -519,7 +541,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         YotogiSubtitleBackgroundColor = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleBackgroundColor/夜伽字幕背景颜色",
             "#000000",
-            new ConfigDescription("Yotogi Subtitle Background Color, use hex color code/夜伽字幕背景颜色，使用十六进制颜色代码", null,
+            new ConfigDescription(
+                "Yotogi Subtitle Background Color, use hex color code/夜伽字幕背景颜色，使用十六进制颜色代码", null,
                 new ConfigurationManagerAttributes { Order = 5060 }));
 
         YotogiSubtitleBackgroundOpacity = Config.Bind("5YotogiSubtitle",
@@ -583,7 +606,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         YotogiSubtitleOutlineColor = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleOutlineColor/夜伽字幕描边颜色",
             "#000000",
-            new ConfigDescription("Yotogi Subtitle Outline Color, use hex color code/夜伽字幕描边颜色，使用十六进制颜色代码", null,
+            new ConfigDescription(
+                "Yotogi Subtitle Outline Color, use hex color code/夜伽字幕描边颜色，使用十六进制颜色代码", null,
                 new ConfigurationManagerAttributes { Order = 5160 }));
 
         YotogiSubtitleOutlineOpacity = Config.Bind("5YotogiSubtitle",
@@ -613,7 +637,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "AdvSubtitleFont/ADV字幕字体",
             "Arial",
             new ConfigDescription(
-                "ADV Subtitle Font, need to already installed the font on the system/ADV字幕字体，需要已经安装在系统中的字体", null,
+                "ADV Subtitle Font, need to already installed the font on the system/ADV字幕字体，需要已经安装在系统中的字体",
+                null,
                 new ConfigurationManagerAttributes { Order = 6010 }));
 
         AdvSubtitleFontSize = Config.Bind("6AdvSubtitle",
@@ -643,7 +668,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         AdvSubtitleBackgroundColor = Config.Bind("6AdvSubtitle",
             "AdvSubtitleBackgroundColor/ADV字幕背景颜色",
             "#000000",
-            new ConfigDescription("ADV Subtitle Background Color, use hex color code/ADV字幕背景颜色，使用十六进制颜色代码", null,
+            new ConfigDescription(
+                "ADV Subtitle Background Color, use hex color code/ADV字幕背景颜色，使用十六进制颜色代码", null,
                 new ConfigurationManagerAttributes { Order = 6060 }));
 
         AdvSubtitleBackgroundOpacity = Config.Bind("6AdvSubtitle",
@@ -707,7 +733,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         AdvSubtitleOutlineColor = Config.Bind("6AdvSubtitle",
             "AdvSubtitleOutlineColor/ADV字幕描边颜色",
             "#000000",
-            new ConfigDescription("ADV Subtitle Outline Color, use hex color code/ADV字幕描边颜色，使用十六进制颜色代码", null,
+            new ConfigDescription(
+                "ADV Subtitle Outline Color, use hex color code/ADV字幕描边颜色，使用十六进制颜色代码", null,
                 new ConfigurationManagerAttributes { Order = 6160 }));
 
         AdvSubtitleOutlineOpacity = Config.Bind("6AdvSubtitle",
@@ -745,7 +772,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "LyricSubtitleFont/歌词字幕字体",
             "Arial",
             new ConfigDescription(
-                "Lyric Subtitle Font, need to already installed the font on the system/歌词字幕字体，需要已经安装在系统中的字体", null,
+                "Lyric Subtitle Font, need to already installed the font on the system/歌词字幕字体，需要已经安装在系统中的字体",
+                null,
                 new ConfigurationManagerAttributes { Order = 7020 }));
 
         LyricSubtitleFontSize = Config.Bind("7LyricSubtitle",
@@ -763,7 +791,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         LyricSubtitleColor = Config.Bind("7LyricSubtitle",
             "LyricSubtitleColor/歌词字幕颜色",
             "#FFFFFF",
-            new ConfigDescription("Lyric Subtitle Color, use hex color code/歌词字幕颜色，使用十六进制颜色代码", null,
+            new ConfigDescription("Lyric Subtitle Color, use hex color code/歌词字幕颜色，使用十六进制颜色代码",
+                null,
                 new ConfigurationManagerAttributes { Order = 7050 }));
 
         LyricSubtitleOpacity = Config.Bind("7LyricSubtitle",
@@ -775,7 +804,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         LyricSubtitleBackgroundColor = Config.Bind("7LyricSubtitle",
             "LyricSubtitleBackgroundColor/歌词字幕背景颜色",
             "#000000",
-            new ConfigDescription("Lyric Subtitle Background Color, use hex color code/歌词字幕背景颜色，使用十六进制颜色代码", null,
+            new ConfigDescription(
+                "Lyric Subtitle Background Color, use hex color code/歌词字幕背景颜色，使用十六进制颜色代码", null,
                 new ConfigurationManagerAttributes { Order = 7070 }));
 
         LyricSubtitleBackgroundOpacity = Config.Bind("7LyricSubtitle",
@@ -839,7 +869,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         LyricSubtitleOutlineColor = Config.Bind("7LyricSubtitle",
             "LyricSubtitleOutlineColor/歌词字幕描边颜色",
             "#000000",
-            new ConfigDescription("Lyric Subtitle Outline Color, use hex color code/歌词字幕描边颜色，使用十六进制颜色代码", null,
+            new ConfigDescription(
+                "Lyric Subtitle Outline Color, use hex color code/歌词字幕描边颜色，使用十六进制颜色代码", null,
                 new ConfigurationManagerAttributes { Order = 7170 }));
 
         LyricSubtitleOutlineOpacity = Config.Bind("7LyricSubtitle",
@@ -857,9 +888,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
         # endregion
 
         # region VRSubtitleSettings
-
-        //TODO 重做VR 字幕配置
-        //TODO 是序号越大的排序越靠前
 
         // VR悬浮字幕相关配置
         VRSubtitleMode = Config.Bind("8VRSubtitle",
@@ -901,11 +929,49 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription("VR Floating Subtitle Height in meters/VR悬浮字幕高度（米）", null,
                 new ConfigurationManagerAttributes { Order = 8050 }));
 
-        VRSubtitleScale = Config.Bind("8VRSubtitle",
-            "VRSubtitleScale/VR字幕整体缩放",
-            0.8f,
-            new ConfigDescription("VR Floating Subtitle Scale/VR悬浮字幕整体缩放比例", null,
+        VRTabletSubtitleWidth = Config.Bind("8VRSubtitle",
+            "VRTabletSubtitleWidth/VR平板电脑字幕宽度",
+            500f,
+            new ConfigDescription(
+                "VR Tablet Subtitle Width(1000 unit = 1 meter)/VR平板电脑字幕宽度(1000单位=1米)", null,
                 new ConfigurationManagerAttributes { Order = 8060 }));
+
+        VRTabletSubtitleHeight = Config.Bind("8VRSubtitle",
+            "VRTabletSubtitleHeight/VR平板电脑字幕高度",
+            10f,
+            new ConfigDescription(
+                "VR Tablet Subtitle Height(1000 unit = 1 meter)/VR平板电脑字幕高度(1000单位=1米)", null,
+                new ConfigurationManagerAttributes { Order = 8070 }));
+
+        VRTabletSubtitleVerticalPosition = Config.Bind("8VRSubtitle",
+            "VRTabletSubtitleVerticalPosition/VR平板电脑字幕垂直位置",
+            -0.88f,
+            new ConfigDescription(
+                "VR Tablet Subtitle Vertical Position in meter, -1 is VR tablet center, the larger the value the higher/VR平板电脑字幕垂直位置(米)，-1 为平板电脑中央，数值越大越往上",
+                null,
+                new ConfigurationManagerAttributes { Order = 8080 }));
+
+        VRTabletSubtitleHorizontalPosition = Config.Bind("8VRSubtitle",
+            "VRTabletSubtitleHorizontalPosition/VR平板电脑字幕水平位置",
+            0f,
+            new ConfigDescription(
+                "VR Tablet Subtitle Horizontal Position in meters, 0 is VR tablet center, the larger the value the right/VR平板电脑字幕水平位置(米)，0 为平板电脑中央，数值越大越往右",
+                null,
+                new ConfigurationManagerAttributes { Order = 8090 }));
+
+        VRTabletSubtitleTextSizeMultiplier = Config.Bind("8VRSubtitle",
+            "VRTabletSubtitleTextSizeMultiplier/VR平板电脑字幕文字大小倍率",
+            12f,
+            new ConfigDescription("VR Tablet Subtitle Text Size Multiplier/VR平板电脑字幕文字大小倍率", null,
+                new ConfigurationManagerAttributes { Order = 8100 }));
+
+        VRTabletSubtitlePixelPerfect = Config.Bind("8VRSubtitle",
+            "VRTabletSubtitlePixelPerfect/VR平板电脑字幕像素完美",
+            false,
+            new ConfigDescription(
+                "VR Tablet Subtitle Pixel Perfect, off it will blur the edge/VR平板电脑字幕像素完美，关闭则模糊字幕边缘",
+                null,
+                new ConfigurationManagerAttributes { Order = 8110 }));
 
         # endregion
 
@@ -915,33 +981,40 @@ public class JustAnotherTranslator : BaseUnityPlugin
         _dumpTip1 = Config.Bind("9Dump",
             "this section is for translators. If you are not planning to change translate file, please do not enable it, it will slow down the game",
             true,
-            new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 9000 }));
+            new ConfigDescription("this config do nothing", null,
+                new ConfigurationManagerAttributes { Order = 9000 }));
 
         _dumpTip2 = Config.Bind("9Dump",
             "这个部分是为翻译者准备的，如果您不计划改动翻译文件，请不要启用它, 会减慢游戏速度",
             true,
-            new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 9010 }));
+            new ConfigDescription("这个配置不做任何事情", null,
+                new ConfigurationManagerAttributes { Order = 9010 }));
 
         _dumpTip3 = Config.Bind("9Dump",
             "Turn log level to Debug to make it easier to debug and find problems",
             true,
-            new ConfigDescription("this config do nothing", null, new ConfigurationManagerAttributes { Order = 9020 }));
+            new ConfigDescription("this config do nothing", null,
+                new ConfigurationManagerAttributes { Order = 9020 }));
 
         _dumpTip4 = Config.Bind("9Dump",
             "在通用设置内将日志等级调至 Debug 能让您更方便的调试，以及排查各类不生效原因",
             true,
-            new ConfigDescription("这个配置不做任何事情", null, new ConfigurationManagerAttributes { Order = 9030 }));
+            new ConfigDescription("这个配置不做任何事情", null,
+                new ConfigurationManagerAttributes { Order = 9030 }));
 
         EnableTexturesDump = Config.Bind("9Dump",
             "EnableDumpTexture/是否启用纹理导出",
             false,
-            new ConfigDescription("Only export textures that have not been replaced/仅导出未替换过的纹理", null,
+            new ConfigDescription("Only export textures that have not been replaced/仅导出未替换过的纹理",
+                null,
                 new ConfigurationManagerAttributes { Order = 9040 }));
 
         EnableSpriteDump = Config.Bind("9Dump",
             "EnableDumpSprite/是否启用精灵图导出",
             false,
-            new ConfigDescription("Only export sprites that have not been replaced/仅导出未替换过的精灵图", null,
+            new ConfigDescription(
+                "Only export sprites that have not been replaced, if atlas has been replaced, the replaced sprite will be dump/仅导出未替换过的精灵图，若是atlas被替换过，则会导出替换过的精灵图",
+                null,
                 new ConfigurationManagerAttributes { Order = 9050 }));
 
         EnableTextDump = Config.Bind("9Dump",
@@ -961,7 +1034,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "FlushTextDumpNow/立即写出文本",
             false,
             new ConfigDescription(
-                "Immediately write out all cached text when the option status changes/立即写出所有已缓存的文本，选项状态变更时立即写出", null,
+                "Immediately write out all cached text when the option status changes/立即写出所有已缓存的文本，选项状态变更时立即写出",
+                null,
                 new ConfigurationManagerAttributes { Order = 9080 }));
 
         # endregion
@@ -1116,7 +1190,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         // 注册目标语言变更事件
         TargetLanguage.SettingChanged += (_, _) =>
         {
-            LogManager.Info($"Target language changed to {TargetLanguage.Value}/目标语言已更改为 {TargetLanguage.Value}");
+            LogManager.Info(
+                $"Target language changed to {TargetLanguage.Value}/目标语言已更改为 {TargetLanguage.Value}");
 
             // 更新翻译路径
             TargetLanguePath = Path.Combine(TranslationRootPath, TargetLanguage.Value);
@@ -1254,7 +1329,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         LogLevelConfig.SettingChanged += (_, _) =>
         {
             // 不需要重新加载
-            LogManager.Info($"Log level changed to {LogLevelConfig.Value}/日志级别已更改为 {LogLevelConfig.Value}");
+            LogManager.Info(
+                $"Log level changed to {LogLevelConfig.Value}/日志级别已更改为 {LogLevelConfig.Value}");
             if (LogLevelConfig.Value >= LogLevel.Debug)
                 LogManager.Info("some debug patches require a game restart/部分 debug 补丁需要重启游戏生效");
         };
@@ -2108,71 +2184,87 @@ public class JustAnotherTranslator : BaseUnityPlugin
         // 注册VR字幕模式变更事件
         VRSubtitleMode.SettingChanged += (_, _) =>
         {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("VR Subtitle mode changed/VR字幕模式已更改");
-                SubtitleComponentManager.DestroyAllSubtitleComponents();
-            }
+            LogManager.Info("VR Subtitle mode changed/VR字幕模式已更改");
+            SubtitleComponentManager.DestroyAllSubtitleComponents();
         };
 
         // 注册VR字幕距离变更事件
         VRSubtitleDistance.SettingChanged += (_, _) =>
         {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("VR Floating Subtitle distance changed/VR悬浮字幕距离已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
+            LogManager.Info("VR Floating Subtitle distance changed/VR悬浮字幕距离已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 
         // 注册VR字幕垂直偏移变更事件
         VRSubtitleVerticalOffset.SettingChanged += (_, _) =>
         {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("VR Floating Subtitle vertical offset changed/VR悬浮字幕垂直偏移已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
+            LogManager.Info("VR Floating Subtitle vertical offset changed/VR悬浮字幕垂直偏移已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 
         // 注册VR字幕水平偏移变更事件
         VRSubtitleHorizontalOffset.SettingChanged += (_, _) =>
         {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("VR Floating Subtitle horizontal offset changed/VR悬浮字幕水平偏移已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
+            LogManager.Info("VR Floating Subtitle horizontal offset changed/VR悬浮字幕水平偏移已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 
         // 注册VR悬浮字幕宽度变更事件
         VRInSpaceSubtitleWidth.SettingChanged += (_, _) =>
         {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("VR Floating Subtitle Width changed/VR悬浮字幕宽度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
+            LogManager.Info("VR Floating Subtitle Width changed/VR悬浮字幕宽度已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 
         // 注册VR悬浮字幕高度变更事件
         VRInSpaceSubtitleHeight.SettingChanged += (_, _) =>
         {
-            if (EnableYotogiSubtitle.Value)
-            {
-                LogManager.Info("VR Floating Subtitle Height changed/VR悬浮字幕高度已更改");
-                SubtitleComponentManager.UpdateAllSubtitleConfig();
-            }
+            LogManager.Info("VR Floating Subtitle Height changed/VR悬浮字幕高度已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 
-        // 注册VR字幕缩放变更事件
-        VRSubtitleScale.SettingChanged += (_, _) =>
+        // 注册VR平板字幕宽度变更事件
+        VRTabletSubtitleWidth.SettingChanged += (_, _) =>
         {
-            LogManager.Info("VR Subtitle scale changed/VR字幕缩放已更改");
+            LogManager.Info("VR Floating Subtitle Width changed/VR平板电脑字幕宽度已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
+        };
+
+        // 注册VR平板字幕高度变更事件
+        VRTabletSubtitleHeight.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("VR Floating Subtitle Height changed/VR平板电脑字幕高度已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
+        };
+
+        // 注册VR平板字幕垂直位置变更事件
+        VRTabletSubtitleVerticalPosition.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("VR Floating Subtitle Vertical Position changed/VR平板电脑字幕垂直位置已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
+        };
+
+        // 注册VR平板字幕水平位置变更事件
+        VRTabletSubtitleHorizontalPosition.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("VR Floating Subtitle Horizontal Position changed/VR平板电脑字幕水平位置已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
+        };
+
+        // 注册VR平板字幕文字大小倍数变更事件
+        VRTabletSubtitleTextSizeMultiplier.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("VR Floating Subtitle Text Size Multiplier changed/VR平板电脑字幕文字大小倍数已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
+        };
+
+        // 注册VR平板字幕描边宽度变更事件
+        VRTabletSubtitlePixelPerfect.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("VR Floating Subtitle Pixel Perfect changed/VR平板电脑字幕像素完美已更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
     }
-
 
     /// <summary>
     ///     注册Dump配置变更事件
@@ -2207,7 +2299,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
 
         // 注册Dump文本阈值变更事件
-        TextDumpThreshold.SettingChanged += (_, _) => { LogManager.Info("Text dump threshold changed/文本导出阈值已更改"); };
+        TextDumpThreshold.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("Text dump threshold changed/文本导出阈值已更改");
+        };
 
         // 注册Dump文本立即写出变更事件
         FlushTextDumpNow.SettingChanged += (_, _) =>

@@ -384,6 +384,9 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         LogManager.Debug("VRSpaceSubtitleComponent Subtitle UI created");
     }
 
+    /// <summary>
+    ///     销毁字幕
+    /// </summary>
     protected override void DestroySubtitleUI()
     {
         if (VrSubtitleContainer != null)

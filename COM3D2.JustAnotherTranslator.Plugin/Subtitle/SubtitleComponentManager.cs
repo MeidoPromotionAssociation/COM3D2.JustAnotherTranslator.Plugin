@@ -16,7 +16,8 @@ public static class SubtitleComponentManager
     private static bool _initialized;
 
     /// 字幕 ID 映射，用于跟踪说话者与字幕组件的关系
-    private static readonly Dictionary<string, ISubtitleComponent> SubtitleIdComponentsMap = new(); // 字幕 ID ->字幕组件
+    private static readonly Dictionary<string, ISubtitleComponent>
+        SubtitleIdComponentsMap = new(); // 字幕 ID ->字幕组件
 
     /// 所有种类字幕的配置字典
     private static readonly Dictionary<JustAnotherTranslator.SubtitleTypeEnum, SubtitleConfig>
@@ -58,7 +59,8 @@ public static class SubtitleComponentManager
     /// <param name="speakerName">说话者名称</param>
     /// <param name="config">字幕配置</param>
     /// <returns>字幕组件</returns>
-    private static ISubtitleComponent CreateSubtitleComponent(string speakerName, SubtitleConfig config)
+    private static ISubtitleComponent CreateSubtitleComponent(string speakerName,
+        SubtitleConfig config)
     {
         if (!_initialized)
             Init();
@@ -70,7 +72,8 @@ public static class SubtitleComponentManager
             config = SubtitleConfigs[JustAnotherTranslator.SubtitleTypeEnum.Base];
             if (config == null)
             {
-                LogManager.Error("Default subtitle component is null, please report this issue/默认字幕组件为空，请报告此问题");
+                LogManager.Error(
+                    "Default subtitle component is null, please report this issue/默认字幕组件为空，请报告此问题");
                 return null;
             }
         }
@@ -209,8 +212,17 @@ public static class SubtitleComponentManager
         var config = subtitleComponent.GetConfig();
         if (config == null) return;
 
+        // VR OnTablet 模式使用专门的空间位置计算
+        if (JustAnotherTranslator.IsVrMode && config.VRSubtitleMode ==
+            JustAnotherTranslator.VRSubtitleModeEnum.OnTablet)
+        {
+            CalculateVRTabletPosition(subtitleComponent, config);
+            return;
+        }
+
         // VR Space 模式使用专门的空间位置计算
-        if (JustAnotherTranslator.IsVrMode && config.VRSubtitleMode == JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
+        if (JustAnotherTranslator.IsVrMode &&
+            config.VRSubtitleMode == JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
         {
             CalculateVRSpacePosition(subtitleComponent, config);
             return;
@@ -239,7 +251,8 @@ public static class SubtitleComponentManager
 
             // 检查初始位置是否与任何活动字幕重叠
             var overlaps = ActiveSubtitles.Any(s =>
-                initialY < s.VerticalPosition + s.Height && s.VerticalPosition < initialY + subtitleHeight);
+                initialY < s.VerticalPosition + s.Height &&
+                s.VerticalPosition < initialY + subtitleHeight);
 
             LogManager.Debug(
                 $"Checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {overlaps}");
@@ -254,7 +267,8 @@ public static class SubtitleComponentManager
                     if (testY < 0) break; // 到达屏幕底部
 
                     if (!ActiveSubtitles.Any(s =>
-                            testY < s.VerticalPosition + s.Height && s.VerticalPosition < testY + subtitleHeight))
+                            testY < s.VerticalPosition + s.Height &&
+                            s.VerticalPosition < testY + subtitleHeight))
                     {
                         finalY = testY;
                         foundPosition = true;
@@ -270,7 +284,8 @@ public static class SubtitleComponentManager
                         if (testY + subtitleHeight > screenHeight) break; // 到达屏幕顶部
 
                         if (!ActiveSubtitles.Any(s =>
-                                testY < s.VerticalPosition + s.Height && s.VerticalPosition < testY + subtitleHeight))
+                                testY < s.VerticalPosition + s.Height &&
+                                s.VerticalPosition < testY + subtitleHeight))
                         {
                             finalY = testY;
                             break;
@@ -278,7 +293,8 @@ public static class SubtitleComponentManager
                     }
             }
 
-            LogManager.Debug($"Calculated subtitle position: {finalY} for subtitle: {currentSubtitleId}");
+            LogManager.Debug(
+                $"Calculated subtitle position: {finalY} for subtitle: {currentSubtitleId}");
             // 更新配置和活动字幕列表
             config.CurrentVerticalPosition = finalY;
             subtitleComponent.SetVerticalPosition(finalY);
@@ -300,9 +316,183 @@ public static class SubtitleComponentManager
         }
     }
 
-    private static void CalculateVRSpacePosition(ISubtitleComponent subtitleComponent, SubtitleConfig config)
+    /// <summary>
+    ///     VR 平板电脑模式的字幕位置计算
+    /// </summary>
+    /// <param name="subtitleComponent"></param>
+    /// <param name="config"></param>
+    private static void CalculateVRTabletPosition(ISubtitleComponent subtitleComponent,
+        SubtitleConfig config)
     {
-        //TODO
+        try
+        {
+            // 将像素高度转换为世界单位（Canvas 在 WorldSpace 模式下缩放 0.001）
+            var subtitleHeightWorld = Mathf.Max(config.VRTabletSubtitleHeight * 0.001f, 0.001f);
+            var currentSubtitleId = subtitleComponent.GetSubtitleId();
+
+            // 查找现有条目以确定初始位置
+            var existingEntry = ActiveSubtitles.FirstOrDefault(s => s.Id == currentSubtitleId);
+            var initialZ = existingEntry.Id != null
+                ? existingEntry.InitialVerticalPosition
+                : config.VRTabletSubtitleVerticalPosition;
+
+            // 在查找新位置之前，删除此字幕的现有条目
+            ActiveSubtitles.RemoveAll(s => s.Id == currentSubtitleId);
+
+            var finalZ = initialZ;
+
+            const int maxSteps = 50; // 最大搜索步数
+            var step = subtitleHeightWorld; // 步长 = 字幕高度
+
+            bool Overlaps(float z) => ActiveSubtitles.Any(s =>
+                Mathf.Abs(s.VerticalPosition - z) < subtitleHeightWorld);
+
+            if (Overlaps(initialZ))
+            {
+                var found = false;
+                // 先向下搜索（Z 轴负方向）
+                for (var i = 1; i <= maxSteps; i++)
+                {
+                    var testZ = initialZ - i * step;
+                    if (!Overlaps(testZ))
+                    {
+                        finalZ = testZ;
+                        found = true;
+                        break;
+                    }
+                }
+
+                // 如果向下搜索不到，则向上搜索
+                if (!found)
+                {
+                    for (var i = 1; i <= maxSteps; i++)
+                    {
+                        var testZ = initialZ + i * step;
+                        if (!Overlaps(testZ))
+                        {
+                            finalZ = testZ;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 更新配置并刷新 UI
+            config.VRTabletSubtitleVerticalPosition = finalZ;
+            config.CurrentVerticalPosition = finalZ;
+            subtitleComponent.UpdateConfig(config);
+
+            // 记录活跃字幕位置
+            ActiveSubtitles.Add(new SubtitlePositionInfo
+            {
+                Id = currentSubtitleId,
+                VerticalPosition = finalZ,
+                Height = subtitleHeightWorld,
+                InitialVerticalPosition = initialZ
+            });
+
+            LogManager.Debug(
+                $"Calculated VR tablet subtitle position: {finalZ} for subtitle: {currentSubtitleId}");
+        }
+        catch (Exception ex)
+        {
+            LogManager.Error(
+                $"Calculate VR tablet subtitle position failed: {ex.Message}\n{ex.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     VR 空间模式的字幕位置计算
+    /// </summary>
+    /// <param name="subtitleComponent"></param>
+    /// <param name="config"></param>
+    private static void CalculateVRSpacePosition(ISubtitleComponent subtitleComponent,
+        SubtitleConfig config)
+    {
+        try
+        {
+            // 计算字幕在视野中的角高（度数），根据字幕高度与距离推算
+            // Canvas 在 WorldSpace 模式下采用比例 0.001 => 1000px = 1m
+            var subtitleHeightWorld = Mathf.Max(config.VRSpaceSubtitleHeight * 0.001f, 0.001f);
+            var distance = Mathf.Max(config.VRSubtitleDistance, 0.001f);
+            // 角度 = 2 * atan(h/2d)
+            var angularHeightDeg =
+                2f * Mathf.Rad2Deg * Mathf.Atan(subtitleHeightWorld / (2f * distance));
+            if (angularHeightDeg < 0.1f) angularHeightDeg = 0.1f; // 最小限制
+
+            // 间隔
+            var stepDeg = angularHeightDeg;
+
+            var currentSubtitleId = subtitleComponent.GetSubtitleId();
+
+            // 查找已存在条目以获取之前的位置
+            var existingEntry = ActiveSubtitles.FirstOrDefault(s => s.Id == currentSubtitleId);
+            var initialOffset = existingEntry.Id != null
+                ? existingEntry.InitialVerticalPosition
+                : config.VRSubtitleVerticalOffset;
+
+            // 删除旧记录
+            ActiveSubtitles.RemoveAll(s => s.Id == currentSubtitleId);
+
+            float finalOffset = initialOffset;
+
+            bool Overlaps(float offset) => ActiveSubtitles.Any(s =>
+                Mathf.Abs(s.VerticalPosition - offset) < stepDeg * 0.5f);
+
+            if (Overlaps(initialOffset))
+            {
+                const int maxSteps = 100;
+                var found = false;
+                // 先向下（更负的角度）
+                for (var i = 1; i <= maxSteps; i++)
+                {
+                    var test = initialOffset - i * stepDeg;
+                    if (!Overlaps(test))
+                    {
+                        finalOffset = test;
+                        found = true;
+                        break;
+                    }
+                }
+
+                // 再向上
+                if (!found)
+                {
+                    for (var i = 1; i <= maxSteps; i++)
+                    {
+                        var test = initialOffset + i * stepDeg;
+                        if (!Overlaps(test))
+                        {
+                            finalOffset = test;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // 更新配置并刷新 UI
+            config.VRSubtitleVerticalOffset = finalOffset;
+            // CurrentVerticalPosition 不使用但保持同步
+            config.CurrentVerticalPosition = finalOffset;
+            subtitleComponent.UpdateConfig(config);
+
+            // 记录活跃字幕
+            ActiveSubtitles.Add(new SubtitlePositionInfo
+            {
+                Id = currentSubtitleId,
+                VerticalPosition = finalOffset,
+                Height = angularHeightDeg, // 记录角高，便于调试
+                InitialVerticalPosition = initialOffset
+            });
+
+            LogManager.Debug(
+                $"Calculated VR space subtitle offset: {finalOffset}° for subtitle: {currentSubtitleId}");
+        }
+        catch (Exception ex)
+        {
+            LogManager.Error(
+                $"Calculate VR space subtitle position failed: {ex.Message}\n{ex.StackTrace}");
+        }
     }
 
     /// <summary>

@@ -52,7 +52,7 @@ public class ScreenSubtitleComponent : BaseSubtitleComponent
         backgroundRect.anchorMin = new Vector2(0, 0);
         backgroundRect.anchorMax = new Vector2(0, 0); // 锚点为Canvas左下角
         backgroundRect.pivot = new Vector2(0, 0); // 轴心0，左下角
-        backgroundRect.rotation = Quaternion.identity; // 旋转0度
+        backgroundRect.localRotation = Quaternion.identity; // 旋转0度
         backgroundRect.localScale = new Vector3(1, 1, 1); // 缩放1倍
 
         // 创建文本对象
@@ -68,7 +68,7 @@ public class ScreenSubtitleComponent : BaseSubtitleComponent
         textRect.anchorMin = new Vector2(0, 0);
         textRect.anchorMax = new Vector2(0, 0);
         textRect.pivot = new Vector2(0, 0);
-        textRect.rotation = Quaternion.identity;
+        textRect.localRotation = Quaternion.identity;
         textRect.localScale = new Vector3(1, 1, 1);
 
         // 设置默认文本样式

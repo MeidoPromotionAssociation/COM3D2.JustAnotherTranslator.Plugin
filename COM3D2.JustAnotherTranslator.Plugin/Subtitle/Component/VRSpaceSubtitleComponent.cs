@@ -320,8 +320,8 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         VrSpaceCanvasRect.anchorMin = new Vector2(0.5f, 0.5f);
         VrSpaceCanvasRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点，中心
         VrSpaceCanvasRect.pivot = new Vector2(0.5f, 0.5f); // 轴心，中心
-        VrSpaceCanvasRect.rotation = Quaternion.identity; // 旋转0度
-        VrSpaceCanvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f);
+        VrSpaceCanvasRect.localRotation = Quaternion.identity; // 旋转0度
+        VrSpaceCanvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f); // 此时 1000 尺寸单位 = 1米
 
         // 添加画布缩放器
         // 在 WorldSpace 模式下，CanvasScaler 无法进行缩放，只决定像素密度
@@ -349,9 +349,9 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         var size = new Vector2(1920, 30);
         backgroundRect.sizeDelta = size;
         backgroundRect.anchorMin = new Vector2(0.5f, 0.5f);
-        backgroundRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点为Canvas左下角
-        backgroundRect.pivot = new Vector2(0.5f, 0.5f); // 轴心0，左下角
-        backgroundRect.rotation = Quaternion.identity; // 旋转0度
+        backgroundRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点为Canvas中心
+        backgroundRect.pivot = new Vector2(0.5f, 0.5f); // 轴心0.5，中心
+        backgroundRect.localRotation = Quaternion.identity; // 旋转0度
         backgroundRect.localScale = new Vector3(1, 1, 1); // 缩放1倍
 
         // 创建文本对象
@@ -368,8 +368,8 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         textRect.anchorMin = new Vector2(0.5f, 0.5f);
         textRect.anchorMax = new Vector2(0.5f, 0.5f);
         textRect.pivot = new Vector2(0.5f, 0.5f);
-        textRect.rotation = Quaternion.identity;
-        textRect.localScale = new Vector3(40, 40, 1);
+        textRect.localRotation = Quaternion.identity;
+        textRect.localScale = new Vector3(40, 40, 1); // 40 倍缩放比较正常
 
         // 设置默认文本样式
         TextComponent.alignment = TextAnchor.MiddleCenter; // 居中对齐
@@ -384,33 +384,14 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         LogManager.Debug("VRSpaceSubtitleComponent Subtitle UI created");
     }
 
-
-    // /// <summary>
-    // ///     应用新的位置，包括背景大小
-    // /// </summary>
-    // public override void ApplyNewPosition()
-    // {
-    //     if (Config == null)
-    //     {
-    //         LogManager.Warning("Subtitle config is null, cannot apply/字幕配置为空，无法应用");
-    //         return;
-    //     }
-    //
-    //     // TODO 没有移动位置
-    //
-    //     // 更新VR字幕画布尺寸
-    //     if (VrSpaceCanvasRect is not null)
-    //     {
-    //         // // 画布缩放 = 希望大小（米） / 画布尺寸
-    //         // var widthScale = Config.SubtitleWidth / 1000;
-    //         // var heightScale = Config.SubtitleHeight / 1000;
-    //         //
-    //         // VrSpaceCanvasRect.localScale = new Vector3(
-    //         //     widthScale,
-    //         //     heightScale, 1);
-    //     }
-    // }
-
+    protected override void DestroySubtitleUI()
+    {
+        if (VrSubtitleContainer != null)
+        {
+            Destroy(VrSubtitleContainer);
+        }
+        base.DestroySubtitleUI();
+    }
 
     /// <summary>
     ///     应用配置
@@ -426,16 +407,19 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         base.ApplyConfig();
 
         // 避免修改垂直位置
+        // TODO 位置?
         var verticalPosition = Config.VerticalPosition;
         Config.CurrentVerticalPosition = verticalPosition;
+
+        var size = new Vector2(
+            Config.VRSapceSubtitleWidth, Config.VRSpaceSubtitleHeight);
 
         // 应用背景配置
         if (BackgroundImageComponents is not null)
         {
             BackgroundImageComponents.color = Config.BackgroundColor;
 
-            BackgroundImageComponents.rectTransform.sizeDelta = new Vector2(
-                Config.VRSubtitleWidth, Config.VRSubtitleHeight);
+            BackgroundImageComponents.rectTransform.sizeDelta = size;
         }
 
         // 应用文本组件配置
@@ -448,8 +432,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             TextComponent.color = Config.TextColor;
             TextComponent.alignment = Config.TextAlignment;
 
-            TextComponent.rectTransform.sizeDelta = new Vector2(
-                Config.VRSubtitleWidth, Config.VRSubtitleHeight);
+            TextComponent.rectTransform.sizeDelta = size;
         }
 
         // 应用描边配置

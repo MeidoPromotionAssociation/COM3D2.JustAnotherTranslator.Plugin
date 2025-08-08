@@ -41,7 +41,7 @@
         <!-- Configure COM3D2.5 related dependencies -->
         <When Condition="$(Configuration.Contains('COM3D25_UNITY_2022-'))">
             <ItemGroup>
-                <PackageReference Include="UnityEngine.Modules" Version="2022.3.35"/>
+                <PackageReference Include="UnityEngine.Modules" Version="2022.3.35" IncludeAssets="compile"/>
                 <PackageReference Include="COM3D2.GameLibs" Version="3.44.1-r.0"/>
                 <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
                 <PackageReference Include="BepInEx.Core" Version="5.*"/>

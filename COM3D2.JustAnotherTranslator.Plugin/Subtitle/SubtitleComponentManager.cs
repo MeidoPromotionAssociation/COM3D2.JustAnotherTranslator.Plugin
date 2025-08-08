@@ -327,7 +327,7 @@ public static class SubtitleComponentManager
         try
         {
             // 将像素高度转换为世界单位（Canvas 在 WorldSpace 模式下缩放 0.001）
-            var subtitleHeightWorld = Mathf.Max(config.VRTabletSubtitleHeight * 0.001f, 0.001f);
+            var subtitleHeightWorld = config.VRTabletSubtitleHeight * 0.001f;
             var currentSubtitleId = subtitleComponent.GetSubtitleId();
 
             // 查找现有条目以确定初始位置
@@ -341,8 +341,8 @@ public static class SubtitleComponentManager
 
             var finalZ = initialZ;
 
-            const int maxSteps = 50; // 最大搜索步数
-            var step = subtitleHeightWorld; // 步长 = 字幕高度
+            const int maxSteps = 2100; // 最大搜索步数
+            var step = 0.001f; // 步长
 
             bool Overlaps(float z) => ActiveSubtitles.Any(s =>
                 Mathf.Abs(s.VerticalPosition - z) < subtitleHeightWorld);

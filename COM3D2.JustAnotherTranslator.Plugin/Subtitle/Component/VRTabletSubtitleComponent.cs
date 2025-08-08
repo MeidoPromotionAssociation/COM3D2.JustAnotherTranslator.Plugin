@@ -10,23 +10,34 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 /// </summary>
 public class VRTabletSubtitleComponent : BaseSubtitleComponent
 {
-    private Transform _vrTablet;   // 平板电脑物体
-
-    // VR字幕的容器
-    protected Transform VrSubtitleContainer;
-
+    /// 初始化协程
     private string _initCoroutineID;
 
+    /// 平板电脑物体
+    protected Transform VRTablet;
+
+    /// VR字幕的容器
+    protected Transform VrSubtitleContainer;
+
+
+    /// <summary>
+    ///     每帧更新
+    /// </summary>
+    protected void LateUpdate()
+    {
+        // 跟随平板电脑可见性
+        var isVisible = GameMain.Instance?.OvrMgr?.OvrCamera?.m_bUiToggle;
+        if (isVisible == null) return;
+        gameObject.SetActive(isVisible.Value);
+    }
 
     /// <summary>
     ///     创建字幕UI
     /// </summary>
     protected override void CreateSubtitleUI()
     {
-        if (!string.IsNullOrEmpty(_initCoroutineID) && CoroutineManager.IsRunning(_initCoroutineID))
-        {
-            return;
-        }
+        if (!string.IsNullOrEmpty(_initCoroutineID) &&
+            CoroutineManager.IsRunning(_initCoroutineID)) return;
         _initCoroutineID = CoroutineManager.LaunchCoroutine(CreateUIWhenReady());
     }
 
@@ -41,17 +52,18 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
             yield return null;
 
         var tablet = GameMain.Instance.OvrMgr.OvrCamera.m_goOvrUiTablet;
-        _vrTablet = tablet.transform;
-        if (_vrTablet == null)
+        VRTablet = tablet.transform;
+        if (VRTablet == null)
         {
-            LogManager.Warning("Failed to find VR tablet object, subtitle will not be displayed, please report this issue/没有找到平板电脑物体，字幕将无法显示，请报告此问题");
+            LogManager.Warning(
+                "Failed to find VR tablet object, subtitle will not be displayed, please report this issue/没有找到平板电脑物体，字幕将无法显示，请报告此问题");
             yield break;
         }
 
         // 创建一个容器，用来移动位置，直接移动 Canvas 效果不佳
         var containerObj = new GameObject("JAT_Subtitle_VRTabletSubtitleComponent_Container");
         VrSubtitleContainer = containerObj.transform;
-        VrSubtitleContainer.SetParent(_vrTablet, false);
+        VrSubtitleContainer.SetParent(VRTablet, false);
         VrSubtitleContainer.localPosition = new Vector3(0, 0f, -1f); // -1f 约为平板中心
         VrSubtitleContainer.localRotation = Quaternion.Euler(90, 0, 0);
         VrSubtitleContainer.localScale = new Vector3(1, 1, 1);
@@ -136,19 +148,6 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
     }
 
     /// <summary>
-    ///     销毁字幕
-    /// </summary>
-    protected override void DestroySubtitleUI()
-    {
-        if (VrSubtitleContainer != null)
-        {
-            Destroy(VrSubtitleContainer);
-        }
-        base.DestroySubtitleUI();
-    }
-
-
-    /// <summary>
     ///     应用配置
     /// </summary>
     public override void ApplyConfig()
@@ -170,15 +169,12 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
 
         // 应用位置
         if (VrSubtitleContainer != null)
-        {
             VrSubtitleContainer.transform.localPosition = new Vector3(
-                Config.VRTabletSubtitleHorizontalPosition,0, Config.VRTabletSubtitleVerticalPosition); // 没写错，就是 Z 是垂直
-        }
+                Config.VRTabletSubtitleHorizontalPosition, 0,
+                Config.VRTabletSubtitleVerticalPosition); // 没写错，就是 Z 是垂直
 
         if (CanvasComponents != null)
-        {
             CanvasComponents.pixelPerfect = Config.VRTabletSubtitlePixelPerfect;
-        }
 
         // 应用背景配置
         if (BackgroundImageComponents != null)
@@ -198,7 +194,8 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
             TextComponent.color = Config.TextColor;
             TextComponent.alignment = Config.TextAlignment;
             TextComponent.rectTransform.localScale = new Vector3(
-                Config.VRTabletSubtitleTextSizeMultiplier, Config.VRTabletSubtitleTextSizeMultiplier, 1f);
+                Config.VRTabletSubtitleTextSizeMultiplier,
+                Config.VRTabletSubtitleTextSizeMultiplier, 1f);
 
             TextComponent.rectTransform.sizeDelta = size;
         }
@@ -212,16 +209,23 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
             {
                 OutlineComponents.effectColor = Config.OutlineColor;
 
-                if (TextComponent != null)
-                {
-                    // 根据Text组件的localScale来缩放描边距离，防止出现重影
-                    var scaleFactor = TextComponent.transform.localScale.x;
-                        OutlineComponents.effectDistance = new Vector2(Config.OutlineWidth / scaleFactor,
-                            Config.OutlineWidth / scaleFactor);
-                }
+                //TODO 仍然有重影
+                // 根据Text组件的localScale来缩放描边距离，防止出现重影
+                var scaleFactor = TextComponent.transform.localScale.x;
+                OutlineComponents.effectDistance = new Vector2(Config.OutlineWidth / scaleFactor,
+                    Config.OutlineWidth / scaleFactor);
             }
         }
 
         LogManager.Debug("Applied VR-specific subtitle config with proper UI scaling");
+    }
+
+    /// <summary>
+    ///     销毁字幕
+    /// </summary>
+    protected override void DestroySubtitleUI()
+    {
+        if (VrSubtitleContainer.gameObject != null) Destroy(VrSubtitleContainer.gameObject);
+        base.DestroySubtitleUI();
     }
 }

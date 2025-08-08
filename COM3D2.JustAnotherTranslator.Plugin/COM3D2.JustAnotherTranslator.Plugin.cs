@@ -892,7 +892,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         // VR悬浮字幕相关配置
         VRSubtitleMode = Config.Bind("8VRSubtitle",
             "VRSubtitleMode/VR字幕模式",
-            VRSubtitleModeEnum.InSpace,
+            VRSubtitleModeEnum.OnTablet,
             new ConfigDescription(
                 "VR Subtitle Mode: InSpace=On Control tablet, OnTablet=Floating in world space following head movement/VR字幕模式：InSpace=字幕在控制平板上，OnTablet=跟随头部运动的世界空间悬浮字幕",
                 null, new ConfigurationManagerAttributes { Order = 8000 }));
@@ -919,35 +919,35 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         VRInSpaceSubtitleWidth = Config.Bind("8VRSubtitle",
             "VRFloatingSubtitleWidth/VR悬浮字幕宽度",
-            1.5f,
-            new ConfigDescription("VR Floating Subtitle Width in meters/VR悬浮字幕宽度（米）", null,
+            1000f,
+            new ConfigDescription("VR Floating Subtitle Width in meters/VR悬浮字幕宽度（1000单位=1米）", null,
                 new ConfigurationManagerAttributes { Order = 8040 }));
 
         VRInSpaceSubtitleHeight = Config.Bind("8VRSubtitle",
             "VRFloatingSubtitleHeight/VR悬浮字幕高度",
-            0.04f,
-            new ConfigDescription("VR Floating Subtitle Height in meters/VR悬浮字幕高度（米）", null,
+            10f,
+            new ConfigDescription("VR Floating Subtitle Height in meters/VR悬浮字幕高度（1000单位=1米）", null,
                 new ConfigurationManagerAttributes { Order = 8050 }));
 
         VRTabletSubtitleWidth = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleWidth/VR平板电脑字幕宽度",
             500f,
             new ConfigDescription(
-                "VR Tablet Subtitle Width(1000 unit = 1 meter)/VR平板电脑字幕宽度(1000单位=1米)", null,
+                "VR Tablet Subtitle Width(1000 unit = 1 meter)/VR平板电脑字幕宽度（1000单位=1米）", null,
                 new ConfigurationManagerAttributes { Order = 8060 }));
 
         VRTabletSubtitleHeight = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleHeight/VR平板电脑字幕高度",
             10f,
             new ConfigDescription(
-                "VR Tablet Subtitle Height(1000 unit = 1 meter)/VR平板电脑字幕高度(1000单位=1米)", null,
+                "VR Tablet Subtitle Height(1000 unit = 1 meter)/VR平板电脑字幕高度（1000单位=1米）", null,
                 new ConfigurationManagerAttributes { Order = 8070 }));
 
         VRTabletSubtitleVerticalPosition = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleVerticalPosition/VR平板电脑字幕垂直位置",
             -0.88f,
             new ConfigDescription(
-                "VR Tablet Subtitle Vertical Position in meter, -1 is VR tablet center, the larger the value the higher/VR平板电脑字幕垂直位置(米)，-1 为平板电脑中央，数值越大越往上",
+                "VR Tablet Subtitle Vertical Position in meter, -1 is VR tablet center, the larger the value the higher/VR平板电脑字幕垂直位置（米），-1 为平板电脑中央，数值越大越往上",
                 null,
                 new ConfigurationManagerAttributes { Order = 8080 }));
 
@@ -955,7 +955,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "VRTabletSubtitleHorizontalPosition/VR平板电脑字幕水平位置",
             0f,
             new ConfigDescription(
-                "VR Tablet Subtitle Horizontal Position in meters, 0 is VR tablet center, the larger the value the right/VR平板电脑字幕水平位置(米)，0 为平板电脑中央，数值越大越往右",
+                "VR Tablet Subtitle Horizontal Position in meters, 0 is VR tablet center, the larger the value the right/VR平板电脑字幕水平位置（米），0 为平板电脑中央，数值越大越往右",
                 null,
                 new ConfigurationManagerAttributes { Order = 8090 }));
 

@@ -257,7 +257,12 @@ public static class SubtitleComponentManager
                 s.VerticalPosition < initialY + subtitleHeight);
 
             LogManager.Debug(
-                $"Checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {overlaps}");
+                $"Finding available position for {currentSubtitleId}, checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {overlaps}");
+
+            foreach (var subtitle in ActiveSubtitles)
+            {
+                LogManager.Debug($"Active subtitle: {subtitle.Id} height: {subtitle.Height} position: {subtitle.VerticalPosition} initial position: {subtitle.InitialVerticalPosition}");
+            }
 
             if (overlaps)
             {
@@ -350,6 +355,14 @@ public static class SubtitleComponentManager
 
             bool Overlaps(float z) => ActiveSubtitles.Any(s =>
                 Mathf.Abs(s.VerticalPosition - z) < subtitleHeightWorld);
+
+            LogManager.Debug(
+                $"Checking initial position: {initialZ}, subtitle height: {config.VRTabletSubtitleHeight} world height: {subtitleHeightWorld}, overlaps: {Overlaps(initialZ)}");
+
+            foreach (var subtitle in ActiveSubtitles)
+            {
+             LogManager.Debug($"Active subtitle: {subtitle.Id} height: {subtitle.Height} position: {subtitle.VerticalPosition} initial position: {subtitle.InitialVerticalPosition}");
+            }
 
             if (Overlaps(initialZ))
             {

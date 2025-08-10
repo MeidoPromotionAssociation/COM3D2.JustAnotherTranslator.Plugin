@@ -65,7 +65,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         VrSubtitleContainer = containerObj.transform;
         VrSubtitleContainer.SetParent(VRTablet, false);
         VrSubtitleContainer.localPosition = new Vector3(0, 0f, -1f); // -1f 约为平板中心
-        VrSubtitleContainer.localRotation = Quaternion.Euler(90, 0, 0);
+        VrSubtitleContainer.localRotation = Quaternion.Euler(90, 0, 0); // 与平板旋转一致以贴合
         VrSubtitleContainer.localScale = new Vector3(1, 1, 1);
 
         // 创建世界空间Canvas

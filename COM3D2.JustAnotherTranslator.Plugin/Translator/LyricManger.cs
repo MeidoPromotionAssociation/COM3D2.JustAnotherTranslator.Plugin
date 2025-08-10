@@ -135,11 +135,19 @@ public static class LyricManger
 
             var lyricPath = Path.Combine(path, "lyric.csv");
             if (!File.Exists(lyricPath))
-                File.WriteAllText(lyricPath, string.Empty);
+            {
+                // UTF8Encoding(true) 明确为 UTF-8-BOM
+                using (var writer = new StreamWriter(lyricPath, false, new UTF8Encoding(true)))
+                using (var csv = new CsvWriter(writer, CsvConfig))
+                {
+                    csv.WriteHeader(typeof(LyricCsvEntry));
+                    csv.NextRecord();
+                }
+            }
         }
         catch (Exception e)
         {
-            LogManager.Error($"Create music folder failed/创建音乐文件夹失败: {e.Message}");
+            LogManager.Error($"Create music folder failed/创建音乐文件夹失败: {e.Message}\n{e}");
         }
     }
 

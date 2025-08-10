@@ -81,8 +81,10 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         var currentHeadRotation = headTransform.rotation;
 
         // 检查头部是否有显著移动，避免不必要的计算
-        var positionChanged = Vector3.Distance(currentHeadPosition, _lastHeadPosition) > PositionThreshold;
-        var rotationChanged = Quaternion.Angle(currentHeadRotation, _lastHeadRotation) > RotationThreshold;
+        var positionChanged = Vector3.Distance(currentHeadPosition, _lastHeadPosition) >
+                              PositionThreshold;
+        var rotationChanged = Quaternion.Angle(currentHeadRotation, _lastHeadRotation) >
+                              RotationThreshold;
 
         if (positionChanged || rotationChanged)
         {
@@ -183,7 +185,8 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         }
         catch (Exception e)
         {
-            LogManager.Error($"Failed to initialize VR space subtitle component/VR空间字幕组件初始化失败: {e.Message}");
+            LogManager.Error(
+                $"Failed to initialize VR space subtitle component/VR空间字幕组件初始化失败: {e.Message}");
         }
     }
 
@@ -266,14 +269,16 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         // 方法1: 通过 GameMain.Instance.OvrMgr 获取
         if (TryGetHeadTransformFromGameMain())
         {
-            LogManager.Debug("VR head transform (EyeAnchor) found via GameMain, subtitle head tracking enabled");
+            LogManager.Debug(
+                "VR head transform (EyeAnchor) found via GameMain, subtitle head tracking enabled");
             return;
         }
 
         // 方法2: 直接查找 OvrMgr
         if (TryGetHeadTransformFromOvrMgr())
         {
-            LogManager.Debug("VR head transform found via FindObjectOfType<OvrMgr>(), subtitle head tracking enabled");
+            LogManager.Debug(
+                "VR head transform found via FindObjectOfType<OvrMgr>(), subtitle head tracking enabled");
             return;
         }
 
@@ -440,10 +445,12 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
                     // 根据Text组件的localScale来缩放描边距离，防止出现重影
                     var scaleFactor = TextComponent.transform.localScale.x;
                     if (Mathf.Abs(scaleFactor) > 0.001f)
-                        OutlineComponents.effectDistance = new Vector2(Config.OutlineWidth / scaleFactor,
+                        OutlineComponents.effectDistance = new Vector2(
+                            Config.OutlineWidth / scaleFactor,
                             Config.OutlineWidth / scaleFactor);
                     else
-                        OutlineComponents.effectDistance = new Vector2(Config.OutlineWidth, Config.OutlineWidth);
+                        OutlineComponents.effectDistance =
+                            new Vector2(Config.OutlineWidth, Config.OutlineWidth);
                 }
             }
         }
@@ -461,6 +468,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         {
             Destroy(VrSubtitleContainer);
         }
+
         base.DestroySubtitleUI();
     }
 }

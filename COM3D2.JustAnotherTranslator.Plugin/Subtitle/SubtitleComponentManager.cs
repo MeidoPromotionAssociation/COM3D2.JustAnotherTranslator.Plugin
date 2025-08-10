@@ -224,7 +224,8 @@ public static class SubtitleComponentManager
                     CalculateVRSpacePosition(subtitleComponent, config);
                     return;
                 default:
-                    LogManager.Error($"Unknown VR mode, please report this issue/未知 VR 模式，请报告此问题 {config.VRSubtitleMode}");
+                    LogManager.Error(
+                        $"Unknown VR mode, please report this issue/未知 VR 模式，请报告此问题 {config.VRSubtitleMode}");
                     return;
             }
         }

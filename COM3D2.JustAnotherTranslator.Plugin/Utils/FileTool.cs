@@ -18,15 +18,18 @@ public static class FileTool
     ///     获取所有翻译文件列表，按 Unicode 顺序排序，支持子目录
     /// </summary>
     /// <returns>文件路径列表</returns>
-    public static List<string> GetAllTranslationFiles(string translationPath, string[] fileExtensions)
+    public static List<string> GetAllTranslationFiles(string translationPath,
+        string[] fileExtensions)
     {
         var allFiles = new List<string>();
 
         // 首先添加根目录的文件
         try
         {
-            var rootFiles = Directory.GetFiles(translationPath, "*.*", SearchOption.TopDirectoryOnly)
-                .Where(f => fileExtensions.Any(ext => f.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+            var rootFiles = Directory
+                .GetFiles(translationPath, "*.*", SearchOption.TopDirectoryOnly)
+                .Where(f =>
+                    fileExtensions.Any(ext => f.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
                 .OrderBy(f => f, StringComparer.Ordinal);
             allFiles.AddRange(rootFiles);
         }
@@ -38,20 +41,23 @@ public static class FileTool
         // 然后添加子目录的文件
         try
         {
-            var directories = Directory.GetDirectories(translationPath, "*", SearchOption.AllDirectories)
+            var directories = Directory
+                .GetDirectories(translationPath, "*", SearchOption.AllDirectories)
                 .OrderBy(d => d, StringComparer.Ordinal);
 
             foreach (var directory in directories)
                 try
                 {
                     var files = Directory.GetFiles(directory, "*.*", SearchOption.TopDirectoryOnly)
-                        .Where(f => fileExtensions.Any(ext => f.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+                        .Where(f => fileExtensions.Any(ext =>
+                            f.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
                         .OrderBy(f => f, StringComparer.Ordinal);
                     allFiles.AddRange(files);
                 }
                 catch (Exception e)
                 {
-                    LogManager.Warning($"Error reading directory files/读取目录文件时出错 {directory}: {e.Message}");
+                    LogManager.Warning(
+                        $"Error reading directory files/读取目录文件时出错 {directory}: {e.Message}");
                 }
         }
         catch (Exception e)

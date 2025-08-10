@@ -34,7 +34,8 @@ public static class TextureReplacePatch
             // LogManager.Debug("IsExistentFile result: " + __result);
 
             if (StringTool.IsNullOrWhiteSpace(file_name) ||
-                !Path.GetExtension(file_name).Equals(".tex", StringComparison.InvariantCultureIgnoreCase))
+                !Path.GetExtension(file_name)
+                    .Equals(".tex", StringComparison.InvariantCultureIgnoreCase))
                 return;
 
             if (TextureReplaceManger.IsReplaceTextureExist(file_name))
@@ -57,7 +58,8 @@ public static class TextureReplacePatch
     /// <param name="usePoolBuffer"></param>
     [HarmonyPatch(typeof(ImportCM), nameof(ImportCM.LoadTexture))]
     [HarmonyPrefix]
-    private static bool ImportCM_LoadTexture_Prefix(ref TextureResource __result, AFileSystemBase f_fileSystem,
+    private static bool ImportCM_LoadTexture_Prefix(ref TextureResource __result,
+        AFileSystemBase f_fileSystem,
         string f_strFileName,
         bool usePoolBuffer)
     {
@@ -74,7 +76,8 @@ public static class TextureReplacePatch
                 return true;
 
             // create new texture
-            __result = new TextureResource(1, 1, TextureFormat.ARGB32, __result?.uvRects, newTexture);
+            __result =
+                new TextureResource(1, 1, TextureFormat.ARGB32, __result?.uvRects, newTexture);
 
             LogManager.Debug($"ImportCM_LoadTexture_Prefix Texture replaced: {f_strFileName}");
             return false;
@@ -95,7 +98,8 @@ public static class TextureReplacePatch
     /// <param name="__result"></param>
     [HarmonyPatch(typeof(UIWidget), nameof(UIWidget.mainTexture), MethodType.Getter)]
     [HarmonyPostfix]
-    private static void UIWidget_mainTexture_Getter_Postfix(UIWidget __instance, ref UnityEngine.Texture __result)
+    private static void UIWidget_mainTexture_Getter_Postfix(UIWidget __instance,
+        ref UnityEngine.Texture __result)
     {
         try
         {
@@ -107,7 +111,8 @@ public static class TextureReplacePatch
             LogManager.Debug(
                 $"UIWidget_mainTexture_Getter_Postfix called: {__instance?.name}, mainTexture name: {__result?.name}");
 
-            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture, __result))
+            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture,
+                    __result))
                 return;
 
             // 检查并转换为 Texture2D
@@ -140,18 +145,21 @@ public static class TextureReplacePatch
     /// <param name="__result"></param>
     [HarmonyPatch(typeof(UI2DSprite), nameof(UI2DSprite.mainTexture), MethodType.Getter)]
     [HarmonyPostfix]
-    private static void UI2DSprite_mainTexture_Getter_Postfix(UI2DSprite __instance, ref UnityEngine.Texture __result)
+    private static void UI2DSprite_mainTexture_Getter_Postfix(UI2DSprite __instance,
+        ref UnityEngine.Texture __result)
     {
         try
         {
-            if (__result == null || StringTool.IsNullOrWhiteSpace(__result.name) || __result.name.StartsWith("JAT_") ||
+            if (__result == null || StringTool.IsNullOrWhiteSpace(__result.name) ||
+                __result.name.StartsWith("JAT_") ||
                 __result.name == "Font Texture")
                 return;
 
             LogManager.Debug(
                 $"UI2DSprite_mainTexture_Getter_Postfix called: {__instance?.name}, mainTexture name: {__result.name}");
 
-            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture, __result))
+            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture,
+                    __result))
                 return;
 
             // 检查并转换为 Texture2D
@@ -184,7 +192,8 @@ public static class TextureReplacePatch
     /// <param name="__result"></param>
     [HarmonyPatch(typeof(UITexture), nameof(UITexture.mainTexture), MethodType.Getter)]
     [HarmonyPostfix]
-    private static void UITexture_mainTexture_Getter_Postfix(UITexture __instance, ref UnityEngine.Texture __result)
+    private static void UITexture_mainTexture_Getter_Postfix(UITexture __instance,
+        ref UnityEngine.Texture __result)
     {
         try
         {
@@ -194,7 +203,8 @@ public static class TextureReplacePatch
             LogManager.Debug(
                 $"UITexture_mainTexture_Getter_Postfix called: {__instance?.name}, mainTexture name: {__result?.name}");
 
-            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture, __result))
+            if (!TextureReplaceManger.GetReplaceTexture(__result.name, out var newTexture,
+                    __result))
                 return;
 
             // 检查并转换为 Texture2D
@@ -232,11 +242,13 @@ public static class TextureReplacePatch
         {
             LogManager.Debug($"Image_sprite_Setter_Prefix called: {value?.name}");
 
-            if (value == null || value.texture == null || StringTool.IsNullOrWhiteSpace(value.texture.name) ||
+            if (value == null || value.texture == null ||
+                StringTool.IsNullOrWhiteSpace(value.texture.name) ||
                 value.texture.name.StartsWith("JAT_"))
                 return;
 
-            if (!TextureReplaceManger.GetReplaceTexture(value.texture.name, out var newTexture, value.texture))
+            if (!TextureReplaceManger.GetReplaceTexture(value.texture.name, out var newTexture,
+                    value.texture))
                 return;
 
             if (newTexture == null)

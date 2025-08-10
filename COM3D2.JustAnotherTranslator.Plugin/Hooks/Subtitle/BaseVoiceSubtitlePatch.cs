@@ -28,7 +28,8 @@ public static class BaseVoiceSubtitlePatch
     /// <param name="__instance"></param>
     [HarmonyPatch(typeof(BaseKagManager), "TagPlayVoice")]
     [HarmonyPrefix]
-    public static void BaseKagManager_TagPlayVoice_Prefix(KagTagSupport tag_data, BaseKagManager __instance)
+    public static void BaseKagManager_TagPlayVoice_Prefix(KagTagSupport tag_data,
+        BaseKagManager __instance)
     {
         try
         {

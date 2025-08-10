@@ -15,7 +15,8 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 public class AsyncTextLoader
 {
     /// 加载完成委托
-    public delegate void CompletionCallback(Dictionary<string, string> result, Dictionary<Regex, string> resultRegex,
+    public delegate void CompletionCallback(Dictionary<string, string> result,
+        Dictionary<Regex, string> resultRegex,
         int totalEntries, int totalFiles,
         long elapsedMilliseconds);
 
@@ -35,10 +36,12 @@ public class AsyncTextLoader
     private static string _translationPath;
 
     /// 翻译字典
-    private static readonly Dictionary<string, string> TranslationDict = new(); // original -> translation
+    private static readonly Dictionary<string, string>
+        TranslationDict = new(); // original -> translation
 
     /// 正则翻译字典
-    private static readonly Dictionary<Regex, string> RegexTranslationDict = new(); // regex -> translation
+    private static readonly Dictionary<Regex, string>
+        RegexTranslationDict = new(); // regex -> translation
 
     /// 完成回调
     private readonly CompletionCallback _completionCallback;
@@ -73,7 +76,8 @@ public class AsyncTextLoader
     {
         if (_loaderThread != null && _loaderThread.IsAlive)
         {
-            LogManager.Warning("Async file loader is already running, please report this issue/异步文件加载器已在运行中，请报告此问题");
+            LogManager.Warning(
+                "Async file loader is already running, please report this issue/异步文件加载器已在运行中，请报告此问题");
             return;
         }
 
@@ -138,13 +142,15 @@ public class AsyncTextLoader
 
 
             // Get all files to calculate the total
-            var allFiles = FileTool.GetAllTranslationFiles(_translationPath, new[] { ".txt", ".zip" });
+            var allFiles =
+                FileTool.GetAllTranslationFiles(_translationPath, new[] { ".txt", ".zip" });
             totalFiles = allFiles.Count;
 
             if (totalFiles == 0)
             {
                 LogManager.Info("No translation files found/未找到翻译文件");
-                _completionCallback?.Invoke(TranslationDict, RegexTranslationDict, 0, 0, sw.ElapsedMilliseconds);
+                _completionCallback?.Invoke(TranslationDict, RegexTranslationDict, 0, 0,
+                    sw.ElapsedMilliseconds);
                 return;
             }
 
@@ -174,7 +180,8 @@ public class AsyncTextLoader
         finally
         {
             sw.Stop();
-            _completionCallback?.Invoke(TranslationDict, RegexTranslationDict, totalEntries, filesProcessed,
+            _completionCallback?.Invoke(TranslationDict, RegexTranslationDict, totalEntries,
+                filesProcessed,
                 sw.ElapsedMilliseconds);
         }
     }
@@ -224,12 +231,14 @@ public class AsyncTextLoader
                 var textFiles = new List<ZipEntry>();
                 foreach (ZipEntry zipEntry in zf)
                 {
-                    if (!zipEntry.IsFile || !zipEntry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                    if (!zipEntry.IsFile ||
+                        !zipEntry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
                         continue;
 
                     if (FileTool.IsZipPathUnsafe(zipEntry.Name))
                     {
-                        LogManager.Warning($"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {zipEntry.Name}");
+                        LogManager.Warning(
+                            $"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {zipEntry.Name}");
                         continue;
                     }
 
@@ -238,7 +247,8 @@ public class AsyncTextLoader
 
                 if (textFiles.Count == 0)
                 {
-                    LogManager.Info($"No .txt files found in ZIP archive/ZIP压缩包中未找到.txt文件: {fileName}");
+                    LogManager.Info(
+                        $"No .txt files found in ZIP archive/ZIP压缩包中未找到.txt文件: {fileName}");
                     return 0;
                 }
 
@@ -290,9 +300,11 @@ public class AsyncTextLoader
 
         try
         {
-            LogManager.Info($"Processing ZIP archive {fileName} text files/正在处理ZIP压缩包: {fileName})");
+            LogManager.Info(
+                $"Processing ZIP archive {fileName} text files/正在处理ZIP压缩包: {fileName})");
 
-            using var fileStream = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read, FileShare.Read,
+            using var fileStream = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read,
+                FileShare.Read,
                 ZipBuffsize);
             using var zipStream = new ZipInputStream(fileStream);
 
@@ -306,14 +318,18 @@ public class AsyncTextLoader
                     continue;
                 }
 
-                if (!entry.IsFile || !entry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
+                if (!entry.IsFile ||
+                    !entry.Name.EndsWith(".txt", StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 try
                 {
                     // 预估容量以减少内存重分配
-                    var estimatedSize = entry.Size > 0 ? (int)Math.Min(entry.Size, int.MaxValue) : ZipSteamCacheSize;
-                    using (var memStream = new MemoryStream(estimatedSize > 0 ? estimatedSize : ZipSteamCacheSize))
+                    var estimatedSize = entry.Size > 0
+                        ? (int)Math.Min(entry.Size, int.MaxValue)
+                        : ZipSteamCacheSize;
+                    using (var memStream =
+                           new MemoryStream(estimatedSize > 0 ? estimatedSize : ZipSteamCacheSize))
                     {
                         var buffer = new byte[ZipSteamCacheSize];
                         int bytesRead;
@@ -378,7 +394,8 @@ public class AsyncTextLoader
             else
             {
                 // 对于大文件，使用 StreamReader 逐行读取
-                using (var reader = new StreamReader(filePath, Encoding.UTF8, false, LargeFileBufferSize))
+                using (var reader =
+                       new StreamReader(filePath, Encoding.UTF8, false, LargeFileBufferSize))
                 {
                     string line;
                     while ((line = reader.ReadLine()) != null)
@@ -420,7 +437,8 @@ public class AsyncTextLoader
 
 
         if (line.StartsWith("$"))
-            RegexTranslationDict[new Regex(original.Substring(1), RegexOptions.Compiled)] = translation;
+            RegexTranslationDict[new Regex(original.Substring(1), RegexOptions.Compiled)] =
+                translation;
         else
             TranslationDict[original] = translation;
 

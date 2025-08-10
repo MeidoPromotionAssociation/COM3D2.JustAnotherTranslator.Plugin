@@ -56,7 +56,8 @@ public static class XUATInterop
             }
 
             // 获取 LanguageHelper 类型
-            var langHelper = xuatAssembly.GetType("XUnity.AutoTranslator.Plugin.Core.Utilities.LanguageHelper");
+            var langHelper =
+                xuatAssembly.GetType("XUnity.AutoTranslator.Plugin.Core.Utilities.LanguageHelper");
             if (langHelper == null)
             {
                 LogManager.Warning(
@@ -65,7 +66,8 @@ public static class XUATInterop
             }
 
             // 通过反射获取 LanguageHelper.MogolianVowelSeparatorString 字段值
-            var mogolianVowelSeparatorStringField = langHelper.GetField("MogolianVowelSeparatorString",
+            var mogolianVowelSeparatorStringField = langHelper.GetField(
+                "MogolianVowelSeparatorString",
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
             if (mogolianVowelSeparatorStringField != null)
             {

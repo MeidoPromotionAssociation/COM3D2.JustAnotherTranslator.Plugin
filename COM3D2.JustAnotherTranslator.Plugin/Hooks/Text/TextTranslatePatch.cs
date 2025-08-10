@@ -71,7 +71,8 @@ public static class TextTranslatePatch
     /// <param name="__result"></param>
     [HarmonyPatch(typeof(LocalizationManager), "GetTranslationText", typeof(string))]
     [HarmonyPostfix]
-    private static void LocalizationManager_GetTranslationText_Postfix(ref LocalizationString __result)
+    private static void LocalizationManager_GetTranslationText_Postfix(
+        ref LocalizationString __result)
     {
         try
         {
@@ -89,7 +90,8 @@ public static class TextTranslatePatch
             // 例如翻译到纯 [HF] 时如果被添加了特殊标记，会导致游戏崩溃，游戏还有其他的特殊标记，因此这里直接检查 []
             if (originalText.Contains("[") & !originalText.Contains("]"))
             {
-                LogManager.Debug($"LocalizationManager GetTranslationText skip special mark: {originalText}");
+                LogManager.Debug(
+                    $"LocalizationManager GetTranslationText skip special mark: {originalText}");
                 return;
             }
 
@@ -183,14 +185,16 @@ public static class TextTranslatePatch
     {
         try
         {
-            var wrapTextMethods = typeof(NGUIText).GetMethods(BindingFlags.Public | BindingFlags.Static)
+            var wrapTextMethods = typeof(NGUIText)
+                .GetMethods(BindingFlags.Public | BindingFlags.Static)
                 .Where(m => m.Name == "WrapText" && m.GetParameters().Length > 0 &&
                             m.GetParameters()[0].ParameterType == typeof(string));
 
             var patchCount = 0;
             foreach (var method in wrapTextMethods)
             {
-                var prefix = new HarmonyMethod(typeof(TextTranslatePatch).GetMethod(nameof(NGUIText_WrapText_Prefix),
+                var prefix = new HarmonyMethod(typeof(TextTranslatePatch).GetMethod(
+                    nameof(NGUIText_WrapText_Prefix),
                     BindingFlags.Static | BindingFlags.NonPublic));
 
                 harmony.Patch(method, prefix);

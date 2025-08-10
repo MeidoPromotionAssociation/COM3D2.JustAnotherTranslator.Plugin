@@ -20,7 +20,8 @@ public static class SubtitleManager
     private static bool _initialized;
 
     /// 存储每个 Maid 的监听协程 ID
-    private static readonly Dictionary<Maid, string> MaidMonitorCoroutineIds = new(); // maid -> coroutineId
+    private static readonly Dictionary<Maid, string>
+        MaidMonitorCoroutineIds = new(); // maid -> coroutineId
 
     /// 存储 voiceId 与文本的映射关系
     private static readonly Dictionary<string, string> VoiceIdToTextMap = new(); // voiceId -> text
@@ -108,7 +109,8 @@ public static class SubtitleManager
         {
             _baseVoiceSubtitlePatch = Harmony.CreateAndPatchAll(typeof(BaseVoiceSubtitlePatch),
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.subtitle.basevoicesubtitlepatch");
-            _privateMaidTouchSubtitlePatch = Harmony.CreateAndPatchAll(typeof(PrivateMaidTouchSubtitlePatch),
+            _privateMaidTouchSubtitlePatch = Harmony.CreateAndPatchAll(
+                typeof(PrivateMaidTouchSubtitlePatch),
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.subtitle.privatemaidthouchsubtitlepatch");
             _vrTouchSubtitlePatch = Harmony.CreateAndPatchAll(typeof(VRTouchSubtitlePatch),
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.subtitle.vrtouchsubtitlepatch");
@@ -197,7 +199,8 @@ public static class SubtitleManager
         }
 
         // 如果已经有协程在运行，则不再创建新的协程
-        if (MaidMonitorCoroutineIds.ContainsKey(maid) && !string.IsNullOrEmpty(MaidMonitorCoroutineIds[maid]))
+        if (MaidMonitorCoroutineIds.ContainsKey(maid) &&
+            !string.IsNullOrEmpty(MaidMonitorCoroutineIds[maid]))
             return;
 
         // 启动新的协程监控 Maid 的语音播放状态
@@ -228,7 +231,8 @@ public static class SubtitleManager
 
         MaidMonitorCoroutineIds.Remove(maid);
 
-        LogManager.Debug($"Stopped monitoring coroutine for Maid: {MaidInfo.GetMaidFullName(maid)}");
+        LogManager.Debug(
+            $"Stopped monitoring coroutine for Maid: {MaidInfo.GetMaidFullName(maid)}");
     }
 
 
@@ -297,24 +301,28 @@ public static class SubtitleManager
                 if (!foundText)
                 {
                     // 检查是否有对应的文本
-                    if (!string.IsNullOrEmpty(currentVoiceId) && VoiceIdToTextMap.ContainsKey(currentVoiceId))
+                    if (!string.IsNullOrEmpty(currentVoiceId) &&
+                        VoiceIdToTextMap.ContainsKey(currentVoiceId))
                     {
                         var text = VoiceIdToTextMap[currentVoiceId];
                         LogManager.Debug(
                             $"Found text for voice {currentVoiceId} -> {text}, showing subtitle (form text cache), currentSubtitleType={_currentSubtitleType}");
 
                         // 显示字幕
-                        SubtitleComponentManager.ShowSubtitle(text, speakerName, 0, _currentSubtitleType);
+                        SubtitleComponentManager.ShowSubtitle(text, speakerName, 0,
+                            _currentSubtitleType);
                         foundText = true;
                     }
                     // 尝试直接按 voiceId 获取翻译
-                    else if (TextTranslateManger.GetTranslateText(currentVoiceId, out var translateText))
+                    else if (TextTranslateManger.GetTranslateText(currentVoiceId,
+                                 out var translateText))
                     {
                         VoiceIdToTextMap[currentVoiceId] = translateText;
 
                         LogManager.Debug(
                             $"Found text for voice {currentVoiceId} -> {translateText}, showing subtitle (form text translator), currentSubtitleType={_currentSubtitleType}");
-                        SubtitleComponentManager.ShowSubtitle(translateText, speakerName, 0, _currentSubtitleType);
+                        SubtitleComponentManager.ShowSubtitle(translateText, speakerName, 0,
+                            _currentSubtitleType);
                         foundText = true;
                     }
                     else
@@ -332,7 +340,8 @@ public static class SubtitleManager
                     yield return new WaitForSeconds(0.1f);
                     if (currentVoiceId == lastPlayingVoiceId)
                     {
-                        LogManager.Debug($"Voice {lastPlayingVoiceId} stopped playing, hiding subtitle");
+                        LogManager.Debug(
+                            $"Voice {lastPlayingVoiceId} stopped playing, hiding subtitle");
                         SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
                         foundText = false;
                     }
@@ -388,7 +397,8 @@ public static class SubtitleManager
         // 直接更新映射
         VoiceIdToTextMap[voiceId] = text;
 
-        LogManager.Debug($"SetVoiceText called by {callBy}, create a mapping: voiceId={voiceId}, text={text}");
+        LogManager.Debug(
+            $"SetVoiceText called by {callBy}, create a mapping: voiceId={voiceId}, text={text}");
     }
 
 
@@ -404,7 +414,8 @@ public static class SubtitleManager
         // 直接更新映射
         VoiceIdToTextMap[_currentVoiceId] = text;
 
-        LogManager.Debug($"SetVoiceText called by {callBy}, create a mapping: voiceId={_currentVoiceId}, text={text}");
+        LogManager.Debug(
+            $"SetVoiceText called by {callBy}, create a mapping: voiceId={_currentVoiceId}, text={text}");
     }
 
     // <summary>

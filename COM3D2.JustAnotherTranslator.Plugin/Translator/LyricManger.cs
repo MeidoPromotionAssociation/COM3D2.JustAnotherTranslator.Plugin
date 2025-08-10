@@ -186,7 +186,8 @@ public static class LyricManger
         try
         {
             using (var reader =
-                   new StreamReader(path, Encoding.UTF8)) // This can process utf-8-sig as well, which is csv should be
+                   new StreamReader(path,
+                       Encoding.UTF8)) // This can process utf-8-sig as well, which is csv should be
             using (var csv = new CsvReader(reader, CsvConfig))
             {
                 var records = csv.GetRecords<LyricCsvEntry>();
@@ -201,7 +202,8 @@ public static class LyricManger
         }
         catch (Exception ex)
         {
-            LogManager.Error($"Error loading lyric file {path}: {ex.Message}/加载歌词文件出错 {path}: {ex.Message}");
+            LogManager.Error(
+                $"Error loading lyric file {path}: {ex.Message}/加载歌词文件出错 {path}: {ex.Message}");
         }
     }
 
@@ -279,7 +281,8 @@ public static class LyricManger
             LyricCsvEntry lyricToShow = null;
 
             // 将索引推进到已经完成的所有歌词之后
-            while (_currentLyricIndex < CurrentLyrics.Count && currentTime > CurrentLyrics[_currentLyricIndex].EndTime)
+            while (_currentLyricIndex < CurrentLyrics.Count &&
+                   currentTime > CurrentLyrics[_currentLyricIndex].EndTime)
                 _currentLyricIndex++;
 
             // 检查是否应显示当前（或下一个）歌词
@@ -306,7 +309,8 @@ public static class LyricManger
                 }
                 else
                 {
-                    SubtitleComponentManager.HideSubtitleById(SubtitleComponentManager.GetSpeakerSubtitleId(null));
+                    SubtitleComponentManager.HideSubtitleById(
+                        SubtitleComponentManager.GetSpeakerSubtitleId(null));
                     LogManager.Debug("Hiding lyric");
                 }
             }
@@ -339,13 +343,16 @@ public static class LyricManger
                 lyric = lyricEntry.TranslatedLyric;
                 break;
             case JustAnotherTranslator.LyricSubtitleTypeEnum.TranslationAndOriginal:
-                lyric = string.Concat(lyricEntry.TranslatedLyric, "\n", placeHolder, lyricEntry.OriginalLyric);
+                lyric = string.Concat(lyricEntry.TranslatedLyric, "\n", placeHolder,
+                    lyricEntry.OriginalLyric);
                 break;
             case JustAnotherTranslator.LyricSubtitleTypeEnum.OriginalAndTranslation:
-                lyric = string.Concat(lyricEntry.OriginalLyric, "\n", placeHolder, lyricEntry.TranslatedLyric);
+                lyric = string.Concat(lyricEntry.OriginalLyric, "\n", placeHolder,
+                    lyricEntry.TranslatedLyric);
                 break;
             default:
-                lyric = string.Concat(lyricEntry.TranslatedLyric, "\n", placeHolder, lyricEntry.OriginalLyric);
+                lyric = string.Concat(lyricEntry.TranslatedLyric, "\n", placeHolder,
+                    lyricEntry.OriginalLyric);
                 break;
         }
 

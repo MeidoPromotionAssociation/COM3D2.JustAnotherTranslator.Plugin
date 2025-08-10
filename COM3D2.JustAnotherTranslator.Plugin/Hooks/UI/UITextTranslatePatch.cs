@@ -37,8 +37,10 @@ public static class UITextTranslatePatch
         typeof(string)
     )]
     [HarmonyPrefix]
-    public static bool LocalizationManager_GetTranslation_Prefix(string Term, bool FixForRTL, int maxLineLengthForRTL,
-        bool ignoreRTLnumbers, bool applyParameters, GameObject localParametersRoot, string overrideLanguage,
+    public static bool LocalizationManager_GetTranslation_Prefix(string Term, bool FixForRTL,
+        int maxLineLengthForRTL,
+        bool ignoreRTLnumbers, bool applyParameters, GameObject localParametersRoot,
+        string overrideLanguage,
         ref string __result)
     {
         try

@@ -56,7 +56,8 @@ public static class TextTranslateManger
 
         RegisterPatch();
 
-        if (JustAnotherTranslator.EnableTextDump.Value) SceneManager.sceneUnloaded += OnSceneUnloaded;
+        if (JustAnotherTranslator.EnableTextDump.Value)
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _initialized = true;
     }
@@ -135,8 +136,10 @@ public static class TextTranslateManger
                 }
 
                 var isPatchedByLegacy =
-                    Harmony.HasAnyPatches("com.github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
-                    Harmony.HasAnyPatches("github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
+                    Harmony.HasAnyPatches(
+                        "com.github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
+                    Harmony.HasAnyPatches(
+                        "github.90135.com3d2_scripts_901.maidcafelinebreakcommentfix") ||
                     Harmony.HasAnyPatches(
                         "github.meidopromotionassociation.com3d2_scripts.maidcafelinebreakcommentfix");
 
@@ -178,7 +181,8 @@ public static class TextTranslateManger
     /// <param name="totalEntries"></param>
     /// <param name="totalFiles"></param>
     /// <param name="elapsedMilliseconds"></param>
-    private static void OnLoadingComplete(Dictionary<string, string> result, Dictionary<Regex, string> regexResult,
+    private static void OnLoadingComplete(Dictionary<string, string> result,
+        Dictionary<Regex, string> regexResult,
         int totalEntries, int totalFiles,
         long elapsedMilliseconds)
     {
@@ -202,7 +206,8 @@ public static class TextTranslateManger
     /// <param name="translated">译文输出</param>
     /// <param name="skipMark">跳过已翻译标记</param>
     /// <returns>是否翻译成功</returns>
-    public static bool GetTranslateText(string original, out string translated, bool skipMark = false)
+    public static bool GetTranslateText(string original, out string translated,
+        bool skipMark = false)
     {
         translated = original;
 
@@ -210,7 +215,8 @@ public static class TextTranslateManger
         {
             if (!_initialized)
             {
-                LogManager.Warning("Text translation is not enabled, return original text/未启用文本翻译，返回原文");
+                LogManager.Warning(
+                    "Text translation is not enabled, return original text/未启用文本翻译，返回原文");
                 return false;
             }
 
@@ -289,7 +295,8 @@ public static class TextTranslateManger
 
                 if (_translationDict.TryGetValue(capturedString, out var groupTranslation))
                 {
-                    LogManager.Debug($"Found translation for '{capturedString}' => '{groupTranslation}'");
+                    LogManager.Debug(
+                        $"Found translation for '{capturedString}' => '{groupTranslation}'");
                     return groupTranslation;
                 }
 
@@ -325,7 +332,8 @@ public static class TextTranslateManger
             LogManager.Debug($"Text not translated, dumping: {text}");
             DumpBuffer.Add(text);
 
-            if (DumpBuffer.Count >= JustAnotherTranslator.TextDumpThreshold.Value) FlushDumpBuffer();
+            if (DumpBuffer.Count >= JustAnotherTranslator.TextDumpThreshold.Value)
+                FlushDumpBuffer();
         }
     }
 

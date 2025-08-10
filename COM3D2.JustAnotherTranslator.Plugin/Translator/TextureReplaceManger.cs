@@ -36,7 +36,8 @@ public static class TextureReplaceManger
         _textureReplacePatch = Harmony.CreateAndPatchAll(typeof(TextureReplacePatch),
             "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.texture.texturereplacepatch");
 
-        if (JustAnotherTranslator.EnableTexturesDump.Value) SceneManager.sceneUnloaded += OnSceneUnloaded;
+        if (JustAnotherTranslator.EnableTexturesDump.Value)
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _initialized = true;
     }
@@ -116,7 +117,8 @@ public static class TextureReplaceManger
     /// <param name="originalTexture"></param>
     /// <param name="replacedTexture"></param>
     /// <returns></returns>
-    public static bool GetReplaceTexture(string filename, out byte[] replacedTexture, Texture originalTexture = null)
+    public static bool GetReplaceTexture(string filename, out byte[] replacedTexture,
+        Texture originalTexture = null)
     {
         replacedTexture = null;
 
@@ -138,7 +140,8 @@ public static class TextureReplaceManger
                     // 添加成功则为 true
                     if (DumpedTextures.Add(filename))
                     {
-                        LogManager.Debug($"Texture replace for {filename} not found, try to dump original texture");
+                        LogManager.Debug(
+                            $"Texture replace for {filename} not found, try to dump original texture");
                         var bytes = GetTextureBytes(originalTexture);
                         if (bytes != null)
                             DumpTexture(filename, bytes);
@@ -186,7 +189,8 @@ public static class TextureReplaceManger
         }
         catch (Exception e)
         {
-            LogManager.Error($"Failed to write texture file: {textureName}/写入贴图文件失败: {textureName}, 错误: {e.Message}");
+            LogManager.Error(
+                $"Failed to write texture file: {textureName}/写入贴图文件失败: {textureName}, 错误: {e.Message}");
         }
     }
 

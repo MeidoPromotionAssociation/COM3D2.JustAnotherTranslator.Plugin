@@ -19,7 +19,8 @@ public static class SubtitleDebugPatch
     {
         try
         {
-            LogManager.Debug($"KagScriptCallTag_Prefix currentFileName: {__instance.GetCurrentFileName()}");
+            LogManager.Debug(
+                $"KagScriptCallTag_Prefix currentFileName: {__instance.GetCurrentFileName()}");
         }
         catch (Exception e)
         {

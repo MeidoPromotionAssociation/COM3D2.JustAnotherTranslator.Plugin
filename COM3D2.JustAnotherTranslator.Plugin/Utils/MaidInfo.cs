@@ -16,7 +16,8 @@ public static class MaidInfo
     {
         try
         {
-            if (JustAnotherTranslator.MaidNameStyle.Value == JustAnotherTranslator.MaidNameStyleEnum.JpStyle)
+            if (JustAnotherTranslator.MaidNameStyle.Value ==
+                JustAnotherTranslator.MaidNameStyleEnum.JpStyle)
                 return maid.status.fullNameJpStyle;
 
             return maid.status.fullNameEnStyle;

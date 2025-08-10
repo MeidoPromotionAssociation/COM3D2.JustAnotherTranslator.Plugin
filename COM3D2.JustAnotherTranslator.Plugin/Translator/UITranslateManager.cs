@@ -57,7 +57,8 @@ public static class UITranslateManager
             UIDebugPatch.LocalizeTargetPatcher.ApplyPatch(_uiDebugPatch);
         }
 
-        if (JustAnotherTranslator.EnableSpriteDump.Value) SceneManager.sceneUnloaded += OnSceneUnloaded;
+        if (JustAnotherTranslator.EnableSpriteDump.Value)
+            SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _initialized = true;
     }
@@ -115,7 +116,8 @@ public static class UITranslateManager
         if (_translations.TryGetValue(term, out var translation))
         {
             var markedTranslation = XUATInterop.MarkTranslated(translation);
-            LogManager.Debug($"Found translation for term: {term}, translation: {markedTranslation}");
+            LogManager.Debug(
+                $"Found translation for term: {term}, translation: {markedTranslation}");
             return markedTranslation;
         }
 
@@ -143,7 +145,8 @@ public static class UITranslateManager
     private static void LoadTextTranslationsAsync()
     {
         _uiTextLoader =
-            new AsyncUiTextLoader(JustAnotherTranslator.UITextPath, OnUiTextLoadProgress, OnUiTextLoadComplete);
+            new AsyncUiTextLoader(JustAnotherTranslator.UITextPath, OnUiTextLoadProgress,
+                OnUiTextLoadComplete);
         _uiTextLoader.StartLoading();
     }
 
@@ -210,7 +213,8 @@ public static class UITranslateManager
 
                 ReplaceSprite(sprite, replacementTexture, spriteName);
 
-                LogManager.Debug($"Successfully replaced UIButton '{uiButton.name}' sprite with '{spriteName}'.");
+                LogManager.Debug(
+                    $"Successfully replaced UIButton '{uiButton.name}' sprite with '{spriteName}'.");
             }
             else
             {
@@ -218,7 +222,8 @@ public static class UITranslateManager
                     // 添加成功则为 true
                     if (DumpedSprite.Add(spriteName))
                     {
-                        LogManager.Debug($"Sprite replace for {spriteName} not found, try to dump it.");
+                        LogManager.Debug(
+                            $"Sprite replace for {spriteName} not found, try to dump it.");
 
                         var sprite = GetUISpriteFromUIButton(uiButton);
 
@@ -351,7 +356,8 @@ public static class UITranslateManager
                 }
             }
 
-            var files = Directory.GetFiles(JustAnotherTranslator.UISpritePath, "*.png", SearchOption.AllDirectories);
+            var files = Directory.GetFiles(JustAnotherTranslator.UISpritePath, "*.png",
+                SearchOption.AllDirectories);
 
             LogManager.Info(
                 $"Found {files.Length} Sprite files in translation UISprite directory/在UI精灵图目录目录中找到 {files.Length} 个精灵图文件 ");
@@ -427,7 +433,8 @@ public static class UITranslateManager
             LogManager.Debug($"=== Sprite Debug Info for {sprite.name} ===");
             LogManager.Debug($"Atlas: {(sprite.atlas != null ? sprite.atlas.name : "null")}");
             LogManager.Debug($"Sprite Name: {sprite.spriteName}");
-            LogManager.Debug($"Material: {(sprite.material != null ? sprite.material.name : "null")}");
+            LogManager.Debug(
+                $"Material: {(sprite.material != null ? sprite.material.name : "null")}");
             LogManager.Debug(
                 $"Main Texture: {(sprite.mainTexture != null ? $"{sprite.mainTexture.name} ({sprite.mainTexture.width}x{sprite.mainTexture.height})" : "null")}");
             LogManager.Debug($"Widget Size: {sprite.width}x{sprite.height}");
@@ -480,7 +487,8 @@ public static class UITranslateManager
         }
         catch (Exception e)
         {
-            LogManager.Error($"Failed to write sprite: {spriteName}/写出 sprite: {spriteName} 失败 : {e.Message}");
+            LogManager.Error(
+                $"Failed to write sprite: {spriteName}/写出 sprite: {spriteName} 失败 : {e.Message}");
         }
     }
 
@@ -519,7 +527,8 @@ public static class UITranslateManager
 
                             var destTexture = new Texture2D(width, height);
                             // NGUI 图集的坐标系原点在左上角，而 Unity Texture2D.GetPixels 方法的坐标系原点在左下角
-                            destTexture.SetPixels(readableTexture.GetPixels(x, readableTexture.height - y - height,
+                            destTexture.SetPixels(readableTexture.GetPixels(x,
+                                readableTexture.height - y - height,
                                 width, height));
                             destTexture.Apply();
 

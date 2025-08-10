@@ -94,7 +94,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
         catch (Exception e)
         {
-            LogManager.Error($"Failed to initialize base subtitle component/基础字幕组件初始化失败: {e.Message}");
+            LogManager.Error(
+                $"Failed to initialize base subtitle component/基础字幕组件初始化失败: {e.Message}");
         }
     }
 
@@ -309,7 +310,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <param name="speakerName">说话者名称，可为空</param>
     /// <param name="speakerColor">说话者颜色，可为空</param>
     /// <param name="enableSpeakerName">是否启用说话者名称</param>
-    private void SetText(string text, string speakerName, string speakerColor, bool enableSpeakerName)
+    private void SetText(string text, string speakerName, string speakerColor,
+        bool enableSpeakerName)
     {
         var displayText = text;
         // 设置文本，无需处理 XUAT 互操作以及翻译，因为获取时已经被翻译了
@@ -384,7 +386,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             if (Config.EnableOutline)
             {
                 OutlineComponents.effectColor = Config.OutlineColor;
-                OutlineComponents.effectDistance = new Vector2(Config.OutlineWidth, Config.OutlineWidth);
+                OutlineComponents.effectDistance =
+                    new Vector2(Config.OutlineWidth, Config.OutlineWidth);
             }
         }
 
@@ -403,6 +406,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             ApplyNewPosition();
             return;
         }
+
         LogManager.Warning("Subtitle config is null, cannot set vertical position/字幕配置为空，无法设置垂直位置");
     }
 
@@ -475,7 +479,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         // TextComponent.color 无法影响 html 标签，因此需要单独处理
-        if (Config.EnableSpeakerName && !string.IsNullOrEmpty(SpeakerColor) && !string.IsNullOrEmpty(SpeakerName))
+        if (Config.EnableSpeakerName && !string.IsNullOrEmpty(SpeakerColor) &&
+            !string.IsNullOrEmpty(SpeakerName))
         {
             // 将alpha (0-1) 转换为两位十六进制字符串 (00-FF)
             var alphaByte = (byte)(Mathf.Clamp01(alpha) * 255f);
@@ -491,7 +496,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
                 TextTranslateManger.GetTranslateText(SpeakerName, out _translatedSpeakerName);
 
             // 重构文本
-            TextComponent.text = $"<color=#{SpeakerColor}>{_translatedSpeakerName}</color>: {_currentText}";
+            TextComponent.text =
+                $"<color=#{SpeakerColor}>{_translatedSpeakerName}</color>: {_currentText}";
         }
     }
 

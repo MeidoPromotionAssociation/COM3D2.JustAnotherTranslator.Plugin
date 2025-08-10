@@ -48,7 +48,8 @@ public static class UIDebugPatch
                             return Type.EmptyTypes;
                         }
                     })
-                    .Where(type => targetType.IsAssignableFrom(type) && !type.IsAbstract && !type.IsInterface)
+                    .Where(type =>
+                        targetType.IsAssignableFrom(type) && !type.IsAbstract && !type.IsInterface)
                     .ToList();
 
                 if (!implementingTypes.Any())
@@ -78,7 +79,8 @@ public static class UIDebugPatch
                         }
                         catch (Exception e)
                         {
-                            LogManager.Debug($"Failed to patch {type.FullName}.DoLocalize: {e.Message}");
+                            LogManager.Debug(
+                                $"Failed to patch {type.FullName}.DoLocalize: {e.Message}");
                         }
                 }
 
@@ -99,13 +101,15 @@ public static class UIDebugPatch
     /// </summary>
     public static class DoLocalizePatches
     {
-        public static void LogDoLocalizeCallPrefix(ILocalizeTarget __instance, Localize cmp, string mainTranslation,
+        public static void LogDoLocalizeCallPrefix(ILocalizeTarget __instance, Localize cmp,
+            string mainTranslation,
             string secondaryTranslation)
         {
             try
             {
                 var instanceType = __instance.GetType().FullName;
-                var gameObjectName = cmp != null && cmp.gameObject != null ? cmp.gameObject.name : "N/A";
+                var gameObjectName =
+                    cmp != null && cmp.gameObject != null ? cmp.gameObject.name : "N/A";
 
                 var logMessage =
                     $"[DoLocalize] Called on Type: {instanceType}\n" +

@@ -27,7 +27,8 @@ public static class VRTouchSubtitlePatch
     /// <param name="__instance"></param>
     [HarmonyPatch(typeof(VRTouchKagManager), "TagShuffle")]
     [HarmonyPostfix]
-    public static void VRTouchKagManager_TagTalk_Postfix(KagTagSupport tag_data, ADVKagManager __instance)
+    public static void VRTouchKagManager_TagTalk_Postfix(KagTagSupport tag_data,
+        ADVKagManager __instance)
     {
         try
         {

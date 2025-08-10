@@ -148,7 +148,8 @@ public class AsyncUiTextLoader
             LogManager.Info(
                 "Loading UI translation files asynchronously, other plugins can load at the same time/正在异步加载UI翻译文件，其他插件可以同时进行加载");
 
-            var allFiles = FileTool.GetAllTranslationFiles(_translationPath, new[] { ".csv", ".zip" });
+            var allFiles =
+                FileTool.GetAllTranslationFiles(_translationPath, new[] { ".csv", ".zip" });
             totalFiles = allFiles.Count;
 
             if (allFiles.Count == 0)
@@ -178,12 +179,14 @@ public class AsyncUiTextLoader
         }
         catch (Exception ex)
         {
-            LogManager.Error($"Error while loading UI translation file/加载UI翻译文件时发生错误: {ex.Message}");
+            LogManager.Error(
+                $"Error while loading UI translation file/加载UI翻译文件时发生错误: {ex.Message}");
         }
         finally
         {
             sw.Stop();
-            _completionCallback?.Invoke(Translations, totalEntries, filesProcessed, sw.ElapsedMilliseconds);
+            _completionCallback?.Invoke(Translations, totalEntries, filesProcessed,
+                sw.ElapsedMilliseconds);
         }
     }
 
@@ -212,7 +215,8 @@ public class AsyncUiTextLoader
         }
         catch (Exception e)
         {
-            LogManager.Error($"Error processing file/处理文件时出错 {Path.GetFileName(filePath)}: {e.Message}");
+            LogManager.Error(
+                $"Error processing file/处理文件时出错 {Path.GetFileName(filePath)}: {e.Message}");
         }
 
         return entriesCount;
@@ -235,12 +239,14 @@ public class AsyncUiTextLoader
                 var csvFiles = new List<ZipEntry>();
                 foreach (ZipEntry zipEntry in zf)
                 {
-                    if (!zipEntry.IsFile || !zipEntry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                    if (!zipEntry.IsFile ||
+                        !zipEntry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                         continue;
 
                     if (FileTool.IsZipPathUnsafe(zipEntry.Name))
                     {
-                        LogManager.Warning($"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {zipEntry.Name}");
+                        LogManager.Warning(
+                            $"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {zipEntry.Name}");
                         continue;
                     }
 
@@ -269,7 +275,8 @@ public class AsyncUiTextLoader
                     }
                     catch (Exception e)
                     {
-                        LogManager.Warning($"Error processing entry in ZIP/处理ZIP中的条目时出错 {entry.Name}: {e.Message}");
+                        LogManager.Warning(
+                            $"Error processing entry in ZIP/处理ZIP中的条目时出错 {entry.Name}: {e.Message}");
                     }
             }
         }
@@ -293,9 +300,11 @@ public class AsyncUiTextLoader
 
         try
         {
-            LogManager.Info($"Processing ZIP archive {fileName} text files/正在处理ZIP压缩包: {fileName})");
+            LogManager.Info(
+                $"Processing ZIP archive {fileName} text files/正在处理ZIP压缩包: {fileName})");
 
-            using var fileStream = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read, FileShare.Read,
+            using var fileStream = new FileStream(zipFilePath, FileMode.Open, FileAccess.Read,
+                FileShare.Read,
                 ZipBuffSize);
             using var zipStream = new ZipInputStream(fileStream);
 
@@ -304,18 +313,23 @@ public class AsyncUiTextLoader
             {
                 if (FileTool.IsZipPathUnsafe(entry.Name))
                 {
-                    LogManager.Warning($"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {entry.Name}");
+                    LogManager.Warning(
+                        $"Skipping unsafe entry in ZIP archive/跳过ZIP压缩包中的不安全条目： {entry.Name}");
                     continue;
                 }
 
-                if (!entry.IsFile || !entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+                if (!entry.IsFile ||
+                    !entry.Name.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
                     continue;
 
                 try
                 {
                     // 预估容量以减少内存重分配
-                    var estimatedSize = entry.Size > 0 ? (int)Math.Min(entry.Size, int.MaxValue) : ZipSteamCacheSize;
-                    using (var memStream = new MemoryStream(estimatedSize > 0 ? estimatedSize : ZipSteamCacheSize))
+                    var estimatedSize = entry.Size > 0
+                        ? (int)Math.Min(entry.Size, int.MaxValue)
+                        : ZipSteamCacheSize;
+                    using (var memStream =
+                           new MemoryStream(estimatedSize > 0 ? estimatedSize : ZipSteamCacheSize))
                     {
                         var buffer = new byte[ZipSteamCacheSize];
                         int bytesRead;
@@ -332,7 +346,8 @@ public class AsyncUiTextLoader
                 }
                 catch (Exception e)
                 {
-                    LogManager.Warning($"Error processing entry in ZIP/处理ZIP中的条目时出错 {entry.Name}: {e.Message}");
+                    LogManager.Warning(
+                        $"Error processing entry in ZIP/处理ZIP中的条目时出错 {entry.Name}: {e.Message}");
                 }
             }
 
@@ -355,14 +370,16 @@ public class AsyncUiTextLoader
     {
         try
         {
-            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var fileStream =
+                   new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 return ProcessCsvStream(fileStream);
             }
         }
         catch (Exception e)
         {
-            LogManager.Error($"Error processing CSV file/处理CSV文件时出错 {Path.GetFileName(filePath)}: {e.Message}");
+            LogManager.Error(
+                $"Error processing CSV file/处理CSV文件时出错 {Path.GetFileName(filePath)}: {e.Message}");
             return 0;
         }
     }
@@ -381,7 +398,8 @@ public class AsyncUiTextLoader
             var records = csv.GetRecords<CsvEntry>();
             foreach (var record in records)
             {
-                if (string.IsNullOrEmpty(record.Term) || string.IsNullOrEmpty(record.Translation)) continue;
+                if (string.IsNullOrEmpty(record.Term) ||
+                    string.IsNullOrEmpty(record.Translation)) continue;
                 Translations[record.Term] = record.Translation;
                 entriesLoaded++;
             }

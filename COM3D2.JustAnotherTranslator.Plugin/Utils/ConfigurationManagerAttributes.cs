@@ -68,7 +68,8 @@ internal sealed class ConfigurationManagerAttributes
     ///     The value will persist after being set, use it to see if the current instance is being edited.
     ///     Remember to set it to false after you are done!
     /// </param>
-    public delegate void CustomHotkeyDrawerFunc(ConfigEntryBase setting, ref bool isCurrentlyAcceptingInput);
+    public delegate void CustomHotkeyDrawerFunc(ConfigEntryBase setting,
+        ref bool isCurrentlyAcceptingInput);
 
     /// <summary>
     ///     Show this setting in the settings screen at all? If false, don't show.

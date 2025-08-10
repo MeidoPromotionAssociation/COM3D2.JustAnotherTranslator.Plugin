@@ -32,7 +32,8 @@ public static class YotogiSubtitlePatch
     [HarmonyPatch(typeof(YotogiKagManager), "TagTalkRepeat")]
     [HarmonyPatch(typeof(YotogiKagManager), "TagTalkRepeatAdd")]
     [HarmonyPostfix]
-    public static void YotogiKagManager_TagTalk_Postfix(KagTagSupport tag_data, YotogiKagManager __instance)
+    public static void YotogiKagManager_TagTalk_Postfix(KagTagSupport tag_data,
+        YotogiKagManager __instance)
     {
         try
         {

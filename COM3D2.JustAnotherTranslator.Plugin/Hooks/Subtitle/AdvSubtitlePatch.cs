@@ -20,7 +20,8 @@ public static class AdvSubtitlePatch
     /// <param name="__instance"></param>
     [HarmonyPatch(typeof(ADVKagManager), "TagTalk")]
     [HarmonyPostfix]
-    public static void ADVKagManager_TagTalk_Postfix(KagTagSupport tag_data, ADVKagManager __instance)
+    public static void ADVKagManager_TagTalk_Postfix(KagTagSupport tag_data,
+        ADVKagManager __instance)
     {
         try
         {
@@ -43,7 +44,8 @@ public static class AdvSubtitlePatch
                 LogManager.Debug($"ADVKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
                 LogManager.Debug(
                     $"ADVKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
-                LogManager.Debug($"ADVKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
+                LogManager.Debug(
+                    $"ADVKagManager_TagTalk_Postfix speakingMaid: {speakingMaid.status.fullNameJpStyle}");
             }
         }
         catch (Exception e)

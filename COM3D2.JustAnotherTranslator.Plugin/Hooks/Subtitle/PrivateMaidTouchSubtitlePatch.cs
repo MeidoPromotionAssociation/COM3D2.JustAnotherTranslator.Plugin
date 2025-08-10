@@ -20,7 +20,8 @@ public static class PrivateMaidTouchSubtitlePatch
     [HarmonyPatch(typeof(PrivateMaidTouchKagManager), "TagRcTalk")]
     [HarmonyPatch(typeof(PrivateMaidTouchKagManager), "TagTalkRepeat")]
     [HarmonyPostfix]
-    public static void PrivateMaidTouchKagManager_TagTalk_Postfix(KagTagSupport tag_data, ADVKagManager __instance)
+    public static void PrivateMaidTouchKagManager_TagTalk_Postfix(KagTagSupport tag_data,
+        ADVKagManager __instance)
     {
         try
         {
@@ -40,7 +41,8 @@ public static class PrivateMaidTouchSubtitlePatch
                 SubtitleManager.SetCurrentSpeaker(speakingMaid);
                 SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
 
-                LogManager.Debug($"PrivateMaidTouchKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
+                LogManager.Debug(
+                    $"PrivateMaidTouchKagManager_TagTalk_Postfix tag_data voiceId: {voiceId}");
                 LogManager.Debug(
                     $"PrivateMaidTouchKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
                 LogManager.Debug(

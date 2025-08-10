@@ -159,6 +159,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
             ApplyNewPosition();
             return;
         }
+
         LogManager.Warning("Subtitle config is null, cannot set vertical position/字幕配置为空，无法设置垂直位置");
     }
 

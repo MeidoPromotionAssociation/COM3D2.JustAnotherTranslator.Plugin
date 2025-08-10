@@ -105,6 +105,64 @@ public static class LyricManger
         }
     }
 
+    /// <summary>
+    ///     将 DanceData 映射为 DanceInfoCsvEntry（列表序列化为逗号分隔字符串）
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+    private static DanceInfoCsvEntry MapDanceDataToCsvEntry(DanceData data)
+    {
+        if (data == null) return null;
+
+        var entry = new DanceInfoCsvEntry
+        {
+            Id = data.ID.ToString(),
+            Title = data.title,
+
+            TranslatedTitle = null,
+            Mode = null,
+
+            TitleFontSize = data.title_font_size,
+            TitleOffsetY = data.title_offset_y,
+
+            SceneName = data.scene_name,
+            SelectCharaNum = data.select_chara_num,
+            SampleImageName = data.sample_image_name,
+            CommentaryText = data.commentary_text,
+            BgmFileName = data.bgm_file_name,
+
+            PresetName = StringTool.JoinStringList(data.preset_name),
+            ScenarioProgress = data.scenario_progress,
+            Term = data.Term.ToString(),
+
+            AppealCutinName = data.AppealCutinName,
+            ReversalCutinName = data.ReversalCutinName,
+            DanceshowScene = data.danceshow_scene,
+            DanceshowImage = data.danceshow_image,
+            MaidOrder = StringTool.JoinIntList(data.maid_order),
+
+            BgType = data.bgType.ToString(),
+            InitialPlayable = data.InitialPlayable,
+            IsPlayable = data.IsPlayable,
+            RhythmGameCorrespond = data.RhythmGameCorrespond,
+
+            SubtitleSheetName = data.SubtitleSheetName,
+            IsShowSelectScene = data.isShowSelectScene,
+            CsvFolderName = data.csvFolderName,
+
+            KuchiPakuFileList = StringTool.JoinStringList(data.kuchiPakuFileList),
+            MotionFileList = StringTool.JoinStringList(data.motionFileList),
+            MovieFileName = data.movieFileName,
+            BinaryFolderName = data.binaryFolderName,
+
+            SingPartList = StringTool.SerializeSingPartList(data.singPartList),
+
+            PersonalityFilter = StringTool.JoinStringList(data.personalityFilter),
+            BodyFilterMode = data.bodyFilterMode.ToString()
+        };
+
+        return entry;
+    }
 
     /// <summary>
     ///     清理场景资源
@@ -122,17 +180,16 @@ public static class LyricManger
     }
 
     /// <summary>
-    ///     创建音乐对应的字幕文件夹
+    ///     创建音乐对应的字幕文件夹，并写入信息
     /// </summary>
-    /// <param name="musicName"></param>
-    public static void CreateMusicPath(string musicName)
+    /// <param name="path"></param>
+    private static void CreateMusicPathAndWriteInfo(string path)
     {
         try
         {
-            var path = Path.Combine(JustAnotherTranslator.LyricPath, musicName);
-
             Directory.CreateDirectory(path);
 
+            // 创建歌词文件
             var lyricPath = Path.Combine(path, "lyric.csv");
             if (!File.Exists(lyricPath))
             {
@@ -141,6 +198,44 @@ public static class LyricManger
                 using (var csv = new CsvWriter(writer, CsvConfig))
                 {
                     csv.WriteHeader(typeof(LyricCsvEntry));
+                    csv.NextRecord();
+                }
+            }
+
+            // 创建舞曲信息
+            var danceInfoPath = Path.Combine(path, "danceInfo.csv");
+            if (!File.Exists(danceInfoPath))
+            {
+                // UTF8Encoding(true) 明确为 UTF-8-BOM
+                using (var writer = new StreamWriter(danceInfoPath, false, new UTF8Encoding(true)))
+                using (var csv = new CsvWriter(writer, CsvConfig))
+                {
+                    // 写入表头
+                    csv.WriteHeader(typeof(DanceInfoCsvEntry));
+
+                    // 写入一条记录（如果能获取到当前的 DanceData）
+                    var entry = MapDanceDataToCsvEntry(DanceMain.SelectDanceData);
+                    if (entry != null)
+                    {
+                        TextTranslateManger.GetTranslateText(entry.Title, out var translatedTitle,
+                            true);
+
+                        var mode = "";
+                        if (DanceMain.KaraokeMode)
+                        {
+                            mode = "Karaoke";
+                        }
+                        else
+                        {
+                            mode = "Dance";
+                        }
+
+                        entry.TranslatedTitle = translatedTitle;
+                        entry.Mode = mode;
+
+                        csv.WriteRecord(entry);
+                    }
+
                     csv.NextRecord();
                 }
             }
@@ -155,10 +250,9 @@ public static class LyricManger
     ///     尝试加载字幕
     ///     如果字幕文件存在就加载
     /// </summary>
-    public static void TryToLoadLyric(string musicName)
+    /// <param name="path"></param>
+    private static void TryToLoadLyric(string path)
     {
-        // I don't have 3 args in .net framework 3.5
-        var path = Path.Combine(JustAnotherTranslator.LyricPath, musicName);
         path = Path.Combine(path, "lyric.csv");
 
         if (File.Exists(path))
@@ -168,7 +262,7 @@ public static class LyricManger
     /// <summary>
     ///     清空字幕
     /// </summary>
-    public static void ClearLyric()
+    private static void ClearLyric()
     {
         CurrentLyrics.Clear();
         _currentLyricIndex = 0;
@@ -224,8 +318,10 @@ public static class LyricManger
         if (string.IsNullOrEmpty(musicName))
             return;
 
-        CreateMusicPath(musicName);
-        TryToLoadLyric(musicName);
+        var path = Path.Combine(JustAnotherTranslator.LyricPath, musicName);
+
+        CreateMusicPathAndWriteInfo(path);
+        TryToLoadLyric(path);
     }
 
     /// <summary>
@@ -377,5 +473,65 @@ public static class LyricManger
         public float EndTime { get; set; }
         [CanBeNull] public string OriginalLyric { get; set; }
         [CanBeNull] public string TranslatedLyric { get; set; }
+    }
+
+
+    /// <summary>
+    ///     CSV structure for dances info
+    /// </summary>
+    private class DanceInfoCsvEntry
+    {
+        [CanBeNull] public string Id { get; set; }
+        [CanBeNull] public string Title { get; set; }
+        [CanBeNull] public string TranslatedTitle { get; set; }
+        [CanBeNull] public string Mode { get; set; }
+
+        // 以下字段对应于 DanceData 结构，用于在 CSV 中描述舞蹈信息
+        // 注：集合类型使用竖线(|)分隔（例如："a|b|c"），数值/布尔可留空表示不设置
+
+        // 显示相关
+        public int? TitleFontSize { get; set; }
+        public int? TitleOffsetY { get; set; }
+
+        // 场景与资源
+        [CanBeNull] public string SceneName { get; set; }
+        public int? SelectCharaNum { get; set; }
+        [CanBeNull] public string SampleImageName { get; set; }
+        [CanBeNull] public string CommentaryText { get; set; }
+        [CanBeNull] public string BgmFileName { get; set; }
+
+        // 预设、进度与标签
+        [CanBeNull] public string PresetName { get; set; } // 多值用竖线(|)分隔
+        public int? ScenarioProgress { get; set; }
+        [CanBeNull] public string Term { get; set; }
+
+        // 演出相关
+        [CanBeNull] public string AppealCutinName { get; set; }
+        [CanBeNull] public string ReversalCutinName { get; set; }
+        [CanBeNull] public string DanceshowScene { get; set; }
+        [CanBeNull] public string DanceshowImage { get; set; }
+        [CanBeNull] public string MaidOrder { get; set; } // 以竖线(|)分隔的整数序列
+
+        // 背景与开关
+        [CanBeNull] public string BgType { get; set; }
+        public bool? InitialPlayable { get; set; }
+        public bool? IsPlayable { get; set; }
+        public bool? RhythmGameCorrespond { get; set; }
+
+        // 字幕、可见性与目录
+        [CanBeNull] public string SubtitleSheetName { get; set; }
+        public bool? IsShowSelectScene { get; set; }
+        [CanBeNull] public string CsvFolderName { get; set; }
+
+        // 文件清单
+        [CanBeNull] public string KuchiPakuFileList { get; set; } // 竖线(|)分隔
+        [CanBeNull] public string MotionFileList { get; set; } // 竖线(|)分隔
+        [CanBeNull] public string MovieFileName { get; set; }
+        [CanBeNull] public string BinaryFolderName { get; set; }
+        [CanBeNull] public string SingPartList { get; set; } // 竖线(|)分隔
+
+        // 过滤器
+        [CanBeNull] public string PersonalityFilter { get; set; } // 竖线(|)分隔
+        [CanBeNull] public string BodyFilterMode { get; set; }
     }
 }

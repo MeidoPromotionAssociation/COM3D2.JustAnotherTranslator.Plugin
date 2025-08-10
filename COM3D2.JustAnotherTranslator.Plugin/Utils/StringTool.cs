@@ -1,4 +1,7 @@
-﻿using System.Globalization;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using JetBrains.Annotations;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
@@ -67,5 +70,73 @@ public static class StringTool
     public static bool IsNullOrWhiteSpace(string text)
     {
         return string.IsNullOrEmpty(text) || text.Trim().Length == 0;
+    }
+
+
+    /// <summary>
+    ///     将字符串列表序列化为字符串：每项使用 '|' 分隔
+    /// </summary>
+    /// <param name="list"></param>
+    /// <returns></returns>
+    public static string JoinStringList(List<string> list)
+    {
+        if (list == null || list.Count == 0) return null;
+        // 使用竖线分隔，避免与 CSV 的逗号分隔符冲突
+        return string.Join("|", list.ToArray());
+    }
+
+    /// <summary>
+    ///     将整数列表序列化为字符串：每项使用 '|' 分隔
+    /// </summary>
+    /// <param name="list"></param>
+    /// <returns></returns>
+    public static string JoinIntList(List<int> list)
+    {
+        if (list == null || list.Count == 0) return null;
+        var arr = new string[list.Count];
+        for (int i = 0; i < list.Count; i++)
+            arr[i] = list[i].ToString(CultureInfo.InvariantCulture);
+        // 使用竖线分隔，避免与 CSV 的逗号分隔符冲突
+        return string.Join("|", arr);
+    }
+
+    /// <summary>
+    ///     将 singPartList 序列化为字符串：每项使用 ':' 分隔字段，项之间使用 '|'
+    ///     需要转义的字符包括: '\\', '|', ':', '\r', '\n'
+    /// </summary>
+    public static string SerializeSingPartList(List<DanceSingPartData> list)
+    {
+        if (list == null || list.Count == 0) return null;
+        var sb = new StringBuilder();
+        for (int i = 0; i < list.Count; i++)
+        {
+            var item = list[i];
+            if (i > 0) sb.Append('|');
+
+            sb.Append(item.danceID.ToString(CultureInfo.InvariantCulture));
+            sb.Append(':');
+            sb.Append(Escape(item.vocalJPName));
+            sb.Append(':');
+            sb.Append(Escape(item.vocalNameTerm));
+            sb.Append(':');
+            sb.Append(Escape(item.vocalFile));
+        }
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    ///     将字符串转义
+    /// </summary>
+    public static string Escape(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return string.Empty;
+        // 注意顺序：先替换反斜杠
+        s = s.Replace("\\", "\\\\");
+        s = s.Replace("|", "\\|");
+        s = s.Replace(":", "\\:");
+        s = s.Replace("\r", "\\r");
+        s = s.Replace("\n", "\\n");
+        return s;
     }
 }

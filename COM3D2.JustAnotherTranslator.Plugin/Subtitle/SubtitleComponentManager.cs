@@ -212,20 +212,21 @@ public static class SubtitleComponentManager
         var config = subtitleComponent.GetConfig();
         if (config == null) return;
 
-        // VR OnTablet 模式使用专门的空间位置计算
-        if (JustAnotherTranslator.IsVrMode && config.VRSubtitleMode ==
-            JustAnotherTranslator.VRSubtitleModeEnum.OnTablet)
+        // VR 模式使用专门的空间位置计算
+        if (JustAnotherTranslator.IsVrMode)
         {
-            CalculateVRTabletPosition(subtitleComponent, config);
-            return;
-        }
-
-        // VR Space 模式使用专门的空间位置计算
-        if (JustAnotherTranslator.IsVrMode &&
-            config.VRSubtitleMode == JustAnotherTranslator.VRSubtitleModeEnum.InSpace)
-        {
-            CalculateVRSpacePosition(subtitleComponent, config);
-            return;
+            switch (config.VRSubtitleMode)
+            {
+                case JustAnotherTranslator.VRSubtitleModeEnum.OnTablet:
+                    CalculateVRTabletPosition(subtitleComponent, config);
+                    return;
+                case JustAnotherTranslator.VRSubtitleModeEnum.InSpace:
+                    CalculateVRSpacePosition(subtitleComponent, config);
+                    return;
+                default:
+                    LogManager.Error($"Unknown VR mode, please report this issue/未知 VR 模式，请报告此问题 {config.VRSubtitleMode}");
+                    return;
+            }
         }
 
         try
@@ -295,6 +296,7 @@ public static class SubtitleComponentManager
 
             LogManager.Debug(
                 $"Calculated subtitle position: {finalY} for subtitle: {currentSubtitleId}");
+
             // 更新配置和活动字幕列表
             config.CurrentVerticalPosition = finalY;
             subtitleComponent.SetVerticalPosition(finalY);
@@ -332,6 +334,7 @@ public static class SubtitleComponentManager
 
             // 查找现有条目以确定初始位置
             var existingEntry = ActiveSubtitles.FirstOrDefault(s => s.Id == currentSubtitleId);
+            // 如果已存在条目，尝试放回已记录的位置
             var initialZ = existingEntry.Id != null
                 ? existingEntry.InitialVerticalPosition
                 : config.VRTabletSubtitleVerticalPosition;
@@ -377,12 +380,10 @@ public static class SubtitleComponentManager
                 }
             }
 
-            // 更新配置并刷新 UI
-            config.VRTabletSubtitleVerticalPosition = finalZ;
+            // 更新配置和活动字幕列表
             config.CurrentVerticalPosition = finalZ;
-            subtitleComponent.UpdateConfig(config);
+            subtitleComponent.SetVerticalPosition(finalZ);
 
-            // 记录活跃字幕位置
             ActiveSubtitles.Add(new SubtitlePositionInfo
             {
                 Id = currentSubtitleId,
@@ -397,7 +398,7 @@ public static class SubtitleComponentManager
         catch (Exception ex)
         {
             LogManager.Error(
-                $"Calculate VR tablet subtitle position failed: {ex.Message}\n{ex.StackTrace}");
+                $"Calculate VR tablet subtitle position failed/计算字幕位置失败，使用默认位置:: {ex.Message}\n{ex.StackTrace}");
         }
     }
 

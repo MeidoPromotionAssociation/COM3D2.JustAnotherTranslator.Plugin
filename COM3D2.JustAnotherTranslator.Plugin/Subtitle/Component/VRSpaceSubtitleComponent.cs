@@ -385,18 +385,6 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     }
 
     /// <summary>
-    ///     销毁字幕
-    /// </summary>
-    protected override void DestroySubtitleUI()
-    {
-        if (VrSubtitleContainer != null)
-        {
-            Destroy(VrSubtitleContainer);
-        }
-        base.DestroySubtitleUI();
-    }
-
-    /// <summary>
     ///     应用配置
     /// </summary>
     public override void ApplyConfig()
@@ -462,5 +450,17 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
 
         LogManager.Debug("Applied VR-specific subtitle config with proper UI scaling");
+    }
+
+    /// <summary>
+    ///     销毁字幕
+    /// </summary>
+    protected override void DestroySubtitleUI()
+    {
+        if (VrSubtitleContainer != null)
+        {
+            Destroy(VrSubtitleContainer);
+        }
+        base.DestroySubtitleUI();
     }
 }

@@ -280,7 +280,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         return gameObject;
     }
 
-
     /// <summary>
     ///     获取当前垂直位置
     /// </summary>
@@ -288,19 +287,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     public virtual float GetCurrentVerticalPosition()
     {
         return Config?.CurrentVerticalPosition ?? 0f;
-    }
-
-    /// <summary>
-    ///     设置当前垂直位置
-    /// </summary>
-    /// <param name="position"></param>
-    public virtual void SetVerticalPosition(float position)
-    {
-        if (Config != null)
-        {
-            Config.CurrentVerticalPosition = position;
-            ApplyNewPosition();
-        }
     }
 
     /// <summary>
@@ -405,6 +391,20 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         LogManager.Debug($"Applied subtitle config to {gameObject.name}");
     }
 
+    /// <summary>
+    ///     设置当前垂直位置
+    /// </summary>
+    /// <param name="position"></param>
+    public virtual void SetVerticalPosition(float position)
+    {
+        if (Config != null)
+        {
+            Config.CurrentVerticalPosition = position;
+            ApplyNewPosition();
+            return;
+        }
+        LogManager.Warning("Subtitle config is null, cannot set vertical position/字幕配置为空，无法设置垂直位置");
+    }
 
     /// <summary>
     ///     应用新的位置，包括 水平位置，垂直位置，背景高度，背景宽度
@@ -435,7 +435,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
                 Config.SubtitleWidth, Config.SubtitleHeight);
 
             // 注意可以跟随父级移动，因此只需要移动背景即可
-            TextComponent.rectTransform.anchoredPosition3D = new Vector3(0f, 0f, 0f);
+            // TextComponent.rectTransform.anchoredPosition3D = new Vector3(
+            //     Config.HorizontalPosition, Config.CurrentVerticalPosition, 0f);
         }
     }
 
@@ -448,19 +449,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         {
             StopCoroutine(AnimationCoroutine);
             AnimationCoroutine = null;
-        }
-    }
-
-
-    /// <summary>
-    ///     销毁字幕UI
-    /// </summary>
-    protected virtual void DestroySubtitleUI()
-    {
-        if (CanvasComponents != null)
-        {
-            Destroy(CanvasComponents.gameObject);
-            CanvasComponents = null;
         }
     }
 
@@ -586,5 +574,18 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             $"Created Color R:{color.r:F2} G:{color.g:F2} B:{color.b:F2} A:{color.a:F2} for {speakerName}");
 
         return color;
+    }
+
+
+    /// <summary>
+    ///     销毁字幕UI
+    /// </summary>
+    protected virtual void DestroySubtitleUI()
+    {
+        if (CanvasComponents != null)
+        {
+            Destroy(CanvasComponents.gameObject);
+            CanvasComponents = null;
+        }
     }
 }

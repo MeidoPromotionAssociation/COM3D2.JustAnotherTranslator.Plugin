@@ -251,20 +251,27 @@ public static class SubtitleComponentManager
             const int maxSearchDistance = 1080; // 上下最大搜索距离
             const int screenHeight = 1080; // 参考屏幕高度
 
-            // 检查初始位置是否与任何活动字幕重叠
-            var overlaps = ActiveSubtitles.Any(s =>
-                initialY < s.VerticalPosition + s.Height &&
-                s.VerticalPosition < initialY + subtitleHeight);
+            // 检查位置是否与任何活动字幕重叠
+            // 屏幕模式以左下角为锚点，VerticalPosition 是字幕的“底边”像素
+            // 新字幕：从 z 开始向上占 subtitleHeight 像素（从 z 到 z + subtitleHeight）
+            // 旧字幕：从 s.VerticalPosition 开始向上占 s.Height 像素（从 s.VerticalPosition 到 s.VerticalPosition + s.Height)
+            // 新字幕完全在旧字幕上面：z ≥ s.VerticalPosition + s.Height，取反 z < s.VerticalPosition + s.Height
+            // 新字幕完全在旧字幕下面：s.VerticalPosition ≥ z + subtitleHeight 取反 s.VerticalPosition < z + subtitleHeight
+            // 因此取反新字幕完全不在旧字幕上面，且新字幕完全不在旧字幕下面，就算重叠
+            bool Overlaps(float z) => ActiveSubtitles.Any(s =>
+                z < s.VerticalPosition + s.Height &&
+                s.VerticalPosition < z + subtitleHeight);
 
             LogManager.Debug(
-                $"Finding available position for {currentSubtitleId}, checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {overlaps}");
+                $"Finding available position for {currentSubtitleId}, checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {Overlaps(initialY)}");
 
             foreach (var subtitle in ActiveSubtitles)
             {
-                LogManager.Debug($"Active subtitle: {subtitle.Id} height: {subtitle.Height} position: {subtitle.VerticalPosition} initial position: {subtitle.InitialVerticalPosition}");
+                LogManager.Debug(
+                    $"Active subtitle: {subtitle.Id} height: {subtitle.Height} position: {subtitle.VerticalPosition} initial position: {subtitle.InitialVerticalPosition}");
             }
 
-            if (overlaps)
+            if (Overlaps(initialY))
             {
                 var foundPosition = false;
                 // 先向下搜索可用位置
@@ -273,9 +280,7 @@ public static class SubtitleComponentManager
                     var testY = initialY - offset;
                     if (testY < 0) break; // 到达屏幕底部
 
-                    if (!ActiveSubtitles.Any(s =>
-                            testY < s.VerticalPosition + s.Height &&
-                            s.VerticalPosition < testY + subtitleHeight))
+                    if (!Overlaps(testY))
                     {
                         finalY = testY;
                         foundPosition = true;
@@ -290,9 +295,7 @@ public static class SubtitleComponentManager
                         var testY = initialY + offset;
                         if (testY + subtitleHeight > screenHeight) break; // 到达屏幕顶部
 
-                        if (!ActiveSubtitles.Any(s =>
-                                testY < s.VerticalPosition + s.Height &&
-                                s.VerticalPosition < testY + subtitleHeight))
+                        if (!Overlaps(testY))
                         {
                             finalY = testY;
                             break;
@@ -351,17 +354,24 @@ public static class SubtitleComponentManager
             var finalZ = initialZ;
 
             const int maxSteps = 2100; // 最大搜索步数
-            var step = 0.001f; // 步长
+            var step = subtitleHeightWorld; // 步长 = 字幕世界高度
 
+            // 检查给定位置是否与任何活动字幕重叠
+            // 平板电脑模式锚点为中心，即字幕垂直位置设置的是字幕中心的位置
+            // 因此两个中心之间的距离 d = Abs(s.VerticalPosition − z)
+            // 任意两个字幕中心之间的距离小于设定的字幕高度，则重叠
             bool Overlaps(float z) => ActiveSubtitles.Any(s =>
                 Mathf.Abs(s.VerticalPosition - z) < subtitleHeightWorld);
+            // Abs(s.VerticalPosition − z) < (subtitleHeightWorld + s.Height) * 0.5f − epsilon
+            // epsilon = 1e-6f
 
             LogManager.Debug(
                 $"Checking initial position: {initialZ}, subtitle height: {config.VRTabletSubtitleHeight} world height: {subtitleHeightWorld}, overlaps: {Overlaps(initialZ)}");
 
             foreach (var subtitle in ActiveSubtitles)
             {
-             LogManager.Debug($"Active subtitle: {subtitle.Id} height: {subtitle.Height} position: {subtitle.VerticalPosition} initial position: {subtitle.InitialVerticalPosition}");
+                LogManager.Debug(
+                    $"Active subtitle: {subtitle.Id} height: {subtitle.Height} position: {subtitle.VerticalPosition} initial position: {subtitle.InitialVerticalPosition}");
             }
 
             if (Overlaps(initialZ))

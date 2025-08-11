@@ -119,7 +119,9 @@ public static class LyricManger
             Id = data.ID.ToString(),
             Title = data.title,
 
+            MusicName = null,
             TranslatedTitle = null,
+            TranslatedCommentaryText = null,
             Mode = null,
 
             TitleFontSize = data.title_font_size,
@@ -183,7 +185,8 @@ public static class LyricManger
     ///     创建音乐对应的字幕文件夹，并写入信息
     /// </summary>
     /// <param name="path"></param>
-    private static void CreateMusicPathAndWriteInfo(string path)
+    /// <param name="musicName"></param>
+    private static void CreateMusicPathAndWriteInfo(string path, string musicName)
     {
         try
         {
@@ -202,42 +205,22 @@ public static class LyricManger
                 }
             }
 
-            // 创建舞曲信息
-            var danceInfoPath = Path.Combine(path, "danceInfo.csv");
-            if (!File.Exists(danceInfoPath))
+            // Upsert 舞曲信息到汇总文件 musicInfo.csv（按 Id 去重并排序）
+            var infoEntry = MapDanceDataToCsvEntry(DanceMain.SelectDanceData);
+            if (infoEntry != null)
             {
-                // UTF8Encoding(true) 明确为 UTF-8-BOM
-                using (var writer = new StreamWriter(danceInfoPath, false, new UTF8Encoding(true)))
-                using (var csv = new CsvWriter(writer, CsvConfig))
-                {
-                    // 写入表头
-                    csv.WriteHeader(typeof(DanceInfoCsvEntry));
+                TextTranslateManger.GetTranslateText(infoEntry.Title, out var translatedTitle,
+                    true);
+                TextTranslateManger.GetTranslateText(infoEntry.CommentaryText,
+                    out var translatedCommentaryText, true);
+                var mode = DanceMain.KaraokeMode ? "Karaoke" : "Dance";
 
-                    // 写入一条记录（如果能获取到当前的 DanceData）
-                    var entry = MapDanceDataToCsvEntry(DanceMain.SelectDanceData);
-                    if (entry != null)
-                    {
-                        TextTranslateManger.GetTranslateText(entry.Title, out var translatedTitle,
-                            true);
+                infoEntry.MusicName = musicName;
+                infoEntry.TranslatedTitle = translatedTitle;
+                infoEntry.TranslatedCommentaryText = translatedCommentaryText;
+                infoEntry.Mode = mode;
 
-                        var mode = "";
-                        if (DanceMain.KaraokeMode)
-                        {
-                            mode = "Karaoke";
-                        }
-                        else
-                        {
-                            mode = "Dance";
-                        }
-
-                        entry.TranslatedTitle = translatedTitle;
-                        entry.Mode = mode;
-
-                        csv.WriteRecord(entry);
-                    }
-
-                    csv.NextRecord();
-                }
+                UpsertDanceInfoSummary(infoEntry);
             }
         }
         catch (Exception e)
@@ -320,7 +303,7 @@ public static class LyricManger
 
         var path = Path.Combine(JustAnotherTranslator.LyricPath, musicName);
 
-        CreateMusicPathAndWriteInfo(path);
+        CreateMusicPathAndWriteInfo(path, musicName);
         TryToLoadLyric(path);
     }
 
@@ -465,6 +448,103 @@ public static class LyricManger
     }
 
     /// <summary>
+    ///     Upsert 舞曲信息到汇总文件 danceInfos.csv（按 Id 去重并排序）
+    /// </summary>
+    /// <param name="entry"></param>
+    private static void UpsertDanceInfoSummary(DanceInfoCsvEntry entry)
+    {
+        if (entry == null) return;
+        if (string.IsNullOrEmpty(entry.Id))
+        {
+            LogManager.Error(
+                "Upsert danceInfos.csv skipped: Id is null or empty/跳过写入 danceInfos.csv：Id 为空");
+            return;
+        }
+
+        try
+        {
+            Directory.CreateDirectory(JustAnotherTranslator.LyricPath);
+            var summaryPath = Path.Combine(JustAnotherTranslator.LyricPath, "danceInfos.csv");
+
+            var list = new List<DanceInfoCsvEntry>();
+            if (File.Exists(summaryPath))
+            {
+                using (var reader = new StreamReader(summaryPath, Encoding.UTF8))
+                using (var csv = new CsvReader(reader, CsvConfig))
+                {
+                    foreach (var r in csv.GetRecords<DanceInfoCsvEntry>())
+                    {
+                        list.Add(r);
+                    }
+                }
+            }
+
+            // Upsert by Id
+            var replaced = false;
+            for (var i = 0; i < list.Count; i++)
+            {
+                var existing = list[i];
+                if (existing != null &&
+                    string.Equals(existing.Id, entry.Id, StringComparison.Ordinal))
+                {
+                    list[i] = entry;
+                    replaced = true;
+                    break;
+                }
+            }
+
+            if (!replaced)
+            {
+                list.Add(entry);
+            }
+
+            // Sort by Id
+            list.Sort(CompareDanceInfoById);
+
+            // Write back with BOM
+            using (var writer = new StreamWriter(summaryPath, false, new UTF8Encoding(true)))
+            using (var csv = new CsvWriter(writer, CsvConfig))
+            {
+                csv.WriteHeader(typeof(DanceInfoCsvEntry));
+                foreach (var r in list)
+                {
+                    csv.WriteRecord(r);
+                }
+
+                csv.NextRecord();
+            }
+
+            LogManager.Debug("Upsert music info succeeded");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Upsert danceInfos.csv failed/写入 danceInfos.csv 失败: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    ///     比较 DanceInfoCsvEntry 的 Id
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    private static int CompareDanceInfoById(DanceInfoCsvEntry a, DanceInfoCsvEntry b)
+    {
+        if (a == null && b == null) return 0;
+        if (a == null) return -1;
+        if (b == null) return 1;
+
+        var sa = a.Id ?? string.Empty;
+        var sb = b.Id ?? string.Empty;
+
+        int ia, ib;
+        if (int.TryParse(sa, out ia) && int.TryParse(sb, out ib))
+            return ia.CompareTo(ib);
+
+        return string.Compare(sa, sb, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     ///     CSV structure for lyrics
     /// </summary>
     private class LyricCsvEntry
@@ -481,13 +561,17 @@ public static class LyricManger
     /// </summary>
     private class DanceInfoCsvEntry
     {
+        // 以下字段基本对应于 DanceData 结构，用于在 CSV 中描述舞蹈信息，部分字段略有调整以便查看
+        // 注：集合类型使用竖线(|)分隔（例如："a|b|c"），数值/布尔可留空表示不设置
+
+        // 自定义字段或移动过顺序
         [CanBeNull] public string Id { get; set; }
+        [CanBeNull] public string MusicName { get; set; }
         [CanBeNull] public string Title { get; set; }
         [CanBeNull] public string TranslatedTitle { get; set; }
+        [CanBeNull] public string CommentaryText { get; set; }
+        [CanBeNull] public string TranslatedCommentaryText { get; set; }
         [CanBeNull] public string Mode { get; set; }
-
-        // 以下字段对应于 DanceData 结构，用于在 CSV 中描述舞蹈信息
-        // 注：集合类型使用竖线(|)分隔（例如："a|b|c"），数值/布尔可留空表示不设置
 
         // 显示相关
         public int? TitleFontSize { get; set; }
@@ -497,7 +581,6 @@ public static class LyricManger
         [CanBeNull] public string SceneName { get; set; }
         public int? SelectCharaNum { get; set; }
         [CanBeNull] public string SampleImageName { get; set; }
-        [CanBeNull] public string CommentaryText { get; set; }
         [CanBeNull] public string BgmFileName { get; set; }
 
         // 预设、进度与标签

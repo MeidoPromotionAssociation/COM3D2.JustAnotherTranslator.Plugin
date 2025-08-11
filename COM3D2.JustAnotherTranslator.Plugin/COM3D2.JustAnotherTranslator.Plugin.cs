@@ -190,7 +190,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> VRTabletSubtitleTextSizeMultiplier;
     public static ConfigEntry<bool> VRTabletSubtitlePixelPerfect;
 
-
     // dump相关配置
     private static ConfigEntry<bool> _dumpTip1;
     private static ConfigEntry<bool> _dumpTip2;
@@ -201,6 +200,11 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<bool> EnableTextDump;
     public static ConfigEntry<int> TextDumpThreshold;
     public static ConfigEntry<bool> FlushTextDumpNow;
+
+    // patch相关配置
+    private static ConfigEntry<bool> _fixerTip1;
+    private static ConfigEntry<bool> _FixerTip2;
+    public static ConfigEntry<bool> EnableMaidCafeDlcLineBreakCommentFix;
 
 
     // translation folder path
@@ -1040,6 +1044,31 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         # endregion
 
+        # region FixerSettings
+
+        // Tip for people who using ConfigurationManager
+        _fixerTip1 = Config.Bind("10Fixer",
+            "This section is used to disable or enable some fixes. If you don't know what you are doing, please do not touch it",
+            true,
+            new ConfigDescription("this config do nothing", null,
+                new ConfigurationManagerAttributes { Order = 10000 }));
+
+        _FixerTip2 = Config.Bind("10Fixer",
+            "这一部分用于禁用或启用一些修复补丁，如果你不知道你在做什么，请不要动",
+            true,
+            new ConfigDescription("this config do nothing", null,
+                new ConfigurationManagerAttributes { Order = 10010 }));
+
+        EnableMaidCafeDlcLineBreakCommentFix = Config.Bind("10Fixer",
+            "EnableMaidCafeDlcLineBreakCommentFix/启用女仆咖啡厅DLC的弹幕不移动的修复",
+            true,
+            new ConfigDescription(
+                "Enabled a fix for the Maid Cafe DLC's bullet chat not moving/启用女仆咖啡厅DLC的弹幕不移动的修复",
+                null,
+                new ConfigurationManagerAttributes { Order = 10020 }));
+
+        # endregion
+
         LogManager.Debug($"IsVrMode: {IsVrMode}, CommandLine: {Environment.CommandLine}");
 
         // Create the translation folder
@@ -1145,6 +1174,15 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogManager.Info("Lyric Subtitle Disabled/歌词字幕已禁用");
         }
 
+        if (EnableMaidCafeDlcLineBreakCommentFix.Value)
+        {
+            LogManager.Info("MaidCafeDlcLineBreakCommentFix Enabled/女仆咖啡厅DLC的弹幕不移动的修复已启用");
+            FixerManger.Init();
+        }
+        else
+        {
+            LogManager.Info("MaidCafeDlcLineBreakCommentFix Disabled/女仆咖啡厅DLC的弹幕不移动的修复已禁用");
+        }
 
         // 注册通用变更事件
         RegisterGeneralConfigEvents();
@@ -1162,6 +1200,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         RegisterVRSubtitleConfigEvents();
         // 注册Dump配置变更事件
         RegisterDumpConfigEvents();
+        // 注册修复补丁配置变更事件
+        RegisterFixerConfigEvents();
     }
 
     private void Start()
@@ -2309,6 +2349,32 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             TextTranslateManger.FlushDumpBuffer();
             LogManager.Info("Text dump flushed/文本导出缓存已写出");
+        };
+    }
+
+
+    /// <summary>
+    ///     注册修复补丁配置变更事件
+    /// </summary>
+    private void RegisterFixerConfigEvents()
+    {
+        // 注册修复补丁启用状态变更事件
+        EnableMaidCafeDlcLineBreakCommentFix.SettingChanged += (_, _) =>
+        {
+            if (EnableMaidCafeDlcLineBreakCommentFix.Value)
+            {
+                LogManager.Info(
+                    "Maid Cafe DLC Line Break Comment Fix enabled/女仆咖啡厅DLC的弹幕不移动的修复已启用");
+                FixerManger.Unload();
+                FixerManger.Init();
+            }
+            else
+            {
+                LogManager.Info(
+                    "Maid Cafe DLC Line Break Comment Fix disabled/女仆咖啡厅DLC的弹幕不移动的修复已禁用");
+                FixerManger.Unload();
+                FixerManger.Init();
+            }
         };
     }
 

@@ -4,7 +4,7 @@ using HarmonyLib;
 using MaidCafe;
 using UnityEngine;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
+namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Fixer;
 
 /// <summary>
 ///     修复 MaidCafe DLC 中可能出现的翻译后文本长度不一致导致的数组越界

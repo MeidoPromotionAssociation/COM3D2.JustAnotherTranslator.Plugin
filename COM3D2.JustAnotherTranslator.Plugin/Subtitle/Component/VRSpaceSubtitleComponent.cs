@@ -464,10 +464,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     /// </summary>
     protected override void DestroySubtitleUI()
     {
-        if (VrSubtitleContainer != null)
-        {
-            Destroy(VrSubtitleContainer);
-        }
+        if (VrSubtitleContainer != null) Destroy(VrSubtitleContainer);
 
         base.DestroySubtitleUI();
     }

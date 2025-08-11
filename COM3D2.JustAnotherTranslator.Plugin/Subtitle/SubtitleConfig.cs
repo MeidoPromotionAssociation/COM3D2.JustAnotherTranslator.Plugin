@@ -439,13 +439,13 @@ public class SubtitleConfig
     public float VRTabletSubtitleVerticalPosition { get; set; } = -0.9f;
 
     // VR平板电脑字幕水平位置
-    public float VRTabletSubtitleHorizontalPosition { get; set; } = 0f;
+    public float VRTabletSubtitleHorizontalPosition { get; set; }
 
     // VR平板电脑字幕文本大小倍数
     public float VRTabletSubtitleTextSizeMultiplier { get; set; } = 12f;
 
     // VR平板电脑字幕是否像素完美
-    public bool VRTabletSubtitlePixelPerfect { get; set; } = false;
+    public bool VRTabletSubtitlePixelPerfect { get; set; }
 
     # endregion
 }

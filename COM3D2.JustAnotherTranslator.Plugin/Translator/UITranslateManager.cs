@@ -262,7 +262,10 @@ public static class UITranslateManager
     /// </summary>
     /// <param name="sprite">The UISprite to modify.</param>
     /// <param name="newTexture">The new Texture2D to apply.</param>
-    /// <param name="spriteName">A unique name for the new sprite. If null, the texture's name will be used.</param>
+    /// <param name="spriteName">
+    ///     A unique name for the new sprite. If null, the texture's name will be
+    ///     used.
+    /// </param>
     private static void ReplaceSprite(UISprite sprite, Texture2D newTexture, string spriteName)
     {
         if (sprite == null || newTexture == null)

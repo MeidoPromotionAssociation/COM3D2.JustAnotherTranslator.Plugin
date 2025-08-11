@@ -195,7 +195,6 @@ public static class LyricManger
             // 创建歌词文件
             var lyricPath = Path.Combine(path, "lyric.csv");
             if (!File.Exists(lyricPath))
-            {
                 // UTF8Encoding(true) 明确为 UTF-8-BOM
                 using (var writer = new StreamWriter(lyricPath, false, new UTF8Encoding(true)))
                 using (var csv = new CsvWriter(writer, CsvConfig))
@@ -203,7 +202,6 @@ public static class LyricManger
                     csv.WriteHeader(typeof(LyricCsvEntry));
                     csv.NextRecord();
                 }
-            }
 
             // Upsert 舞曲信息到汇总文件 musicInfo.csv（按 Id 去重并排序）
             var infoEntry = MapDanceDataToCsvEntry(DanceMain.SelectDanceData);
@@ -468,16 +466,11 @@ public static class LyricManger
 
             var list = new List<DanceInfoCsvEntry>();
             if (File.Exists(summaryPath))
-            {
                 using (var reader = new StreamReader(summaryPath, Encoding.UTF8))
                 using (var csv = new CsvReader(reader, CsvConfig))
                 {
-                    foreach (var r in csv.GetRecords<DanceInfoCsvEntry>())
-                    {
-                        list.Add(r);
-                    }
+                    foreach (var r in csv.GetRecords<DanceInfoCsvEntry>()) list.Add(r);
                 }
-            }
 
             // Upsert by Id
             var replaced = false;
@@ -493,10 +486,7 @@ public static class LyricManger
                 }
             }
 
-            if (!replaced)
-            {
-                list.Add(entry);
-            }
+            if (!replaced) list.Add(entry);
 
             // Sort by Id
             list.Sort(CompareDanceInfoById);
@@ -506,10 +496,7 @@ public static class LyricManger
             using (var csv = new CsvWriter(writer, CsvConfig))
             {
                 csv.WriteHeader(typeof(DanceInfoCsvEntry));
-                foreach (var r in list)
-                {
-                    csv.WriteRecord(r);
-                }
+                foreach (var r in list) csv.WriteRecord(r);
 
                 csv.NextRecord();
             }

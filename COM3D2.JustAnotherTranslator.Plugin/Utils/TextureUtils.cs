@@ -10,8 +10,10 @@ public static class TextureUtils
     /// </summary>
     /// <param name="texture">The texture to make readable.</param>
     /// <returns>
-    ///     A readable Texture2D. If the original was already readable, it's returned directly. Otherwise, a new,
-    ///     temporary texture is created and returned. The caller is responsible for destroying the temporary texture.
+    ///     A readable Texture2D. If the original was already readable, it's returned directly. Otherwise,
+    ///     a new,
+    ///     temporary texture is created and returned. The caller is responsible for destroying the
+    ///     temporary texture.
     /// </returns>
     public static Texture2D GetReadableTexture(Texture2D texture)
     {

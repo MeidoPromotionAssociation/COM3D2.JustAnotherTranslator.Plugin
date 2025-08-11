@@ -134,9 +134,7 @@ public static class TextureReplaceManger
         {
             // 如果替换纹理不存在，则 Dump
             if (JustAnotherTranslator.EnableTexturesDump.Value)
-            {
                 if (originalTexture != null)
-                {
                     // 添加成功则为 true
                     if (DumpedTextures.Add(filename))
                     {
@@ -146,8 +144,6 @@ public static class TextureReplaceManger
                         if (bytes != null)
                             DumpTexture(filename, bytes);
                     }
-                }
-            }
 
             return false;
         }

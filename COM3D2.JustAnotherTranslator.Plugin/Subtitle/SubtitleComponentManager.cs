@@ -214,7 +214,6 @@ public static class SubtitleComponentManager
 
         // VR 模式使用专门的空间位置计算
         if (JustAnotherTranslator.IsVrMode)
-        {
             switch (config.VRSubtitleMode)
             {
                 case JustAnotherTranslator.VRSubtitleModeEnum.OnTablet:
@@ -228,7 +227,6 @@ public static class SubtitleComponentManager
                         $"Unknown VR mode, please report this issue/未知 VR 模式，请报告此问题 {config.VRSubtitleMode}");
                     return;
             }
-        }
 
         try
         {
@@ -258,18 +256,19 @@ public static class SubtitleComponentManager
             // 新字幕完全在旧字幕上面：z ≥ s.VerticalPosition + s.Height，取反 z < s.VerticalPosition + s.Height
             // 新字幕完全在旧字幕下面：s.VerticalPosition ≥ z + subtitleHeight 取反 s.VerticalPosition < z + subtitleHeight
             // 因此取反新字幕完全不在旧字幕上面，且新字幕完全不在旧字幕下面，就算重叠
-            bool Overlaps(float z) => ActiveSubtitles.Any(s =>
-                z < s.VerticalPosition + s.Height &&
-                s.VerticalPosition < z + subtitleHeight);
+            bool Overlaps(float z)
+            {
+                return ActiveSubtitles.Any(s =>
+                    z < s.VerticalPosition + s.Height &&
+                    s.VerticalPosition < z + subtitleHeight);
+            }
 
             LogManager.Debug(
                 $"Finding available position for {currentSubtitleId}, checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {Overlaps(initialY)}");
 
             foreach (var subtitle in ActiveSubtitles)
-            {
                 LogManager.Debug(
                     $"Active subtitle: {subtitle.Id} height: {subtitle.Height} position: {subtitle.VerticalPosition} initial position: {subtitle.InitialVerticalPosition}");
-            }
 
             if (Overlaps(initialY))
             {
@@ -360,8 +359,11 @@ public static class SubtitleComponentManager
             // 平板电脑模式锚点为中心，即字幕垂直位置设置的是字幕中心的位置
             // 因此两个中心之间的距离 d = Abs(s.VerticalPosition − z)
             // 任意两个字幕中心之间的距离小于设定的字幕高度，则重叠
-            bool Overlaps(float z) => ActiveSubtitles.Any(s =>
-                Mathf.Abs(s.VerticalPosition - z) < subtitleHeightWorld);
+            bool Overlaps(float z)
+            {
+                return ActiveSubtitles.Any(s =>
+                    Mathf.Abs(s.VerticalPosition - z) < subtitleHeightWorld);
+            }
             // Abs(s.VerticalPosition − z) < (subtitleHeightWorld + s.Height) * 0.5f − epsilon
             // epsilon = 1e-6f
 
@@ -369,10 +371,8 @@ public static class SubtitleComponentManager
                 $"Checking initial position: {initialZ}, subtitle height: {config.VRTabletSubtitleHeight} world height: {subtitleHeightWorld}, overlaps: {Overlaps(initialZ)}");
 
             foreach (var subtitle in ActiveSubtitles)
-            {
                 LogManager.Debug(
                     $"Active subtitle: {subtitle.Id} height: {subtitle.Height} position: {subtitle.VerticalPosition} initial position: {subtitle.InitialVerticalPosition}");
-            }
 
             if (Overlaps(initialZ))
             {
@@ -391,7 +391,6 @@ public static class SubtitleComponentManager
 
                 // 如果向下搜索不到，则向上搜索
                 if (!found)
-                {
                     for (var i = 1; i <= maxSteps; i++)
                     {
                         var testZ = initialZ + i * step;
@@ -401,7 +400,6 @@ public static class SubtitleComponentManager
                             break;
                         }
                     }
-                }
             }
 
             // 更新配置和活动字幕列表
@@ -459,10 +457,13 @@ public static class SubtitleComponentManager
             // 删除旧记录
             ActiveSubtitles.RemoveAll(s => s.Id == currentSubtitleId);
 
-            float finalOffset = initialOffset;
+            var finalOffset = initialOffset;
 
-            bool Overlaps(float offset) => ActiveSubtitles.Any(s =>
-                Mathf.Abs(s.VerticalPosition - offset) < stepDeg * 0.5f);
+            bool Overlaps(float offset)
+            {
+                return ActiveSubtitles.Any(s =>
+                    Mathf.Abs(s.VerticalPosition - offset) < stepDeg * 0.5f);
+            }
 
             if (Overlaps(initialOffset))
             {
@@ -482,7 +483,6 @@ public static class SubtitleComponentManager
 
                 // 再向上
                 if (!found)
-                {
                     for (var i = 1; i <= maxSteps; i++)
                     {
                         var test = initialOffset + i * stepDeg;
@@ -492,7 +492,6 @@ public static class SubtitleComponentManager
                             break;
                         }
                     }
-                }
             }
 
             // 更新配置并刷新 UI

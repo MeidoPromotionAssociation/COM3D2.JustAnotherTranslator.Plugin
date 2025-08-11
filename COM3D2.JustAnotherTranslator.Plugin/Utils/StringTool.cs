@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
-using JetBrains.Annotations;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
@@ -94,7 +93,7 @@ public static class StringTool
     {
         if (list == null || list.Count == 0) return null;
         var arr = new string[list.Count];
-        for (int i = 0; i < list.Count; i++)
+        for (var i = 0; i < list.Count; i++)
             arr[i] = list[i].ToString(CultureInfo.InvariantCulture);
         // 使用竖线分隔，避免与 CSV 的逗号分隔符冲突
         return string.Join("|", arr);
@@ -108,7 +107,7 @@ public static class StringTool
     {
         if (list == null || list.Count == 0) return null;
         var sb = new StringBuilder();
-        for (int i = 0; i < list.Count; i++)
+        for (var i = 0; i < list.Count; i++)
         {
             var item = list[i];
             if (i > 0) sb.Append('|');

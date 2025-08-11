@@ -304,6 +304,22 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     }
 
     /// <summary>
+    ///     设置当前垂直位置
+    /// </summary>
+    /// <param name="position"></param>
+    public virtual void SetVerticalPosition(float position)
+    {
+        if (Config != null)
+        {
+            Config.CurrentVerticalPosition = position;
+            ApplyNewPosition();
+            return;
+        }
+
+        LogManager.Warning("Subtitle config is null, cannot set vertical position/字幕配置为空，无法设置垂直位置");
+    }
+
+    /// <summary>
     ///     设置文本内容
     /// </summary>
     /// <param name="text">要显示的文本</param>
@@ -395,22 +411,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     }
 
     /// <summary>
-    ///     设置当前垂直位置
-    /// </summary>
-    /// <param name="position"></param>
-    public virtual void SetVerticalPosition(float position)
-    {
-        if (Config != null)
-        {
-            Config.CurrentVerticalPosition = position;
-            ApplyNewPosition();
-            return;
-        }
-
-        LogManager.Warning("Subtitle config is null, cannot set vertical position/字幕配置为空，无法设置垂直位置");
-    }
-
-    /// <summary>
     ///     应用新的位置，包括 水平位置，垂直位置，背景高度，背景宽度
     ///     水平位置使用 Config.CurrentVerticalPosition
     /// </summary>
@@ -434,14 +434,11 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 
         // 应用文本组件配置
         if (TextComponent is not null)
-        {
             TextComponent.rectTransform.sizeDelta = new Vector2(
                 Config.SubtitleWidth, Config.SubtitleHeight);
-
-            // 注意可以跟随父级移动，因此只需要移动背景即可
-            // TextComponent.rectTransform.anchoredPosition3D = new Vector3(
-            //     Config.HorizontalPosition, Config.CurrentVerticalPosition, 0f);
-        }
+        // 注意可以跟随父级移动，因此只需要移动背景即可
+        // TextComponent.rectTransform.anchoredPosition3D = new Vector3(
+        //     Config.HorizontalPosition, Config.CurrentVerticalPosition, 0f);
     }
 
     /// <summary>

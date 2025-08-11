@@ -6,7 +6,8 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 /// <summary>
 ///     字符串扩展方法
 ///     为了保持兼容性，此部分代码从
-///     https://github.com/ghorsington/CM3D2.YATranslator/blob/master/CM3D2.YATranslator.Plugin/Utils/Extensions.cs 复制
+///     https://github.com/ghorsington/CM3D2.YATranslator/blob/master/CM3D2.YATranslator.Plugin/Utils/Extensions.cs
+///     复制
 ///     CM3D2.YATranslator 基于 The Unlicense 许可证，协议开源，作者为 ghorsington
 ///     一开始我没有这样做，但产生了一些和现有翻译的兼容问题，所以我决定保留这个部分代码
 /// </summary>

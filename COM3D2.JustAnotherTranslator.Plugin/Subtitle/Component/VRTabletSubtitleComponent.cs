@@ -13,11 +13,11 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
     /// 初始化协程
     private string _initCoroutineID;
 
-    /// 平板电脑物体
-    protected Transform VRTablet;
-
     /// VR字幕的容器
     protected Transform VrSubtitleContainer;
+
+    /// 平板电脑物体
+    protected Transform VRTablet;
 
 
     /// <summary>
@@ -177,11 +177,9 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
 
         // 应用位置
         if (VrSubtitleContainer != null)
-        {
             VrSubtitleContainer.transform.localPosition = new Vector3(
                 Config.VRTabletSubtitleHorizontalPosition, 0,
                 Config.CurrentVerticalPosition); // 没写错，就是 Z 是垂直
-        }
     }
 
     /// <summary>

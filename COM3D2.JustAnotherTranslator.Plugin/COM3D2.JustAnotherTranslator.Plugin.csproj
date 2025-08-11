@@ -5,7 +5,7 @@
     <When Condition="$(Configuration.Contains('COM3D2-'))">
       <ItemGroup>
         <PackageReference Include="UnityEngine.Modules" IncludeAssets="compile" Version="5.6.4"/>
-        <PackageReference Include="COM3D2.GameLibs" Version="2.44.1-r.0"/>
+        <PackageReference Include="COM3D2.GameLibs" IncludeAssets="compile" Version="2.44.1-r.0"/>
         <PackageReference Include="BepInEx.Analyzers" PrivateAssets="all" Version="1.*"/>
         <PackageReference Include="BepInEx.Core" Version="5.*"/>
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
@@ -22,7 +22,7 @@
     <When Condition="$(Configuration.Contains('COM3D25_UNITY_2022-'))">
       <ItemGroup>
         <PackageReference Include="UnityEngine.Modules" IncludeAssets="compile" Version="2022.3.35"/>
-        <PackageReference Include="COM3D2.GameLibs" Version="3.44.1-r.0"/>
+        <PackageReference Include="COM3D2.GameLibs" IncludeAssets="compile" Version="3.44.1-r.0"/>
         <PackageReference Include="BepInEx.Analyzers" PrivateAssets="all" Version="1.*"/>
         <PackageReference Include="BepInEx.Core" Version="5.*"/>
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>

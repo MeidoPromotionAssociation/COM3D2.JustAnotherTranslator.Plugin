@@ -607,13 +607,16 @@ Please note that you need to convert the .nei file to a .csv file first, and the
 
 If you only need to get the song's internal name:
 
-1.  Go to the dance mode in the game, select and start a song you want to translate.
+1.  Enter dance mode in the game, select and start the song you want to create subtitles for.
 2.  The log will print `Current dance name (musicName): Song Name`.
-3.  The plugin will automatically create a folder named after the song's music name in the `...\Lyric\` directory and generate an empty `lyric.csv` file inside it.
+3.  The plugin will automatically create a folder named after the song in the `...\Lyric\` directory and generate a `lyric.csv` file with a header.
+4.  The plugin will automatically create a file named `danceInfos.csv` in the `...\Lyric\` directory, which will dump the song name (musicName), song title and other internal information for easy matching.
 
 ## 3. File Format
 
--   **File Type**: Supports `.csv` files.
+### lyric.csv
+
+-   **File Type**: `.csv` files.
 -   **File Format**: Must be a comma-separated CSV file, must be **UTF-8-BOM** encoded, must have a header, and ideally should conform to [RFC 4180](https://datatracker.ietf.org/doc/html/rfc4180).
 -   **Header**: Must include the following fields:
     -   `StartTime`: The time the lyric starts to display (in seconds, supports decimals).
@@ -628,6 +631,32 @@ StartTime,EndTime,OriginalLyric,TranslatedLyric
 16.0,20.8,This is a test lyric,This is a test lyric
 ```
 
+### danceInfos.csv
+
+- **File Type**: `.csv` file.
+- **File Format**: Must be a `,`-delimited CSV file, must be in **UTF-8-BOM** encoding, must have a header, and ideally should conform to [RFC 4180](https://datatracker.ietf.org/doc/html/rfc4180).
+- **Note**: The plugin reads this file to sort, deduplicate, and rewrite it. Do not modify it at will.
+- **Header**: See the example. Only a few important fields are listed here. Most of the content is a direct dump of official information. For some list-type data, JAT automatically serializes it, separating it with `|`.
+    -   `Id`: The song's ID.
+    -   `MusicName`: The MusicName.
+    -   `Title`: The song's title, which is the song's title displayed in-game.
+    -   `TranslatedTitle`: The song's title translated using the General Text Translation module. - `CommentaryText`: The song's commentary text, typically artist information.
+    -   `TranslatedCommentaryText`: The song's commentary text, translated using the general text translation module.
+    -   `Mode`: The song's mode, either `Dance` or `Karaoke`.
+    -   `SceneName`: The name of the dance scene (Unity Scene name).
+    -   `BodyFilterMode`: The body filter mode, either `Both`, `OnlyOld`, `OnlyNew`, or `Either`. High-polygon bodies using KCES are treated as `new`.
+
+**Example `danceInfos.csv`**:
+```csv
+Id,MusicName,Title,TranslatedTitle,CommentaryText,TranslatedCommentaryText,Mode,TitleFontSize,TitleOffsetY,SceneName,SelectCharaNum,SampleImageName,BgmFileName,PresetName,ScenarioProgress,Term,AppealCutinName,ReversalCutinName,DanceshowScene,DanceshowImage,MaidOrder,BgType,InitialPlayable,IsPlayable,RhythmGameCorrespond,SubtitleSheetName,IsShowSelectScene,CsvFolderName,KuchiPakuFileList,MotionFileList,MovieFileName,BinaryFolderName,SingPartList,PersonalityFilter,BodyFilterMode
+100,dokidoki_fallinlove,ドキドキ ☆ Fallin' Love,DokiDoki ☆ Fallin' Love,Vocal1 . nao / Vocal2 . 美郷あき / Vocal3 . 佐咲紗花,Vocal1 . nao / Vocal2 . 美乡秋 / Vocal3 . 佐咲紗花,Dance,25,0,SceneDance_DDFL_Release,3,dance_select_image_ddfl_live,,||,6,VS外,Novice,Novice,SceneDance_DDFLT_Release,dance_select_image_ddfl_th,0|1|2,LiveStage,False,True,True,SceneDance_DDFL_Release,True,,,,,,,,Both
+101,dokidoki_fallinlove,ドキドキ ☆ Fallin' Love-in劇場,DokiDoki ☆ Fallin' Love-in剧场,Vocal1 . nao / Vocal2 . 美郷あき / Vocal3 . 佐咲紗花,Vocal1 . nao / Vocal2 . 美乡秋 / Vocal3 . 佐咲紗花,Dance,25,0,SceneDance_DDFLT_Release,3,dance_select_image_ddfl_th,,||,6,VS外,Novice,Novice,SceneDance_DDFLT_Release,dance_select_image_ddfl_th,0|1|2,Theater,False,True,True,SceneDance_DDFL_Release,True,,,,,,,,Both
+170,kimini_aijo_delicious,キミに愛情でりぃしゃす,爱的美味献给你,"Vocal1 . nao / Vocal2 . 中恵光城 / Vocal3 . 彩音 ","Vocal1 . nao / Vocal2 . 中恵光城 / Vocal3 . 彩音 ",Dance,25,0,SceneDance_KAD_Release,3,dance_select_image_kad_live,,||,2,レストラン,Novice,Novice,SceneDance_KADT_Release,dance_select_image_kad_th,0|1|2,LiveStage,False,True,True,SceneDance_KAD_Release,True,,,,,,,,Both
+210,sakura_uraraka_harahirari,さくらうららか、はらひらり,樱花烂漫，飘落纷纷,"Vocal1 . nao ","Vocal1 . nao ",Dance,25,0,SceneDance_SUH_Release,1,dance_select_image_sakurara_live,,,0,VS外,Novice,Novice,SceneDance_SUHT_Release,dance_select_image_sakurara_th,,LiveStage,True,True,True,SceneDance_SUH_Release,True,,,,,,,,Both
+260,1oy,1st only you ver.nao,1st only you ver.nao,"Vocal1 . nao ","Vocal1 . nao ",Dance,25,0,SceneDance_1OY_Release,1,dance_select_image_1oy_live,,,0,None,Novice,Novice,SceneDance_1OYT_Release,dance_select_image_1oy_th,,LiveStage,True,True,True,SceneDance_1OY_Release,True,,,,,,,,Both
+```
+
+
 ## 4. How It Works
 
 JAT uses Harmony patches to intercept the game's dance management module (`RhythmAction_Mgr`).
@@ -636,12 +665,11 @@ JAT uses Harmony patches to intercept the game's dance management module (`Rhyth
 -   **Synchronization**: After the dance starts, JAT starts a monitoring program that displays the corresponding lyrics on the screen during the time period matching `StartTime` and `EndTime`, based on the dance's real-time playback time (`DanceTimer`).
 -   **Display**: You can adjust the lyric display method in the plugin's configuration, for example, showing only the original, only the translation, or bilingual display.
 
-## 5. Performance Recommendations
+## 5. Recommendations
 
 -   Lyric files are only loaded when entering dance mode and have no performance impact on game startup or daily play.
 -   Since it matches the timeline in real-time, ensure the accuracy of `StartTime` and `EndTime` for the best viewing experience.
--   Do not have the `lyric.csv` file open while testing lyrics, for example, if opened with Microsoft Excel, JAT will not be able to read the file.
-
+-   Do not open files such as `lyric.csv` when entering the dance. For example, if you open it with Microsoft Excel, JAT will not be able to read the file.
 
 # Other Subtitles
 

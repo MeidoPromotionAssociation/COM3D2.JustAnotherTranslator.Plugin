@@ -610,7 +610,7 @@ If you only need to get the song's internal name:
 1.  Enter dance mode in the game, select and start the song you want to create subtitles for.
 2.  The log will print `Current dance name (musicName): Song Name`.
 3.  The plugin will automatically create a folder named after the song in the `...\Lyric\` directory and generate a `lyric.csv` file with a header.
-4.  The plugin will automatically create a file named `danceInfos.csv` in the `...\Lyric\` directory, which will dump the song name (musicName), song title and other internal information for easy matching.
+4.  (when enable EnableDumpDanceInfo setting) The plugin will automatically create a file named `danceInfos.csv` in the `...\Lyric\` directory, which will dump the song name (musicName), song title and other internal information for easy matching.
 
 ## 3. File Format
 

@@ -1,6 +1,6 @@
 # JustAnotherTranslator Translation Guide
 
-This document will detail how to create and manage translation files for the JustAnotherTranslator plugin.
+This document will detail how to create and manage translation files for the JustAnotherTranslator(JAT) plugin.
 
 This guide is translated by AI.
 
@@ -638,7 +638,7 @@ StartTime,EndTime,OriginalLyric,TranslatedLyric
 - **Note**: The plugin reads this file to sort, deduplicate, and rewrite it. Do not modify it at will.
 - **Header**: See the example. Only a few important fields are listed here. Most of the content is a direct dump of official information. For some list-type data, JAT automatically serializes it, separating it with `|`.
     -   `Id`: The song's ID.
-    -   `MusicName`: The MusicName.
+    -   `MusicName`: The MusicName, which is the song's internal name, and JAT's folder name.
     -   `Title`: The song's title, which is the song's title displayed in-game.
     -   `TranslatedTitle`: The song's title translated using the General Text Translation module. - `CommentaryText`: The song's commentary text, typically artist information.
     -   `TranslatedCommentaryText`: The song's commentary text, translated using the general text translation module.

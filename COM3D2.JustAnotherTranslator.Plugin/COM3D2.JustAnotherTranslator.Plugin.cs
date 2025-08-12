@@ -200,6 +200,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<bool> EnableTextDump;
     public static ConfigEntry<int> TextDumpThreshold;
     public static ConfigEntry<bool> FlushTextDumpNow;
+    public static ConfigEntry<bool> EnableDumpDanceInfo;
 
     // patch相关配置
     private static ConfigEntry<bool> _fixerTip1;
@@ -1041,6 +1042,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 "Immediately write out all cached text when the option status changes/立即写出所有已缓存的文本，选项状态变更时立即写出",
                 null,
                 new ConfigurationManagerAttributes { Order = 9080 }));
+
+        EnableDumpDanceInfo = Config.Bind("9Dump",
+            "EnableDumpDanceInfo/是否启用舞蹈信息导出",
+            false,
+            new ConfigDescription(
+                "dump dance info to danceInfos.csv(after playing a dance)/播放舞蹈后在 danceInfos.csv 内输出舞蹈信息",
+                null,
+                new ConfigurationManagerAttributes { Order = 9090 }));
 
         # endregion
 
@@ -2349,6 +2358,15 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             TextTranslateManger.FlushDumpBuffer();
             LogManager.Info("Text dump flushed/文本导出缓存已写出");
+        };
+
+        EnableDumpDanceInfo.SettingChanged += (_, _) =>
+        {
+            if (EnableDumpDanceInfo.Value)
+                LogManager.Info(
+                    "Dance info dump enabled, will be exported when playing dances/启用舞蹈信息导出，播放舞蹈时会导出舞蹈信息");
+            else
+                LogManager.Info("Dance info dump disabled/禁用舞蹈信息导出");
         };
     }
 

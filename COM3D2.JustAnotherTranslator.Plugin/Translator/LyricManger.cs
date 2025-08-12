@@ -185,8 +185,7 @@ public static class LyricManger
     ///     创建音乐对应的字幕文件夹，并写入信息
     /// </summary>
     /// <param name="path"></param>
-    /// <param name="musicName"></param>
-    private static void CreateMusicPathAndWriteInfo(string path, string musicName)
+    private static void CreateMusicPath(string path)
     {
         try
         {
@@ -195,6 +194,7 @@ public static class LyricManger
             // 创建歌词文件
             var lyricPath = Path.Combine(path, "lyric.csv");
             if (!File.Exists(lyricPath))
+            {
                 // UTF8Encoding(true) 明确为 UTF-8-BOM
                 using (var writer = new StreamWriter(lyricPath, false, new UTF8Encoding(true)))
                 using (var csv = new CsvWriter(writer, CsvConfig))
@@ -203,22 +203,10 @@ public static class LyricManger
                     csv.NextRecord();
                 }
 
-            // Upsert 舞曲信息到汇总文件 musicInfo.csv（按 Id 去重并排序）
-            var infoEntry = MapDanceDataToCsvEntry(DanceMain.SelectDanceData);
-            if (infoEntry != null)
-            {
-                TextTranslateManger.GetTranslateText(infoEntry.Title, out var translatedTitle,
-                    true);
-                TextTranslateManger.GetTranslateText(infoEntry.CommentaryText,
-                    out var translatedCommentaryText, true);
-                var mode = DanceMain.KaraokeMode ? "Karaoke" : "Dance";
-
-                infoEntry.MusicName = musicName;
-                infoEntry.TranslatedTitle = translatedTitle;
-                infoEntry.TranslatedCommentaryText = translatedCommentaryText;
-                infoEntry.Mode = mode;
-
-                UpsertDanceInfoSummary(infoEntry);
+                var infoPath = Path.Combine(path, "ThisLyricIsEmpty_这个歌词是空的.txt");
+                if (!File.Exists(infoPath))
+                    File.WriteAllText(infoPath,
+                        "This lyric is empty, subtitle will not be displayed, please refer to the document to fill in\n这个歌词是空的，字幕将不会显示，请参考文档进行补充");
             }
         }
         catch (Exception e)
@@ -301,8 +289,11 @@ public static class LyricManger
 
         var path = Path.Combine(JustAnotherTranslator.LyricPath, musicName);
 
-        CreateMusicPathAndWriteInfo(path, musicName);
+        CreateMusicPath(path);
         TryToLoadLyric(path);
+
+        if (JustAnotherTranslator.EnableDumpDanceInfo.Value)
+            DumpDanceInfo(musicName);
     }
 
     /// <summary>
@@ -446,6 +437,40 @@ public static class LyricManger
     }
 
     /// <summary>
+    ///     Upsert 当前舞蹈信息到汇总文件 musicInfo.csv（按 Id 去重并排序）
+    /// </summary>
+    /// <param name="musicName"></param>
+    private static void DumpDanceInfo(string musicName)
+    {
+        try
+        {
+            if (DanceMain.SelectDanceData == null)
+                return;
+
+            var infoEntry = MapDanceDataToCsvEntry(DanceMain.SelectDanceData);
+            if (infoEntry != null)
+            {
+                TextTranslateManger.GetTranslateText(infoEntry.Title, out var translatedTitle,
+                    true);
+                TextTranslateManger.GetTranslateText(infoEntry.CommentaryText,
+                    out var translatedCommentaryText, true);
+                var mode = DanceMain.KaraokeMode ? "Karaoke" : "Dance";
+
+                infoEntry.MusicName = musicName;
+                infoEntry.TranslatedTitle = translatedTitle;
+                infoEntry.TranslatedCommentaryText = translatedCommentaryText;
+                infoEntry.Mode = mode;
+
+                UpsertDanceInfoSummary(infoEntry);
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to export dance info/导出舞蹈信息失败: {e.Message}");
+        }
+    }
+
+    /// <summary>
     ///     Upsert 舞曲信息到汇总文件 danceInfos.csv（按 Id 去重并排序）
     /// </summary>
     /// <param name="entry"></param>
@@ -491,7 +516,7 @@ public static class LyricManger
             // Sort by Id
             list.Sort(CompareDanceInfoById);
 
-            // Write back with BOM
+            // new UTF8Encoding(true) make sure it's UTF-8-BOM
             using (var writer = new StreamWriter(summaryPath, false, new UTF8Encoding(true)))
             using (var csv = new CsvWriter(writer, CsvConfig))
             {
@@ -501,7 +526,7 @@ public static class LyricManger
                 csv.NextRecord();
             }
 
-            LogManager.Debug("Upsert music info succeeded");
+            LogManager.Info("Upsert dance info succeeded/写入 danceInfos.csv 成功");
         }
         catch (Exception e)
         {

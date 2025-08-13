@@ -1047,7 +1047,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "EnableDumpDanceInfo/是否启用舞蹈信息导出",
             false,
             new ConfigDescription(
-                "dump dance info to danceInfos.csv(after playing a dance)/播放舞蹈后在 danceInfos.csv 内输出舞蹈信息",
+                "Dump dance info to danceInfo.csv(after playing a dance)/播放舞蹈后在 danceInfos.csv 内输出舞蹈信息",
                 null,
                 new ConfigurationManagerAttributes { Order = 9090 }));
 
@@ -1057,7 +1057,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         // Tip for people who using ConfigurationManager
         _fixerTip1 = Config.Bind("10Fixer",
-            "This section is used to disable or enable some fixes. If you don't know what you are doing, please do not touch it",
+            "This section is used to disable or enable some fixes. If you dont know what you are doing, please do not touch it",
             true,
             new ConfigDescription("this config do nothing", null,
                 new ConfigurationManagerAttributes { Order = 10000 }));

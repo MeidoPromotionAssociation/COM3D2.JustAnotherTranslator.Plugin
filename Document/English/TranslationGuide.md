@@ -570,12 +570,21 @@ However, like other parts, JAT does not use any in-game resources. The dance sub
 
 ## 1. File Location
 
-Lyric translation files should be placed in the following directory:
+The dance mode lyrics translation file should be placed in the following directory:
 
-`COM3D2\BepInEx\JustAnotherTranslator\<Your_Language_Setting>\Lyric\<Song_Internal_Name>\lyric.csv`
+`COM3D2\BepInEx\JustAnotherTranslator\<your language>\Lyric\<song's internal name (musicName)>\lyric.csv`
 
--   `<Song_Internal_Name>`: Corresponds to the internal name of the song in the game.
--   The filename must be `lyric.csv`.
+- `<song's internal name (musicName)>`: corresponds to the in-game song's internal name. See below for details.
+- The file name must be `lyric.csv`.
+
+The VR Karaoke mode lyrics translation file should be placed in the following directory:
+
+VR karaoke mode refers to the mode where there is a tablet in front of you, and has nothing to do with whether you are actually playing with a VR device.
+
+`COM3D2\BepInEx\JustAnotherTranslator\<your language>\Lyric\_Karaoke\<song's internal name (BgmFileName)>\lyric.csv`
+
+- `<song's internal name (BgmFileName)>`: corresponds to the in-game song's internal name. See below for details.
+- The file name must be `lyric.csv`.
 
 ## 2. How to Get the Music Name and Create Translation Files
 
@@ -605,12 +614,22 @@ Please note that you need to convert the .nei file to a .csv file first, and the
 
 <br>
 
-If you only need to get the song's internal name:
+For Dance Mode:
 
-1.  Enter dance mode in the game, select and start the song you want to create subtitles for.
-2.  The log will print `Current dance name (musicName): Song Name`.
-3.  The plugin will automatically create a folder named after the song in the `...\Lyric\` directory and generate a `lyric.csv` file with a header.
-4.  (when enable EnableDumpDanceInfo setting) The plugin will automatically create a file named `danceInfos.csv` in the `...\Lyric\` directory, which will dump the song name (musicName), song title and other internal information for easy matching.
+1. Enter dance mode in the game, select and start the song you want to create subtitles for.
+2. The log will print `Mode: Dance, Current dance name (musicName)/模式：舞蹈，当前舞蹈名称（musicName）: {musicName}`.
+3. The plugin will automatically create a folder named after the song's `musicName` in the `...\Lyric\` directory and generate a `lyric.csv` file with a header.
+4. (When the dance information export option is enabled) the plugin will automatically create a `danceInfos.csv` file in the `...\Lyric\` directory. This file will dump the song name (musicName), song title, and other internal information for easy matching.
+
+For VR Karaoke Mode (the one with the tablet in front of you):
+
+1. Enter VR Karaoke mode in the game, select and start a song for which you want to create subtitles. 
+2. The log will print `Mode: Karaoke, Current dance name (BgmFileName)/模式：卡拉OK，当前舞蹈名称（BgmFileName）: {bgmFileName}`.
+3. The plugin will automatically create a folder named after the song's `BgmFileName` in the `...\Lyric\_Karaoke\` directory and generate a `lyric.csv` file with a header.
+4. (When the dance information export option is enabled) the plugin will automatically create a file named `danceInfosKaraoke.csv` in the `...\Lyric\_Karaoke\` directory. This file will contain internal information such as the background music name (BgmFileName) and song title for easy matching.
+5. Unlike dance mode, this mode does not have an official timeline file; you must create lyrics by your own. 
+6. In addition, musicName is invalid in this mode, and ID is also invalid (0). Only BgmFileName is valid. In `danceInfosKaraoke.csv`, BgmFileName will overwrite musicName.
+
 
 ## 3. File Format
 
@@ -655,7 +674,9 @@ Id,MusicName,Title,TranslatedTitle,CommentaryText,TranslatedCommentaryText,Mode,
 210,sakura_uraraka_harahirari,さくらうららか、はらひらり,樱花烂漫，飘落纷纷,"Vocal1 . nao ","Vocal1 . nao ",Dance,25,0,SceneDance_SUH_Release,1,dance_select_image_sakurara_live,,,0,VS外,Novice,Novice,SceneDance_SUHT_Release,dance_select_image_sakurara_th,,LiveStage,True,True,True,SceneDance_SUH_Release,True,,,,,,,,Both
 260,1oy,1st only you ver.nao,1st only you ver.nao,"Vocal1 . nao ","Vocal1 . nao ",Dance,25,0,SceneDance_1OY_Release,1,dance_select_image_1oy_live,,,0,None,Novice,Novice,SceneDance_1OYT_Release,dance_select_image_1oy_th,,LiveStage,True,True,True,SceneDance_1OY_Release,True,,,,,,,,Both
 ```
+### danceInfosBgmFileName.csv
 
+Same as `danceInfos.csv`
 
 ## 4. How It Works
 

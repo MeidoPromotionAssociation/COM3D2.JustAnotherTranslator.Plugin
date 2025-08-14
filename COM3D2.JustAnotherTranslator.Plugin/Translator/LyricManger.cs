@@ -167,6 +167,165 @@ public static class LyricManger
     }
 
     /// <summary>
+    ///     将舞曲信息写入汇总文件
+    /// </summary>
+    /// <param name="musicName"></param>
+    /// <param name="isKaraoke"></param>
+    /// <param name="bgmFileName"></param>
+    public static void DumpDanceInfo(string musicName, bool isKaraoke, string bgmFileName)
+    {
+        try
+        {
+            if (DanceMain.SelectDanceData == null)
+                return;
+
+            var infoEntry = MapDanceDataToCsvEntry(DanceMain.SelectDanceData);
+            if (infoEntry != null)
+            {
+                TextTranslateManger.GetTranslateText(infoEntry.Title, out var translatedTitle,
+                    true);
+                TextTranslateManger.GetTranslateText(infoEntry.CommentaryText,
+                    out var translatedCommentaryText, true);
+
+                var mode = isKaraoke ? "Karaoke" : "Dance";
+
+                infoEntry.MusicName = isKaraoke ? bgmFileName : musicName;
+                infoEntry.TranslatedTitle = translatedTitle;
+                infoEntry.TranslatedCommentaryText = translatedCommentaryText;
+                infoEntry.Mode = mode;
+
+                UpsertDanceInfoSummary(infoEntry, isKaraoke);
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to export dance info/导出舞蹈信息失败: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    ///     Upsert 舞曲信息到汇总文件 danceInfos.csv 或 danceInfosKaraoke.csv
+    /// </summary>
+    /// <param name="entry">要写入的条目</param>
+    /// <param name="isKaraoke">是否为卡拉OK模式</param>
+    private static void UpsertDanceInfoSummary(DanceInfoCsvEntry entry, bool isKaraoke)
+    {
+        if (entry == null) return;
+
+        var key = isKaraoke ? entry.BgmFileName : entry.Id;
+        if (string.IsNullOrEmpty(key))
+        {
+            LogManager.Error(
+                "Upsert dance info skipped: Key is null or empty/跳过写入：主键为空");
+            return;
+        }
+
+        try
+        {
+            var summaryPath = "";
+
+            if (isKaraoke)
+            {
+                summaryPath = Path.Combine(JustAnotherTranslator.LyricPath, "_Karaoke");
+                summaryPath = Path.Combine(summaryPath, "danceInfosKaraoke.csv");
+            }
+            else
+            {
+                summaryPath = Path.Combine(JustAnotherTranslator.LyricPath, "danceInfos.csv");
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(summaryPath));
+
+            var list = new List<DanceInfoCsvEntry>();
+            if (File.Exists(summaryPath))
+                using (var reader = new StreamReader(summaryPath, Encoding.UTF8))
+                using (var csv = new CsvReader(reader, CsvConfig))
+                {
+                    foreach (var r in csv.GetRecords<DanceInfoCsvEntry>()) list.Add(r);
+                }
+
+            // 根据模式选择主键进行 Upsert
+            var replaced = false;
+            for (var i = 0; i < list.Count; i++)
+            {
+                var existing = list[i];
+                if (existing == null) continue;
+
+                var existingKey = isKaraoke ? existing.BgmFileName : existing.Id;
+                if (string.Equals(existingKey, key, StringComparison.Ordinal))
+                {
+                    list[i] = entry;
+                    replaced = true;
+                    break;
+                }
+            }
+
+            if (!replaced) list.Add(entry);
+
+            // 根据模式选择排序方式
+            if (isKaraoke)
+                list.Sort(CompareDanceInfoByBgmFileName);
+            else
+                list.Sort(CompareDanceInfoById);
+
+            // new UTF8Encoding(true) make sure it's UTF-8-BOM
+            using (var writer = new StreamWriter(summaryPath, false, new UTF8Encoding(true)))
+            using (var csv = new CsvWriter(writer, CsvConfig))
+            {
+                csv.WriteHeader(typeof(DanceInfoCsvEntry));
+                foreach (var r in list) csv.WriteRecord(r);
+                csv.NextRecord();
+            }
+
+            LogManager.Info($"Upsert dance info succeeded/写入 {Path.GetFileName(summaryPath)} 成功");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Upsert dance info failed/写入失败: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    ///     比较 DanceInfoCsvEntry 的 Id
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    private static int CompareDanceInfoById(DanceInfoCsvEntry a, DanceInfoCsvEntry b)
+    {
+        if (a == null && b == null) return 0;
+        if (a == null) return -1;
+        if (b == null) return 1;
+
+        var sa = a.Id ?? string.Empty;
+        var sb = b.Id ?? string.Empty;
+
+        int ia, ib;
+        if (int.TryParse(sa, out ia) && int.TryParse(sb, out ib))
+            return ia.CompareTo(ib);
+
+        return string.Compare(sa, sb, StringComparison.Ordinal);
+    }
+
+    /// <summary>
+    ///     比较 DanceInfoCsvEntry 的 BgmFileName
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
+    private static int CompareDanceInfoByBgmFileName(DanceInfoCsvEntry a, DanceInfoCsvEntry b)
+    {
+        if (a == null && b == null) return 0;
+        if (a == null) return -1;
+        if (b == null) return 1;
+
+        var sa = a.BgmFileName ?? string.Empty;
+        var sb = b.BgmFileName ?? string.Empty;
+
+        return string.Compare(sa, sb, StringComparison.Ordinal);
+    }
+
+    /// <summary>
     ///     清理场景资源
     /// </summary>
     private static void ClearSceneResources()
@@ -225,7 +384,12 @@ public static class LyricManger
         path = Path.Combine(path, "lyric.csv");
 
         if (File.Exists(path))
+        {
             LoadSubtitle(path);
+            return;
+        }
+
+        LogManager.Info($"Lyric file not found: {path}/未找到字幕文件: {path}");
     }
 
     /// <summary>
@@ -247,12 +411,6 @@ public static class LyricManger
     {
         CurrentLyrics.Clear();
         _currentLyricIndex = 0;
-
-        if (!File.Exists(path))
-        {
-            LogManager.Info($"Lyric file not found: {path}/未找到字幕文件: {path}");
-            return;
-        }
 
         try
         {
@@ -285,15 +443,39 @@ public static class LyricManger
     public static void HandleDanceLoaded(string musicName)
     {
         if (string.IsNullOrEmpty(musicName))
+        {
+            LogManager.Warning("musicName is null, subtitle will not be displayed/音乐名称为空，字幕将不会显示");
             return;
+        }
+
 
         var path = Path.Combine(JustAnotherTranslator.LyricPath, musicName);
+        var isKaraoke = DanceMain.KaraokeMode;
+        var bgmFileName = "";
+
+        // 如果是卡拉OK模式，那么 MusicName 是无效的，ID 也是无效的（0），只有 BgmFileName 是有效的
+        if (isKaraoke)
+        {
+            if (DanceMain.SelectDanceData == null)
+            {
+                LogManager.Warning(
+                    "DanceMain.SelectDanceData is null, subtitle will not be displayed/选择的舞蹈数据为空，字幕将不会显示");
+                return;
+            }
+
+            bgmFileName = DanceMain.SelectDanceData.bgm_file_name;
+
+            path = Path.Combine(JustAnotherTranslator.LyricPath, "_Karaoke");
+            Directory.CreateDirectory(path);
+            path = Path.Combine(path, bgmFileName);
+        }
+
 
         CreateMusicPath(path);
         TryToLoadLyric(path);
 
         if (JustAnotherTranslator.EnableDumpDanceInfo.Value)
-            DumpDanceInfo(musicName);
+            DumpDanceInfo(musicName, isKaraoke, bgmFileName);
     }
 
     /// <summary>
@@ -434,126 +616,6 @@ public static class LyricManger
 
         lyric = XUATInterop.MarkTranslated(lyric);
         return lyric;
-    }
-
-    /// <summary>
-    ///     Upsert 当前舞蹈信息到汇总文件 musicInfo.csv（按 Id 去重并排序）
-    /// </summary>
-    /// <param name="musicName"></param>
-    private static void DumpDanceInfo(string musicName)
-    {
-        try
-        {
-            if (DanceMain.SelectDanceData == null)
-                return;
-
-            var infoEntry = MapDanceDataToCsvEntry(DanceMain.SelectDanceData);
-            if (infoEntry != null)
-            {
-                TextTranslateManger.GetTranslateText(infoEntry.Title, out var translatedTitle,
-                    true);
-                TextTranslateManger.GetTranslateText(infoEntry.CommentaryText,
-                    out var translatedCommentaryText, true);
-                var mode = DanceMain.KaraokeMode ? "Karaoke" : "Dance";
-
-                infoEntry.MusicName = musicName;
-                infoEntry.TranslatedTitle = translatedTitle;
-                infoEntry.TranslatedCommentaryText = translatedCommentaryText;
-                infoEntry.Mode = mode;
-
-                UpsertDanceInfoSummary(infoEntry);
-            }
-        }
-        catch (Exception e)
-        {
-            LogManager.Error($"Failed to export dance info/导出舞蹈信息失败: {e.Message}");
-        }
-    }
-
-    /// <summary>
-    ///     Upsert 舞曲信息到汇总文件 danceInfos.csv（按 Id 去重并排序）
-    /// </summary>
-    /// <param name="entry"></param>
-    private static void UpsertDanceInfoSummary(DanceInfoCsvEntry entry)
-    {
-        if (entry == null) return;
-        if (string.IsNullOrEmpty(entry.Id))
-        {
-            LogManager.Error(
-                "Upsert danceInfos.csv skipped: Id is null or empty/跳过写入 danceInfos.csv：Id 为空");
-            return;
-        }
-
-        try
-        {
-            Directory.CreateDirectory(JustAnotherTranslator.LyricPath);
-            var summaryPath = Path.Combine(JustAnotherTranslator.LyricPath, "danceInfos.csv");
-
-            var list = new List<DanceInfoCsvEntry>();
-            if (File.Exists(summaryPath))
-                using (var reader = new StreamReader(summaryPath, Encoding.UTF8))
-                using (var csv = new CsvReader(reader, CsvConfig))
-                {
-                    foreach (var r in csv.GetRecords<DanceInfoCsvEntry>()) list.Add(r);
-                }
-
-            // Upsert by Id
-            var replaced = false;
-            for (var i = 0; i < list.Count; i++)
-            {
-                var existing = list[i];
-                if (existing != null &&
-                    string.Equals(existing.Id, entry.Id, StringComparison.Ordinal))
-                {
-                    list[i] = entry;
-                    replaced = true;
-                    break;
-                }
-            }
-
-            if (!replaced) list.Add(entry);
-
-            // Sort by Id
-            list.Sort(CompareDanceInfoById);
-
-            // new UTF8Encoding(true) make sure it's UTF-8-BOM
-            using (var writer = new StreamWriter(summaryPath, false, new UTF8Encoding(true)))
-            using (var csv = new CsvWriter(writer, CsvConfig))
-            {
-                csv.WriteHeader(typeof(DanceInfoCsvEntry));
-                foreach (var r in list) csv.WriteRecord(r);
-
-                csv.NextRecord();
-            }
-
-            LogManager.Info("Upsert dance info succeeded/写入 danceInfos.csv 成功");
-        }
-        catch (Exception e)
-        {
-            LogManager.Error($"Upsert danceInfos.csv failed/写入 danceInfos.csv 失败: {e.Message}");
-        }
-    }
-
-    /// <summary>
-    ///     比较 DanceInfoCsvEntry 的 Id
-    /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
-    /// <returns></returns>
-    private static int CompareDanceInfoById(DanceInfoCsvEntry a, DanceInfoCsvEntry b)
-    {
-        if (a == null && b == null) return 0;
-        if (a == null) return -1;
-        if (b == null) return 1;
-
-        var sa = a.Id ?? string.Empty;
-        var sb = b.Id ?? string.Empty;
-
-        int ia, ib;
-        if (int.TryParse(sa, out ia) && int.TryParse(sb, out ib))
-            return ia.CompareTo(ib);
-
-        return string.Compare(sa, sb, StringComparison.Ordinal);
     }
 
     /// <summary>

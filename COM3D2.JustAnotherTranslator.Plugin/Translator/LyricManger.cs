@@ -453,6 +453,9 @@ public static class LyricManger
         var isKaraoke = DanceMain.KaraokeMode;
         var bgmFileName = "";
 
+        LogManager.Info($"Current dance name (musicName)/当前舞蹈（musicName）: {musicName}");
+
+
         // 如果是卡拉OK模式，那么 MusicName 是无效的，ID 也是无效的（0），只有 BgmFileName 是有效的
         if (isKaraoke)
         {
@@ -465,9 +468,15 @@ public static class LyricManger
 
             bgmFileName = DanceMain.SelectDanceData.bgm_file_name;
 
+            LogManager.Info($"Mode: Karaoke, Current dance name (BgmFileName)/模式：卡拉OK，当前舞蹈名称（BgmFileName）: {bgmFileName}");
+
             path = Path.Combine(JustAnotherTranslator.LyricPath, "_Karaoke");
             Directory.CreateDirectory(path);
             path = Path.Combine(path, bgmFileName);
+        }
+        else
+        {
+            LogManager.Info($"Mode: Dance, Current dance name (musicName)/模式：舞蹈，当前舞蹈名称（musicName）: {musicName}");
         }
 
 

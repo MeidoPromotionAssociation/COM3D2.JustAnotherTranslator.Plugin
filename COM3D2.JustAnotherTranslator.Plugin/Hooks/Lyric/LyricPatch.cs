@@ -64,8 +64,6 @@ public static class LyricPatch
             if (string.IsNullOrEmpty(musicName))
                 return;
 
-            LogManager.Info($"Current dance name (musicName)/当前舞蹈（musicName）: {musicName}");
-
             LyricManger.HandleDanceLoaded(musicName);
         }
         catch (Exception e)

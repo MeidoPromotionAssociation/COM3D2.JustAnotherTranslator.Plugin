@@ -14,10 +14,10 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
     private string _initCoroutineID;
 
     /// VR字幕的容器
-    protected Transform VrSubtitleContainer;
+    protected Transform VrSubtitleContainerTransform;
 
     /// 平板电脑物体
-    protected Transform VRTablet;
+    protected Transform VRTabletTransform;
 
 
     /// <summary>
@@ -29,7 +29,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         var isVisible = GameMain.Instance?.OvrMgr?.OvrCamera?.m_bUiToggle;
         if (isVisible == null) return;
         gameObject.SetActive(isVisible.Value); // VrSubtitleContainer 并不是这个 gameObject 的子物体
-        VrSubtitleContainer.gameObject.SetActive(isVisible.Value);
+        VrSubtitleContainerTransform.gameObject.SetActive(isVisible.Value);
     }
 
     /// <summary>
@@ -53,8 +53,8 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
             yield return null;
 
         var tablet = GameMain.Instance.OvrMgr.OvrCamera.m_goOvrUiTablet;
-        VRTablet = tablet.transform;
-        if (VRTablet == null)
+        VRTabletTransform = tablet.transform;
+        if (VRTabletTransform == null)
         {
             LogManager.Warning(
                 "Failed to find VR tablet object, subtitle will not be displayed, please report this issue/没有找到平板电脑物体，字幕将无法显示，请报告此问题");
@@ -63,11 +63,11 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
 
         // 创建一个容器，用来移动位置，直接移动 Canvas 效果不佳
         var containerObj = new GameObject("JAT_Subtitle_VRTabletSubtitleComponent_Container");
-        VrSubtitleContainer = containerObj.transform;
-        VrSubtitleContainer.SetParent(VRTablet, false);
-        VrSubtitleContainer.localPosition = new Vector3(0, 0f, -1f); // -1f 约为平板中心
-        VrSubtitleContainer.localRotation = Quaternion.Euler(90, 0, 0); // 与平板旋转一致以贴合
-        VrSubtitleContainer.localScale = new Vector3(1, 1, 1);
+        VrSubtitleContainerTransform = containerObj.transform;
+        VrSubtitleContainerTransform.SetParent(VRTabletTransform, false);
+        VrSubtitleContainerTransform.localPosition = new Vector3(0, 0f, -1f); // -1f 约为平板中心
+        VrSubtitleContainerTransform.localRotation = Quaternion.Euler(90, 0, 0); // 与平板旋转一致以贴合
+        VrSubtitleContainerTransform.localScale = new Vector3(1, 1, 1);
 
         // 创建世界空间Canvas
         var canvasObj = new GameObject("JAT_Subtitle_VRTabletSubtitleComponent_Canvas");
@@ -177,8 +177,8 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         }
 
         // 应用位置
-        if (VrSubtitleContainer != null)
-            VrSubtitleContainer.transform.localPosition = new Vector3(
+        if (VrSubtitleContainerTransform != null)
+            VrSubtitleContainerTransform.transform.localPosition = new Vector3(
                 Config.VRTabletSubtitleHorizontalPosition, 0,
                 Config.CurrentVerticalPosition); // 没写错，就是 Z 是垂直
     }
@@ -204,8 +204,8 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
             Config.VRTabletSubtitleWidth, Config.VRTabletSubtitleHeight);
 
         // 应用位置
-        if (VrSubtitleContainer != null)
-            VrSubtitleContainer.transform.localPosition = new Vector3(
+        if (VrSubtitleContainerTransform != null)
+            VrSubtitleContainerTransform.transform.localPosition = new Vector3(
                 Config.VRTabletSubtitleHorizontalPosition, 0,
                 Config.CurrentVerticalPosition); // 没写错，就是 Z 是垂直
 
@@ -261,7 +261,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
     /// </summary>
     protected override void DestroySubtitleUI()
     {
-        if (VrSubtitleContainer.gameObject != null) Destroy(VrSubtitleContainer.gameObject);
+        if (VrSubtitleContainerTransform.gameObject != null) Destroy(VrSubtitleContainerTransform.gameObject);
         base.DestroySubtitleUI();
     }
 }

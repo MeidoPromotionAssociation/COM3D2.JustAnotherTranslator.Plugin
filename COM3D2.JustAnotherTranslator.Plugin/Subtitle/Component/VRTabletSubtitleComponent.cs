@@ -79,7 +79,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         // 设置Canvas尺寸
         var vrSpaceCanvasRect = CanvasComponents.GetComponent<RectTransform>();
         vrSpaceCanvasRect.anchoredPosition3D = new Vector3(0, 0, 0);
-        vrSpaceCanvasRect.sizeDelta = new Vector2(1920, 1080); // 画布尺寸，仍然设置为 1920 x 1080
+        vrSpaceCanvasRect.sizeDelta = new Vector2(1, 1); // 画布尺寸，不重要
         vrSpaceCanvasRect.anchorMin = new Vector2(0.5f, 0.5f);
         vrSpaceCanvasRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点，中心
         vrSpaceCanvasRect.pivot = new Vector2(0.5f, 0.5f); // 轴心，中心
@@ -106,7 +106,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         BackgroundImageComponents.color = new Color(0, 0, 0, 0.5f); // 半透明黑色背景
         BackgroundImageComponents.raycastTarget = false; // 不拦截射线
 
-        // 设置背景位置和大小，让它完全填充 Canvas
+        // 设置背景位置和大小
         var backgroundRect = BackgroundImageComponents.rectTransform;
         backgroundRect.anchoredPosition3D = new Vector3(0, 0, 0); // 画面中心
         var size = new Vector2(560, 10); // 560约为虚拟平板电脑宽度

@@ -468,7 +468,8 @@ public static class LyricManger
 
             bgmFileName = DanceMain.SelectDanceData.bgm_file_name;
 
-            LogManager.Info($"Mode: Karaoke, Current dance internal name (BgmFileName)/模式：卡拉OK，当前舞蹈内部名称（BgmFileName）: {bgmFileName}");
+            LogManager.Info(
+                $"Mode: Karaoke, Current dance internal name (BgmFileName)/模式：卡拉OK，当前舞蹈内部名称（BgmFileName）: {bgmFileName}");
 
             path = Path.Combine(JustAnotherTranslator.LyricPath, "_Karaoke");
             Directory.CreateDirectory(path);
@@ -476,7 +477,8 @@ public static class LyricManger
         }
         else
         {
-            LogManager.Info($"Mode: Dance, Current dance internal name (musicName)/模式：舞蹈，当前舞蹈内部名称（musicName）: {musicName}");
+            LogManager.Info(
+                $"Mode: Dance, Current dance internal name (musicName)/模式：舞蹈，当前舞蹈内部名称（musicName）: {musicName}");
         }
 
 

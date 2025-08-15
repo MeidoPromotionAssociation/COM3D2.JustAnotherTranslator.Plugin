@@ -356,8 +356,8 @@ public static class SubtitleComponentManager
             var step = subtitleHeightWorld; // 步长 = 字幕世界高度
 
             // 避免浮点误差
-            float eps = 1e-5f;
-            float threshold = Mathf.Max(0f, subtitleHeightWorld - eps);
+            var eps = 1e-5f;
+            var threshold = Mathf.Max(0f, subtitleHeightWorld - eps);
 
             // 检查给定位置是否与任何活动字幕重叠
             // 平板电脑模式锚点为中心，即字幕垂直位置设置的是字幕中心的位置
@@ -439,7 +439,7 @@ public static class SubtitleComponentManager
         {
             // 向下放置时将 Canvas 的本地Y轴往下移动字幕高度 * 0.001f 即可
             LogManager.Debug(
-                $"Calculated VR space subtitle position: test");
+                "Calculated VR space subtitle position: test");
         }
         catch (Exception ex)
         {

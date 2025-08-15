@@ -262,7 +262,8 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
     /// </summary>
     protected override void DestroySubtitleUI()
     {
-        if (VrSubtitleContainerTransform.gameObject != null) Destroy(VrSubtitleContainerTransform.gameObject);
+        if (VrSubtitleContainerTransform.gameObject != null)
+            Destroy(VrSubtitleContainerTransform.gameObject);
         base.DestroySubtitleUI();
     }
 }

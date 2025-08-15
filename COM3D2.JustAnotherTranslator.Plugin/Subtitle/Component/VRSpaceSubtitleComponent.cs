@@ -299,7 +299,6 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     /// <param name="position"></param>
     public override void SetVerticalPosition(float position)
     {
-        return;
     }
 
 

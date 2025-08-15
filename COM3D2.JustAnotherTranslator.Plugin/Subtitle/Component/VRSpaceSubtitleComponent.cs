@@ -19,16 +19,11 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
     // 字幕跟随平滑度
     // TODO 可配置
+    // TODO 重新确认并重做配置
     protected readonly float FollowSmoothness = 5.0f;
 
     // 初始化失败计数器
     private int _initFailureCount;
-
-    // 缓存变量，避免重复计算
-    private Vector3 _lastHeadPosition = Vector3.zero;
-    private Quaternion _lastHeadRotation = Quaternion.identity;
-    private Vector3 _targetPosition = Vector3.zero;
-    private Quaternion _targetRotation = Quaternion.identity;
 
     // VR头部位置参考，用于跟随头部运动
     protected Transform VRHeadTransform;
@@ -43,11 +38,11 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     /// <summary>
     ///     跟随头部更新
     /// </summary>
-    private void Update()
+    protected void Update()
     {
         if (!gameObject.activeSelf) return;
 
-        // 尝试初始化VR组件（带重试机制）
+        // 尝试初始化VR组件
         if (VRHeadTransform is null)
         {
             if (_initFailureCount < MaxInitRetries)
@@ -74,80 +69,17 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     /// </summary>
     private void UpdateSubtitlePosition()
     {
-        var headTransform = VRHeadTransform;
-        var containerTransform = VrSubtitleContainer.transform;
+        // --- 测试代码：将字幕锁定在头部前方1米 --- //
+        const float distanceFromHead = 1f; // 距离头部1米
 
-        var currentHeadPosition = headTransform.position;
-        var currentHeadRotation = headTransform.rotation;
+        // 计算目标位置
+        var targetPosition = VRHeadTransform.position + VRHeadTransform.forward * distanceFromHead;
 
-        // 检查头部是否有显著移动，避免不必要的计算
-        var positionChanged = Vector3.Distance(currentHeadPosition, _lastHeadPosition) >
-                              PositionThreshold;
-        var rotationChanged = Quaternion.Angle(currentHeadRotation, _lastHeadRotation) >
-                              RotationThreshold;
-
-        if (positionChanged || rotationChanged)
-        {
-            // 缓存头部变换信息
-            var headForward = headTransform.forward;
-            var headUp = headTransform.up;
-            var headRight = headTransform.right;
-
-            // 修正后的位置计算
-            // 1. 首先计算基础前方位置
-            var basePosition = currentHeadPosition + headForward * Config.VRSubtitleDistance;
-
-            // 2. 应用垂直偏移（负值向下，正值向上）- 固定偏移量，不受距离影响
-            var verticalOffset = headUp * (Config.VRSubtitleVerticalOffset / 100.0f);
-
-            // 3. 应用水平偏移（负值向左，正值向右）- 固定偏移量，不受距离影响  
-            var horizontalOffset = headRight * (Config.VRSubtitleHorizontalOffset / 100.0f);
-
-            _targetPosition = basePosition + verticalOffset + horizontalOffset;
-
-            // 计算目标旋转（字幕面向玩家头部）
-            // 将朝向向量反转，因为UI的正面在-Z轴，所以需要让变换的+Z轴远离玩家
-            var directionToLook = (_targetPosition - currentHeadPosition).normalized;
-
-            // 使用头部的up向量作为参考，确保字幕不会倾斜
-            _targetRotation = Quaternion.LookRotation(directionToLook, headUp);
-
-            // 更新缓存
-            _lastHeadPosition = currentHeadPosition;
-            _lastHeadRotation = currentHeadRotation;
-        }
-
-        // 应用平滑移动
-        ApplySmoothMovement(containerTransform);
+        // 设置字幕容器的位置和旋转
+        VrSubtitleContainer.transform.position = targetPosition;
+        VrSubtitleContainer.transform.rotation = VRHeadTransform.rotation;
     }
 
-    /// <summary>
-    ///     应用平滑移动
-    /// </summary>
-    private void ApplySmoothMovement(Transform containerTransform)
-    {
-        // 为平滑处理限制 deltaTime 的最大值，防止跳跃
-        var cappedDeltaTime = Mathf.Min(Time.deltaTime, 0.1f);
-
-        // 使用帧率无关的平滑因子
-        var smoothFactor = FollowSmoothness > 0.0001f
-            ? 1.0f - Mathf.Exp(-FollowSmoothness * cappedDeltaTime)
-            : 0f;
-
-        // 平滑更新位置
-        containerTransform.position = Vector3.Lerp(
-            containerTransform.position,
-            _targetPosition,
-            smoothFactor
-        );
-
-        // 平滑更新旋转
-        containerTransform.rotation = Quaternion.Lerp(
-            containerTransform.rotation,
-            _targetRotation,
-            smoothFactor
-        );
-    }
 
     /// <summary>
     ///     初始化字幕组件
@@ -321,7 +253,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         // 设置Canvas尺寸
         VrSpaceCanvasRect = CanvasComponents.GetComponent<RectTransform>();
         VrSpaceCanvasRect.anchoredPosition3D = new Vector3(0, 0, 0);
-        VrSpaceCanvasRect.sizeDelta = new Vector2(1920, 1080); // 画布尺寸，仍然设置为 1920 x 1080
+        VrSpaceCanvasRect.sizeDelta = new Vector2(1, 1); // 画布尺寸，不重要
         VrSpaceCanvasRect.anchorMin = new Vector2(0.5f, 0.5f);
         VrSpaceCanvasRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点，中心
         VrSpaceCanvasRect.pivot = new Vector2(0.5f, 0.5f); // 轴心，中心

@@ -236,7 +236,7 @@ public static class SubtitleComponentManager
 
             // 查找现有条目以确定初始位置
             var existingEntry = ActiveSubtitles.FirstOrDefault(s => s.Id == currentSubtitleId);
-            // 如果已存在条目，尝试放回已记录的位置（上次放置过的位置）
+            // 如果已存在条目，尝试放回上次放置过的位置
             var initialY = existingEntry.Id != null
                 ? existingEntry.InitialVerticalPosition
                 : config.CurrentVerticalPosition;
@@ -314,7 +314,7 @@ public static class SubtitleComponentManager
                 Id = currentSubtitleId,
                 VerticalPosition = finalY,
                 Height = subtitleHeight,
-                InitialVerticalPosition = initialY
+                InitialVerticalPosition = finalY
             });
         }
         catch (Exception ex)
@@ -342,7 +342,7 @@ public static class SubtitleComponentManager
 
             // 查找现有条目以确定初始位置
             var existingEntry = ActiveSubtitles.FirstOrDefault(s => s.Id == currentSubtitleId);
-            // 如果已存在条目，尝试放回已记录的位置
+            // 如果已存在条目，尝试放回上次放置过的位置
             var initialZ = existingEntry.Id != null
                 ? existingEntry.InitialVerticalPosition
                 : config.VRTabletSubtitleVerticalPosition;
@@ -365,7 +365,7 @@ public static class SubtitleComponentManager
             bool Overlaps(float z)
             {
                 return ActiveSubtitles.Any(s =>
-                    Mathf.Abs(s.VerticalPosition - z) < subtitleHeightWorld - threshold);
+                    Mathf.Abs(s.VerticalPosition - z) < threshold);
             }
             // Mathf.Abs(s.VerticalPosition − z) < (subtitleHeightWorld + s.Height) * 0.5f − float.Epsilon
 
@@ -413,7 +413,7 @@ public static class SubtitleComponentManager
                 Id = currentSubtitleId,
                 VerticalPosition = finalZ,
                 Height = subtitleHeightWorld,
-                InitialVerticalPosition = initialZ
+                InitialVerticalPosition = finalZ
             });
 
             LogManager.Debug(

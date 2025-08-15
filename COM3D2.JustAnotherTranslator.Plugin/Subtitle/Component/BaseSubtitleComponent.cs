@@ -590,5 +590,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             Destroy(CanvasComponents.gameObject);
             CanvasComponents = null;
         }
+
+        if (gameObject != null)
+            Destroy(gameObject);
     }
 }

@@ -84,6 +84,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         vrSpaceCanvasRect.anchorMin = new Vector2(0.5f, 0.5f);
         vrSpaceCanvasRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点，中心
         vrSpaceCanvasRect.pivot = new Vector2(0.5f, 0.5f); // 轴心，中心
+        vrSpaceCanvasRect.localPosition = new Vector3(0, 0, 0);
         vrSpaceCanvasRect.localRotation = Quaternion.identity; // 旋转0度
         vrSpaceCanvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f); // 此时 1000 尺寸单位 = 1米
 
@@ -115,6 +116,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         backgroundRect.anchorMin = new Vector2(0.5f, 0.5f);
         backgroundRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点为Canvas中心
         backgroundRect.pivot = new Vector2(0.5f, 0.5f); // 轴心0，中心
+        backgroundRect.localPosition = new Vector3(0, 0, 0);
         backgroundRect.localRotation = Quaternion.identity; // 旋转0度
         backgroundRect.localScale = new Vector3(1, 1, 1); // 缩放1倍
 
@@ -132,13 +134,14 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         textRect.anchorMin = new Vector2(0.5f, 0.5f);
         textRect.anchorMax = new Vector2(0.5f, 0.5f);
         textRect.pivot = new Vector2(0.5f, 0.5f);
+        textRect.localPosition = new Vector3(0, 0, 0);
         textRect.localRotation = Quaternion.identity;
         textRect.localScale = new Vector3(12, 12, 1); // 12 倍缩放比较正常
 
         // 设置默认文本样式
         TextComponent.alignment = TextAnchor.MiddleCenter; // 居中对齐
-        TextComponent.horizontalOverflow = HorizontalWrapMode.Overflow; // 垂直溢出时自动换行
-        TextComponent.verticalOverflow = VerticalWrapMode.Truncate; // 水平溢出时截断
+        TextComponent.horizontalOverflow = HorizontalWrapMode.Overflow; // 水平溢出时允许超出边界
+        TextComponent.verticalOverflow = VerticalWrapMode.Truncate; // 垂直溢出时截断
 
         // 添加描边组件
         OutlineComponents = TextComponent.gameObject.AddComponent<Outline>();

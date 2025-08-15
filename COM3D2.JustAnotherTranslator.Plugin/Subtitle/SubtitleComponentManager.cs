@@ -355,6 +355,7 @@ public static class SubtitleComponentManager
             const int maxSteps = 2100; // 最大搜索步数
             var step = subtitleHeightWorld; // 步长 = 字幕世界高度
 
+            // 避免浮点误差
             float eps = 1e-5f;
             float threshold = Mathf.Max(0f, subtitleHeightWorld - eps);
 
@@ -367,7 +368,7 @@ public static class SubtitleComponentManager
                 return ActiveSubtitles.Any(s =>
                     Mathf.Abs(s.VerticalPosition - z) < threshold);
             }
-            // Mathf.Abs(s.VerticalPosition − z) < (subtitleHeightWorld + s.Height) * 0.5f − float.Epsilon
+            // Mathf.Abs(s.VerticalPosition − z) < (subtitleHeightWorld + s.Height) * 0.5f − eps
 
             LogManager.Debug(
                 $"Checking initial position: {initialZ}, subtitle height: {config.VRTabletSubtitleHeight} world height: {subtitleHeightWorld}, overlaps: {Overlaps(initialZ)}");

@@ -52,6 +52,7 @@ public class ScreenSubtitleComponent : BaseSubtitleComponent
         backgroundRect.anchorMin = new Vector2(0, 0);
         backgroundRect.anchorMax = new Vector2(0, 0); // 锚点为Canvas左下角
         backgroundRect.pivot = new Vector2(0, 0); // 轴心0，左下角
+        backgroundRect.localPosition = new Vector3(0, 0, 0); // 旋转0度
         backgroundRect.localRotation = Quaternion.identity; // 旋转0度
         backgroundRect.localScale = new Vector3(1, 1, 1); // 缩放1倍
 
@@ -68,13 +69,14 @@ public class ScreenSubtitleComponent : BaseSubtitleComponent
         textRect.anchorMin = new Vector2(0, 0);
         textRect.anchorMax = new Vector2(0, 0);
         textRect.pivot = new Vector2(0, 0);
+        textRect.localPosition = new Vector3(0, 0, 0);
         textRect.localRotation = Quaternion.identity;
         textRect.localScale = new Vector3(1, 1, 1);
 
         // 设置默认文本样式
         TextComponent.alignment = TextAnchor.MiddleCenter; // 居中对齐
-        TextComponent.horizontalOverflow = HorizontalWrapMode.Overflow; // 垂直溢出时自动换行
-        TextComponent.verticalOverflow = VerticalWrapMode.Truncate; // 水平溢出时截断
+        TextComponent.horizontalOverflow = HorizontalWrapMode.Overflow; // 水平溢出时允许超出边界
+        TextComponent.verticalOverflow = VerticalWrapMode.Truncate; // 垂直溢出时截断
 
         // 添加描边组件
         OutlineComponents = TextComponent.gameObject.AddComponent<Outline>();

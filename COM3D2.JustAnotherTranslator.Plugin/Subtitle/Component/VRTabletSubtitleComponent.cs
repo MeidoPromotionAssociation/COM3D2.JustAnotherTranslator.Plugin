@@ -28,7 +28,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         // 跟随平板电脑可见性
         var isVisible = GameMain.Instance?.OvrMgr?.OvrCamera?.m_bUiToggle;
         if (isVisible == null) return;
-        gameObject.SetActive(isVisible.Value);
+        VrSubtitleContainer.gameObject.SetActive(isVisible.Value);
     }
 
     /// <summary>

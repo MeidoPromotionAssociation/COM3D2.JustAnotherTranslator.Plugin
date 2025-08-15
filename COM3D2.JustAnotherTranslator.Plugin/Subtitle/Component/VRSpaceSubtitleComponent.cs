@@ -32,7 +32,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     protected RectTransform VrSpaceCanvasRect;
 
     // 世界空间VR字幕的容器
-    protected GameObject VrSubtitleContainer;
+    protected Transform VrSubtitleContainerTransform;
 
 
     /// <summary>
@@ -43,7 +43,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         if (!gameObject.activeSelf) return;
 
         // 尝试初始化VR组件
-        if (VRHeadTransform is null)
+        if (VRHeadTransform == null)
         {
             if (_initFailureCount < MaxInitRetries)
             {
@@ -59,7 +59,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             }
         }
 
-        if (VRHeadTransform is null || VrSubtitleContainer is null) return;
+        if (VRHeadTransform == null || VrSubtitleContainerTransform == null) return;
 
         UpdateSubtitlePosition();
     }
@@ -76,8 +76,8 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         var targetPosition = VRHeadTransform.position + VRHeadTransform.forward * distanceFromHead;
 
         // 设置字幕容器的位置和旋转
-        VrSubtitleContainer.transform.position = targetPosition;
-        VrSubtitleContainer.transform.rotation = VRHeadTransform.rotation;
+        VrSubtitleContainerTransform.position = targetPosition;
+        VrSubtitleContainerTransform.rotation = VRHeadTransform.rotation;
     }
 
 
@@ -166,31 +166,6 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     }
 
     /// <summary>
-    ///     使用主摄像机作为头部变换的备选方案
-    /// </summary>
-    private bool TryGetHeadTransformFromCamera()
-    {
-        try
-        {
-            var mainCamera = Camera.main;
-            if (mainCamera != null)
-            {
-                VRHeadTransform = mainCamera.transform;
-                LogManager.Warning(
-                    "Using main camera as VR head transform - this may not provide accurate VR tracking");
-                return true;
-            }
-        }
-        catch (Exception e)
-        {
-            LogManager.Debug($"Failed to get head transform from camera: {e.Message}");
-        }
-
-        return false;
-    }
-
-
-    /// <summary>
     ///     初始化VR头部组件
     /// </summary>
     protected void FindVRHeadComponents()
@@ -214,13 +189,6 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             return;
         }
 
-        // 方法3: 查找摄像机作为备选方案
-        if (TryGetHeadTransformFromCamera())
-        {
-            LogManager.Debug("Using main camera as VR head transform fallback");
-            return;
-        }
-
         LogManager.Warning(
             "找不到VR头部变换，头部字幕跟踪将无法工作/VR head transform not found, head tracking will not work");
     }
@@ -237,14 +205,14 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         // 创建一个容器，用来移动位置，直接移动 Canvas 效果不佳
         var containerObj = new GameObject("JAT_Subtitle_VRSpaceSubtitleComponent_Container");
         containerObj.transform.SetParent(transform, false);
-        VrSubtitleContainer = containerObj;
-        containerObj.transform.localPosition = new Vector3(0, 0, 0);
-        containerObj.transform.localRotation = Quaternion.identity;
-        containerObj.transform.localScale = new Vector3(1, 1, 1);
+        VrSubtitleContainerTransform = containerObj.transform;
+        VrSubtitleContainerTransform.localPosition = new Vector3(0, 0, 0);
+        VrSubtitleContainerTransform.localRotation = Quaternion.identity;
+        VrSubtitleContainerTransform.localScale = new Vector3(1, 1, 1);
 
         // 创建世界空间Canvas
         var canvasObj = new GameObject("JAT_Subtitle_VRSpaceSubtitleComponent_Canvas");
-        canvasObj.transform.SetParent(containerObj.transform, false);
+        canvasObj.transform.SetParent(VrSubtitleContainerTransform, false);
         CanvasComponents = canvasObj.AddComponent<Canvas>();
         CanvasComponents.renderMode = RenderMode.WorldSpace;
         CanvasComponents.sortingOrder = 32767;
@@ -257,6 +225,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         VrSpaceCanvasRect.anchorMin = new Vector2(0.5f, 0.5f);
         VrSpaceCanvasRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点，中心
         VrSpaceCanvasRect.pivot = new Vector2(0.5f, 0.5f); // 轴心，中心
+        VrSpaceCanvasRect.localPosition = new Vector3(0, 0, 0);
         VrSpaceCanvasRect.localRotation = Quaternion.identity; // 旋转0度
         VrSpaceCanvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f); // 此时 1000 尺寸单位 = 1米
 
@@ -288,6 +257,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         backgroundRect.anchorMin = new Vector2(0.5f, 0.5f);
         backgroundRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点为Canvas中心
         backgroundRect.pivot = new Vector2(0.5f, 0.5f); // 轴心0.5，中心
+        backgroundRect.localPosition = new Vector3(0, 0, 0);
         backgroundRect.localRotation = Quaternion.identity; // 旋转0度
         backgroundRect.localScale = new Vector3(1, 1, 1); // 缩放1倍
 
@@ -305,13 +275,14 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         textRect.anchorMin = new Vector2(0.5f, 0.5f);
         textRect.anchorMax = new Vector2(0.5f, 0.5f);
         textRect.pivot = new Vector2(0.5f, 0.5f);
+        textRect.localPosition = new Vector3(0, 0, 0);
         textRect.localRotation = Quaternion.identity;
         textRect.localScale = new Vector3(40, 40, 1); // 40 倍缩放比较正常
 
         // 设置默认文本样式
         TextComponent.alignment = TextAnchor.MiddleCenter; // 居中对齐
-        TextComponent.horizontalOverflow = HorizontalWrapMode.Overflow; // 垂直溢出时自动换行
-        TextComponent.verticalOverflow = VerticalWrapMode.Truncate; // 水平溢出时截断
+        TextComponent.horizontalOverflow = HorizontalWrapMode.Overflow; // 水平溢出时允许超出边界
+        TextComponent.verticalOverflow = VerticalWrapMode.Truncate; // 垂直溢出时截断
 
         // 添加描边组件
         OutlineComponents = TextComponent.gameObject.AddComponent<Outline>();
@@ -320,6 +291,17 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
         LogManager.Debug("VRSpaceSubtitleComponent Subtitle UI created");
     }
+
+
+    /// <summary>
+    ///     设置当前垂直位置
+    /// </summary>
+    /// <param name="position"></param>
+    public override void SetVerticalPosition(float position)
+    {
+        return;
+    }
+
 
     /// <summary>
     ///     应用配置
@@ -332,10 +314,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             return;
         }
 
-        base.ApplyConfig();
-
         // 避免修改垂直位置
-        // TODO 位置?
         var verticalPosition = Config.VerticalPosition;
         Config.CurrentVerticalPosition = verticalPosition;
 
@@ -396,7 +375,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     /// </summary>
     protected override void DestroySubtitleUI()
     {
-        if (VrSubtitleContainer != null) Destroy(VrSubtitleContainer);
+        if (VrSubtitleContainerTransform != null) Destroy(VrSubtitleContainerTransform);
 
         base.DestroySubtitleUI();
     }

@@ -2234,6 +2234,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         VRSubtitleMode.SettingChanged += (_, _) =>
         {
             LogManager.Info("VR Subtitle mode changed/VR字幕模式已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
             SubtitleComponentManager.DestroyAllSubtitleComponents();
         };
 

@@ -950,9 +950,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         VRTabletSubtitleVerticalPosition = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleVerticalPosition/VR平板电脑字幕垂直位置",
-            -0.88f,
+            0.17f,
             new ConfigDescription(
-                "VR Tablet Subtitle Vertical Position in meter, -1 is VR tablet center, the larger the value the higher/VR平板电脑字幕垂直位置（米），-1 为平板电脑中央，数值越大越往上",
+                "VR Tablet Subtitle Vertical Position in meter, 0 is VR tablet center, the larger the value the higher/VR平板电脑字幕垂直位置（米），0 为平板电脑中央，数值越大越往上",
                 null,
                 new ConfigurationManagerAttributes { Order = 8080 }));
 

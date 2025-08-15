@@ -197,8 +197,6 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
             return;
         }
 
-        base.ApplyConfig();
-
         // 避免修改垂直位置
         var verticalPosition = Config.VRTabletSubtitleVerticalPosition;
         Config.CurrentVerticalPosition = verticalPosition;

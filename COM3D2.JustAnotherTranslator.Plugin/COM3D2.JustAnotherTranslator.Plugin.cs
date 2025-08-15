@@ -1227,6 +1227,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         TextureReplaceManger.Unload();
         SubtitleManager.Unload();
         LyricManger.Unload();
+        FixerManger.Unload();
     }
 
     # region ConfigEvents

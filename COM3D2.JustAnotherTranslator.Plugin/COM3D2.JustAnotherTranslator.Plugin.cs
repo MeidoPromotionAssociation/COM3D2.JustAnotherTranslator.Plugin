@@ -1599,8 +1599,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableBaseSubtitle.Value)
             {
-                LogManager.Info("Base Subtitle vertical position changed/基础字幕垂直位置已更改");
+                LogManager.Info("Base Subtitle vertical position changed, subtitle destroyed, re-trigger subtitle to view change/基础字幕垂直位置已更改，字幕已销毁，重新触发字幕以查看更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
+                SubtitleComponentManager.DestroyAllSubtitleComponents();
             }
         };
 
@@ -1609,8 +1610,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableBaseSubtitle.Value)
             {
-                LogManager.Info("Base Subtitle background width changed/基础字幕背景宽度已更改");
+                LogManager.Info("Base Subtitle background width changed, subtitle destroyed, re-trigger subtitle to view change/基础字幕宽度已更改，字幕已销毁，重新触发字幕以查看更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
+                SubtitleComponentManager.DestroyAllSubtitleComponents();
             }
         };
 
@@ -1621,6 +1623,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             {
                 LogManager.Info("Base Subtitle height changed/基础字幕高度已更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
+                SubtitleComponentManager.DestroyAllSubtitleComponents();
             }
         };
 
@@ -1794,13 +1797,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
-        // 注册字幕背景宽度变更事件
+        // 注册字幕宽度变更事件
         YotogiSubtitleWidth.SettingChanged += (_, _) =>
         {
             if (EnableYotogiSubtitle.Value)
             {
-                LogManager.Info("Yotogi Subtitle background width changed/夜伽字幕背景宽度已更改");
+                LogManager.Info("Yotogi Subtitle background width changed, subtitle destroyed, re-trigger subtitle to view change/夜伽字幕宽度已更改，字幕已销毁，重新触发字幕以查看更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
+                SubtitleComponentManager.DestroyAllSubtitleComponents();
             }
         };
 
@@ -1809,8 +1813,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableYotogiSubtitle.Value)
             {
-                LogManager.Info("Yotogi Subtitle height changed/夜伽字幕高度已更改");
+                LogManager.Info("Yotogi Subtitle height changed, subtitle destroyed, re-trigger subtitle to view change/夜伽字幕高度已更改，字幕已销毁，重新触发字幕以查看更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
+                SubtitleComponentManager.DestroyAllSubtitleComponents();
             }
         };
 
@@ -1989,8 +1994,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableAdvSubtitle.Value)
             {
-                LogManager.Info("Adv Subtitle background width changed/Adv字幕背景宽度已更改");
+                LogManager.Info("Adv Subtitle background width changed, subtitle destroyed, re-trigger subtitle to view change/Adv字幕宽度已更改，字幕已销毁，重新触发字幕以查看更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
+                SubtitleComponentManager.DestroyAllSubtitleComponents();
             }
         };
 
@@ -1999,8 +2005,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableAdvSubtitle.Value)
             {
-                LogManager.Info("Adv Subtitle height changed/Adv字幕高度已更改");
+                LogManager.Info("Adv Subtitle height changed, subtitle destroyed, re-trigger subtitle to view change/Adv字幕高度已更改，字幕已销毁，重新触发字幕以查看更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
+                SubtitleComponentManager.DestroyAllSubtitleComponents();
             }
         };
 
@@ -2189,8 +2196,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableLyricSubtitle.Value)
             {
-                LogManager.Info("Lyric Subtitle background width changed/歌词字幕背景宽度已更改");
+                LogManager.Info("Lyric Subtitle background width changed, subtitle destroyed, re-trigger subtitle to view change/歌词字幕宽度已更改，字幕已销毁，重新触发字幕以查看更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
+                SubtitleComponentManager.DestroyAllSubtitleComponents();
             }
         };
 
@@ -2199,8 +2207,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableLyricSubtitle.Value)
             {
-                LogManager.Info("Lyric Subtitle height changed/歌词字幕高度已更改");
+                LogManager.Info("Lyric Subtitle height changed, subtitle destroyed, re-trigger subtitle to view change/歌词字幕高度已更改，字幕已销毁，重新触发字幕以查看更改");
                 SubtitleComponentManager.UpdateAllSubtitleConfig();
+                SubtitleComponentManager.DestroyAllSubtitleComponents();
             }
         };
 
@@ -2287,7 +2296,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         // 注册VR字幕模式变更事件
         VRSubtitleMode.SettingChanged += (_, _) =>
         {
-            LogManager.Info("VR Subtitle mode changed/VR字幕模式已更改");
+            LogManager.Info("VR Subtitle mode changed, subtitle destroyed, re-trigger subtitle to view change/VR字幕模式已更改，字幕已销毁，重新触发字幕以查看更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
             SubtitleComponentManager.DestroyAllSubtitleComponents();
         };
@@ -2295,15 +2304,17 @@ public class JustAnotherTranslator : BaseUnityPlugin
         // 注册VR空间字幕宽度变更事件
         VRSpaceSubtitleWidth.SettingChanged += (_, _) =>
         {
-            LogManager.Info("VR Floating Subtitle Width changed/VR空间字幕宽度已更改");
+            LogManager.Info("VR Floating Subtitle Width changed, subtitle destroyed, re-trigger subtitle to view change/VR空间字幕宽度已更改，字幕已销毁，重新触发字幕以查看更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
+            SubtitleComponentManager.DestroyAllSubtitleComponents();
         };
 
         // 注册VR空间字幕高度变更事件
         VRSpaceSubtitleHeight.SettingChanged += (_, _) =>
         {
-            LogManager.Info("VR Floating Subtitle Height changed/VR空间字幕高度已更改");
+            LogManager.Info("VR Floating Subtitle Height changed, subtitle destroyed, re-trigger subtitle to view change/VR空间字幕高度已更改，字幕已销毁，重新触发字幕以查看更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
+            SubtitleComponentManager.DestroyAllSubtitleComponents();
         };
 
         // 注册VR字幕距离变更事件
@@ -2351,15 +2362,17 @@ public class JustAnotherTranslator : BaseUnityPlugin
         // 注册VR平板字幕宽度变更事件
         VRTabletSubtitleWidth.SettingChanged += (_, _) =>
         {
-            LogManager.Info("VR Floating Subtitle Width changed/VR平板电脑字幕宽度已更改");
+            LogManager.Info("VR Floating Subtitle Width changed, subtitle destroyed, re-trigger subtitle to view change/VR平板电脑字幕宽度已更改，字幕已销毁，重新触发字幕以查看更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
+            SubtitleComponentManager.DestroyAllSubtitleComponents();
         };
 
         // 注册VR平板字幕高度变更事件
         VRTabletSubtitleHeight.SettingChanged += (_, _) =>
         {
-            LogManager.Info("VR Floating Subtitle Height changed/VR平板电脑字幕高度已更改");
+            LogManager.Info("VR Floating Subtitle Height changed, subtitle destroyed, re-trigger subtitle to view change/VR平板电脑字幕高度已更改，字幕已销毁，重新触发字幕以查看更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
+            SubtitleComponentManager.DestroyAllSubtitleComponents();
         };
 
         // 注册VR平板字幕垂直位置变更事件

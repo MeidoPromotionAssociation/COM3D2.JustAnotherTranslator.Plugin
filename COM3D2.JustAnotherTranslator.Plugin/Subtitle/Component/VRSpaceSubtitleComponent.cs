@@ -10,28 +10,23 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 /// </summary>
 public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 {
+    /// 初始化失败最大重试次数
     private const int MaxInitRetries = 5;
 
-    // 头部跟踪阈值，避免微小移动引起的抖动
+    /// 头部跟踪阈值，避免微小移动引起的抖动
     private const float PositionThreshold = 0.001f;
-
     private const float RotationThreshold = 0.1f;
 
-    // 字幕跟随平滑度
-    // TODO 可配置
-    // TODO 重新确认并重做配置
+    /// 字幕跟随平滑度
     protected readonly float FollowSmoothness = 5.0f;
 
-    // 初始化失败计数器
+    /// 初始化失败计数器
     private int _initFailureCount;
 
-    // VR头部位置参考，用于跟随头部运动
+    /// VR头部，用于跟随头部运动
     protected Transform VRHeadTransform;
 
-    // 世界空间VR字幕
-    protected RectTransform VrSpaceCanvasRect;
-
-    // 世界空间VR字幕的容器
+    /// 世界空间VR字幕的容器
     protected Transform VrSubtitleContainerTransform;
 
 
@@ -69,15 +64,29 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     /// </summary>
     private void UpdateSubtitlePosition()
     {
-        // --- 测试代码：将字幕锁定在头部前方1米 --- //
-        const float distanceFromHead = 1f; // 距离头部1米
+        if (Config == null) return;
 
-        // 计算目标位置
-        var targetPosition = VRHeadTransform.position + VRHeadTransform.forward * distanceFromHead;
+        var headRotation = VRHeadTransform.rotation;
+        var offsetRot = Quaternion.Euler(Config.VRSubtitleVerticalOffset,
+            Config.VRSubtitleHorizontalOffset, 0f); // 偏移旋转
+        var dir = headRotation * offsetRot * Vector3.forward; // 相对头部朝向的偏移方向
 
-        // 设置字幕容器的位置和旋转
-        VrSubtitleContainerTransform.position = targetPosition;
-        VrSubtitleContainerTransform.rotation = VRHeadTransform.rotation;
+        var targetPosition = VRHeadTransform.position + dir * Config.VRSubtitleDistance;
+        var targetRotation = headRotation; // 始终正对玩家视线方向
+
+        // 抖动阈值判断，避免微小移动导致频繁更新
+        var posDelta = targetPosition - VrSubtitleContainerTransform.position;
+        var angleDelta = Quaternion.Angle(VrSubtitleContainerTransform.rotation, targetRotation);
+        if (posDelta.sqrMagnitude < PositionThreshold * PositionThreshold &&
+            angleDelta < RotationThreshold)
+            return;
+
+        // 平滑跟随，帧率无关的插值系数
+        var t = 1f - Mathf.Exp(-FollowSmoothness * Time.deltaTime);
+        VrSubtitleContainerTransform.position = Vector3.Lerp(
+            VrSubtitleContainerTransform.position, targetPosition, t);
+        VrSubtitleContainerTransform.rotation = Quaternion.Slerp(
+            VrSubtitleContainerTransform.rotation, targetRotation, t);
     }
 
 
@@ -219,15 +228,15 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         CanvasComponents.overrideSorting = true;
 
         // 设置Canvas尺寸
-        VrSpaceCanvasRect = CanvasComponents.GetComponent<RectTransform>();
-        VrSpaceCanvasRect.anchoredPosition3D = new Vector3(0, 0, 0);
-        VrSpaceCanvasRect.sizeDelta = new Vector2(1, 1); // 画布尺寸，不重要
-        VrSpaceCanvasRect.anchorMin = new Vector2(0.5f, 0.5f);
-        VrSpaceCanvasRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点，中心
-        VrSpaceCanvasRect.pivot = new Vector2(0.5f, 0.5f); // 轴心，中心
-        VrSpaceCanvasRect.localPosition = new Vector3(0, 0, 0);
-        VrSpaceCanvasRect.localRotation = Quaternion.identity; // 旋转0度
-        VrSpaceCanvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f); // 此时 1000 尺寸单位 = 1米
+        var vrSpaceCanvasRect = CanvasComponents.GetComponent<RectTransform>();
+        vrSpaceCanvasRect.anchoredPosition3D = new Vector3(0, 0, 0);
+        vrSpaceCanvasRect.sizeDelta = new Vector2(1, 1); // 画布尺寸，不重要
+        vrSpaceCanvasRect.anchorMin = new Vector2(0.5f, 0.5f);
+        vrSpaceCanvasRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点，中心
+        vrSpaceCanvasRect.pivot = new Vector2(0.5f, 0.5f); // 轴心，中心
+        vrSpaceCanvasRect.localPosition = new Vector3(0, 0, 0);
+        vrSpaceCanvasRect.localRotation = Quaternion.identity; // 旋转0度
+        vrSpaceCanvasRect.localScale = new Vector3(0.001f, 0.001f, 0.001f); // 此时 1000 尺寸单位 = 1米
 
         // 添加画布缩放器
         // 在 WorldSpace 模式下，CanvasScaler 无法进行缩放，只决定像素密度

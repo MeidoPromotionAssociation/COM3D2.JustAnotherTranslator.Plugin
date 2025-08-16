@@ -344,7 +344,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
         // 应用Canvas配置
         if (CanvasComponents != null)
-            CanvasComponents.pixelPerfect = Config.VRTabletSubtitlePixelPerfect;
+            CanvasComponents.pixelPerfect = Config.VRSpaceSubtitlePixelPerfect;
 
         // 应用背景配置
         if (BackgroundImageComponents is not null)
@@ -364,8 +364,8 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             TextComponent.color = Config.TextColor;
             TextComponent.alignment = Config.TextAlignment;
             TextComponent.rectTransform.localScale = new Vector3(
-                Config.VRTabletSubtitleTextSizeMultiplier,
-                Config.VRTabletSubtitleTextSizeMultiplier, 1f);
+                Config.VRSpaceSubtitleTextSizeMultiplier,
+                Config.VRSpaceSubtitleTextSizeMultiplier, 1f);
 
             TextComponent.rectTransform.sizeDelta = size;
         }

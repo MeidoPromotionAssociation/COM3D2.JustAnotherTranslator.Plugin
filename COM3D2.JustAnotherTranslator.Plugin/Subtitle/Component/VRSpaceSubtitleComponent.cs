@@ -18,9 +18,6 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
     private const float RotationThreshold = 0.1f;
 
-    /// 字幕跟随平滑度
-    protected readonly float FollowSmoothness = 5.0f;
-
     /// 初始化失败计数器
     private int _initFailureCount;
 
@@ -83,7 +80,10 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             return;
 
         // 平滑跟随，帧率无关的插值系数
-        var t = 1f - Mathf.Exp(-FollowSmoothness * Time.deltaTime);
+        // FollowSmoothness = 5 ⇒ t ≈ 0.2s（约 0.6s 追上 95% 位移）
+        // FollowSmoothness = 10 ⇒ t ≈ 0.1s（约 0.3s 追上 95% 位移）
+        // FollowSmoothness 越大 ⇒ t 越小 ⇒ 越快接近目标。
+        var t = 1f - Mathf.Exp(-Config.VRSpaceSubtitleFollowSmoothness * Time.deltaTime);
         VrSubtitleContainerTransform.position = Vector3.Lerp(
             VrSubtitleContainerTransform.position, targetPosition, t);
         VrSubtitleContainerTransform.rotation = Quaternion.Slerp(

@@ -185,7 +185,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> VRSpaceSubtitleHorizontalOffset;
     public static ConfigEntry<float> VRSpaceSubtitleTextSizeMultiplier;
     public static ConfigEntry<bool> VRSpaceSubtitlePixelPerfect;
-
+    public static ConfigEntry<float> VRSpaceSubtitleFollowSmoothness;
     public static ConfigEntry<float> VRTabletSubtitleWidth;
     public static ConfigEntry<float> VRTabletSubtitleHeight;
     public static ConfigEntry<float> VRTabletSubtitleVerticalPosition;
@@ -954,6 +954,11 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 null,
                 new ConfigurationManagerAttributes { Order = 8070 }));
 
+        VRSpaceSubtitleFollowSmoothness = Config.Bind("8VRSubtitle",
+            "VRSpaceSubtitleFollowSmoothness/VR空间字幕跟随平滑度",
+            1f,
+            new ConfigDescription("VR Space Subtitle Follow Smoothness, the higher the value, the faster it follows(set to 5 is about 0.6s to catch 95% of movement)/VR空间字幕跟随平滑度，数值越大跟踪越迅速（设置为 5 则约 0.6s 追上 95% 位移）", null,
+                new ConfigurationManagerAttributes { Order = 8080 }));
 
         // VR平板电脑字幕相关配置
         VRTabletSubtitleWidth = Config.Bind("8VRSubtitle",
@@ -961,14 +966,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
             500f,
             new ConfigDescription(
                 "VR Tablet Subtitle Width(1000 unit = 1 meter)/VR平板电脑字幕宽度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8080 }));
+                new ConfigurationManagerAttributes { Order = 8090 }));
 
         VRTabletSubtitleHeight = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleHeight/VR平板电脑字幕高度",
             10f,
             new ConfigDescription(
                 "VR Tablet Subtitle Height(1000 unit = 1 meter)/VR平板电脑字幕高度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8090 }));
+                new ConfigurationManagerAttributes { Order = 8100 }));
 
         VRTabletSubtitleVerticalPosition = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleVerticalPosition/VR平板电脑字幕垂直位置",
@@ -976,7 +981,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Tablet Subtitle Vertical Position in meter, 0 is VR tablet center, the larger the value the higher/VR平板电脑字幕垂直位置（米），0 为平板电脑中央，数值越大越往上",
                 null,
-                new ConfigurationManagerAttributes { Order = 8100 }));
+                new ConfigurationManagerAttributes { Order = 8110 }));
 
         VRTabletSubtitleHorizontalPosition = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleHorizontalPosition/VR平板电脑字幕水平位置",
@@ -984,13 +989,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Tablet Subtitle Horizontal Position in meters, 0 is VR tablet center, the larger the value the right/VR平板电脑字幕水平位置（米），0 为平板电脑中央，数值越大越往右",
                 null,
-                new ConfigurationManagerAttributes { Order = 8110 }));
+                new ConfigurationManagerAttributes { Order = 8120 }));
 
         VRTabletSubtitleTextSizeMultiplier = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleTextSizeMultiplier/VR平板电脑字幕文字大小倍率",
             12f,
             new ConfigDescription("VR Tablet Subtitle Text Size Multiplier/VR平板电脑字幕文字大小倍率", null,
-                new ConfigurationManagerAttributes { Order = 8120 }));
+                new ConfigurationManagerAttributes { Order = 8130 }));
 
         VRTabletSubtitlePixelPerfect = Config.Bind("8VRSubtitle",
             "VRTabletSubtitlePixelPerfect/VR平板电脑字幕像素完美",
@@ -998,7 +1003,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Tablet Subtitle Pixel Perfect(whether to perform anti-aliasing)/VR平板电脑字幕像素完美（是否进行抗锯齿处理）",
                 null,
-                new ConfigurationManagerAttributes { Order = 8130 }));
+                new ConfigurationManagerAttributes { Order = 8140 }));
 
         # endregion
 
@@ -2331,6 +2336,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
         VRSpaceSubtitlePixelPerfect.SettingChanged += (_, _) =>
         {
             LogManager.Info("VR Floating Subtitle pixel perfect changed/VR空间字幕像素完美已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
+        };
+
+        // 注册VR字幕跟随平滑度变更事件
+        VRSpaceSubtitleFollowSmoothness.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("VR Floating Subtitle follow smoothness changed/VR空间字幕跟随平滑度已更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 

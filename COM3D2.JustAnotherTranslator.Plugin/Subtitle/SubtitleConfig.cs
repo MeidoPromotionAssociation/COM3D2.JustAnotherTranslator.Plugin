@@ -210,6 +210,9 @@ public class SubtitleConfig
             // VR空间字幕是否像素完美
             VRSpaceSubtitlePixelPerfect = JustAnotherTranslator.VRSpaceSubtitlePixelPerfect.Value,
 
+            // VR空间字幕跟随平滑度
+            VRSpaceSubtitleFollowSmoothness = JustAnotherTranslator.VRSpaceSubtitleFollowSmoothness.Value,
+
             // VR平板电脑字幕宽度
             VRTabletSubtitleWidth = JustAnotherTranslator.VRTabletSubtitleWidth.Value,
 
@@ -442,7 +445,9 @@ public class SubtitleConfig
     public float VRSpaceSubtitleTextSizeMultiplier { get; set; } = 40f;
 
     /// VR空间字幕是否像素完美
-    public bool VRSpaceSubtitlePixelPerfect { get; set; }
+    public bool VRSpaceSubtitlePixelPerfect { get; set; } = false;
+
+    public float VRSpaceSubtitleFollowSmoothness { get; set; } = 5f;
 
     /// VR平板电脑字幕垂直宽度
     public float VRTabletSubtitleWidth { get; set; } = 650f;

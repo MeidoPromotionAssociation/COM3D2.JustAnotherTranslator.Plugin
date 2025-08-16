@@ -957,7 +957,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         VRSpaceSubtitleFollowSmoothness = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleFollowSmoothness/VR空间字幕跟随平滑度",
             1f,
-            new ConfigDescription("VR Space Subtitle Follow Smoothness, the higher the value, the faster it follows(set to 5 is about 0.6s to catch 95% of movement)/VR空间字幕跟随平滑度，数值越大跟踪越迅速（设置为 5 则约 0.6s 追上 95% 位移）", null,
+            new ConfigDescription(
+                "VR Space Subtitle Follow Smoothness, the higher the value, the faster it follows(set to 5 is about 0.6s to catch 95% of movement)/VR空间字幕跟随平滑度，数值越大跟踪越迅速（设置为 5 则约 0.6s 追上 95% 位移）",
+                null,
                 new ConfigurationManagerAttributes { Order = 8080 }));
 
         // VR平板电脑字幕相关配置

@@ -312,7 +312,11 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         if (Config != null)
         {
             Config.CurrentVerticalPosition = position;
-            ApplyNewPosition();
+
+            // 应用位置
+            if (BackgroundImageComponents is not null)
+                BackgroundImageComponents.rectTransform.anchoredPosition3D = new Vector3(
+                    Config.HorizontalPosition, position, 0f);
             return;
         }
 
@@ -408,37 +412,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         LogManager.Debug($"Applied subtitle config to {gameObject.name}");
-    }
-
-    /// <summary>
-    ///     应用新的位置，包括 水平位置，垂直位置，背景高度，背景宽度
-    ///     水平位置使用 Config.CurrentVerticalPosition
-    /// </summary>
-    public virtual void ApplyNewPosition()
-    {
-        if (Config == null)
-        {
-            LogManager.Warning("Subtitle config is null, cannot apply/字幕配置为空，无法应用");
-            return;
-        }
-
-        // 应用背景配置
-        if (BackgroundImageComponents is not null)
-        {
-            BackgroundImageComponents.rectTransform.sizeDelta = new Vector2(
-                Config.SubtitleWidth, Config.SubtitleHeight);
-
-            BackgroundImageComponents.rectTransform.anchoredPosition3D = new Vector3(
-                Config.HorizontalPosition, Config.CurrentVerticalPosition, 0f);
-        }
-
-        // 应用文本组件配置
-        if (TextComponent is not null)
-            TextComponent.rectTransform.sizeDelta = new Vector2(
-                Config.SubtitleWidth, Config.SubtitleHeight);
-        // 注意可以跟随父级移动，因此只需要移动背景即可
-        // TextComponent.rectTransform.anchoredPosition3D = new Vector3(
-        //     Config.HorizontalPosition, Config.CurrentVerticalPosition, 0f);
     }
 
     /// <summary>

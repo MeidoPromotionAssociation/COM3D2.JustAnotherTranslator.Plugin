@@ -160,30 +160,16 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         if (Config != null)
         {
             Config.CurrentVerticalPosition = position;
-            ApplyNewPosition();
+
+            // 应用位置
+            if (VrSubtitleContainerTransform != null)
+                VrSubtitleContainerTransform.transform.localPosition = new Vector3(
+                    Config.VRTabletSubtitleHorizontalPosition, 0, position); // 没写错，就是 Z 是垂直
+
             return;
         }
 
         LogManager.Warning("Subtitle config is null, cannot set vertical position/字幕配置为空，无法设置垂直位置");
-    }
-
-    /// <summary>
-    ///     应用新的位置，包括 水平位置，垂直位置，背景高度，背景宽度
-    ///     水平位置使用 Config.CurrentVerticalPosition
-    /// </summary>
-    public override void ApplyNewPosition()
-    {
-        if (Config == null)
-        {
-            LogManager.Warning("Subtitle config is null, cannot apply/字幕配置为空，无法应用");
-            return;
-        }
-
-        // 应用位置
-        if (VrSubtitleContainerTransform != null)
-            VrSubtitleContainerTransform.transform.localPosition = new Vector3(
-                Config.VRTabletSubtitleHorizontalPosition, 0,
-                Config.CurrentVerticalPosition); // 没写错，就是 Z 是垂直
     }
 
     /// <summary>

@@ -299,6 +299,19 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
     /// <param name="position"></param>
     public override void SetVerticalPosition(float position)
     {
+        if (Config != null)
+        {
+            Config.CurrentVerticalPosition = position;
+
+            // 应用位置
+            if (CanvasComponents != null)
+                CanvasComponents.transform.localPosition = new Vector3(
+                    Config.HorizontalPosition, position, 0);
+
+            return;
+        }
+
+        LogManager.Warning("Subtitle config is null, cannot set vertical position/字幕配置为空，无法设置垂直位置");
     }
 
 

@@ -186,20 +186,29 @@ public class SubtitleConfig
             // VR 字幕模式
             VRSubtitleMode = JustAnotherTranslator.VRSubtitleMode.Value,
 
-            // VR悬浮字幕距离（米）
-            VRSubtitleDistance = JustAnotherTranslator.VRSubtitleDistance.Value,
+            // VR空间字幕宽度
+            VRSapceSubtitleWidth = JustAnotherTranslator.VRSpaceSubtitleWidth.Value,
 
-            // VR悬浮字幕垂直偏移（度，相对于视线中心）
-            VRSubtitleVerticalOffset = JustAnotherTranslator.VRSubtitleVerticalOffset.Value,
+            // VR空间字幕高度
+            VRSpaceSubtitleHeight = JustAnotherTranslator.VRSpaceSubtitleHeight.Value,
 
-            // VR悬浮字幕水平偏移（度，相对于视线中心）
-            VRSubtitleHorizontalOffset = JustAnotherTranslator.VRSubtitleHorizontalOffset.Value,
+            // VR空间字幕距离
+            VRSpaceSubtitleDistance = JustAnotherTranslator.VRSpaceSubtitleDistance.Value,
 
-            // VR悬浮字幕宽度
-            VRSapceSubtitleWidth = JustAnotherTranslator.VRInSpaceSubtitleWidth.Value,
+            // VR空间字幕垂直偏移（度，相对于视线中心）
+            VRSpaceSubtitleVerticalOffset =
+                JustAnotherTranslator.VRSpaceSubtitleVerticalOffset.Value,
 
-            // VR悬浮字幕高度
-            VRSpaceSubtitleHeight = JustAnotherTranslator.VRInSpaceSubtitleHeight.Value,
+            // VR空间字幕水平偏移（度，相对于视线中心）
+            VRSpaceSubtitleHorizontalOffset =
+                JustAnotherTranslator.VRSpaceSubtitleHorizontalOffset.Value,
+
+            // VR空间字幕字体大小倍数
+            VRSpaceSubtitleTextSizeMultiplier =
+                JustAnotherTranslator.VRSpaceSubtitleTextSizeMultiplier.Value,
+
+            // VR空间字幕是否像素完美
+            VRSpaceSubtitlePixelPerfect = JustAnotherTranslator.VRSpaceSubtitlePixelPerfect.Value,
 
             // VR平板电脑字幕宽度
             VRTabletSubtitleWidth = JustAnotherTranslator.VRTabletSubtitleWidth.Value,
@@ -412,39 +421,45 @@ public class SubtitleConfig
 
     /// VR模式字幕类型
     public JustAnotherTranslator.VRSubtitleModeEnum VRSubtitleMode { get; set; } =
-        JustAnotherTranslator.VRSubtitleModeEnum.InSpace;
+        JustAnotherTranslator.VRSubtitleModeEnum.Space;
 
-    /// VR悬浮字幕距离（米）
-    public float VRSubtitleDistance { get; set; } = 1f;
-
-    /// VR悬浮字幕垂直偏移（度，相对于视线中心）
-    public float VRSubtitleVerticalOffset { get; set; } = -15f;
-
-    /// VR悬浮字幕水平偏移（度，相对于视线中心）
-    public float VRSubtitleHorizontalOffset { get; set; }
-
-    /// VR悬浮字幕宽度
+    /// VR空间字幕宽度
     public float VRSapceSubtitleWidth { get; set; } = 1000f;
 
-    /// VR悬浮字幕高度
+    /// VR空间字幕高度
     public float VRSpaceSubtitleHeight { get; set; } = 30f;
 
-    // VR平板电脑字幕垂直宽度
+    /// VR空间字幕距离（米）
+    public float VRSpaceSubtitleDistance { get; set; } = 1f;
+
+    /// VR空间字幕垂直偏移（度，相对于视线中心）
+    public float VRSpaceSubtitleVerticalOffset { get; set; } = -15f;
+
+    /// VR空间字幕水平偏移（度，相对于视线中心）
+    public float VRSpaceSubtitleHorizontalOffset { get; set; }
+
+    /// VR空间字幕文本大小倍数
+    public float VRSpaceSubtitleTextSizeMultiplier { get; set; } = 40f;
+
+    /// VR空间字幕是否像素完美
+    public bool VRSpaceSubtitlePixelPerfect { get; set; }
+
+    /// VR平板电脑字幕垂直宽度
     public float VRTabletSubtitleWidth { get; set; } = 650f;
 
-    // VR平板电脑字幕垂直高度
+    /// VR平板电脑字幕垂直高度
     public float VRTabletSubtitleHeight { get; set; } = 100f;
 
-    // VR平板电脑字幕垂直位置
+    /// VR平板电脑字幕垂直位置
     public float VRTabletSubtitleVerticalPosition { get; set; } = -0.9f;
 
-    // VR平板电脑字幕水平位置
+    /// VR平板电脑字幕水平位置
     public float VRTabletSubtitleHorizontalPosition { get; set; }
 
-    // VR平板电脑字幕文本大小倍数
+    /// VR平板电脑字幕文本大小倍数
     public float VRTabletSubtitleTextSizeMultiplier { get; set; } = 12f;
 
-    // VR平板电脑字幕是否像素完美
+    /// VR平板电脑字幕是否像素完美
     public bool VRTabletSubtitlePixelPerfect { get; set; }
 
     # endregion

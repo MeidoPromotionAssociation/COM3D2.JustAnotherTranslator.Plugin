@@ -87,11 +87,11 @@ public static class SubtitleComponentManager
         {
             switch (JustAnotherTranslator.VRSubtitleMode.Value)
             {
-                case JustAnotherTranslator.VRSubtitleModeEnum.InSpace:
+                case JustAnotherTranslator.VRSubtitleModeEnum.Space:
                     component = gameObject.AddComponent<VRSpaceSubtitleComponent>();
                     LogManager.Debug("Created VR space subtitle component");
                     break;
-                case JustAnotherTranslator.VRSubtitleModeEnum.OnTablet:
+                case JustAnotherTranslator.VRSubtitleModeEnum.Tablet:
                     component = gameObject.AddComponent<VRTabletSubtitleComponent>();
                     LogManager.Debug("Created VR tablet subtitle component");
                     break;
@@ -216,10 +216,10 @@ public static class SubtitleComponentManager
         if (JustAnotherTranslator.IsVrMode)
             switch (config.VRSubtitleMode)
             {
-                case JustAnotherTranslator.VRSubtitleModeEnum.OnTablet:
+                case JustAnotherTranslator.VRSubtitleModeEnum.Tablet:
                     CalculateVRTabletPosition(subtitleComponent, config);
                     return;
-                case JustAnotherTranslator.VRSubtitleModeEnum.InSpace:
+                case JustAnotherTranslator.VRSubtitleModeEnum.Space:
                     CalculateVRSpacePosition(subtitleComponent, config);
                     return;
                 default:

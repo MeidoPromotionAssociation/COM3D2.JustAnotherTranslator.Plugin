@@ -62,8 +62,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     public enum VRSubtitleModeEnum
     {
-        [Description("InSpac/空间字幕")] InSpace,
-        [Description("OnTablet/平板字幕")] OnTablet
+        [Description("Space/空间字幕")] Space,
+        [Description("Tablet/平板字幕")] Tablet
     }
 
     public static bool IsVrMode;
@@ -178,11 +178,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
     // VR字幕相关配置
     public static ConfigEntry<VRSubtitleModeEnum> VRSubtitleMode;
-    public static ConfigEntry<float> VRSubtitleDistance;
-    public static ConfigEntry<float> VRSubtitleVerticalOffset;
-    public static ConfigEntry<float> VRSubtitleHorizontalOffset;
-    public static ConfigEntry<float> VRInSpaceSubtitleWidth;
-    public static ConfigEntry<float> VRInSpaceSubtitleHeight;
+    public static ConfigEntry<float> VRSpaceSubtitleWidth;
+    public static ConfigEntry<float> VRSpaceSubtitleHeight;
+    public static ConfigEntry<float> VRSpaceSubtitleDistance;
+    public static ConfigEntry<float> VRSpaceSubtitleVerticalOffset;
+    public static ConfigEntry<float> VRSpaceSubtitleHorizontalOffset;
+    public static ConfigEntry<float> VRSpaceSubtitleTextSizeMultiplier;
+    public static ConfigEntry<bool> VRSpaceSubtitlePixelPerfect;
+
     public static ConfigEntry<float> VRTabletSubtitleWidth;
     public static ConfigEntry<float> VRTabletSubtitleHeight;
     public static ConfigEntry<float> VRTabletSubtitleVerticalPosition;
@@ -894,59 +897,78 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         # region VRSubtitleSettings
 
-        // VR悬浮字幕相关配置
+        // VR空间字幕相关配置
         VRSubtitleMode = Config.Bind("8VRSubtitle",
             "VRSubtitleMode/VR字幕模式",
-            VRSubtitleModeEnum.OnTablet,
+            VRSubtitleModeEnum.Tablet,
             new ConfigDescription(
-                "VR Subtitle Mode: InSpace=On Control tablet, OnTablet=Floating in world space following head movement/VR字幕模式：InSpace=字幕在控制平板上，OnTablet=跟随头部运动的世界空间悬浮字幕",
+                "VR Subtitle Mode: Tablet=On Control tablet, Space=Floating in world space following head movement/VR字幕模式：Space=跟随头部运动的世界空间悬浮字幕上，Tablet=字幕在控制平板上",
                 null, new ConfigurationManagerAttributes { Order = 8000 }));
 
-        VRSubtitleDistance = Config.Bind("8VRSubtitle",
-            "VRSubtitleDistance/VR字幕距离",
-            1f,
-            new ConfigDescription("VR Floating Subtitle Distance in meters/VR悬浮字幕距离（米）", null,
+        VRSpaceSubtitleWidth = Config.Bind("8VRSubtitle",
+            "VRSpaceSubtitleWidth/VR空间字幕宽度",
+            1000f,
+            new ConfigDescription(
+                "VR Space Subtitle Width(1000 unit=1 meter)/VR空间字幕宽度（1000单位=1米）", null,
                 new ConfigurationManagerAttributes { Order = 8010 }));
 
-        VRSubtitleVerticalOffset = Config.Bind("8VRSubtitle",
-            "VRSubtitleVerticalOffset/VR字幕垂直偏移",
+        VRSpaceSubtitleHeight = Config.Bind("8VRSubtitle",
+            "VRSpaceSubtitleHeight/VR空间字幕高度",
+            10f,
+            new ConfigDescription(
+                "VR Space Subtitle Height(1000 unit=1 meter)/VR空间字幕高度（1000单位=1米）", null,
+                new ConfigurationManagerAttributes { Order = 8020 }));
+
+        VRSpaceSubtitleDistance = Config.Bind("8VRSubtitle",
+            "VRSpaceSubtitleDistance/VR空间字幕距离",
+            1f,
+            new ConfigDescription(
+                "VR Space Subtitle Distance from center of view in meters/VR空间字幕距离视线中心有多远（米）", null,
+                new ConfigurationManagerAttributes { Order = 8030 }));
+
+        VRSpaceSubtitleVerticalOffset = Config.Bind("8VRSubtitle",
+            "VRSpaceSubtitleVerticalOffset/VR空间字幕垂直偏移",
             25f,
             new ConfigDescription(
-                "VR Floating Subtitle Vertical Offset in degrees (relative to center of view)/VR悬浮字幕垂直偏移（度，相对于视线中心）",
-                null, new ConfigurationManagerAttributes { Order = 8020 }));
+                "VR Space Subtitle Vertical Offset in degrees (relative to center of view)/VR空间字幕垂直偏移（度，相对于视线中心）",
+                null, new ConfigurationManagerAttributes { Order = 8040 }));
 
-        VRSubtitleHorizontalOffset = Config.Bind("8VRSubtitle",
-            "VRSubtitleHorizontalOffset/VR字幕水平偏移",
+        VRSpaceSubtitleHorizontalOffset = Config.Bind("8VRSubtitle",
+            "VRSpaceSubtitleHorizontalOffset/VR空间字幕水平偏移",
             0f,
             new ConfigDescription(
-                "VR Floating Subtitle Horizontal Offset in degrees (relative to center of view)/VR悬浮字幕水平偏移（度，相对于视线中心）",
-                null, new ConfigurationManagerAttributes { Order = 8030 }));
+                "VR Space Subtitle Horizontal Offset in degrees (relative to center of view)/VR空间字幕水平偏移（度，相对于视线中心）",
+                null, new ConfigurationManagerAttributes { Order = 8050 }));
 
-        VRInSpaceSubtitleWidth = Config.Bind("8VRSubtitle",
-            "VRFloatingSubtitleWidth/VR悬浮字幕宽度",
-            1000f,
-            new ConfigDescription("VR Floating Subtitle Width in meters/VR悬浮字幕宽度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8040 }));
+        VRSpaceSubtitleTextSizeMultiplier = Config.Bind("8VRSubtitle",
+            "VRSpaceSubtitleTextSizeMultiplier/VR空间字幕文字大小倍率",
+            40f,
+            new ConfigDescription("VR Space Subtitle Text Size Multiplier/VR空间字幕文本大小倍数", null,
+                new ConfigurationManagerAttributes { Order = 8060 }));
 
-        VRInSpaceSubtitleHeight = Config.Bind("8VRSubtitle",
-            "VRFloatingSubtitleHeight/VR悬浮字幕高度",
-            10f,
-            new ConfigDescription("VR Floating Subtitle Height in meters/VR悬浮字幕高度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8050 }));
+        VRSpaceSubtitlePixelPerfect = Config.Bind("8VRSubtitle",
+            "VRSpaceSubtitlePixelPerfect/VR空间字幕像素完美",
+            false,
+            new ConfigDescription(
+                "VR Space Subtitle Pixel Perfect(whether to perform anti-aliasing)/VR空间字幕像素完美（是否进行抗锯齿处理）",
+                null,
+                new ConfigurationManagerAttributes { Order = 8070 }));
 
+
+        // VR平板电脑字幕相关配置
         VRTabletSubtitleWidth = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleWidth/VR平板电脑字幕宽度",
             500f,
             new ConfigDescription(
                 "VR Tablet Subtitle Width(1000 unit = 1 meter)/VR平板电脑字幕宽度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8060 }));
+                new ConfigurationManagerAttributes { Order = 8080 }));
 
         VRTabletSubtitleHeight = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleHeight/VR平板电脑字幕高度",
             10f,
             new ConfigDescription(
                 "VR Tablet Subtitle Height(1000 unit = 1 meter)/VR平板电脑字幕高度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8070 }));
+                new ConfigurationManagerAttributes { Order = 8090 }));
 
         VRTabletSubtitleVerticalPosition = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleVerticalPosition/VR平板电脑字幕垂直位置",
@@ -954,7 +976,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Tablet Subtitle Vertical Position in meter, 0 is VR tablet center, the larger the value the higher/VR平板电脑字幕垂直位置（米），0 为平板电脑中央，数值越大越往上",
                 null,
-                new ConfigurationManagerAttributes { Order = 8080 }));
+                new ConfigurationManagerAttributes { Order = 8100 }));
 
         VRTabletSubtitleHorizontalPosition = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleHorizontalPosition/VR平板电脑字幕水平位置",
@@ -962,21 +984,21 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Tablet Subtitle Horizontal Position in meters, 0 is VR tablet center, the larger the value the right/VR平板电脑字幕水平位置（米），0 为平板电脑中央，数值越大越往右",
                 null,
-                new ConfigurationManagerAttributes { Order = 8090 }));
+                new ConfigurationManagerAttributes { Order = 8110 }));
 
         VRTabletSubtitleTextSizeMultiplier = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleTextSizeMultiplier/VR平板电脑字幕文字大小倍率",
             12f,
             new ConfigDescription("VR Tablet Subtitle Text Size Multiplier/VR平板电脑字幕文字大小倍率", null,
-                new ConfigurationManagerAttributes { Order = 8100 }));
+                new ConfigurationManagerAttributes { Order = 8120 }));
 
         VRTabletSubtitlePixelPerfect = Config.Bind("8VRSubtitle",
             "VRTabletSubtitlePixelPerfect/VR平板电脑字幕像素完美",
             false,
             new ConfigDescription(
-                "VR Tablet Subtitle Pixel Perfect, off it will blur the edge/VR平板电脑字幕像素完美，关闭则模糊字幕边缘",
+                "VR Tablet Subtitle Pixel Perfect(whether to perform anti-aliasing)/VR平板电脑字幕像素完美（是否进行抗锯齿处理）",
                 null,
-                new ConfigurationManagerAttributes { Order = 8110 }));
+                new ConfigurationManagerAttributes { Order = 8130 }));
 
         # endregion
 
@@ -2239,38 +2261,52 @@ public class JustAnotherTranslator : BaseUnityPlugin
             SubtitleComponentManager.DestroyAllSubtitleComponents();
         };
 
-        // 注册VR字幕距离变更事件
-        VRSubtitleDistance.SettingChanged += (_, _) =>
+        // 注册VR空间字幕宽度变更事件
+        VRSpaceSubtitleWidth.SettingChanged += (_, _) =>
         {
-            LogManager.Info("VR Floating Subtitle distance changed/VR悬浮字幕距离已更改");
+            LogManager.Info("VR Floating Subtitle Width changed/VR空间字幕宽度已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
+        };
+
+        // 注册VR空间字幕高度变更事件
+        VRSpaceSubtitleHeight.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("VR Floating Subtitle Height changed/VR空间字幕高度已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
+        };
+
+        // 注册VR字幕距离变更事件
+        VRSpaceSubtitleDistance.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("VR Floating Subtitle distance changed/VR空间字幕距离已更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 
         // 注册VR字幕垂直偏移变更事件
-        VRSubtitleVerticalOffset.SettingChanged += (_, _) =>
+        VRSpaceSubtitleVerticalOffset.SettingChanged += (_, _) =>
         {
-            LogManager.Info("VR Floating Subtitle vertical offset changed/VR悬浮字幕垂直偏移已更改");
+            LogManager.Info("VR Floating Subtitle vertical offset changed/VR空间字幕垂直偏移已更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 
         // 注册VR字幕水平偏移变更事件
-        VRSubtitleHorizontalOffset.SettingChanged += (_, _) =>
+        VRSpaceSubtitleHorizontalOffset.SettingChanged += (_, _) =>
         {
-            LogManager.Info("VR Floating Subtitle horizontal offset changed/VR悬浮字幕水平偏移已更改");
+            LogManager.Info("VR Floating Subtitle horizontal offset changed/VR空间字幕水平偏移已更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 
-        // 注册VR悬浮字幕宽度变更事件
-        VRInSpaceSubtitleWidth.SettingChanged += (_, _) =>
+        // 注册VR字幕文字大小倍数变更事件
+        VRSpaceSubtitleTextSizeMultiplier.SettingChanged += (_, _) =>
         {
-            LogManager.Info("VR Floating Subtitle Width changed/VR悬浮字幕宽度已更改");
+            LogManager.Info("VR Floating Subtitle text size multiplier changed/VR空间字幕文字大小倍数已更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 
-        // 注册VR悬浮字幕高度变更事件
-        VRInSpaceSubtitleHeight.SettingChanged += (_, _) =>
+        // 注册VR字幕像素完美变更事件
+        VRSpaceSubtitlePixelPerfect.SettingChanged += (_, _) =>
         {
-            LogManager.Info("VR Floating Subtitle Height changed/VR悬浮字幕高度已更改");
+            LogManager.Info("VR Floating Subtitle pixel perfect changed/VR空间字幕像素完美已更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 

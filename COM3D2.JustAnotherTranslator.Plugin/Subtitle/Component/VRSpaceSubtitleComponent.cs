@@ -15,6 +15,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
     /// 头部跟踪阈值，避免微小移动引起的抖动
     private const float PositionThreshold = 0.001f;
+
     private const float RotationThreshold = 0.1f;
 
     /// 字幕跟随平滑度
@@ -67,11 +68,11 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         if (Config == null) return;
 
         var headRotation = VRHeadTransform.rotation;
-        var offsetRot = Quaternion.Euler(Config.VRSubtitleVerticalOffset,
-            Config.VRSubtitleHorizontalOffset, 0f); // 偏移旋转
+        var offsetRot = Quaternion.Euler(Config.VRSpaceSubtitleVerticalOffset,
+            Config.VRSpaceSubtitleHorizontalOffset, 0f); // 偏移旋转
         var dir = headRotation * offsetRot * Vector3.forward; // 相对头部朝向的偏移方向
 
-        var targetPosition = VRHeadTransform.position + dir * Config.VRSubtitleDistance;
+        var targetPosition = VRHeadTransform.position + dir * Config.VRSpaceSubtitleDistance;
         var targetRotation = headRotation; // 始终正对玩家视线方向
 
         // 抖动阈值判断，避免微小移动导致频繁更新
@@ -341,6 +342,10 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         var size = new Vector2(
             Config.VRSapceSubtitleWidth, Config.VRSpaceSubtitleHeight);
 
+        // 应用Canvas配置
+        if (CanvasComponents != null)
+            CanvasComponents.pixelPerfect = Config.VRTabletSubtitlePixelPerfect;
+
         // 应用背景配置
         if (BackgroundImageComponents is not null)
         {
@@ -358,6 +363,9 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             TextComponent.fontSize = Config.FontSize;
             TextComponent.color = Config.TextColor;
             TextComponent.alignment = Config.TextAlignment;
+            TextComponent.rectTransform.localScale = new Vector3(
+                Config.VRTabletSubtitleTextSizeMultiplier,
+                Config.VRTabletSubtitleTextSizeMultiplier, 1f);
 
             TextComponent.rectTransform.sizeDelta = size;
         }

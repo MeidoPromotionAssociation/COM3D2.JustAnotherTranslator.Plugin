@@ -196,6 +196,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
                 Config.VRTabletSubtitleHorizontalPosition, 0,
                 Config.CurrentVerticalPosition); // 没写错，就是 Z 是垂直
 
+        // 应用Canvas配置
         if (CanvasComponents != null)
             CanvasComponents.pixelPerfect = Config.VRTabletSubtitlePixelPerfect;
 

@@ -16,6 +16,9 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     // 当前显示的文本
     private string _currentText = "";
 
+    // 销毁幂等保护
+    private bool _isDestroyed;
+
     // 翻译后的说话者名称
     private string _translatedSpeakerName = "";
 
@@ -57,7 +60,15 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// </summary>
     public virtual void OnDestroy()
     {
-        SubtitleComponentManager.DestroySubtitleComponent(this);
+        try
+        {
+            SubtitleComponentManager.UnregisterById(GetSubtitleId());
+            Destroy(); // 已幕等保护
+        }
+        catch
+        {
+            // ignore
+        }
     }
 
     /// <summary>
@@ -266,9 +277,12 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// </summary>
     public virtual void Destroy()
     {
+        if (_isDestroyed) return;
+        _isDestroyed = true;
+
         StopAnimation();
         DestroySubtitleUI();
-        Destroy(gameObject);
+        if (gameObject != null) Destroy(gameObject);
         LogManager.Debug($"{GetType().Name} destroyed");
     }
 
@@ -564,7 +578,10 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             CanvasComponents = null;
         }
 
-        if (gameObject != null)
-            Destroy(gameObject);
+        BackgroundImageComponents = null;
+        CanvasGroupComponents = null;
+        CanvasScalerComponents = null;
+        TextComponent = null;
+        OutlineComponents = null;
     }
 }

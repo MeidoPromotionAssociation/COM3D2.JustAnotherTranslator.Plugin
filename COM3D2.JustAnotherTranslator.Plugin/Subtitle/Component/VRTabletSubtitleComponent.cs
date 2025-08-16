@@ -29,7 +29,8 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         var isVisible = GameMain.Instance?.OvrMgr?.OvrCamera?.m_bUiToggle;
         if (isVisible == null) return;
         gameObject.SetActive(isVisible.Value); // VrSubtitleContainer 并不是这个 gameObject 的子物体
-        VrSubtitleContainerTransform.gameObject.SetActive(isVisible.Value);
+        if (VrSubtitleContainerTransform is not null)
+            VrSubtitleContainerTransform.gameObject.SetActive(isVisible.Value);
     }
 
     /// <summary>
@@ -249,8 +250,12 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
     /// </summary>
     protected override void DestroySubtitleUI()
     {
-        if (VrSubtitleContainerTransform.gameObject != null)
+        if (VrSubtitleContainerTransform != null)
+        {
             Destroy(VrSubtitleContainerTransform.gameObject);
+            VrSubtitleContainerTransform = null;
+        }
+
         base.DestroySubtitleUI();
     }
 }

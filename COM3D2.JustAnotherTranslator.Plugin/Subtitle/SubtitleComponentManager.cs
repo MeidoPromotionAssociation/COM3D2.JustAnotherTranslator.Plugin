@@ -589,10 +589,10 @@ public static class SubtitleComponentManager
     /// <param name="component">要销毁的字幕组件</param>
     public static void DestroySubtitleComponent(ISubtitleComponent component)
     {
-        if (component is null)
+        if (component == null)
             return;
 
-        var subtitleId = GetSpeakerSubtitleId(component.GetSpeakerName());
+        var subtitleId = component.GetSubtitleId();
 
         SubtitleIdComponentsMap.Remove(subtitleId);
 
@@ -619,11 +619,23 @@ public static class SubtitleComponentManager
     }
 
     /// <summary>
+    ///     注销（反注册）字幕组件映射（不触发销毁）
+    /// </summary>
+    /// <param name="subtitleId">字幕ID</param>
+    public static void UnregisterById(string subtitleId)
+    {
+        if (string.IsNullOrEmpty(subtitleId)) return;
+        SubtitleIdComponentsMap.Remove(subtitleId);
+        ActiveSubtitles.RemoveAll(s => s.Id == subtitleId);
+    }
+
+    /// <summary>
     ///     销毁所有字幕组件
     /// </summary>
     public static void DestroyAllSubtitleComponents()
     {
-        foreach (var component in SubtitleIdComponentsMap.Values)
+        var components = SubtitleIdComponentsMap.Values.ToList();
+        foreach (var component in components)
             component.Destroy();
 
         SubtitleIdComponentsMap.Clear();

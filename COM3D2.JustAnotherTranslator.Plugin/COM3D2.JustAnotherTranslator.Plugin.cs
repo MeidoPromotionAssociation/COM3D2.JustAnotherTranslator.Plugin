@@ -907,42 +907,42 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         VRSpaceSubtitleWidth = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleWidth/VR空间字幕宽度",
-            1000f,
+            510f,
             new ConfigDescription(
                 "VR Space Subtitle Width(1000 unit=1 meter)/VR空间字幕宽度（1000单位=1米）", null,
                 new ConfigurationManagerAttributes { Order = 8010 }));
 
         VRSpaceSubtitleHeight = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleHeight/VR空间字幕高度",
-            10f,
+            15f,
             new ConfigDescription(
                 "VR Space Subtitle Height(1000 unit=1 meter)/VR空间字幕高度（1000单位=1米）", null,
                 new ConfigurationManagerAttributes { Order = 8020 }));
 
         VRSpaceSubtitleDistance = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleDistance/VR空间字幕距离",
-            1f,
+            0.5f,
             new ConfigDescription(
                 "VR Space Subtitle Distance from center of view in meters/VR空间字幕距离视线中心有多远（米）", null,
                 new ConfigurationManagerAttributes { Order = 8030 }));
 
         VRSpaceSubtitleVerticalOffset = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleVerticalOffset/VR空间字幕垂直偏移",
-            25f,
+            20f,
             new ConfigDescription(
-                "VR Space Subtitle Vertical Offset in degrees (relative to center of view)/VR空间字幕垂直偏移（度，相对于视线中心）",
+                "VR Space Subtitle Vertical Offset in degrees, positive value to the bottom (relative to center of view)/VR空间字幕垂直偏移，正值向下（度，相对于视线中心）",
                 null, new ConfigurationManagerAttributes { Order = 8040 }));
 
         VRSpaceSubtitleHorizontalOffset = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleHorizontalOffset/VR空间字幕水平偏移",
             0f,
             new ConfigDescription(
-                "VR Space Subtitle Horizontal Offset in degrees (relative to center of view)/VR空间字幕水平偏移（度，相对于视线中心）",
+                "VR Space Subtitle Horizontal Offset in degrees, positive value to the right (relative to center of view)/VR空间字幕水平偏移，正值向右（度，相对于视线中心）",
                 null, new ConfigurationManagerAttributes { Order = 8050 }));
 
         VRSpaceSubtitleTextSizeMultiplier = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleTextSizeMultiplier/VR空间字幕文字大小倍率",
-            40f,
+            14f,
             new ConfigDescription("VR Space Subtitle Text Size Multiplier/VR空间字幕文本大小倍数", null,
                 new ConfigurationManagerAttributes { Order = 8060 }));
 
@@ -956,7 +956,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         VRSpaceSubtitleFollowSmoothness = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleFollowSmoothness/VR空间字幕跟随平滑度",
-            1f,
+            3f,
             new ConfigDescription(
                 "VR Space Subtitle Follow Smoothness, the higher the value, the faster it follows(set to 5 is about 0.6s to catch 95% of movement)/VR空间字幕跟随平滑度，数值越大跟踪越迅速（设置为 5 则约 0.6s 追上 95% 位移）",
                 null,

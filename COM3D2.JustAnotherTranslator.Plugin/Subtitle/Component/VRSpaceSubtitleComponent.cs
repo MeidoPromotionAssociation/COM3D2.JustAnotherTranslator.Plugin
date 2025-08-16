@@ -36,7 +36,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         if (!gameObject.activeSelf) return;
 
         // 尝试初始化VR组件
-        if (VRHeadTransform == null)
+        if (VRHeadTransform is null)
         {
             if (_initFailureCount < MaxInitRetries)
             {
@@ -52,7 +52,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
             }
         }
 
-        if (VRHeadTransform == null || VrSubtitleContainerTransform == null) return;
+        if (VRHeadTransform is null || VrSubtitleContainerTransform is null) return;
 
         UpdateSubtitlePosition();
     }
@@ -262,7 +262,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         // 设置背景位置和大小，让它完全填充 Canvas
         var backgroundRect = BackgroundImageComponents.rectTransform;
         backgroundRect.anchoredPosition3D = new Vector3(0, 0, 0); // 画面中心
-        var size = new Vector2(1920, 30);
+        var size = new Vector2(510, 15);
         backgroundRect.sizeDelta = size;
         backgroundRect.anchorMin = new Vector2(0.5f, 0.5f);
         backgroundRect.anchorMax = new Vector2(0.5f, 0.5f); // 锚点为Canvas中心
@@ -287,7 +287,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
         textRect.pivot = new Vector2(0.5f, 0.5f);
         textRect.localPosition = new Vector3(0, 0, 0);
         textRect.localRotation = Quaternion.identity;
-        textRect.localScale = new Vector3(40, 40, 1); // 40 倍缩放比较正常
+        textRect.localScale = new Vector3(14, 14, 1); // 14 倍缩放比较正常
 
         // 设置默认文本样式
         TextComponent.alignment = TextAnchor.MiddleCenter; // 居中对齐

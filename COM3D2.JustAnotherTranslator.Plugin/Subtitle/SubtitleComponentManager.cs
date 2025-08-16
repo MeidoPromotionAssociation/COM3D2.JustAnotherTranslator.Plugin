@@ -264,7 +264,7 @@ public static class SubtitleComponentManager
             }
 
             LogManager.Debug(
-                $"Finding available position for {currentSubtitleId}, checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {Overlaps(initialY)}");
+                $"Finding available position for {currentSubtitleId}, checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {Overlaps(initialY)}, for subtitle: {currentSubtitleId}");
 
             foreach (var subtitle in ActiveSubtitles)
                 LogManager.Debug(
@@ -357,7 +357,6 @@ public static class SubtitleComponentManager
 
             // 避免浮点误差
             var eps = 1e-5f;
-            var threshold = Mathf.Max(0f, subtitleHeightWorld - eps);
 
             // 检查给定位置是否与任何活动字幕重叠
             // 平板电脑模式锚点为中心，即字幕垂直位置设置的是字幕中心的位置
@@ -366,12 +365,12 @@ public static class SubtitleComponentManager
             bool Overlaps(float z)
             {
                 return ActiveSubtitles.Any(s =>
-                    Mathf.Abs(s.VerticalPosition - z) < threshold);
+                    Mathf.Abs(s.VerticalPosition - z) < Mathf.Max(0f, subtitleHeightWorld - eps));
             }
             // Mathf.Abs(s.VerticalPosition − z) < (subtitleHeightWorld + s.Height) * 0.5f − eps
 
             LogManager.Debug(
-                $"Checking initial position: {initialZ}, subtitle height: {config.VRTabletSubtitleHeight} world height: {subtitleHeightWorld}, overlaps: {Overlaps(initialZ)}");
+                $"Checking initial position: {initialZ}, subtitle height: {config.VRTabletSubtitleHeight} world height: {subtitleHeightWorld}, overlaps: {Overlaps(initialZ)}, for subtitle: {currentSubtitleId}");
 
             foreach (var subtitle in ActiveSubtitles)
                 LogManager.Debug(
@@ -437,9 +436,95 @@ public static class SubtitleComponentManager
     {
         try
         {
-            // 向下放置时将 Canvas 的本地Y轴往下移动字幕高度 * 0.001f 即可
+            // 由于空间模式会移动 Container 以追踪头部，因此我们通过移动 Canvas 来实现垂直移动
+            // 向下放置时将 Canvas 的本地 Y 轴往下移动字幕高度 * 0.001f 即可
+
+            // 将像素高度转换为世界单位（Canvas 在 WorldSpace 模式下缩放 0.001）
+            var subtitleHeightWorld = config.VRSpaceSubtitleHeight * 0.001f;
+            var currentSubtitleId = subtitleComponent.GetSubtitleId();
+
+            // 查找现有条目以确定初始位置
+            var existingEntry = ActiveSubtitles.FirstOrDefault(s => s.Id == currentSubtitleId);
+            // 如果已存在条目，尝试放回上次放置过的位置；否则使用 0f
+            var initialY = existingEntry.Id != null
+                ? existingEntry.InitialVerticalPosition
+                : 0f;
+
+            // 在查找新位置之前，删除此字幕的现有条目
+            ActiveSubtitles.RemoveAll(s => s.Id == currentSubtitleId);
+
+            var finalY = initialY;
+
+            const int maxSteps = 2100; // 最大搜索步数
+            var step = Mathf.Max(1e-5f, subtitleHeightWorld); // 步长 = 字幕世界高度
+
+            // 避免浮点误差
+            var eps = 1e-5f;
+
+            // 检查给定位置是否与任何活动字幕重叠（中心锚点）
+            // 两字幕中心间距 = 其他任意字幕垂直位置 - 要检测的测试垂直位置
+            // 两字幕中心间距 < (当前字幕高度 + 其他任意字幕高度)/2 认为重叠
+            bool Overlaps(float y)
+            {
+                foreach (var s in ActiveSubtitles)
+                {
+                    var halfSum = (subtitleHeightWorld + s.Height) * 0.5f - eps;
+                    if (Mathf.Abs(s.VerticalPosition - y) < halfSum)
+                        return true;
+                }
+
+                return false;
+            }
+
             LogManager.Debug(
-                "Calculated VR space subtitle position: test");
+                $"Checking initial position (VR Space): {initialY}, world height: {subtitleHeightWorld}, overlaps: {Overlaps(initialY)}, for subtitle: {currentSubtitleId}");
+
+            foreach (var subtitle in ActiveSubtitles)
+                LogManager.Debug(
+                    $"Active subtitle: {subtitle.Id} height: {subtitle.Height} position: {subtitle.VerticalPosition} initial position: {subtitle.InitialVerticalPosition}");
+
+            if (Overlaps(initialY))
+            {
+                var found = false;
+                // 先向下搜索（Y 轴负方向）
+                for (var i = 1; i <= maxSteps; i++)
+                {
+                    var testY = initialY - i * step;
+                    if (!Overlaps(testY))
+                    {
+                        finalY = testY;
+                        found = true;
+                        break;
+                    }
+                }
+
+                // 如果向下搜索不到，则向上搜索
+                if (!found)
+                    for (var i = 1; i <= maxSteps; i++)
+                    {
+                        var testY = initialY + i * step;
+                        if (!Overlaps(testY))
+                        {
+                            finalY = testY;
+                            break;
+                        }
+                    }
+            }
+
+            // 更新配置和活动字幕列表
+            config.CurrentVerticalPosition = finalY;
+            subtitleComponent.SetVerticalPosition(finalY);
+
+            ActiveSubtitles.Add(new SubtitlePositionInfo
+            {
+                Id = currentSubtitleId,
+                VerticalPosition = finalY,
+                Height = subtitleHeightWorld,
+                InitialVerticalPosition = finalY
+            });
+
+            LogManager.Debug(
+                $"Calculated VR space subtitle position: {finalY} for subtitle: {currentSubtitleId}");
         }
         catch (Exception ex)
         {

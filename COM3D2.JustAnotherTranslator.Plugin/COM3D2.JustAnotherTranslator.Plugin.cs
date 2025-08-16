@@ -1252,7 +1252,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         FixerManger.Unload();
     }
 
-    # region ConfigEvents
+    # region RegisterGeneralConfigEvents
 
     /// <summary>
     ///     注册通用变更事件
@@ -1408,6 +1408,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
     }
 
+    # endregion
+
+    # region RegisterEnableSubtitleEvents
+
     /// <summary>
     ///     注册字幕启用状态变更事件
     /// </summary>
@@ -1493,6 +1497,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
     }
+
+    # endregion
+
+    # region RegisterBaseSubtitleConfigEvents
 
     /// <summary>
     ///     注册基础字幕配置变更事件
@@ -1680,6 +1688,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
     }
 
+    # endregion
+
+    # region RegisterYotogiSubtitleConfigEvents
+
     /// <summary>
     ///     注册夜伽字幕配置变更事件
     /// </summary>
@@ -1866,6 +1878,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
     }
 
+    # endregion
+
+    # region RegisterAdvSubtitleConfigEvents
+
     /// <summary>
     ///     注册Adv字幕配置变更事件
     /// </summary>
@@ -2051,6 +2067,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
     }
+
+    # endregion
+
+    # region RegisterLyricSubtitleConfigEvents
 
     /// <summary>
     ///     注册歌词字幕配置变更事件
@@ -2248,6 +2268,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
     }
 
+    # endregion
+
+    # region RegisterVRSubtitleConfigEvents
+
     /// <summary>
     ///     注册VR字幕配置变更事件
     /// </summary>
@@ -2353,6 +2377,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
     }
 
+    # endregion
+
+    # region RegisterDumpConfigEvents
+
     /// <summary>
     ///     注册Dump配置变更事件
     /// </summary>
@@ -2408,6 +2436,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
         };
     }
 
+    # endregion
+
+    # region RegisterFixerConfigEvents
 
     /// <summary>
     ///     注册修复补丁配置变更事件

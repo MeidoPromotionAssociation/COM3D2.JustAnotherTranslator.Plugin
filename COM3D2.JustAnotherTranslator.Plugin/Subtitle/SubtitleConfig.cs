@@ -207,6 +207,10 @@ public class SubtitleConfig
             VRSpaceSubtitleTextSizeMultiplier =
                 JustAnotherTranslator.VRSpaceSubtitleTextSizeMultiplier.Value,
 
+            // VR空间字幕描边缩放因子
+            VRSpaceSubtitleOutlineScaleFactor =
+                JustAnotherTranslator.VRSpaceSubtitleOutlineScaleFactor.Value,
+
             // VR空间字幕是否像素完美
             VRSpaceSubtitlePixelPerfect = JustAnotherTranslator.VRSpaceSubtitlePixelPerfect.Value,
 
@@ -231,6 +235,10 @@ public class SubtitleConfig
             // VR平板电脑字幕字体大小倍数
             VRTabletSubtitleTextSizeMultiplier =
                 JustAnotherTranslator.VRTabletSubtitleTextSizeMultiplier.Value,
+
+            // VR平板电脑字幕描边缩放因子
+            VRTabletSubtitleOutlineScaleFactor =
+                JustAnotherTranslator.VRTabletSubtitleOutlineScaleFactor.Value,
 
             // VR平板电脑字幕是否像素完美
             VRTabletSubtitlePixelPerfect = JustAnotherTranslator.VRTabletSubtitlePixelPerfect.Value
@@ -443,7 +451,10 @@ public class SubtitleConfig
     public float VRSpaceSubtitleHorizontalOffset { get; set; }
 
     /// VR空间字幕文本大小倍数
-    public float VRSpaceSubtitleTextSizeMultiplier { get; set; } = 40f;
+    public float VRSpaceSubtitleTextSizeMultiplier { get; set; } = 14f;
+
+    /// VR空间字幕描边缩放因子
+    public float VRSpaceSubtitleOutlineScaleFactor { get; set; } = 3f;
 
     /// VR空间字幕是否像素完美
     public bool VRSpaceSubtitlePixelPerfect { get; set; }
@@ -464,6 +475,9 @@ public class SubtitleConfig
 
     /// VR平板电脑字幕文本大小倍数
     public float VRTabletSubtitleTextSizeMultiplier { get; set; } = 12f;
+
+    /// VR平板电脑字幕描边缩放因子
+    public float VRTabletSubtitleOutlineScaleFactor { get; set; } = 3f;
 
     /// VR平板电脑字幕是否像素完美
     public bool VRTabletSubtitlePixelPerfect { get; set; }

@@ -184,6 +184,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> VRSpaceSubtitleVerticalOffset;
     public static ConfigEntry<float> VRSpaceSubtitleHorizontalOffset;
     public static ConfigEntry<float> VRSpaceSubtitleTextSizeMultiplier;
+    public static ConfigEntry<float> VRSpaceSubtitleOutlineScaleFactor;
     public static ConfigEntry<bool> VRSpaceSubtitlePixelPerfect;
     public static ConfigEntry<float> VRSpaceSubtitleFollowSmoothness;
     public static ConfigEntry<float> VRTabletSubtitleWidth;
@@ -191,6 +192,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<float> VRTabletSubtitleVerticalPosition;
     public static ConfigEntry<float> VRTabletSubtitleHorizontalPosition;
     public static ConfigEntry<float> VRTabletSubtitleTextSizeMultiplier;
+    public static ConfigEntry<float> VRTabletSubtitleOutlineScaleFactor;
     public static ConfigEntry<bool> VRTabletSubtitlePixelPerfect;
 
     // dump相关配置
@@ -946,13 +948,21 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription("VR Space Subtitle Text Size Multiplier/VR空间字幕文本大小倍数", null,
                 new ConfigurationManagerAttributes { Order = 8060 }));
 
+        VRSpaceSubtitleOutlineScaleFactor = Config.Bind("8VRSubtitle",
+            "VRSpaceSubtitleOutlineScaleFactor/VR空间字幕描边缩放因子",
+            2.4f,
+            new ConfigDescription(
+                "VR Space Subtitle Outline Scale Factor, if outline shadow appears, try increasing this value/VR空间字幕描边缩放因子，若出现描边重影请尝试调高此值",
+                null,
+                new ConfigurationManagerAttributes { Order = 8070 }));
+
         VRSpaceSubtitlePixelPerfect = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitlePixelPerfect/VR空间字幕像素完美",
             false,
             new ConfigDescription(
                 "VR Space Subtitle Pixel Perfect(whether to perform anti-aliasing)/VR空间字幕像素完美（是否进行抗锯齿处理）",
                 null,
-                new ConfigurationManagerAttributes { Order = 8070 }));
+                new ConfigurationManagerAttributes { Order = 8080 }));
 
         VRSpaceSubtitleFollowSmoothness = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleFollowSmoothness/VR空间字幕跟随平滑度",
@@ -960,7 +970,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Space Subtitle Follow Smoothness, the higher the value, the faster it follows(set to 5 is about 0.6s to catch 95% of movement)/VR空间字幕跟随平滑度，数值越大跟踪越迅速（设置为 5 则约 0.6s 追上 95% 位移）",
                 null,
-                new ConfigurationManagerAttributes { Order = 8080 }));
+                new ConfigurationManagerAttributes { Order = 8090 }));
 
         // VR平板电脑字幕相关配置
         VRTabletSubtitleWidth = Config.Bind("8VRSubtitle",
@@ -968,14 +978,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
             500f,
             new ConfigDescription(
                 "VR Tablet Subtitle Width(1000 unit = 1 meter)/VR平板电脑字幕宽度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8090 }));
+                new ConfigurationManagerAttributes { Order = 8100 }));
 
         VRTabletSubtitleHeight = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleHeight/VR平板电脑字幕高度",
             10f,
             new ConfigDescription(
                 "VR Tablet Subtitle Height(1000 unit = 1 meter)/VR平板电脑字幕高度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8100 }));
+                new ConfigurationManagerAttributes { Order = 8110 }));
 
         VRTabletSubtitleVerticalPosition = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleVerticalPosition/VR平板电脑字幕垂直位置",
@@ -999,13 +1009,21 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription("VR Tablet Subtitle Text Size Multiplier/VR平板电脑字幕文字大小倍率", null,
                 new ConfigurationManagerAttributes { Order = 8130 }));
 
+        VRTabletSubtitleOutlineScaleFactor = Config.Bind("8VRSubtitle",
+            "VRTabletSubtitleOutlineScaleFactor/VR平板电脑字幕描边缩放因子",
+            2.8f,
+            new ConfigDescription(
+                "VR Tablet Subtitle Outline Scale Factor, if outline shadow appears, try increasing this value/VR平板电脑字幕描边缩放因子，若出现描边重影请尝试调高此值",
+                null,
+                new ConfigurationManagerAttributes { Order = 8140 }));
+
         VRTabletSubtitlePixelPerfect = Config.Bind("8VRSubtitle",
             "VRTabletSubtitlePixelPerfect/VR平板电脑字幕像素完美",
             false,
             new ConfigDescription(
                 "VR Tablet Subtitle Pixel Perfect(whether to perform anti-aliasing)/VR平板电脑字幕像素完美（是否进行抗锯齿处理）",
                 null,
-                new ConfigurationManagerAttributes { Order = 8140 }));
+                new ConfigurationManagerAttributes { Order = 8150 }));
 
         # endregion
 
@@ -2356,6 +2374,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
             SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 
+        // 注册VR字幕描边缩放因子变更事件
+        VRSpaceSubtitleOutlineScaleFactor.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("VR Floating Subtitle text size multiplier changed/VR空间字幕描边缩放因子已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
+        };
+
         // 注册VR字幕像素完美变更事件
         VRSpaceSubtitlePixelPerfect.SettingChanged += (_, _) =>
         {
@@ -2406,6 +2431,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
         VRTabletSubtitleTextSizeMultiplier.SettingChanged += (_, _) =>
         {
             LogManager.Info("VR Floating Subtitle Text Size Multiplier changed/VR平板电脑字幕文字大小倍数已更改");
+            SubtitleComponentManager.UpdateAllSubtitleConfig();
+        };
+
+        // 注册VR平板字幕描边缩放因子变更事件
+        VRTabletSubtitleOutlineScaleFactor.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("VR Floating Subtitle Text Size Multiplier changed/VR平板电脑字幕描边缩放因子已更改");
             SubtitleComponentManager.UpdateAllSubtitleConfig();
         };
 

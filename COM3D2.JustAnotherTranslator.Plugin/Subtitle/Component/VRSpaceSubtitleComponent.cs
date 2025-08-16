@@ -381,15 +381,21 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
                 if (TextComponent is not null)
                 {
-                    // 根据Text组件的localScale来缩放描边距离，防止出现重影
-                    var scaleFactor = TextComponent.transform.localScale.x;
-                    if (Mathf.Abs(scaleFactor) > 0.001f)
-                        OutlineComponents.effectDistance = new Vector2(
-                            Config.OutlineWidth / scaleFactor,
-                            Config.OutlineWidth / scaleFactor);
+                    // 由于Text组件有大倍数缩放，描边需要相应缩小以保持视觉一致性
+                    var textScale = TextComponent.transform.localScale.x;
+
+                    if (Mathf.Abs(textScale) > 0.001f)
+                    {
+                        // 不同头显设备可能需要不同的缩放因子，暂且保留
+                        var adjustedOutlineWidth = Config.OutlineWidth / (textScale * Config.VRSpaceSubtitleTextSizeMultiplier);
+                        OutlineComponents.effectDistance =
+                            new Vector2(adjustedOutlineWidth, adjustedOutlineWidth);
+                    }
                     else
+                    {
                         OutlineComponents.effectDistance =
                             new Vector2(Config.OutlineWidth, Config.OutlineWidth);
+                    }
                 }
             }
         }

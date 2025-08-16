@@ -314,8 +314,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
             // 应用位置
             if (CanvasComponents != null)
-                CanvasComponents.transform.localPosition = new Vector3(
-                    Config.HorizontalPosition, position, 0);
+                CanvasComponents.transform.localPosition = new Vector3(0f, position, 0f);
 
             return;
         }

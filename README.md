@@ -20,30 +20,31 @@ When reporting an issue, please set the plugin's log level to DEBUG, restart the
 
 ## Highlights of JAT
 
-**Robust and Independent UI Translation:**
+**Robust and Independent UI Translation**
 - A dedicated UI translation system inspired by i18nEx. JAT hooks into the game's underlying I2.Localization to intercept requests for UI text and images, rather than modifying or appending to the official translation database.
 - This approach does not rely on internal game resources, making UI translations resilient to game updates and avoiding issues caused by version changes.
 
-**Advanced Sprite Replacement:**
+**Advanced Sprite Replacement**
 - For UI sprite replacement, JAT dynamically creates a new, independent UIAtlas for your `.png` files instead of replacing the game's original atlas.
 - This completely avoids touching native game resources, fundamentally preventing issues like misplaced images or broken UI layouts caused by changes to the original atlas after a game update.
 
-**Flexible Translation Override System:**
+**Flexible Translation Override System**
 - JAT recursively loads translation files from the translation folder, sorting both files and folders by Unicode character order. Translations loaded later will override those loaded earlier.
 - Users can create folders like `01-MachineTrans`, `02-AITrans`, `03-Proofread`, `99-PersonalFixes` to precisely control translation priority, easily managing and layering translations of different quality.
 
-**Lyrics and Subtitles:**
+**Lyrics and Subtitles**
 - A completely self-implemented subtitle system: The subtitle feature (including general subtitles and dance lyrics) is fully implemented by JAT and does not depend on any in-game resources or official systems, requiring no official support.
 - It can provide subtitles in various scenes that lack them, such as dances, the fishing minigame, VR karaoke, the shooting minigame, night scenes (Yotogi), etc.
 - It also features specially designed VR subtitles, with options to display them on a virtual tablet or in world space, floating just like in other VR games.
 
-**Performance Optimizations:**
+**Performance Optimizations**
 - Translation files for UI and general text are loaded asynchronously, so it won't slow down your game's startup.
 - Supports using `.zip` archives to speed up the loading of many small files.
 
-**Other Features:**
+**Other**
 - JAT does not enable the game's built-in multilingual support, reducing user confusion and potential bugs.
 - JAT does not use any in-game resources, avoiding some potential bugs.
+- JAT automatically integrates with [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator), so you don't need to worry about the text being translated repeatedly by XUAT and no need to add special mark to the text in advance.
 
 **Drawbacks:**
 - JAT loads all translation text into memory, which does lead to higher memory usage.
@@ -250,6 +251,7 @@ There are 4 main folders in the translation folder of the corresponding language
 其他：
 - JAT 不启用游戏内的多语言支持，减少了使用户困惑的内容和可能出现的 BUG。
 - JAT 不使用任何游戏内资源，避免了一些可能出现的 BUG。
+- JAT 自动与 [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator) 集成，无需担心文本被 XUAT 重复翻译，无需预先在文本中添加特殊标记。
 
 缺点：
 - JAT 确实会将所有翻译文本加载到内存，这确实会导致较高的内存占用。

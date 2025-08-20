@@ -26,7 +26,7 @@ jobs:
       - name: Publish Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: COM3D2.JustAnotherTranslator.Plugin.zip
+          name: COM3D2.JustAnotherTranslator.Plugin
           path: |
             /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/COM3D2.JustAnotherTranslator.Plugin.dll
             /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D2/net35/CsvHelper.dll
@@ -38,7 +38,7 @@ jobs:
       - name: Publish Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: COM3D25.JustAnotherTranslator.Plugin.zip
+          name: COM3D25.JustAnotherTranslator.Plugin
           path: |
             /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/COM3D25.JustAnotherTranslator.Plugin.dll
             /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/CsvHelper.dll

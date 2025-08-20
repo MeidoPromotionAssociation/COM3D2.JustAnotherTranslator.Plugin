@@ -42,3 +42,8 @@ jobs:
           path: |
             /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/COM3D25.JustAnotherTranslator.Plugin.dll
             /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/CsvHelper.dll
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/Microsoft.Bcl.AsyncInterfaces.dll
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/Microsoft.Bcl.HashCode.dll
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/System.Buffers.dll
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/System.Numerics.Vectors.dll
+            /home/runner/work/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/COM3D2.JustAnotherTranslator.Plugin/bin/Release/COM3D25/net48/System.Threading.Tasks.Extensions.dll

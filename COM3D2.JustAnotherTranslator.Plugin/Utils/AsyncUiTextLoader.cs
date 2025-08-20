@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using CsvHelper;
@@ -30,6 +31,23 @@ public class AsyncUiTextLoader
 
 
     /// CSV配置
+#if COM3D25_UNITY_2022
+    private static readonly CsvConfiguration CsvConfig = new(CultureInfo.InvariantCulture)
+    {
+        AllowComments = true,
+        HasHeaderRecord = true,
+        Encoding = Encoding
+            .UTF8, // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
+        IgnoreBlankLines = true,
+        PrepareHeaderForMatch = args => args.Header?.Trim().ToLowerInvariant(),
+        ShouldSkipRecord = args =>
+        {
+            var record = args.Row?.Context?.Parser?.Record;
+            return record == null || record.All(string.IsNullOrWhiteSpace);
+        },
+        MissingFieldFound = null
+    };
+#else
     private static readonly CsvConfiguration CsvConfig = new()
     {
         CultureInfo = CultureInfo.InvariantCulture,
@@ -43,6 +61,7 @@ public class AsyncUiTextLoader
         SkipEmptyRecords = true,
         WillThrowOnMissingField = false
     };
+#endif
 
     /// 压缩文件缓冲区大小
     private static readonly int ZipBuffSize = 131072;
@@ -392,7 +411,7 @@ public class AsyncUiTextLoader
     private int ProcessCsvStream(Stream stream)
     {
         var entriesLoaded = 0;
-        using (var reader = new StreamReader(stream, Encoding.UTF8))
+        using (var reader = new StreamReader(stream, Encoding.UTF8, true, 4096))
         using (var csv = new CsvReader(reader, CsvConfig))
         {
             var records = csv.GetRecords<CsvEntry>();
@@ -403,9 +422,9 @@ public class AsyncUiTextLoader
                 Translations[record.Term] = record.Translation;
                 entriesLoaded++;
             }
-        }
 
-        return entriesLoaded;
+            return entriesLoaded;
+        }
     }
 
     /// <summary>

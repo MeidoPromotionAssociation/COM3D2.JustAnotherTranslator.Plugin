@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Lyric;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle;
@@ -44,6 +45,24 @@ public static class LyricManger
     /// <summary>
     ///     CsvHelper 配置
     /// </summary>
+    /// CSV配置
+#if COM3D25_UNITY_2022
+    private static readonly CsvConfiguration CsvConfig = new(CultureInfo.InvariantCulture)
+    {
+        AllowComments = true,
+        HasHeaderRecord = true,
+        Encoding = Encoding
+            .UTF8, // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
+        IgnoreBlankLines = true,
+        PrepareHeaderForMatch = args => args.Header?.Trim().ToLowerInvariant(),
+        ShouldSkipRecord = args =>
+        {
+            var record = args.Row?.Context?.Parser?.Record;
+            return record == null || record.All(string.IsNullOrWhiteSpace);
+        },
+        MissingFieldFound = null
+    };
+#else
     private static readonly CsvConfiguration CsvConfig = new()
     {
         CultureInfo = CultureInfo.InvariantCulture,
@@ -57,6 +76,7 @@ public static class LyricManger
         SkipEmptyRecords = true,
         WillThrowOnMissingField = false
     };
+#endif
 
     public static void Init()
     {
@@ -238,7 +258,7 @@ public static class LyricManger
 
             var list = new List<DanceInfoCsvEntry>();
             if (File.Exists(summaryPath))
-                using (var reader = new StreamReader(summaryPath, Encoding.UTF8))
+                using (var reader = new StreamReader(summaryPath, Encoding.UTF8, true, 4096))
                 using (var csv = new CsvReader(reader, CsvConfig))
                 {
                     foreach (var r in csv.GetRecords<DanceInfoCsvEntry>()) list.Add(r);
@@ -415,8 +435,8 @@ public static class LyricManger
         try
         {
             using (var reader =
-                   new StreamReader(path,
-                       Encoding.UTF8)) // This can process utf-8-sig as well, which is csv should be
+                   new StreamReader(path, Encoding.UTF8, true,
+                       4096)) // This can process utf-8-sig as well, which is csv should be
             using (var csv = new CsvReader(reader, CsvConfig))
             {
                 var records = csv.GetRecords<LyricCsvEntry>();

@@ -245,7 +245,9 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
                         // 当 1mm 乘上 Text 的 12 倍缩放后，这 1 像素就是 0.012 米，这变得很大，因此需要除以缩放因子
                         // 实测 12 倍缩放时 0.03 观感较为正常，1 / (12 * 3) ≈ 0.0278 ≈ 0.03
                         // 不同头显设备可能需要不同的缩放因子
-                        var adjustedOutlineWidth = Config.OutlineWidth / (textScale * Config.VRTabletSubtitleTextSizeMultiplier);
+                        var adjustedOutlineWidth = Config.OutlineWidth /
+                                                   (textScale * Config
+                                                       .VRTabletSubtitleTextSizeMultiplier);
                         OutlineComponents.effectDistance =
                             new Vector2(adjustedOutlineWidth, adjustedOutlineWidth);
                     }

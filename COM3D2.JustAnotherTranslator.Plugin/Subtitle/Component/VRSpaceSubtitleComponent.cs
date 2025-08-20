@@ -387,7 +387,9 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
                     if (Mathf.Abs(textScale) > 0.001f)
                     {
                         // 不同头显设备可能需要不同的缩放因子，暂且保留
-                        var adjustedOutlineWidth = Config.OutlineWidth / (textScale * Config.VRSpaceSubtitleTextSizeMultiplier);
+                        var adjustedOutlineWidth = Config.OutlineWidth /
+                                                   (textScale * Config
+                                                       .VRSpaceSubtitleTextSizeMultiplier);
                         OutlineComponents.effectDistance =
                             new Vector2(adjustedOutlineWidth, adjustedOutlineWidth);
                     }

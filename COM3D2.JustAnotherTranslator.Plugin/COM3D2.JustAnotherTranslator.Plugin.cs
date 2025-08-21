@@ -1092,7 +1092,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         EnableDumpDanceInfo = Config.Bind("9Dump",
             "EnableDumpDanceInfo/是否启用舞蹈信息导出",
-            false,
+            true,
             new ConfigDescription(
                 "Dump dance info to danceInfo.csv(after playing a dance)/播放舞蹈后在 danceInfos.csv 内输出舞蹈信息",
                 null,

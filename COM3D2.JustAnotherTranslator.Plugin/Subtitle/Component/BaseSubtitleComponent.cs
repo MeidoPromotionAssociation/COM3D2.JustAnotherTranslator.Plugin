@@ -318,6 +318,46 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     }
 
     /// <summary>
+    ///     获取当前画布在参考单位下的可见高度（将屏幕像素高度除以 Canvas 的 scaleFactor）
+    ///     用于将像素单位（参考分辨率 1920x1080）下的位置转换为在当前分辨率下可见的上限
+    /// </summary>
+    /// <returns>可见高度（单位：参考分辨率单位）</returns>
+    protected virtual float GetVisibleCanvasHeightInUnits()
+    {
+        try
+        {
+            var scale = 1f;
+            if (CanvasComponents != null)
+            {
+                // Canvas.scaleFactor 即 CanvasScaler 计算后的缩放因子
+                scale = CanvasComponents.scaleFactor;
+                if (scale <= 0f) scale = 1f;
+            }
+
+            return Screen.height / scale;
+        }
+        catch
+        {
+            // 回退到参考高度
+            return 1080f;
+        }
+    }
+
+    /// <summary>
+    ///     钳制垂直位置到可见范围 [0, 可见高度-字幕高度]
+    /// </summary>
+    /// <param name="y">期望的垂直位置</param>
+    /// <param name="subtitleHeight">字幕高度</param>
+    /// <returns>钳制后的垂直位置</returns>
+    protected virtual float ClampVerticalPosition(float y, float subtitleHeight)
+    {
+        var visibleHeight = GetVisibleCanvasHeightInUnits();
+        var maxY = Mathf.Max(0f, visibleHeight - Mathf.Max(0f, subtitleHeight));
+        return Mathf.Clamp(y, 0f, maxY);
+    }
+
+
+    /// <summary>
     ///     设置当前垂直位置
     /// </summary>
     /// <param name="position"></param>
@@ -379,7 +419,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         // 避免修改垂直位置
-        var verticalPosition = Config.VerticalPosition;
+        // 将配置中的理想位置钳制到当前分辨率下可见范围
+        var verticalPosition = ClampVerticalPosition(Config.VerticalPosition, Config.SubtitleHeight);
         Config.CurrentVerticalPosition = verticalPosition;
 
         // 应用背景配置

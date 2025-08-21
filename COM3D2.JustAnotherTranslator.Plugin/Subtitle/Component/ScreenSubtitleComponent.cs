@@ -26,8 +26,8 @@ public class ScreenSubtitleComponent : BaseSubtitleComponent
         // 添加画布缩放器
         CanvasScalerComponents = canvasObj.AddComponent<CanvasScaler>();
         CanvasScalerComponents.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        CanvasScalerComponents.referenceResolution = new Vector2(1920, 1080);
-        CanvasScalerComponents.matchWidthOrHeight = 0.5f; // 0是宽度，1是高度，0.5是两者平衡
+        CanvasScalerComponents.referenceResolution = new Vector2(1920, 1080); // 参考分辨率
+        CanvasScalerComponents.matchWidthOrHeight = 1f; // 若屏幕不是16:9，优先匹配哪个值 0是宽度，1是高度，0.5是两者平衡
         CanvasScalerComponents.dynamicPixelsPerUnit = 100; // 每个单位的像素数量
 
         // 添加画布组

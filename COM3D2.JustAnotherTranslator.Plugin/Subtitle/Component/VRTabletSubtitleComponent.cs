@@ -244,8 +244,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
                         // 实测 12 倍缩放时 0.03 观感较为正常，1 / (12 * 3) ≈ 0.0278 ≈ 0.03
                         // 不同头显设备可能需要不同的缩放因子
                         var adjustedOutlineWidth = Config.OutlineWidth /
-                                                   (textScale * Config
-                                                       .VRTabletSubtitleTextSizeMultiplier);
+                                                   (textScale * Config.VRTabletSubtitleOutlineScaleFactor);
                         OutlineComponents.effectDistance =
                             new Vector2(adjustedOutlineWidth, adjustedOutlineWidth);
                     }

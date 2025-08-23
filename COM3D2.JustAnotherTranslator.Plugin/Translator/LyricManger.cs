@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Lyric;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle;

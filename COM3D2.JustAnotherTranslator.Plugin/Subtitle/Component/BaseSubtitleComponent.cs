@@ -317,6 +317,27 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         return height;
     }
 
+
+    /// <summary>
+    ///     设置当前垂直位置
+    /// </summary>
+    /// <param name="position"></param>
+    public virtual void SetVerticalPosition(float position)
+    {
+        if (Config != null)
+        {
+            Config.CurrentVerticalPosition = position;
+
+            // 应用位置
+            if (BackgroundImageComponents is not null)
+                BackgroundImageComponents.rectTransform.anchoredPosition3D = new Vector3(
+                    Config.HorizontalPosition, position, 0f);
+            return;
+        }
+
+        LogManager.Warning("Subtitle config is null, cannot set vertical position/字幕配置为空，无法设置垂直位置");
+    }
+
     /// <summary>
     ///     获取当前画布在参考单位下的可见高度（将屏幕像素高度除以 Canvas 的 scaleFactor）
     ///     用于将像素单位（参考分辨率 1920x1080）下的位置转换为在当前分辨率下可见的上限
@@ -354,27 +375,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         var visibleHeight = GetVisibleCanvasHeightInUnits();
         var maxY = Mathf.Max(0f, visibleHeight - Mathf.Max(0f, subtitleHeight));
         return Mathf.Clamp(y, 0f, maxY);
-    }
-
-
-    /// <summary>
-    ///     设置当前垂直位置
-    /// </summary>
-    /// <param name="position"></param>
-    public virtual void SetVerticalPosition(float position)
-    {
-        if (Config != null)
-        {
-            Config.CurrentVerticalPosition = position;
-
-            // 应用位置
-            if (BackgroundImageComponents is not null)
-                BackgroundImageComponents.rectTransform.anchoredPosition3D = new Vector3(
-                    Config.HorizontalPosition, position, 0f);
-            return;
-        }
-
-        LogManager.Warning("Subtitle config is null, cannot set vertical position/字幕配置为空，无法设置垂直位置");
     }
 
     /// <summary>
@@ -420,7 +420,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 
         // 避免修改垂直位置
         // 将配置中的理想位置钳制到当前分辨率下可见范围
-        var verticalPosition = ClampVerticalPosition(Config.VerticalPosition, Config.SubtitleHeight);
+        var verticalPosition =
+            ClampVerticalPosition(Config.VerticalPosition, Config.SubtitleHeight);
         Config.CurrentVerticalPosition = verticalPosition;
 
         // 应用背景配置

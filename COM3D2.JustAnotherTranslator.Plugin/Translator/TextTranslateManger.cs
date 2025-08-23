@@ -38,7 +38,8 @@ public static class TextTranslateManger
 
     /// 导出目标路径
     private static readonly string DumpFilePath =
-        Path.Combine(JustAnotherTranslator.TextDumpPath, "untranslatedText.txt");
+        Path.Combine(JustAnotherTranslator.TextDumpPath,
+            DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt");
 
     /// 加载状态
     private static bool IsLoading { get; set; }

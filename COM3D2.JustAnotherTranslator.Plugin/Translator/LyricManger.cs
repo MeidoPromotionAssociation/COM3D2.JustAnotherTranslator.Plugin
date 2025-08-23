@@ -13,6 +13,9 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+#if COM3D25_UNITY_2022
+using System.Linq;
+#endif
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 

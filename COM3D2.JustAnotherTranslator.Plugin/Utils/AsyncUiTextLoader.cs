@@ -9,6 +9,9 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using ICSharpCode.SharpZipLib.Zip;
 using JetBrains.Annotations;
+#if COM3D25_UNITY_2022
+using System.Linq;
+#endif
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 

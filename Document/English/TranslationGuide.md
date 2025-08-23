@@ -801,3 +801,61 @@ For example, in `stream001_adv_0002.ks`:
 『エンパイアメイドカフェ』とは？
 @hitret
 ```
+
+
+# DUMP
+
+JAT supports exporting untranslated text, along with unreplaced textures and sprites, to facilitate subsequent translation. Enabling these features can reduce performance, so it's recommended to only enable them when needed.
+
+## Output Location
+
+- Text: `BepInEx/JustAnotherTranslator/Dump/Text/yyyy-MM-dd-HH-mm.txt` (year-month-day-hour-minute.txt at game startup)
+- Textures: `BepInEx/JustAnotherTranslator/Dump/Texture/*.png`
+- Sprites: `BepInEx/JustAnotherTranslator/Dump/Sprite/*.png`
+
+## Switches and Dependencies (Configuration Section [9Dump])
+
+- EnableDumpText/是否启用文本转储
+  - Only collects "untranslated" original text; writes each line to `year-month-day-hour-minute.txt` at game startup
+  - Requires `General Text Translation` to be enabled
+- TextDumpThreshold/文本转储阈值 (default 20)
+  - Writes to disk when the cache entry threshold is reached or when switching scenes. Set to 1 for real-time writing.
+- FlushTextDumpNow/立即写出文本
+  - Write out the cache immediately when the option status changes.
+- EnableDumpTexture/是否启用纹理转储
+  - Exports the original texture as a PNG only if a texture with "no corresponding replacement file" is found.
+  - Requires the `Texture Replacement` feature to be enabled.
+- EnableDumpSprite/是否启用精灵图转储
+  - When texture dumping is enabled, the underlying textures used by sprites are exported. If you use the `Texture Replacement` feature to replace the atlas that a sprite belongs to, the sprites from the replaced atlas will also be exported.
+- EnableDumpDanceInfo/是否启用舞蹈信息转储
+  - See the `Dance Mode Lyrics and Subtitles` section.
+
+## Details
+
+- Text
+  - Text that does not match the original translation will be cached; it will be written to the file when the threshold is reached, when the game changes, or when the game exits normally.
+  - Cached text that does not meet the threshold may be lost in case of an abnormal exit.
+  - Simple deduplication is performed; duplicate lines are generally not exported.
+  - The file is "append-only."
+- Textures
+  - When the game accesses a texture that supports replacement, the unreplaced texture will be exported.
+  - If a file with the same name already exists, it will not be overwritten.
+  - Note: JAT supports replacing .tex textures, such as those used for clothing, but these textures will not be dumped.
+- Sprites
+  - Only NGUI sprites can be replaced.
+  - When the game accesses a sprite that supports replacement, the unreplaced sprite will be exported.
+  - If a file with the same name already exists, it will not be overwritten.
+  - If you use the texture replacement feature to replace the atlas to which a sprite belongs, the sprites from the replaced atlas will also be exported.
+
+## Debugging and Performance Tips
+
+- Switching to Debug in the `Log Level` setting can help troubleshoot issues.
+- Dumping increases disk IO and memory usage: Enable only when needed; too low a threshold will cause frequent disk writes and degrade game performance, while too high a threshold will cause more cache loss during crashes.
+- Dumped textures and sprites can be used directly with the replacement feature; do not modify their size.
+
+## FAQ
+
+- Will files be overwritten?
+  - Text: Always append
+  - Texture: Not overwrite if the target file already exists
+  - Sprite: Not overwrite if the target file already exists

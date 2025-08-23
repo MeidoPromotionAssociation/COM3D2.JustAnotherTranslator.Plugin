@@ -100,7 +100,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
                     "GameObject is null after creating UI, cannot initialize base subtitle component/创建UI后GameObject为空，无法初始化基础字幕组件");
 
             gameObject.name = subtitleId;
-            gameObject.SetActive(false);
+            SetActive(false);
             LogManager.Debug($"base subtitle component {subtitleId} initialized");
         }
         catch (Exception e)
@@ -139,7 +139,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         SetText(text, speakerName, SpeakerColor, Config.EnableSpeakerName);
 
         // 显示字幕
-        gameObject.SetActive(true);
+        SetActive(true);
 
         // 如果启用了动画效果
         if (Config.EnableAnimation)
@@ -170,7 +170,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     {
         if (skipAnimation)
         {
-            gameObject.SetActive(false);
+            SetActive(false);
             LogManager.Debug($"Hiding subtitle {gameObject.name}");
             return;
         }
@@ -186,7 +186,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         if (Config.EnableAnimation && gameObject.activeSelf)
             CurrentAnimation = StartCoroutine(FadeOut());
         else
-            gameObject.SetActive(false);
+            SetActive(false);
 
         LogManager.Debug($"Hiding subtitle {gameObject.name}");
     }
@@ -564,7 +564,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         SetAlpha(0);
-        gameObject.SetActive(false);
+        SetActive(false);
         CurrentAnimation = null;
     }
 
@@ -608,6 +608,16 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         return color;
     }
 
+    /// <summary>
+    ///     设置组件的激活状态
+    /// </summary>
+    /// <param name="active"></param>
+    protected virtual void SetActive(bool active)
+    {
+        gameObject.SetActive(active);
+        if (CanvasComponents is not null)
+            CanvasComponents.gameObject.SetActive(active);
+    }
 
     /// <summary>
     ///     销毁字幕UI

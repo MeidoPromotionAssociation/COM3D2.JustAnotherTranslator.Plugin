@@ -122,7 +122,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
                 throw new NullReferenceException(
                     "GameObject is null after creating UI, cannot initialize VR space subtitle component/创建UI后GameObject为空，无法初始化VR空间字幕组件");
             gameObject.name = subtitleId;
-            gameObject.SetActive(false);
+            SetActive(false);
             LogManager.Debug($"VR space subtitle component {subtitleId} initialized");
         }
         catch (Exception e)
@@ -404,6 +404,18 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
 
         LogManager.Debug("Applied VR-specific subtitle config with proper UI scaling");
+    }
+
+    /// <summary>
+    ///     设置组件的激活状态
+    /// </summary>
+    /// <param name="active"></param>
+    protected override void SetActive(bool active)
+    {
+        if (VrSubtitleContainerTransform is not null)
+            VrSubtitleContainerTransform.gameObject
+                .SetActive(active); // VrSubtitleContainer 并不是这个 gameObject 的子物体
+        base.SetActive(active);
     }
 
     /// <summary>

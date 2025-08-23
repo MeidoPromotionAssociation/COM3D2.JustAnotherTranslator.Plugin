@@ -28,9 +28,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         // 跟随平板电脑可见性
         var isVisible = GameMain.Instance?.OvrMgr?.OvrCamera?.m_bUiToggle;
         if (isVisible == null) return;
-        gameObject.SetActive(isVisible.Value); // VrSubtitleContainer 并不是这个 gameObject 的子物体
-        if (VrSubtitleContainerTransform is not null)
-            VrSubtitleContainerTransform.gameObject.SetActive(isVisible.Value);
+        SetActive(isVisible.Value);
     }
 
     /// <summary>
@@ -261,6 +259,18 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         }
 
         LogManager.Debug("Applied VR-specific subtitle config with proper UI scaling");
+    }
+
+    /// <summary>
+    ///     设置组件的激活状态
+    /// </summary>
+    /// <param name="active"></param>
+    protected override void SetActive(bool active)
+    {
+        if (VrSubtitleContainerTransform is not null)
+            VrSubtitleContainerTransform.gameObject
+                .SetActive(active); // VrSubtitleContainer 并不是这个 gameObject 的子物体
+        base.SetActive(active);
     }
 
     /// <summary>

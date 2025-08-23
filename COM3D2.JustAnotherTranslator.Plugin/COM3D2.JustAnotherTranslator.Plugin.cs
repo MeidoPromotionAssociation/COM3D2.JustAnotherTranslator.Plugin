@@ -1055,29 +1055,29 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 new ConfigurationManagerAttributes { Order = 9030 }));
 
         EnableTexturesDump = Config.Bind("9Dump",
-            "EnableDumpTexture/是否启用纹理导出",
+            "EnableDumpTexture/是否启用纹理转储",
             false,
-            new ConfigDescription("Only export textures that have not been replaced/仅导出未替换过的纹理",
+            new ConfigDescription("Only export textures that have not been replaced/仅转储未替换过的纹理",
                 null,
                 new ConfigurationManagerAttributes { Order = 9040 }));
 
         EnableSpriteDump = Config.Bind("9Dump",
-            "EnableDumpSprite/是否启用精灵图导出",
+            "EnableDumpSprite/是否启用精灵图转储",
             false,
             new ConfigDescription(
-                "Only export sprites that have not been replaced, if atlas has been replaced, the replaced sprite will be dump/仅导出未替换过的精灵图，若是atlas被替换过，则会导出替换过的精灵图",
+                "Only export sprites that have not been replaced, if atlas has been replaced, the sprite from the replaced atlas will be dump/仅转储未替换过的精灵图，若是Atlas图集被替换过，则会转储替换过Atlas上的精灵图",
                 null,
                 new ConfigurationManagerAttributes { Order = 9050 }));
 
         EnableTextDump = Config.Bind("9Dump",
-            "EnableDumpText/是否启用文本导出",
+            "EnableDumpText/是否启用文本转储",
             false,
             new ConfigDescription(
-                "Only export text that has not been replaced, write out when the threshold is reached or switching scenes or the game correct exits/仅导出未替换过的文本，达到阈值或切换场景或正确退出游戏时写出",
+                "Only export text that has not been replaced, write out when the threshold is reached or switching scenes or the game correct exits/仅转储未替换过的文本，达到阈值或切换场景或正确退出游戏时写出",
                 null, new ConfigurationManagerAttributes { Order = 9060 }));
 
         TextDumpThreshold = Config.Bind("9Dump",
-            "TextDumpThreshold/文本导出阈值",
+            "TextDumpThreshold/文本转储阈值",
             20,
             new ConfigDescription("How many lines of text to write out at once/累计多少条文本后写出一次", null,
                 new ConfigurationManagerAttributes { Order = 9070 }));
@@ -1091,7 +1091,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 new ConfigurationManagerAttributes { Order = 9080 }));
 
         EnableDumpDanceInfo = Config.Bind("9Dump",
-            "EnableDumpDanceInfo/是否启用舞蹈信息导出",
+            "EnableDumpDanceInfo/是否启用舞蹈信息转储",
             true,
             new ConfigDescription(
                 "Dump dance info to danceInfo.csv(after playing a dance)/播放舞蹈后在 danceInfos.csv 内输出舞蹈信息",
@@ -2462,49 +2462,49 @@ public class JustAnotherTranslator : BaseUnityPlugin
         EnableTextDump.SettingChanged += (_, _) =>
         {
             if (EnableTextDump.Value)
-                LogManager.Info("Text dump enabled/启用文本导出");
+                LogManager.Info("Text dump enabled/启用文本转储");
             else
-                LogManager.Info("Text dump disabled/禁用文本导出");
+                LogManager.Info("Text dump disabled/禁用文本转储");
         };
 
         // 注册Dump纹理启用状态变更事件
         EnableTexturesDump.SettingChanged += (_, _) =>
         {
             if (EnableTexturesDump.Value)
-                LogManager.Info("Texture dump enabled/启用纹理导出");
+                LogManager.Info("Texture dump enabled/启用纹理转储");
             else
-                LogManager.Info("Texture dump disabled/禁用纹理导出");
+                LogManager.Info("Texture dump disabled/禁用纹理转储");
         };
 
         // 注册DumpSprite启用状态变更事件
         EnableSpriteDump.SettingChanged += (_, _) =>
         {
             if (EnableSpriteDump.Value)
-                LogManager.Info("Sprite dump enabled/启用Sprite导出");
+                LogManager.Info("Sprite dump enabled/启用Sprite转储");
             else
-                LogManager.Info("Sprite dump disabled/禁用Sprite导出");
+                LogManager.Info("Sprite dump disabled/禁用Sprite转储");
         };
 
         // 注册Dump文本阈值变更事件
         TextDumpThreshold.SettingChanged += (_, _) =>
         {
-            LogManager.Info("Text dump threshold changed/文本导出阈值已更改");
+            LogManager.Info("Text dump threshold changed/文本转储阈值已更改");
         };
 
         // 注册Dump文本立即写出变更事件
         FlushTextDumpNow.SettingChanged += (_, _) =>
         {
             TextTranslateManger.FlushDumpBuffer();
-            LogManager.Info("Text dump flushed/文本导出缓存已写出");
+            LogManager.Info("Text dump flushed/文本转储缓存已写出");
         };
 
         EnableDumpDanceInfo.SettingChanged += (_, _) =>
         {
             if (EnableDumpDanceInfo.Value)
                 LogManager.Info(
-                    "Dance info dump enabled, will be exported when playing dances/启用舞蹈信息导出，播放舞蹈时会导出舞蹈信息");
+                    "Dance info dump enabled, will be exported when playing dances/启用舞蹈信息转储，播放舞蹈时会转储舞蹈信息");
             else
-                LogManager.Info("Dance info dump disabled/禁用舞蹈信息导出");
+                LogManager.Info("Dance info dump disabled/禁用舞蹈信息转储");
         };
     }
 

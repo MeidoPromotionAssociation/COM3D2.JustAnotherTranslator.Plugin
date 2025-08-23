@@ -61,6 +61,7 @@ public class ScreenSubtitleComponent : BaseSubtitleComponent
         textObj.transform.SetParent(backgroundObj.transform, false);
         TextComponent = textObj.AddComponent<Text>();
         TextComponent.raycastTarget = false; // 不拦截射线
+        TextComponent.supportRichText = true;
 
         // 设置文本位置和大小，与背景完全一致
         var textRect = TextComponent.rectTransform;

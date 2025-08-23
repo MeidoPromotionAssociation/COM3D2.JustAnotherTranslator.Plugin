@@ -153,7 +153,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         else
         {
             // 直接显示
-            SetAlpha(Config.TextColor.a);
+            SetAlpha(1);
 
             // 如果设置了持续时间，则在指定时间后隐藏
             if (duration > 0) StartCoroutine(AutoHide(duration));
@@ -449,7 +449,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             TextComponent.rectTransform.sizeDelta = new Vector2(
                 Config.SubtitleWidth, Config.SubtitleHeight);
 
-            // 注意可以跟随父级移动，因此只需要移动背景即可
+            // 注意子组件可以跟随父级移动，因此只需要移动背景即可
             TextComponent.rectTransform.anchoredPosition3D = new Vector3(0f, 0f, 0f);
         }
 
@@ -488,43 +488,9 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <param name="alpha">透明度值（0-1）</param>
     protected virtual void SetAlpha(float alpha)
     {
-        if (TextComponent is null) return;
+        if (CanvasGroupComponents is null) return;
 
-        //设置主文本组件的基础透明度
-        var textColor = TextComponent.color;
-        textColor.a = Mathf.Clamp01(alpha);
-        TextComponent.color = textColor;
-
-        // 设置背景透明度
-        if (BackgroundImageComponents is not null)
-        {
-            var bgColor = BackgroundImageComponents.color;
-            // Config.BackgroundColor.a 作为背景的最大透明度
-            bgColor.a = Mathf.Clamp01(alpha) * Config.BackgroundColor.a;
-            BackgroundImageComponents.color = bgColor;
-        }
-
-        // TextComponent.color 无法影响 html 标签，因此需要单独处理
-        if (Config.EnableSpeakerName && !string.IsNullOrEmpty(SpeakerColor) &&
-            !string.IsNullOrEmpty(SpeakerName))
-        {
-            // 将alpha (0-1) 转换为两位十六进制字符串 (00-FF)
-            var alphaByte = (byte)(Mathf.Clamp01(alpha) * 255f);
-            var alphaHex = alphaByte.ToString("X2");
-
-            // SpeakerColor 存储的是 RRGGBBAA, 替换最后两位
-            if (SpeakerColor.Length < 8) SpeakerColor += "FF";
-
-            SpeakerColor = SpeakerColor.Substring(0, SpeakerColor.Length - 2) + alphaHex;
-
-
-            if (string.IsNullOrEmpty(_translatedSpeakerName))
-                TextTranslateManger.GetTranslateText(SpeakerName, out _translatedSpeakerName);
-
-            // 重构文本
-            TextComponent.text =
-                $"<color=#{SpeakerColor}>{_translatedSpeakerName}</color>: {_currentText}";
-        }
+        CanvasGroupComponents.alpha = Mathf.Clamp01(alpha);
     }
 
     /// <summary>
@@ -533,7 +499,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     protected virtual IEnumerator FadeIn()
     {
         float time = 0;
-        SetAlpha(0);
 
         while (time < Config.FadeInDuration)
         {
@@ -543,7 +508,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             yield return null;
         }
 
-        SetAlpha(Config.TextColor.a);
+        SetAlpha(1);
         CurrentAnimation = null;
     }
 
@@ -553,7 +518,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     protected virtual IEnumerator FadeOut()
     {
         float time = 0;
-        SetAlpha(Config.TextColor.a);
 
         while (time < Config.FadeOutDuration)
         {

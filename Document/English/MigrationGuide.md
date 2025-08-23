@@ -8,7 +8,45 @@ We welcome any improvements and fixes.
 
 repo url:  https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin
 
+
+## I don't know which plugin I'm using
+
+If you're unsure which translation plugin you're using, you can quickly determine it by following the path characteristics below. Search for these file names in the game's root directory (where COM3D2.exe is located).
+
+- If you see any of the following, LBWtranslation/LBWmodifier is being used.
+- `LBWmodifier.dll`
+- `LBWmodifier-Transator D3V.dll` or `LBWmodifier-Transator D4V.dll`
+- If you see any of the following, COM3D2.i18nEx is being used.
+- `COM3D2\BepInEx\plugins\I18N\` folder
+- If you see any of the following, COM3D2.YATranslator / CM3D2.YATranslator is being used.
+- `COM3D2.YATranslator.Plugin.dll`
+- `CM3D2.YATranslator.Plugin.dll`
+- `COM3D2.YATranslator.Hook.dll`
+- `CM3D2.YATranslator.Hook.dll`
+- `COM3D2.YATranslator.Sybaris.Patcher.dll`
+- `CM3D2.YATranslator.Sybaris.Patcher.dll`
+
+Assisted judgment (check where the translation content is located):
+- `COM3D2\LBWtranslation\` exists → LBWtranslation/LBWmodifier
+- `COM3D2\i18nEx\` exists → i18nEx
+- `COM3D2\Sybaris\UnityInjector\Config\Strings\` exists → YATranslator
+
+Next steps:
+- After confirmation, proceed to the corresponding section of this article to begin the migration:
+- Migrate from LBWtranslation/LBWmodifier
+- Migrate from COM3D2.i18nEx
+- Migrate from COM3D2.YATranslator / CM3D2.YATranslator
+- If multiple sets of artifacts exist in your environment, prioritize migrating the one with the most translation files/most recently updated. After the migration is complete, follow the corresponding "Cleanup" section to delete any remaining artifacts.
+
+Tip:
+- The JAT coexists with XUnity.AutoTranslator. XUAT is typically located in `COM3D2\BepInEx\plugins\XUnity.AutoTranslator\`. It is not one of the three libraries listed above and does not require migration according to this page.
 <br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
 
 # Migrate from LBWtranslation/LBWmodifier
 
@@ -62,7 +100,7 @@ For most users, using Python scripts can be daunting. If you don't know how, cop
 
 The file locations are not fixed. It is recommended to search for the filenames directly and delete `LBWmodifier.dll`, `LBWmodifier-Transator D3V.dll`, and `LBWmodifier-Transator D4V.dll`.
 
-Delete the `COM3D2\BepInEx\plugins\LBWmodifier.dll"` file; this is where the plugin DLL is located.
+Delete the `COM3D2\BepInEx\plugins\LBWmodifier.dll` file; this is where the plugin DLL is located.
 
 Delete the `COM3D2\BepInEx\plugins\Translator D3V` folder; this is where the plugin DLL is located.
 

@@ -13,9 +13,6 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 /// </summary>
 public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 {
-    // 当前显示的文本
-    private string _currentText = "";
-
     // 销毁幂等保护
     private bool _isDestroyed;
 
@@ -39,9 +36,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 
     // 字幕配置
     protected SubtitleConfig Config;
-
-    // 当前动画协程
-    protected Coroutine CurrentAnimation;
 
     // 字幕描边组件
     protected Outline OutlineComponents;
@@ -119,10 +113,10 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     public virtual void ShowSubtitle(string text, string speakerName, float duration)
     {
         // 如果有正在进行的动画，停止它
-        if (CurrentAnimation is not null)
+        if (AnimationCoroutine is not null)
         {
-            StopCoroutine(CurrentAnimation);
-            CurrentAnimation = null;
+            StopCoroutine(AnimationCoroutine);
+            AnimationCoroutine = null;
         }
 
         if (string.IsNullOrEmpty(SpeakerName))
@@ -145,7 +139,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         if (Config.EnableAnimation)
         {
             // 开始淡入动画
-            CurrentAnimation = StartCoroutine(FadeIn());
+            AnimationCoroutine = StartCoroutine(FadeIn());
 
             // 如果设置了持续时间，则在指定时间后淡出
             if (duration > 0) StartCoroutine(AutoHide(duration));
@@ -170,23 +164,29 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     {
         if (skipAnimation)
         {
+            SetAlpha(0f);
             SetActive(false);
             LogManager.Debug($"Hiding subtitle {gameObject.name}");
             return;
         }
 
         // 如果有正在进行的动画，停止它
-        if (CurrentAnimation != null)
+        if (AnimationCoroutine != null)
         {
-            StopCoroutine(CurrentAnimation);
-            CurrentAnimation = null;
+            StopCoroutine(AnimationCoroutine);
+            AnimationCoroutine = null;
         }
 
         // 如果启用了动画效果
         if (Config.EnableAnimation && gameObject.activeSelf)
-            CurrentAnimation = StartCoroutine(FadeOut());
+        {
+            AnimationCoroutine = StartCoroutine(FadeOut());
+        }
         else
+        {
+            SetAlpha(0f);
             SetActive(false);
+        }
 
         LogManager.Debug($"Hiding subtitle {gameObject.name}");
     }
@@ -398,7 +398,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             displayText = $"<color=#{speakerColor}>{_translatedSpeakerName}</color>: {text}";
         }
 
-        _currentText = text;
         TextComponent.text = displayText;
     }
 
@@ -498,18 +497,29 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// </summary>
     protected virtual IEnumerator FadeIn()
     {
-        float time = 0;
+        var duration = Config != null ? Config.FadeInDuration : 0f;
+        if (duration <= 0f)
+        {
+            SetAlpha(1f);
+            AnimationCoroutine = null;
+            yield break;
+        }
 
-        while (time < Config.FadeInDuration)
+        var time = 0f;
+        var start = 0f;
+        if (CanvasGroupComponents is not null)
+            start = Mathf.Clamp01(CanvasGroupComponents.alpha);
+
+        while (time < duration)
         {
             time += Time.deltaTime;
-            var alpha = Mathf.Clamp01(time / Config.FadeInDuration);
-            SetAlpha(alpha);
+            var t = Mathf.Clamp01(time / duration);
+            SetAlpha(Mathf.Lerp(start, 1f, t));
             yield return null;
         }
 
-        SetAlpha(1);
-        CurrentAnimation = null;
+        SetAlpha(1f);
+        AnimationCoroutine = null;
     }
 
     /// <summary>
@@ -517,19 +527,31 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// </summary>
     protected virtual IEnumerator FadeOut()
     {
-        float time = 0;
+        var duration = Config != null ? Config.FadeOutDuration : 0f;
+        if (duration <= 0f)
+        {
+            SetAlpha(0f);
+            SetActive(false);
+            AnimationCoroutine = null;
+            yield break;
+        }
 
-        while (time < Config.FadeOutDuration)
+        var time = 0f;
+        var start = 1f;
+        if (CanvasGroupComponents is not null)
+            start = Mathf.Clamp01(CanvasGroupComponents.alpha);
+
+        while (time < duration)
         {
             time += Time.deltaTime;
-            var alpha = 1 - Mathf.Clamp01(time / Config.FadeOutDuration);
-            SetAlpha(alpha);
+            var t = Mathf.Clamp01(time / duration);
+            SetAlpha(Mathf.Lerp(start, 0f, t));
             yield return null;
         }
 
-        SetAlpha(0);
+        SetAlpha(0f);
         SetActive(false);
-        CurrentAnimation = null;
+        AnimationCoroutine = null;
     }
 
     /// <summary>

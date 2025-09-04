@@ -13,7 +13,7 @@
         <!--  SharpZipLib 0.86.0 has 2 known severity vulnerability, but we have no choice, and this lib is already in the game ！-->
         <!--  However, these two vulnerabilities seem to occur only during decompression. We only decompress to memory because the impact may be smaller. ！-->
         <!--  And we add zip path security check when decompressing, so we should be fine -->
-        <PackageReference Include="SharpZipLib" Version="0.86.0"/>
+        <PackageReference Include="SharpZipLib" IncludeAssets="compile" Version="0.86.0"/>
       </ItemGroup>
     </When>
 
@@ -31,7 +31,7 @@
         <!-- However, this will introduce some inconsistencies, mainly when the CSV file is not completely correct -->
         <PackageReference Include="CsvHelper" Version="33.1.0"/>
         <!-- What?! COM3D2.5 still use this version -->
-        <PackageReference Include="SharpZipLib" Version="0.86.0"/>
+        <PackageReference Include="SharpZipLib" IncludeAssets="compile" Version="0.86.0"/>
       </ItemGroup>
     </When>
   </Choose>

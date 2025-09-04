@@ -11,7 +11,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Utils;
 namespace COM3D2.JustAnotherTranslator.Plugin;
 
 [BepInPlugin("Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin",
-    "COM3D2.JustAnotherTranslator.Plugin", "0.0.3")]
+    "COM3D2.JustAnotherTranslator.Plugin", "0.0.4")]
 public class JustAnotherTranslator : BaseUnityPlugin
 {
     // To discover this plugin

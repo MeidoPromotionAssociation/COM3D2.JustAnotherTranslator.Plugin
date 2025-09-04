@@ -161,7 +161,7 @@ public static class UITranslateManager
         // 进度变化超过 10% 时输出日志
         if ((int)(progress * 100) % 10 == 0)
             LogManager.Info(
-                $"Translation loading progress: {progress:P0} ({filesProcessed}/{totalFiles})/翻译加载进度: {progress:P0} ({filesProcessed}/{totalFiles})");
+                $"UI Translation loading progress: {progress:P0} ({filesProcessed}/{totalFiles})/UI 翻译加载进度: {progress:P0} ({filesProcessed}/{totalFiles})");
     }
 
 

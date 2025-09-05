@@ -68,4 +68,35 @@ public static class UITextTranslatePatch
 
         return true;
     }
+
+    /// <summary>
+    /// 强制将 wf.Utility.SetLocalizeTerm 的 forceApply 设为 true
+    /// 部分组件是通过此方法来获取翻译的
+    /// 然而原方法有一个条件判断 (Product.supportMultiLanguage || forceApply) && ……
+    /// 因此我们直接让 forceApply 为 true 通过此条件
+    /// </summary>
+    /// <param name="localize"></param>
+    /// <param name="term"></param>
+    /// <param name="forceApply"></param>
+    /// <returns></returns>
+    [HarmonyPatch(typeof(wf.Utility), "SetLocalizeTerm",
+        typeof(Localize),
+        typeof(string),
+        typeof(bool))]
+    [HarmonyPrefix]
+    public static bool WF_Utility_SetLocalizeTerm_Prefix(Localize localize, string term,
+        ref bool forceApply)
+    {
+        try
+        {
+            forceApply = true;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"WF_Utility_SetLocalizeTerm_Prefix unknown error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+        }
+
+        return true;
+    }
 }

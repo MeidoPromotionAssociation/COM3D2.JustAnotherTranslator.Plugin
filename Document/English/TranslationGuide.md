@@ -217,41 +217,45 @@ For compatibility, regex translations are ported from CM3D2.YATranslator. You ca
 **Advanced Feature**: If the content of a regex capture group (e.g., the value of `${name}`) also exists in a regular translation, it will be translated first before being substituted into the final translated template.
 
 **Example**:
-```
-; Basic example
-$^Hello, (?<name>\w+)!$	Hello, ${name}!
-; Assume there is also a regular translation in the file:
-John	约翰 (John)
-; When the game text is "Hello, John!", the plugin first matches the regex, capturing name="John".
-; The plugin then finds that "John" has a regular translation "约翰" and performs the replacement.
-; The final result is "你好, 约翰!" (Hello, 约翰!)
-```
+
+`$^Hello, (?<name>\w+)!$	你好, ${name}!`
+
+Suppose the translation file also contains a regular translation:
+
+`John	约翰`
+
+When the game text is `Hello, John!`, the plugin first matches the regular expression and captures `name="John"`.
+
+The plugin then discovers that `John` has a regular translation `约翰` and replaces it with the original.
+
+The final result is `你好, 约翰!`
+
 
 **More Regex Examples**:
 
 1.  **Matching and translating text with numbers**
     -   **Target**: Translate `You have 5 apples.`
-    -   **Rule**: `$^You have (\d+) apples\.$	You have ${1} apples.`
+    -   **Rule**: `$^You have (\d+) apples\.$	你拥有 ${1} 个苹果。`
     -   `(\d+)` captures one or more digits, which are inserted into the translation via `${1}`.
 
 2.  **Reordering text elements**
-    -   **Target**: Translate `(Event) The story begins.` to `【Event】The story begins.`
-    -   **Rule**: `^\(Event\) (?<content>.+)$	【Event】${content}`
-    -   **With regular translation**: If there is also a regular translation `The story begins.    故事开始了。 (The story begins.)`, the final result will be `【活动】故事开始了。` (【Event】The story has begun.)
+    -   **Target**: Translate `(Event) The story begins.` to `【活动】故事开始了。`
+    -   **Rule**: `^\(Event\) (?<content>.+)$	【活动】${content}`
+    -   **With regular translation**: If there is also a regular translation `The story begins.    故事开始了。`, the final result will be `【活动】故事开始了。` (【Event】The story has begun.)
 
 3.  **Handling fixed prefixes and dynamic suffixes**
     -   **Target**: Translate all item names starting with `Item_`, like `Item_Potion`.
     -   **Rule**: `^Item_(?<id>.+)$	${id}`
-    -   **With regular translation**: Assuming there is `Potion	Recovery Potion`, `Item_Potion` will be translated to `Recovery Potion`. This technique is often used to handle cases where internal game IDs are separate from display names.
+    -   **With regular translation**: Assuming there is `Potion	恢复药水`, `Item_Potion` will be translated to `恢复药水`. This technique is often used to handle cases where internal game IDs are separate from display names.
 
 4.  **Using multiple capture groups**
-    -   **Target**: Translate `Character: Alice, Level: 99` to `Character: Alice (Level: 99)`
-    -   **Rule**: `^Character: (?<name>.+), Level: (?<level>\d+)$\tCharacter: ${name} (Level: ${level})`
-    -   **With regular translation**: If there is also a regular translation `Alice\t爱丽丝 (Alice)`, the final result will be `角色：爱丽丝 (等级: 99)` (Character: 爱丽丝 (Level: 99)). This is very useful for formatting complex strings.
+    -   **Target**: Translate `Character: Alice, Level: 99` to `角色：爱丽丝 (等级: 99)`
+    -   **Rule**: `^Character: (?<name>.+), Level: (?<level>\d+)	$Character: ${name} (Level: ${level})`
+    -   **With regular translation**: If there is also a regular translation `Alice	爱丽丝`, the final result will be `角色：爱丽丝 (等级: 99)` (Character: 爱丽丝 (Level: 99)). This is very useful for formatting complex strings.
 
 ### 5. Multi-language Strings
 
-Sometimes, especially in other language versions of the game, script text is written in the format `这是日文原文<e>This is English text<sc>这是简体中文文本`.
+Sometimes, especially in other language versions of the game, a script text is written in the format `这是日文原文<e>This is English text<sc>这是简体中文文本`.
 
 Text containing tags like `<e>` is actually a piece of official text containing multiple languages.
 

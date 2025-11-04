@@ -41,6 +41,14 @@ public static class TextTranslateManger
         Path.Combine(JustAnotherTranslator.TextDumpPath,
             DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt");
 
+    /// 空白字符
+    public static readonly char[] WhitespaceChars = new char[]
+    {
+        '\t', '\n', '\v', '\f', '\r', ' ', '\u0085', '\u00a0', '\u1680', '\u2000',
+        '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200a',
+        '\u200b', '\u2028', '\u2029', '\u3000', '\ufeff'
+    };
+
     /// 加载状态
     private static bool IsLoading { get; set; }
 
@@ -220,6 +228,16 @@ public static class TextTranslateManger
         {
             LogManager.Debug($"Translated text (to upper, replace and trimmed): {lowerValue}");
             translated = XUATInterop.MarkTranslated(lowerValue, skipMark);
+            return true;
+        }
+
+        // 兼容其他插件的替换方式
+        if (_translationDict.TryGetValue(
+                original.Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(WhitespaceChars).ToUpper(),
+                out var lowerValue2))
+        {
+            LogManager.Debug($"Translated text (to upper, replace and trimmed WhitespaceChars): {lowerValue2}");
+            translated = XUATInterop.MarkTranslated(lowerValue2, skipMark);
             return true;
         }
 

@@ -30,8 +30,8 @@ public static class UITextTranslatePatch
     /// <param name="__result"></param>
     /// <returns></returns>
     [HarmonyPatch(typeof(LocalizationManager), "TryGetTranslation")]
-    [HarmonyPrefix]
-    public static bool LocalizationManager_TryGetTranslation_Prefix(
+    [HarmonyPostfix]
+    public static void LocalizationManager_TryGetTranslation_Postfix(
         string Term,
         ref string Translation,
         bool FixForRTL,
@@ -44,28 +44,30 @@ public static class UITextTranslatePatch
     {
         try
         {
-            LogManager.Debug($"LocalizationManager_TryGetTranslation_Prefix Term: {Term}");
+            // 如果原方法已经找到翻译，尝试替换
+            if (__result)
+            {
+                var customTranslation = UITranslateManager.HandleTextTermTranslation(Term);
 
-            var result = UITranslateManager.HandleTextTermTranslation(Term);
+                // 如果有自定义翻译，替换它
+                if (!string.IsNullOrEmpty(customTranslation))
+                {
+                    // 应用参数
+                    if (applyParameters)
+                        LocalizationManager.ApplyLocalizationParams(ref customTranslation, localParametersRoot);
 
-            // 空内容则让原函数处理
-            if (string.IsNullOrEmpty(result)) return true;
+                    // 应用 RTL 修正（如果需要）
+                    if (LocalizationManager.IsRight2Left && FixForRTL)
+                        customTranslation = LocalizationManager.ApplyRTLfix(customTranslation, maxLineLengthForRTL, ignoreRTLnumbers);
 
-            // 参数替换
-            if (applyParameters)
-                LocalizationManager.ApplyLocalizationParams(ref result, localParametersRoot);
-
-            Translation = result;
-            __result = true;
-            return false;
+                    Translation = customTranslation;
+                }
+            }
         }
         catch (Exception e)
         {
-            LogManager.Error(
-                $"LocalizationManager_TryGetTranslation_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+            LogManager.Error($"LocalizationManager_TryGetTranslation_Postfix error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
         }
-
-        return true;
     }
 
     /// <summary>

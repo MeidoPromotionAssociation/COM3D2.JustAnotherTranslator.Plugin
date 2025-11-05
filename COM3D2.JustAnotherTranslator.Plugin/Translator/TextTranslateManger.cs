@@ -42,7 +42,7 @@ public static class TextTranslateManger
             DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt");
 
     /// 空白字符
-    public static readonly char[] WhitespaceChars = new char[]
+    public static readonly char[] WhitespaceChars = new[]
     {
         '\t', '\n', '\v', '\f', '\r', ' ', '\u0085', '\u00a0', '\u1680', '\u2000',
         '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009',
@@ -253,12 +253,17 @@ public static class TextTranslateManger
             var template = keyValuePair.Value;
 
             var match = regex.Match(original);
-            if (!match.Success && normalizedB != original)
+            // 避免把空匹配当作成功（有些正则可匹配空串，如 ".*"、".*?" 等）
+            var hasValidMatch = match.Success && match.Length > 0;
+            if (!hasValidMatch && normalizedB != original && normalizedB.Length > 0)
             {
-                // 尝试用 normalizedB 再匹配一次
+                // 尝试用 normalizedB 再匹配一次（仅当 normalizedB 非空）
                 match = regex.Match(normalizedB);
-                if (!match.Success) continue;
+                hasValidMatch = match.Success && match.Length > 0;
             }
+
+            if (!hasValidMatch)
+                continue;
 
             LogManager.Debug($"Regex matched with {match.Groups.Count} groups");
             foreach (var groupName in regex.GetGroupNames())

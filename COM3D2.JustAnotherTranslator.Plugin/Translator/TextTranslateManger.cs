@@ -45,7 +45,8 @@ public static class TextTranslateManger
     public static readonly char[] WhitespaceChars = new char[]
     {
         '\t', '\n', '\v', '\f', '\r', ' ', '\u0085', '\u00a0', '\u1680', '\u2000',
-        '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009', '\u200a',
+        '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009',
+        '\u200a',
         '\u200b', '\u2028', '\u2029', '\u3000', '\ufeff'
     };
 
@@ -222,9 +223,10 @@ public static class TextTranslateManger
         // KISS did something in cm3d2.dll
         // it seems [HF] will become [hf]
         // 尝试去除换行符和空格后进行翻译，现有翻译的原文均无换行符
-        if (_translationDict.TryGetValue(
-                original.ToUpper().Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(),
-                out var lowerValue))
+        var normalizedA = original.ToUpper().Replace("\r", "").Replace("\n", "").Replace("\t", "")
+            .Trim();
+
+        if (_translationDict.TryGetValue(normalizedA, out var lowerValue))
         {
             LogManager.Debug($"Translated text (to upper, replace and trimmed): {lowerValue}");
             translated = XUATInterop.MarkTranslated(lowerValue, skipMark);
@@ -232,11 +234,13 @@ public static class TextTranslateManger
         }
 
         // 兼容其他插件的替换方式
-        if (_translationDict.TryGetValue(
-                original.Replace("\r", "").Replace("\n", "").Replace("\t", "").Trim(WhitespaceChars).ToUpper(),
-                out var lowerValue2))
+        var normalizedB = original.Replace("\r", "").Replace("\n", "").Replace("\t", "")
+            .Trim(WhitespaceChars).ToUpper();
+
+        if (_translationDict.TryGetValue(normalizedB, out var lowerValue2))
         {
-            LogManager.Debug($"Translated text (to upper, replace and trimmed WhitespaceChars): {lowerValue2}");
+            LogManager.Debug(
+                $"Translated text (to upper, replace and trimmed WhitespaceChars): {lowerValue2}");
             translated = XUATInterop.MarkTranslated(lowerValue2, skipMark);
             return true;
         }
@@ -249,8 +253,12 @@ public static class TextTranslateManger
             var template = keyValuePair.Value;
 
             var match = regex.Match(original);
-            if (!match.Success)
-                continue;
+            if (!match.Success && normalizedB != original)
+            {
+                // 尝试用 normalizedB 再匹配一次
+                match = regex.Match(normalizedB);
+                if (!match.Success) continue;
+            }
 
             LogManager.Debug($"Regex matched with {match.Groups.Count} groups");
             foreach (var groupName in regex.GetGroupNames())

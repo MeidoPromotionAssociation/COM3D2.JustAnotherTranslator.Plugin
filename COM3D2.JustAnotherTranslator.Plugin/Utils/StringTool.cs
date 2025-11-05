@@ -6,6 +6,30 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 public static class StringTool
 {
+    /// 空白字符
+    public static readonly char[] WhitespaceChars = new[]
+    {
+        '\t', '\n', '\v', '\f', '\r', ' ', '\u0085', '\u00a0', '\u1680', '\u2000',
+        '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009',
+        '\u200a',
+        '\u200b', '\u2028', '\u2029', '\u3000', '\ufeff'
+    };
+
+
+    /// <summary>
+    ///     规范化字符串
+    ///     1.将 \r \n \t 替换为空
+    ///     2.修剪 WhitespaceChars
+    ///     3.转大写
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public static string NormalizeText(string text)
+    {
+        return text.Replace("\r", "").Replace("\n", "")
+            .Replace("\t", "").Trim(WhitespaceChars).ToUpper();
+    }
+
     /// <summary>
     ///     检查字符串是否为数字（包含小数点）
     ///     应当比直接 decimal.TryParse 和正则表达式更快

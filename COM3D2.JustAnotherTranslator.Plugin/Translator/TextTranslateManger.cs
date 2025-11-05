@@ -36,19 +36,17 @@ public static class TextTranslateManger
     /// 导出文本缓冲区
     private static readonly List<string> DumpBuffer = new();
 
+    /// 导出规范化文本缓冲区
+    private static readonly List<string> DumpBufferNormalized = new();
+
     /// 导出目标路径
     private static readonly string DumpFilePath =
         Path.Combine(JustAnotherTranslator.TextDumpPath,
-            DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + ".txt");
+            DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + "_untranslate.txt");
 
-    /// 空白字符
-    public static readonly char[] WhitespaceChars = new[]
-    {
-        '\t', '\n', '\v', '\f', '\r', ' ', '\u0085', '\u00a0', '\u1680', '\u2000',
-        '\u2001', '\u2002', '\u2003', '\u2004', '\u2005', '\u2006', '\u2007', '\u2008', '\u2009',
-        '\u200a',
-        '\u200b', '\u2028', '\u2029', '\u3000', '\ufeff'
-    };
+    private static readonly string DumpFilePathNormalized =
+        Path.Combine(JustAnotherTranslator.TextDumpPath,
+            DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + "_untranslate_normalized.txt");
 
     /// 加载状态
     private static bool IsLoading { get; set; }
@@ -223,21 +221,9 @@ public static class TextTranslateManger
         // KISS did something in cm3d2.dll
         // it seems [HF] will become [hf]
         // 尝试去除换行符和空格后进行翻译，现有翻译的原文均无换行符
-        var normalizedA = original.ToUpper().Replace("\r", "").Replace("\n", "").Replace("\t", "")
-            .Trim();
+        var normalizedOriginal = StringTool.NormalizeText(original);
 
-        if (_translationDict.TryGetValue(normalizedA, out var lowerValue))
-        {
-            LogManager.Debug($"Translated text (to upper, replace and trimmed): {lowerValue}");
-            translated = XUATInterop.MarkTranslated(lowerValue, skipMark);
-            return true;
-        }
-
-        // 兼容其他插件的替换方式
-        var normalizedB = original.Replace("\r", "").Replace("\n", "").Replace("\t", "")
-            .Trim(WhitespaceChars).ToUpper();
-
-        if (_translationDict.TryGetValue(normalizedB, out var lowerValue2))
+        if (_translationDict.TryGetValue(normalizedOriginal, out var lowerValue2))
         {
             LogManager.Debug(
                 $"Translated text (to upper, replace and trimmed WhitespaceChars): {lowerValue2}");
@@ -255,10 +241,10 @@ public static class TextTranslateManger
             var match = regex.Match(original);
             // 避免把空匹配当作成功（有些正则可匹配空串，如 ".*"、".*?" 等）
             var hasValidMatch = match.Success && match.Length > 0;
-            if (!hasValidMatch && normalizedB != original && normalizedB.Length > 0)
+            if (!hasValidMatch && normalizedOriginal != original && normalizedOriginal.Length > 0)
             {
-                // 尝试用 normalizedB 再匹配一次（仅当 normalizedB 非空）
-                match = regex.Match(normalizedB);
+                // 尝试用 normalized 再匹配一次（仅当 normalized 非空）
+                match = regex.Match(normalizedOriginal);
                 hasValidMatch = match.Success && match.Length > 0;
             }
 
@@ -320,6 +306,7 @@ public static class TextTranslateManger
         {
             LogManager.Debug($"Text not translated, dumping: {text}");
             DumpBuffer.Add(text);
+            DumpBufferNormalized.Add(StringTool.NormalizeText(text));
 
             if (DumpBuffer.Count >= JustAnotherTranslator.TextDumpThreshold.Value)
                 FlushDumpBuffer();
@@ -343,6 +330,20 @@ public static class TextTranslateManger
             }
 
             DumpBuffer.Clear();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to dump text to file/写入文件失败: {e.Message}");
+        }
+
+        try
+        {
+            using (var streamWriter = new StreamWriter(DumpFilePathNormalized, true))
+            {
+                foreach (var line in DumpBufferNormalized) streamWriter.WriteLine(line);
+            }
+
+            DumpBufferNormalized.Clear();
         }
         catch (Exception e)
         {

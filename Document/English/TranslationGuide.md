@@ -813,7 +813,9 @@ JAT supports exporting untranslated text, along with unreplaced textures and spr
 
 ## Output Location
 
-- Text: `BepInEx/JustAnotherTranslator/Dump/Text/yyyy-MM-dd-HH-mm.txt` (year-month-day-hour-minute.txt at game startup)
+- Text: `BepInEx/JustAnotherTranslator/Dump/Text/`
+  - `yyyy-MM-dd-HH-mm_untranslate.txt` (year-month-day-hour-minute.txt at game startup)
+  - `yyyy-MM-dd-HH-mm_untranslate_normalized.txt` (Text with \r, \n, \t, and whitespace characters removed and converted to uppercase can be used directly to create translation files)
 - Textures: `BepInEx/JustAnotherTranslator/Dump/Texture/*.png`
 - Sprites: `BepInEx/JustAnotherTranslator/Dump/Sprite/*.png`
 

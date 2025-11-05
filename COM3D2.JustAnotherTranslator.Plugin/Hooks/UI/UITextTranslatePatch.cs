@@ -4,6 +4,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using I2.Loc;
 using UnityEngine;
+using wf;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 
@@ -52,9 +53,7 @@ public static class UITextTranslatePatch
 
             // 参数替换
             if (applyParameters)
-            {
                 LocalizationManager.ApplyLocalizationParams(ref result, localParametersRoot);
-            }
 
             Translation = result;
             __result = true;
@@ -70,16 +69,16 @@ public static class UITextTranslatePatch
     }
 
     /// <summary>
-    /// 强制将 wf.Utility.SetLocalizeTerm 的 forceApply 设为 true
-    /// 部分组件是通过此方法来获取翻译的
-    /// 然而原方法有一个条件判断 (Product.supportMultiLanguage || forceApply) && ……
-    /// 因此我们直接让 forceApply 为 true 通过此条件
+    ///     强制将 wf.Utility.SetLocalizeTerm 的 forceApply 设为 true
+    ///     部分组件是通过此方法来获取翻译的
+    ///     然而原方法有一个条件判断 (Product.supportMultiLanguage || forceApply) && ……
+    ///     因此我们直接让 forceApply 为 true 通过此条件
     /// </summary>
     /// <param name="localize"></param>
     /// <param name="term"></param>
     /// <param name="forceApply"></param>
     /// <returns></returns>
-    [HarmonyPatch(typeof(wf.Utility), "SetLocalizeTerm",
+    [HarmonyPatch(typeof(Utility), "SetLocalizeTerm",
         typeof(Localize),
         typeof(string),
         typeof(bool))]

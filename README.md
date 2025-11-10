@@ -4,7 +4,7 @@
 
 # English
 
-## COM3D2.JustAnotherTranslator.Plugin
+# COM3D2.JustAnotherTranslator.Plugin
 
 Just Another COM3D2 Translator plugin, or JAT for short.
 
@@ -211,7 +211,7 @@ There are 4 main folders in the translation folder of the corresponding language
 
 # 简体中文
 
-## COM3D2.JustAnotherTranslator.Plugin
+# COM3D2.JustAnotherTranslator.Plugin
 
 只是另一个 COM3D2 翻译插件，JustAnotherTranslator，简称 JAT。
 
@@ -416,7 +416,46 @@ COM3D2\BepInEx\JustAnotherTranslator\<你设置的目标语言>
 <br>
 <br>
 
-## Disclaimer
+# KISS Rule
+
+*This Project is not owned or endorsed by KISS.
+
+*MODs are not supported by KISS.
+
+*KISS cannot be held responsible for any problems that may arise when using MODs.
+
+*If any problem occurs, please do not contact KISS.
+
+```
+KISS 規約
+
+・原作がMOD作成者にある場合、又は、原作が「カスタムメイド3D2」のみに存在する内部データの場合、又は、原作が「カスタムメイド3D2」と「カスタムオーダーメイド3D2」の両方に存在する内部データの場合。
+※MODはKISSサポート対象外です。
+※MODを利用するに当たり、問題が発生してもKISSは一切の責任を負いかねます。
+※「カスタムメイド3D2」か「カスタムオーダーメイド3D2」か「CR EditSystem」を購入されている方のみが利用できます。
+※「カスタムメイド3D2」か「カスタムオーダーメイド3D2」か「CR EditSystem」上で表示する目的以外の利用は禁止します。
+※これらの事項は https://kisskiss.tv/kiss/diary.php?no=558 を優先します。
+
+・原作が「カスタムオーダーメイド3D2(GP01含む)」の内部データのみにある場合。
+※MODはKISSサポート対象外です。
+※MODを利用するに当たり、問題が発生してもKISSは一切の責任を負いかねます。
+※「カスタムオーダーメイド3D2」か「CR EditSystem」をを購入されている方のみが利用できます。
+※「カスタムオーダーメイド3D2」か「CR EditSystem」上で表示する目的以外の利用は禁止します。
+※「カスタムメイド3D2」上では利用しないで下さい。
+※これらの事項は https://kisskiss.tv/kiss/diary.php?no=558 を優先します。
+
+・原作が「CR EditSystem」の内部データのみにある場合。
+※MODはKISSサポート対象外です。
+※MODを利用するに当たり、問題が発生してもKISSは一切の責任を負いかねます。
+※「CR EditSystem」を購入されている方のみが利用できます。
+※「CR EditSystem」上で表示する目的以外の利用は禁止します。
+※「カスタムメイド3D2」「カスタムオーダーメイド3D2」上では利用しないで下さい。
+※これらの事項は https://kisskiss.tv/kiss/diary.php?no=558 を優先します。
+```
+
+<br>
+
+# Disclaimer
 
 By downloading this software, you agree to read, accept and abide by this Disclaimer, this is a developer protection
 measure and we apologize for any inconvenience this may cause.
@@ -643,7 +682,7 @@ In case of any discrepancy between the translated versions, the Simplified Chine
 <br>
 <br>
 
-## Credits
+# Credits
 
 Part of the code is from [https://github.com/Pain-Brioche/COM3D2.i18nEx](https://github.com/Pain-Brioche/COM3D2.i18nEx)
 under the MIT license

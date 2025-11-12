@@ -284,7 +284,7 @@ Once again, I believe this exposes the flaw of i18nEx being primarily aimed at E
 
 JAT's UI translation module aims to provide a flexible, precise, and game-update-resistant solution for UI translation. It is divided into two parts: UI text translation and UI image translation.
 
-The official Chinese and English versions of COM3D2 use the Unity plugin [I2.Localization](https://assetstore.unity.com/packages/tools/localization/i2-localization-14884?srsltid=AfmBOorKpDQZLJZeLg1wD6AiS0o4UnFXVaJ2doFDtCaI-EI2Fq7e-fM5) 
+The official Chinese and English versions of COM3D2 use the Unity plugin [I2.Localization](https://assetstore.unity.com/packages/tools/localization/i2-localization-14884) 
 to manage localization content. Since all versions share the same base code, the Japanese version we play also includes this plugin.
 
 JAT's UI translation system works by hooking into the low-level functions where this plugin interacts with the official code. When the game requests a piece of UI text or an image, JAT intercepts this request, looks up the corresponding content in its own translation database, and returns the translated result.

@@ -4,6 +4,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using I2.Loc;
 using UnityEngine;
+using wf;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 
@@ -29,8 +30,8 @@ public static class UITextTranslatePatch
     /// <param name="__result"></param>
     /// <returns></returns>
     [HarmonyPatch(typeof(LocalizationManager), "TryGetTranslation")]
-    [HarmonyPrefix]
-    public static bool LocalizationManager_TryGetTranslation_Prefix(
+    [HarmonyPostfix]
+    public static void LocalizationManager_TryGetTranslation_Postfix(
         string Term,
         ref string Translation,
         bool FixForRTL,
@@ -43,43 +44,43 @@ public static class UITextTranslatePatch
     {
         try
         {
-            LogManager.Debug($"LocalizationManager_TryGetTranslation_Prefix Term: {Term}");
-
-            var result = UITranslateManager.HandleTextTermTranslation(Term);
-
-            // 空内容则让原函数处理
-            if (string.IsNullOrEmpty(result)) return true;
-
-            // 参数替换
-            if (applyParameters)
+            // 如果原方法已经找到翻译，尝试替换
+            if (__result)
             {
-                LocalizationManager.ApplyLocalizationParams(ref result, localParametersRoot);
-            }
+                var customTranslation = UITranslateManager.HandleTextTermTranslation(Term);
 
-            Translation = result;
-            __result = true;
-            return false;
+                // 如果有自定义翻译，替换它
+                if (!string.IsNullOrEmpty(customTranslation))
+                {
+                    // 应用参数
+                    if (applyParameters)
+                        LocalizationManager.ApplyLocalizationParams(ref customTranslation, localParametersRoot);
+
+                    // 应用 RTL 修正（如果需要）
+                    if (LocalizationManager.IsRight2Left && FixForRTL)
+                        customTranslation = LocalizationManager.ApplyRTLfix(customTranslation, maxLineLengthForRTL, ignoreRTLnumbers);
+
+                    Translation = customTranslation;
+                }
+            }
         }
         catch (Exception e)
         {
-            LogManager.Error(
-                $"LocalizationManager_TryGetTranslation_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+            LogManager.Error($"LocalizationManager_TryGetTranslation_Postfix error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
         }
-
-        return true;
     }
 
     /// <summary>
-    /// 强制将 wf.Utility.SetLocalizeTerm 的 forceApply 设为 true
-    /// 部分组件是通过此方法来获取翻译的
-    /// 然而原方法有一个条件判断 (Product.supportMultiLanguage || forceApply) && ……
-    /// 因此我们直接让 forceApply 为 true 通过此条件
+    ///     强制将 wf.Utility.SetLocalizeTerm 的 forceApply 设为 true
+    ///     部分组件是通过此方法来获取翻译的
+    ///     然而原方法有一个条件判断 (Product.supportMultiLanguage || forceApply) && ……
+    ///     因此我们直接让 forceApply 为 true 通过此条件
     /// </summary>
     /// <param name="localize"></param>
     /// <param name="term"></param>
     /// <param name="forceApply"></param>
     /// <returns></returns>
-    [HarmonyPatch(typeof(wf.Utility), "SetLocalizeTerm",
+    [HarmonyPatch(typeof(Utility), "SetLocalizeTerm",
         typeof(Localize),
         typeof(string),
         typeof(bool))]

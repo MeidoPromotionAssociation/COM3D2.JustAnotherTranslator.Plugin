@@ -363,6 +363,62 @@ When JAT translates:
 
 ### 4. Translation Guide
 
+The game's main UI includes both pre-made buttons with text and blank buttons with text.
+
+This is a partial translation extracted from the official documentation. You can see that most of the `ボタン文字(Button Text)` is empty.
+
+However, the `ボタン画像（Button Image）` below are present, indicating that these buttons use icons.
+
+<details>
+
+<summary>Extracted translation</summary>
+
+| Term                         | Original                | Translation                 |
+|------------------------------|-------------------------|-----------------------------|
+| SceneDaily/ボタン文字/LOAD        |                         |                             |
+| SceneDaily/ボタン文字/NPCエディット    |                         |                             |
+| SceneDaily/ボタン文字/SAVE        |                         |                             |
+| SceneDaily/ボタン文字/イベント        |                         |                             |
+| SceneDaily/ボタン文字/カジノ         |                         |                             |
+| SceneDaily/ボタン文字/カラオケ        |                         |                             |
+| SceneDaily/ボタン文字/クレジット       |                         |                             |
+| SceneDaily/ボタン文字/ショップ        |                         |                             |
+| SceneDaily/ボタン文字/スカウト        | スカウト                    | Scout                       |
+| SceneDaily/ボタン文字/スケジュール      |                         |                             |
+| SceneDaily/ボタン文字/スタジオモード     |                         |                             |
+| SceneDaily/ボタン文字/ダンス         |                         |                             |
+| SceneDaily/ボタン文字/トロフィー       |                         |                             |
+| SceneDaily/ボタン文字/プライベートモード設定 | プライベートモード設定             | Private Mode Settings       |
+| SceneDaily/ボタン文字/マイルームカスタム   |                         |                             |
+| SceneDaily/ボタン文字/メイド管理       |                         |                             |
+| SceneDaily/ボタン文字/回想モード       |                         |                             |
+| SceneDaily/ボタン文字/執務室モード      |                         |                             |
+| SceneDaily/ボタン文字/施設管理        |                         |                             |
+| SceneDaily/ボタン文字/男エディット      |                         |                             |
+| SceneDaily/ボタン文字/経営切替        |                         |                             |
+| SceneDaily/ボタン画像/LOAD        | common_buttom_load      |                             |
+| SceneDaily/ボタン画像/NPCエディット    | common_buttom_npcedit   |                             |
+| SceneDaily/ボタン画像/SAVE        | common_buttom_save      |                             |
+| SceneDaily/ボタン画像/イベント        | common_buttom_event     |                             |
+| SceneDaily/ボタン画像/カジノ         | common_buttom_casino    |                             |
+| SceneDaily/ボタン画像/カラオケ        | common_buttom_karaoke   |                             |
+| SceneDaily/ボタン画像/クレジット       | common_buttom_credit    |                             |
+| SceneDaily/ボタン画像/ショップ        | common_buttom_shop      |                             |
+| SceneDaily/ボタン画像/スケジュール      | common_buttom_schedule  |                             |
+| SceneDaily/ボタン画像/スタジオモード     | common_buttom_studio    |                             |
+| SceneDaily/ボタン画像/ダンス         | common_buttom_dance     |                             |
+| SceneDaily/ボタン画像/トロフィー       | common_buttom_trophy    |                             |
+| SceneDaily/ボタン画像/マイルームカスタム   | common_buttom_myroom    |                             |
+| SceneDaily/ボタン画像/メイド管理       | common_buttom_maidkanri |                             |
+| SceneDaily/ボタン画像/回想モード       | common_buttom_kaisou    |                             |
+| SceneDaily/ボタン画像/執務室モード      | common_buttom_shitsumu  |                             |
+| SceneDaily/ボタン画像/施設管理        | common_buttom_shisetsu  |                             |
+| SceneDaily/ボタン画像/男エディット      | common_buttom_medit     |                             |
+| SceneDaily/ボタン画像/経営切替        | common_buttom_keiei     |                             |
+| SceneDaily/メイドパラメータ          | メイドパラメータ                | Maid Parameter              |
+| SceneDaily/メイド研修を実施しました      | メイド研修を実施しました            | Maid training was conducted |
+</details>
+
 Use a unpacking tool like [AssetStudio](https://github.com/Perfare/AssetStudio) to open the `COM3D2\COM3D2x64_Data` folder.
 
 <details>
@@ -409,51 +465,6 @@ Therefore, to translate this button, you have 5 options:
 JAT supports whichever option you choose.
 
 For replacement details, please refer to the next section.
-
-| Term                         | Original                | Translation |
-|------------------------------|-------------------------|-------------|
-| SceneDaily/ボタン文字/LOAD        |                         |             |
-| SceneDaily/ボタン文字/NPCエディット    |                         |             |
-| SceneDaily/ボタン文字/SAVE        |                         |             |
-| SceneDaily/ボタン文字/イベント        |                         |             |
-| SceneDaily/ボタン文字/カジノ         |                         |             |
-| SceneDaily/ボタン文字/カラオケ        |                         |             |
-| SceneDaily/ボタン文字/クレジット       |                         |             |
-| SceneDaily/ボタン文字/ショップ        |                         |             |
-| SceneDaily/ボタン文字/スカウト        | スカウト (Scout)              |             |
-| SceneDaily/ボタン文字/スケジュール      |                         |             |
-| SceneDaily/ボタン文字/スタジオモード     |                         |             |
-| SceneDaily/ボタン文字/ダンス         |                         |             |
-| SceneDaily/ボタン文字/トロフィー       |                         |             |
-| SceneDaily/ボタン文字/プライベートモード設定 | プライベートモード設定 (Private Mode Settings) |             |
-| SceneDaily/ボタン文字/マイルームカスタム   |                         |             |
-| SceneDaily/ボタン文字/メイド管理       |                         |             |
-| SceneDaily/ボタン文字/回想モード       |                         |             |
-| SceneDaily/ボタン文字/執務室モード      |                         |             |
-| SceneDaily/ボタン文字/施設管理        |                         |             |
-| SceneDaily/ボタン文字/男エディット      |                         |             |
-| SceneDaily/ボタン文字/経営切替        |                         |             |
-| SceneDaily/ボタン画像/LOAD        | common_buttom_load      |             |
-| SceneDaily/ボタン画像/NPCエディット    | common_buttom_npcedit   |             |
-| SceneDaily/ボタン画像/SAVE        | common_buttom_save      |             |
-| SceneDaily/ボタン画像/イベント        | common_buttom_event     |             |
-| SceneDaily/ボタン画像/カジノ         | common_buttom_casino    |             |
-| SceneDaily/ボタン画像/カラオケ        | common_buttom_karaoke   |             |
-| SceneDaily/ボタン画像/クレジット       | common_buttom_credit    |             |
-| SceneDaily/ボタン画像/ショップ        | common_buttom_shop      |             |
-| SceneDaily/ボタン画像/スケジュール      | common_buttom_schedule  |             |
-| SceneDaily/ボタン画像/スタジオモード     | common_buttom_studio    |             |
-| SceneDaily/ボタン画像/ダンス         | common_buttom_dance     |             |
-| SceneDaily/ボタン画像/トロフィー       | common_buttom_trophy    |             |
-| SceneDaily/ボタン画像/マイルームカスタム   | common_buttom_myroom    |             |
-| SceneDaily/ボタン画像/メイド管理       | common_buttom_maidkanri |             |
-| SceneDaily/ボタン画像/回想モード       | common_buttom_kaisou    |             |
-| SceneDaily/ボタン画像/執務室モード      | common_buttom_shitsumu  |             |
-| SceneDaily/ボタン画像/施設管理        | common_buttom_shisetsu  |             |
-| SceneDaily/ボタン画像/男エディット      | common_buttom_medit     |             |
-| SceneDaily/ボタン画像/経営切替        | common_buttom_keiei     |             |
-| SceneDaily/メイドパラメータ          | メイドパラメータ (Maid Parameter)      |             |
-| SceneDaily/メイド研修を実施しました      | メイド研修を実施しました (Maid training was conducted) |             |
 
 
 ### **How to get the Term?**

@@ -393,6 +393,7 @@ public static class UITranslateManager
     public static bool IsSpriteReplaceAvailable(string spriteName)
     {
         if (string.IsNullOrEmpty(spriteName)) return false;
+        spriteName = spriteName.Replace(XUATInterop.XuatSpicalMaker, "");
         return SpritePathCache.ContainsKey(spriteName);
     }
 
@@ -405,6 +406,7 @@ public static class UITranslateManager
     {
         try
         {
+            spriteName = spriteName.Replace(XUATInterop.XuatSpicalMaker, "");
             if (!IsSpriteReplaceAvailable(spriteName)) return null;
 
             if (!SpritePathCache.TryGetValue(spriteName, out var path)) return null;

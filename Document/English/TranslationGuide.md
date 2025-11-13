@@ -454,15 +454,16 @@ This Sprite belongs to an Atlas named AtlasSceneDaily.
 
 The game can directly get a small image (Sprite) from the Atlas by calling the sprite's name.
 
-Therefore, to translate this button, you have 5 options:
-1. Replace the entire Atlas (old method).
-2. At `SceneDaily/ボタン画像/男エディット`, replace the sprite with the name of a blank button image, and then add the translation for the corresponding text at `SceneDaily/ボタン文字/LOAD` (the i18nEx method).
-3. Replace the sprite name specified in `SceneDaily/ボタン画像/男エディット` with the name of another existing in-game sprite (some sprites have other language versions, often ending in `_en`, `_ch_s`, etc., but I do not recommend using them directly).
-4. Replace the sprite directly (JAT exclusive) by placing a replacement file in the `UI/Sprite` folder.
-5. Combine methods 2 and 4.
+Therefore, to translate this button, you have 6 options:
 
+1. Use the Texture Replacement module to replace the entire Atlas (old method).
+2. Replace the sprite image in `SceneDaily/ボタン影像/男エディット` with the name of a blank button image, and then add the translation in the corresponding text `SceneDaily/ボタン文字/男エディット` (i18nEx method)
+3. Replace the name of the sprite image specified in `SceneDaily/ボタン影像/男エディット` with a custom image name (excluding .png), and then place the replacement file with the same name in the `UI/Sprite` folder (the Sprite Replacement module can also add new images).
+4. Replace the name of the sprite image specified in `SceneDaily/ボタン影像/男エディット` with the name of another existing sprite image in the game (some sprite images exist in other languages, usually in [language version]). Endings like `_en` and `_ch_s` are acceptable, but I don't recommend using them directly. I suggest using method 5 instead.
+5. Replace the sprite image (JAT exclusive). Place the replacement file in the `UI/Sprite` folder.
+6. Combine steps 2 and 3.
 
-JAT supports whichever option you choose.
+JAT supports whichever method you choose, but we recommend method 3 because it offers the highest quality.
 
 For replacement details, please refer to the next section.
 

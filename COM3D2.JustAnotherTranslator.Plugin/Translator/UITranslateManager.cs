@@ -481,6 +481,8 @@ public static class UITranslateManager
             var pngData = GetSpriteBytes(sprite, spriteName);
             if (pngData != null)
             {
+                spriteName = spriteName.Replace(XUATInterop.XuatSpicalMaker, "");
+
                 if (Path.GetExtension(spriteName) != ".png")
                     spriteName = string.Concat(Path.GetFileName(spriteName), ".png");
 

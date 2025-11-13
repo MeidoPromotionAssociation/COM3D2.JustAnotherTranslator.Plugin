@@ -44,6 +44,8 @@ public static class UITextTranslatePatch
     {
         try
         {
+            LogManager.Debug($"LocalizationManager_TryGetTranslation_Postfix: Term {Term},Translation {Translation},__result {__result}");
+
             // 如果原方法已经找到翻译，尝试替换
             if (__result)
             {
@@ -59,6 +61,8 @@ public static class UITextTranslatePatch
                     // 应用 RTL 修正（如果需要）
                     if (LocalizationManager.IsRight2Left && FixForRTL)
                         customTranslation = LocalizationManager.ApplyRTLfix(customTranslation, maxLineLengthForRTL, ignoreRTLnumbers);
+
+                    LogManager.Debug($"LocalizationManager_TryGetTranslation_Postfix: Translation replaced {Translation} with {customTranslation}");
 
                     Translation = customTranslation;
                 }

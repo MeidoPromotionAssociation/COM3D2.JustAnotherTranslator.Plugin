@@ -91,8 +91,8 @@ public static class UITextTranslatePatch
         typeof(Localize),
         typeof(string),
         typeof(bool))]
-    [HarmonyPrefix]
-    public static bool WF_Utility_SetLocalizeTerm_Prefix(Localize localize, string term,
+    [HarmonyPostfix]
+    public static bool WF_Utility_SetLocalizeTerm_Postfix(Localize localize, string term,
         ref bool forceApply)
     {
         try
@@ -102,7 +102,7 @@ public static class UITextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"WF_Utility_SetLocalizeTerm_Prefix unknown error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+                $"WF_Utility_SetLocalizeTerm_Postfix unknown error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
         }
 
         return true;

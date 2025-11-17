@@ -200,7 +200,7 @@ public static class TextTranslateManger
         // 然而因为某种原因，StartsWith 和 EndsWith 会把所有文本都标记为已翻译，因此必须使用 Contains
         if (original.Contains(XUATInterop.XuatSpicalMaker))
         {
-            LogManager.Debug($"Text already marked by XUAT, skipping: {original}");
+            LogManager.Debug($"Text already marked, skipping: {original}");
             return false;
         }
 
@@ -213,8 +213,8 @@ public static class TextTranslateManger
 
         if (_translationDict.TryGetValue(original, out var value))
         {
-            LogManager.Debug($"Translated text: {value}");
             translated = XUATInterop.MarkTranslated(value, skipMark);
+            LogManager.Debug($"Translated {original}    =>    {translated}");
             return true;
         }
 
@@ -225,9 +225,9 @@ public static class TextTranslateManger
 
         if (_translationDict.TryGetValue(normalizedOriginal, out var lowerValue2))
         {
-            LogManager.Debug(
-                $"Translated text (to upper, replace and trimmed WhitespaceChars): {lowerValue2}");
             translated = XUATInterop.MarkTranslated(lowerValue2, skipMark);
+            LogManager.Debug(
+                $"Translated (upper, replace and trimmed) {normalizedOriginal}    =>    {translated}");
             return true;
         }
 
@@ -278,13 +278,13 @@ public static class TextTranslateManger
                 return capturedString;
             });
 
-            LogManager.Debug($"translated text (Regex): {translated}");
             translated = XUATInterop.MarkTranslated(translated, skipMark);
+            LogManager.Debug(
+                $"Translated (Regex) {keyValuePair.Key}:{keyValuePair.Value}    =>    {translated}");
             return true;
         }
 
         DumpText(original);
-
         return false;
     }
 

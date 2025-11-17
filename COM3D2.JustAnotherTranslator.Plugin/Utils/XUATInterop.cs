@@ -40,7 +40,6 @@ public static class XUATInterop
         if (_initialized)
             return _markTranslated != null;
 
-        // 标记为已初始化
         _initialized = true;
 
         try

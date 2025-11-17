@@ -486,10 +486,13 @@ public static class UITranslateManager
                 if (Path.GetExtension(spriteName) != ".png")
                     spriteName = string.Concat(Path.GetFileName(spriteName), ".png");
 
-                LogManager.Debug($"Writing sprite: {spriteName}");
                 var filePath = Path.Combine(JustAnotherTranslator.SpriteDumpPath, spriteName);
 
-                if (!File.Exists(filePath)) File.WriteAllBytes(filePath, pngData);
+                if (!File.Exists(filePath))
+                {
+                    LogManager.Debug($"Writing sprite: {spriteName}");
+                    File.WriteAllBytes(filePath, pngData);
+                }
             }
         }
         catch (Exception e)

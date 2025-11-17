@@ -64,7 +64,7 @@ public static class UITextTranslatePatch
                         maxLineLengthForRTL, ignoreRTLnumbers);
 
                 LogManager.Debug(
-                    $"LocalizationManager_TryGetTranslation_Postfix: Translation replaced {Translation} with {customTranslation}");
+                    $"LocalizationManager_TryGetTranslation_Postfix: Translation replaced {Translation}    =>    {customTranslation}");
 
                 Translation = customTranslation;
                 __result = true;

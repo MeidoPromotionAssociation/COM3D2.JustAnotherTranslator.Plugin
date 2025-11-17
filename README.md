@@ -44,7 +44,7 @@ When reporting an issue, please set the plugin's log level to DEBUG, restart the
 **Other**
 - JAT does not enable the game's built-in multilingual support, reducing user confusion and potential bugs.
 - JAT does not use any in-game resources, avoiding some potential bugs.
-- JAT automatically integrates with [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator), so you don't need to worry about the text being translated repeatedly by XUAT and no need to add special mark to the text in advance.
+- JAT automatically integrates with [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator), so you don't need to worry about the text being translated repeatedly by XUAT and no need to add special mark to the text in advance. (Please do not modify the default `RedirectedResourceDetectionStrategy`  setting of XUAT, That setting must be set to `AppendMongolianVowelSeparatorAndRemoveAll`.)
 
 **Drawbacks:**
 - JAT loads all translation text into memory, which does lead to higher memory usage.
@@ -251,7 +251,7 @@ There are 4 main folders in the translation folder of the corresponding language
 其他：
 - JAT 不启用游戏内的多语言支持，减少了使用户困惑的内容和可能出现的 BUG。
 - JAT 不使用任何游戏内资源，避免了一些可能出现的 BUG。
-- JAT 自动与 [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator) 集成，无需担心文本被 XUAT 重复翻译，无需预先在文本中添加特殊标记。
+- JAT 自动与 [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator) 集成，无需担心文本被 XUAT 重复翻译，无需预先在文本中添加特殊标记。（请勿修改 XUAT 的默认设置 `RedirectedResourceDetectionStrategy`，该设置必须为 `AppendMongolianVowelSeparatorAndRemoveAll`）
 
 缺点：
 - JAT 确实会将所有翻译文本加载到内存，这确实会导致较高的内存占用。

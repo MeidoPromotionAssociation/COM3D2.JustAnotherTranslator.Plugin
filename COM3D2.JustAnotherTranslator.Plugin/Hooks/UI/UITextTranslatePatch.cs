@@ -44,33 +44,36 @@ public static class UITextTranslatePatch
     {
         try
         {
-            LogManager.Debug($"LocalizationManager_TryGetTranslation_Postfix: Term {Term},Translation {Translation},__result {__result}");
+            LogManager.Debug(
+                $"LocalizationManager_TryGetTranslation_Postfix: Term: {Term},Translation: {Translation},__result: {__result}");
 
             // 如果原方法已经找到翻译，尝试替换
-            if (__result)
+            var customTranslation = UITranslateManager.HandleTextTermTranslation(Term);
+
+            // 如果有自定义翻译，替换它
+            if (!string.IsNullOrEmpty(customTranslation))
             {
-                var customTranslation = UITranslateManager.HandleTextTermTranslation(Term);
+                // 应用参数
+                if (applyParameters)
+                    LocalizationManager.ApplyLocalizationParams(ref customTranslation,
+                        localParametersRoot);
 
-                // 如果有自定义翻译，替换它
-                if (!string.IsNullOrEmpty(customTranslation))
-                {
-                    // 应用参数
-                    if (applyParameters)
-                        LocalizationManager.ApplyLocalizationParams(ref customTranslation, localParametersRoot);
+                // 应用 RTL 修正（如果需要）
+                if (LocalizationManager.IsRight2Left && FixForRTL)
+                    customTranslation = LocalizationManager.ApplyRTLfix(customTranslation,
+                        maxLineLengthForRTL, ignoreRTLnumbers);
 
-                    // 应用 RTL 修正（如果需要）
-                    if (LocalizationManager.IsRight2Left && FixForRTL)
-                        customTranslation = LocalizationManager.ApplyRTLfix(customTranslation, maxLineLengthForRTL, ignoreRTLnumbers);
+                LogManager.Debug(
+                    $"LocalizationManager_TryGetTranslation_Postfix: Translation replaced {Translation} with {customTranslation}");
 
-                    LogManager.Debug($"LocalizationManager_TryGetTranslation_Postfix: Translation replaced {Translation} with {customTranslation}");
-
-                    Translation = customTranslation;
-                }
+                Translation = customTranslation;
+                __result = true;
             }
         }
         catch (Exception e)
         {
-            LogManager.Error($"LocalizationManager_TryGetTranslation_Postfix error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+            LogManager.Error(
+                $"LocalizationManager_TryGetTranslation_Postfix error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
         }
     }
 

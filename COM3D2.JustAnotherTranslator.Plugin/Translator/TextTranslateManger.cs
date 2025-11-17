@@ -132,8 +132,8 @@ public static class TextTranslateManger
     /// <param name="totalFiles"></param>
     private static void OnLoadingProgress(float progress, int filesProcessed, int totalFiles)
     {
-        // 进度变化超过 10% 时输出日志
-        if ((int)(progress * 100) % 10 == 0)
+        // 进度变化超过 30% 时输出日志
+        if ((int)(progress * 100) % 30 == 0)
             LogManager.Info(
                 $"Translation loading progress: {progress:P0} ({filesProcessed}/{totalFiles})/翻译加载进度: {progress:P0} ({filesProcessed}/{totalFiles})");
     }

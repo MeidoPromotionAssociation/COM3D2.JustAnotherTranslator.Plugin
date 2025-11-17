@@ -158,8 +158,8 @@ public static class UITranslateManager
     /// <param name="totalFiles"></param>
     private static void OnUiTextLoadProgress(float progress, int filesProcessed, int totalFiles)
     {
-        // 进度变化超过 10% 时输出日志
-        if ((int)(progress * 100) % 10 == 0)
+        // 进度变化超过 30% 时输出日志
+        if ((int)(progress * 100) % 30 == 0)
             LogManager.Info(
                 $"UI Translation loading progress: {progress:P0} ({filesProcessed}/{totalFiles})/UI 翻译加载进度: {progress:P0} ({filesProcessed}/{totalFiles})");
     }

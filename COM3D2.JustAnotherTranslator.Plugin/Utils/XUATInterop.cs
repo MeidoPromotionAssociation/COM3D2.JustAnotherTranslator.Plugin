@@ -73,6 +73,7 @@ public static class XUATInterop
             {
                 var val = (string)mogolianVowelSeparatorStringField.GetValue(null);
                 if (!string.IsNullOrEmpty(val)) XuatSpicalMaker = val;
+                LogManager.Debug($"XuatSpicalMaker is {val}");
             }
 
             // 获取 MakeRedirected 方法
@@ -88,6 +89,8 @@ public static class XUATInterop
             _markTranslated = makeRedirectedMethod.CreateDelegate<MarkTranslatedDelegate>();
             LogManager.Info(
                 "Found XUnity.AutoTranslator Plugin; enabled interop(translated text will not be translated by XUAT again)/检测到 XUnity.AutoTranslator 插件，已启用互操作（已翻译的文本将不会被 XUAT 再次翻译）");
+
+            LogManager.Debug($"The 'text' will be XUAT marked as {_markTranslated("text")}");
         }
         catch (Exception e)
         {

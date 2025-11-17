@@ -193,7 +193,7 @@ public static class TextTranslateManger
         if (StringTool.IsNullOrWhiteSpace(original))
             return false;
 
-        LogManager.Debug($"Translating text: {original}");
+        LogManager.Debug($"Try to translate text: {original}");
 
         // XUAT 标记过的文本不进行翻译
         // 除非 XUAT 进行了更改，否则特殊标记永远位于结尾，但目前已有的的文本特殊标记位于开头
@@ -207,7 +207,7 @@ public static class TextTranslateManger
         // 注意：翻译到纯 [HF] 时如果被添加了特殊标记，会导致游戏崩溃，游戏还有其他的特殊标记，因此这里直接检查 []
         if (original.StartsWith("[") & original.EndsWith("]"))
         {
-            LogManager.Debug($"Text StartsWith special mark, skipping: {original}");
+            LogManager.Debug($"Text StartsWith special mark [], skipping: {original}");
             return false;
         }
 
@@ -266,12 +266,12 @@ public static class TextTranslateManger
                 else
                     capturedString = match.Groups[s].Value;
 
-                LogManager.Debug($"Template placeholder ${s} => '{capturedString}'");
+                LogManager.Debug($"Template placeholder ${s}    =>    '{capturedString}'");
 
                 if (_translationDict.TryGetValue(capturedString, out var groupTranslation))
                 {
                     LogManager.Debug(
-                        $"Found translation for '{capturedString}' => '{groupTranslation}'");
+                        $"Found translation for '{capturedString}'    =>    '{groupTranslation}'");
                     return groupTranslation;
                 }
 

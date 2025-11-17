@@ -117,7 +117,7 @@ public static class UITranslateManager
         {
             var markedTranslation = XUATInterop.MarkTranslated(translation);
             LogManager.Debug(
-                $"Found translation for term: {term}, translation: {markedTranslation}");
+                $"Found translation for term: {term}    =>    {markedTranslation}");
             return markedTranslation;
         }
 
@@ -131,7 +131,7 @@ public static class UITranslateManager
             {
                 var markedTranslation = XUATInterop.MarkTranslated(translation);
                 LogManager.Debug(
-                    $"Found translation for term: {term} (as {newTerm}), translation: {markedTranslation}");
+                    $"Found translation for term: {term} (as {newTerm})    =>    {markedTranslation}");
                 return markedTranslation;
             }
         }

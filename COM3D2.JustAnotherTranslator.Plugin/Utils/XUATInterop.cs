@@ -31,6 +31,11 @@ public static class XUATInterop
     public static string XuatSpicalMaker = "\u180e";
 
     /// <summary>
+    ///     LanguageHelper.HasRedirectedTexts 字段引用
+    /// </summary>
+    private static FieldInfo _hasRedirectedTextsField;
+
+    /// <summary>
     ///     初始化 XUAT 互操作功能
     /// </summary>
     /// <returns>如果成功初始化返回true，否则返回false</returns>
@@ -64,6 +69,10 @@ public static class XUATInterop
                 return false;
             }
 
+            // 获取 HasRedirectedTexts 字段
+            _hasRedirectedTextsField = langHelper.GetField("HasRedirectedTexts",
+                BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+
             // 通过反射获取 LanguageHelper.MogolianVowelSeparatorString 字段值
             var mogolianVowelSeparatorStringField = langHelper.GetField(
                 "MogolianVowelSeparatorString",
@@ -86,9 +95,11 @@ public static class XUATInterop
 
             // 创建委托
             _markTranslated = makeRedirectedMethod.CreateDelegate<MarkTranslatedDelegate>();
+
             LogManager.Info(
                 "Found XUnity.AutoTranslator Plugin; enabled interop(translated text will not be translated by XUAT again)/检测到 XUnity.AutoTranslator 插件，已启用互操作（已翻译的文本将不会被 XUAT 再次翻译）");
 
+            setXUATHasRedirectedTextsField();
             LogManager.Debug($"The 'text' will be XUAT marked as {_markTranslated("text")}");
         }
         catch (Exception e)
@@ -102,23 +113,51 @@ public static class XUATInterop
 
     /// <summary>
     ///     标记文本为已翻译，防止 XUAT 重复翻译
-    ///     实际上只是检查是否有 \u180e，但是我们选择更安全的方式
     /// </summary>
     /// <param name="text">要标记的文本</param>
     /// <param name="skipMark">是否跳过标记</param>
     /// <returns>标记后的文本</returns>
     public static string MarkTranslated(string text, bool skipMark = false)
     {
-        // 如果初始化失败则进行手动标记（插件本身也依靠此进行标记），否则调用 XUAT 的标记方法
-        // 需要使用标记后的文本，否则 XUAT 会重复翻译
-        if (!Initialize())
+        if (string.IsNullOrEmpty(text) || skipMark) return text;
+
+        // 尝试初始化
+        bool initialized = Initialize();
+
+        // 强制设置 XUAT 的检测标志，否则 XUAT 会跳过 IsRedirected 检查
+        if (initialized && _hasRedirectedTextsField != null)
         {
-            if (skipMark) return text;
-            return string.Concat(text, XuatSpicalMaker);
+            setXUATHasRedirectedTextsField();
         }
 
-        if (skipMark) return text;
-        return _markTranslated(text);
+        string result = text;
+        if (initialized && _markTranslated != null)
+        {
+            result = _markTranslated(text);
+        }
+
+        // 如果 XUAT 的 MakeRedirected 没有添加标记（通常是因为文本不含源语言符号），我们手动添加
+        if (!result.Contains(XuatSpicalMaker))
+        {
+            result = string.Concat(text, XuatSpicalMaker);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    ///     强制设置 XUAT 的检测标志
+    /// </summary>
+    private static void setXUATHasRedirectedTextsField()
+    {
+        try
+        {
+            _hasRedirectedTextsField.SetValue(null, true);
+        }
+        catch
+        {
+            /* ignore */
+        }
     }
 
     /// <summary>

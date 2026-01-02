@@ -396,6 +396,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
                 TextTranslateManger.GetTranslateText(speakerName, out _translatedSpeakerName);
 
             displayText = $"<color=#{speakerColor}>{_translatedSpeakerName}</color>: {text}";
+
+            LogManager.Debug($"SetText displayText: {displayText}");
         }
 
         TextComponent.text = displayText;

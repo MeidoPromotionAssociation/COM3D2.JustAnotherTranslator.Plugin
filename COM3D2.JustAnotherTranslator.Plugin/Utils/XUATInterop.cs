@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using HarmonyLib;
-using MonoMod.Utils;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
@@ -74,7 +73,8 @@ public static class XUATInterop
             {
                 var harmony = new Harmony("COM3D2.JustAnotherTranslator.Plugin.XUATInterop");
                 harmony.Patch(isTranslatableMethod,
-                    new HarmonyMethod(typeof(XUATInterop).GetMethod(nameof(XUAT_IsTranslatable_Prefix),
+                    new HarmonyMethod(typeof(XUATInterop).GetMethod(
+                        nameof(XUAT_IsTranslatable_Prefix),
                         BindingFlags.Static | BindingFlags.NonPublic)));
                 LogManager.Debug("XUAT LanguageHelper.IsTranslatable patched successfully");
             }
@@ -115,20 +115,13 @@ public static class XUATInterop
         if (string.IsNullOrEmpty(text) || skipMark) return text;
 
         // 尝试初始化
-        bool initialized = Initialize();
+        var initialized = Initialize();
 
         // 强制设置 XUAT 的检测标志，否则 XUAT 会跳过 IsRedirected 检查
-        if (initialized && _hasRedirectedTextsField != null)
-        {
-            setXUATHasRedirectedTextsField();
-        }
+        if (initialized && _hasRedirectedTextsField != null) setXUATHasRedirectedTextsField();
 
-        // 添加特殊标记吗，直接使用获取到的 XuatSpicalMaker
-        //
-        if (!text.Contains(XuatSpicalMaker))
-        {
-            return string.Concat(text, XuatSpicalMaker);
-        }
+        // 添加特殊标记
+        if (!text.Contains(XuatSpicalMaker)) return string.Concat(text, XuatSpicalMaker);
 
         return text;
     }
@@ -149,20 +142,30 @@ public static class XUATInterop
     }
 
     /// <summary>
-    ///      XUnity.AutoTranslator.Plugin.Core.Utilities.LanguageHelper  IsTranslatable 补丁前缀，用于让 JAT 优先处理翻译
-    ///      若 __result = false，则 XUAT 不会尝试翻译此文本
+    ///     检查文本是否包含 XUAT 特殊标记
+    /// </summary>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public static bool IsContainsXuatSpicalMaker(string text)
+    {
+        return text.Contains(XuatSpicalMaker);
+    }
+
+    /// <summary>
+    ///     XUnity.AutoTranslator.Plugin.Core.Utilities.LanguageHelper  IsTranslatable 补丁前缀，用于让 JAT 优先处理翻译
+    ///     若 __result = false，则 XUAT 不会尝试翻译此文本
     /// </summary>
     /// <param name="text"></param>
     /// <param name="__result"></param>
     /// <returns></returns>
     private static bool XUAT_IsTranslatable_Prefix(string text, ref bool __result)
     {
-        if (TextTranslateManger.IsTranslatable(text,true))
+        if (IsContainsXuatSpicalMaker(text) || TextTranslateManger.IsInTranslateDict(text))
         {
             __result = false;
             return false;
         }
-        //如果 JAT 不需要处理，返回 true，让 XUAT 继续执行它自带的判定逻辑
+
         return true;
     }
 }

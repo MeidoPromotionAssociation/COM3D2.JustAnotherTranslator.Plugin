@@ -165,21 +165,13 @@ public static class TextTranslateManger
 
 
     /// <summary>
-    ///     检查文本是否可以由 JAT 翻译
+    ///     检查文本是否在 JAT 翻译字典中
     /// </summary>
     /// <param name="text">待检查的文本</param>
-    /// <param name="checkXuatSpicalMaker">是否检查 XUAT 特殊标记，为 false 则不检查</param>
-    /// <returns>是否可由 JAT 翻译</returns>
-    public static bool IsTranslatable(string text,bool checkXuatSpicalMaker=false)
+    /// <returns>true 为在翻译字典中</returns>
+    public static bool IsInTranslateDict(string text)
     {
         if (!_isTranslationLoaded)
-            return false;
-
-        if (StringTool.IsNullOrWhiteSpace(text))
-            return false;
-
-        // 检查 XUAT 特殊标记
-        if (checkXuatSpicalMaker && text.Contains(XUATInterop.XuatSpicalMaker))
             return false;
 
         // 字典精确匹配

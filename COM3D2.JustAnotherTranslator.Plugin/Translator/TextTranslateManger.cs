@@ -165,6 +165,52 @@ public static class TextTranslateManger
 
 
     /// <summary>
+    ///     检查文本是否可以由 JAT 翻译
+    /// </summary>
+    /// <param name="text">待检查的文本</param>
+    /// <param name="checkXuatSpicalMaker">是否检查 XUAT 特殊标记，为 false 则不检查</param>
+    /// <returns>是否可由 JAT 翻译</returns>
+    public static bool IsTranslatable(string text,bool checkXuatSpicalMaker=false)
+    {
+        if (!_isTranslationLoaded)
+            return false;
+
+        if (StringTool.IsNullOrWhiteSpace(text))
+            return false;
+
+        // 检查 XUAT 特殊标记
+        if (checkXuatSpicalMaker && text.Contains(XUATInterop.XuatSpicalMaker))
+            return false;
+
+        // 字典精确匹配
+        if (_translationDict.ContainsKey(text))
+            return true;
+
+        // 规范化文本匹配
+        var normalizedOriginal = StringTool.NormalizeText(text);
+        if (_translationDict.ContainsKey(normalizedOriginal))
+            return true;
+
+        // 正则表达式匹配
+        foreach (var regex in _regexTranslationDict.Keys)
+        {
+            var match = regex.Match(text);
+            if (match.Success && match.Length > 0)
+                return true;
+
+            if (normalizedOriginal != text && normalizedOriginal.Length > 0)
+            {
+                match = regex.Match(normalizedOriginal);
+                if (match.Success && match.Length > 0)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    /// <summary>
     ///     尝试获取翻译文本
     /// </summary>
     /// <param name="original">原文</param>

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using HarmonyLib;
 using MonoMod.Utils;
 
@@ -8,17 +9,9 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 /// <summary>
 ///     XUAT（XUnity.AutoTranslator）互操作类，用于与 XUAT 翻译器集成
-///     代码来自 https://github.com/Pain-Brioche/COM3D2.i18nEx
-///     COM3D2.i18nEx 基于 MIT 许可证，协议开源，作者为 ghorsington、Pain-Brioche
-///     参考 https://github.com/bbepis/XUnity.AutoTranslator/issues/215
 /// </summary>
 public static class XUATInterop
 {
-    /// <summary>
-    ///     标记文本为已翻译的委托
-    /// </summary>
-    private static MarkTranslatedDelegate _markTranslated;
-
     /// <summary>
     ///     是否已初始化
     /// </summary>
@@ -41,9 +34,9 @@ public static class XUATInterop
     /// <returns>如果成功初始化返回true，否则返回false</returns>
     public static bool Initialize()
     {
-        // 如果已经初始化，则检查委托是否有效
+        // 如果已经初始化，则检查字段是否有效
         if (_initialized)
-            return _markTranslated != null;
+            return _hasRedirectedTextsField != null;
 
         _initialized = true;
 
@@ -73,6 +66,19 @@ public static class XUATInterop
             _hasRedirectedTextsField = langHelper.GetField("HasRedirectedTexts",
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
 
+            // 获取 IsTranslatable 方法进行补丁
+            var isTranslatableMethod = langHelper.GetMethod("IsTranslatable",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+
+            if (isTranslatableMethod != null)
+            {
+                var harmony = new Harmony("COM3D2.JustAnotherTranslator.Plugin.XUATInterop");
+                harmony.Patch(isTranslatableMethod,
+                    new HarmonyMethod(typeof(XUATInterop).GetMethod(nameof(XUAT_IsTranslatable_Prefix),
+                        BindingFlags.Static | BindingFlags.NonPublic)));
+                LogManager.Debug("XUAT LanguageHelper.IsTranslatable patched successfully");
+            }
+
             // 通过反射获取 LanguageHelper.MogolianVowelSeparatorString 字段值
             var mogolianVowelSeparatorStringField = langHelper.GetField(
                 "MogolianVowelSeparatorString",
@@ -84,23 +90,10 @@ public static class XUATInterop
                 LogManager.Debug($"XuatSpicalMaker is {val}");
             }
 
-            // 获取 MakeRedirected 方法
-            var makeRedirectedMethod = AccessTools.Method(langHelper, "MakeRedirected");
-            if (makeRedirectedMethod == null)
-            {
-                LogManager.Warning(
-                    "Could not find XUnity.AutoTranslator LanguageHelper.MakeRedirected; skipping XUAT interop/无法找到 XUnity.AutoTranslator LanguageHelper.MakeRedirected，跳过 XUAT 互操作");
-                return false;
-            }
-
-            // 创建委托
-            _markTranslated = makeRedirectedMethod.CreateDelegate<MarkTranslatedDelegate>();
-
             LogManager.Info(
                 "Found XUnity.AutoTranslator Plugin; enabled interop(translated text will not be translated by XUAT again)/检测到 XUnity.AutoTranslator 插件，已启用互操作（已翻译的文本将不会被 XUAT 再次翻译）");
 
             setXUATHasRedirectedTextsField();
-            LogManager.Debug($"The 'text' will be XUAT marked as {_markTranslated("text")}");
         }
         catch (Exception e)
         {
@@ -130,19 +123,14 @@ public static class XUATInterop
             setXUATHasRedirectedTextsField();
         }
 
-        string result = text;
-        if (initialized && _markTranslated != null)
+        // 添加特殊标记吗，直接使用获取到的 XuatSpicalMaker
+        //
+        if (!text.Contains(XuatSpicalMaker))
         {
-            result = _markTranslated(text);
+            return string.Concat(text, XuatSpicalMaker);
         }
 
-        // 如果 XUAT 的 MakeRedirected 没有添加标记（通常是因为文本不含源语言符号），我们手动添加
-        if (!result.Contains(XuatSpicalMaker))
-        {
-            result = string.Concat(text, XuatSpicalMaker);
-        }
-
-        return result;
+        return text;
     }
 
     /// <summary>
@@ -161,9 +149,20 @@ public static class XUATInterop
     }
 
     /// <summary>
-    ///     标记文本为已翻译的委托类型
+    ///      XUnity.AutoTranslator.Plugin.Core.Utilities.LanguageHelper  IsTranslatable 补丁前缀，用于让 JAT 优先处理翻译
+    ///      若 __result = false，则 XUAT 不会尝试翻译此文本
     /// </summary>
-    /// <param name="text">要标记的文本</param>
-    /// <returns>标记后的文本</returns>
-    private delegate string MarkTranslatedDelegate(string text);
+    /// <param name="text"></param>
+    /// <param name="__result"></param>
+    /// <returns></returns>
+    private static bool XUAT_IsTranslatable_Prefix(string text, ref bool __result)
+    {
+        if (TextTranslateManger.IsTranslatable(text,true))
+        {
+            __result = false;
+            return false;
+        }
+        //如果 JAT 不需要处理，返回 true，让 XUAT 继续执行它自带的判定逻辑
+        return true;
+    }
 }

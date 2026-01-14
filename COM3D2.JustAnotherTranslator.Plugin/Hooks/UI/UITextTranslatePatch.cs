@@ -99,7 +99,7 @@ public static class UITextTranslatePatch
         try
         {
             forceApply = true;
-            return false;
+            return true;
         }
         catch (Exception e)
         {

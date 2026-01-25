@@ -19,7 +19,7 @@ public static class StringTool
     /// <summary>
     ///     规范化字符串
     ///     1.将 \r \n \t 替换为空
-    ///     2.修剪 WhitespaceChars
+    ///     2.修剪 WhitespaceChars（不包括 \u180e）
     ///     3.转大写
     /// </summary>
     /// <param name="text"></param>

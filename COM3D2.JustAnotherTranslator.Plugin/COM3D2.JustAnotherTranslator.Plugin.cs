@@ -1264,7 +1264,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     {
         if (EnableGeneralTextTranslation.Value)
             // Init XUAT interop
-            XUATInterop.Initialize();
+            XUATInterop.Init();
     }
 
     private void OnDestroy()
@@ -1275,6 +1275,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         SubtitleManager.Unload();
         LyricManger.Unload();
         FixerManger.Unload();
+        XUATInterop.Unload();
     }
 
     # region RegisterGeneralConfigEvents
@@ -1358,12 +1359,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
             {
                 LogManager.Info("Text Translation Enabled/文本翻译已启用");
                 TextTranslateManger.Init();
-                XUATInterop.Initialize();
+                XUATInterop.Init();
             }
             else
             {
                 LogManager.Info("Text Translation Disabled/文本翻译已禁用");
                 TextTranslateManger.Unload();
+                XUATInterop.Unload();
             }
         };
 

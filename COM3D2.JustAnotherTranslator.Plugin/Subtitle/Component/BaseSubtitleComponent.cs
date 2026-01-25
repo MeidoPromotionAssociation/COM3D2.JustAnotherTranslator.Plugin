@@ -388,7 +388,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         bool enableSpeakerName)
     {
         var displayText = text;
-        // 设置文本，无需处理 XUAT 互操作以及翻译，因为获取时已经被翻译了
         // 但人名需要被翻译
         if (!string.IsNullOrEmpty(speakerName) && enableSpeakerName)
         {
@@ -396,6 +395,9 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
                 TextTranslateManger.GetTranslateText(speakerName, out _translatedSpeakerName);
 
             displayText = $"<color=#{speakerColor}>{_translatedSpeakerName}</color>: {text}";
+
+            // 记录以避免被 XUAT 翻译
+            displayText = XUATInterop.MarkTranslated(displayText);
 
             LogManager.Debug($"SetText displayText: {displayText}");
         }

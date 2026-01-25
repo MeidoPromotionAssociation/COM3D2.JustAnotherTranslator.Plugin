@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using HarmonyLib;
+using UnityEngine.SceneManagement;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
@@ -28,16 +30,20 @@ public static class XUATInterop
     private static FieldInfo _hasRedirectedTextsField;
 
     /// <summary>
+    ///     存储已翻译文本的集合，用于防止重复翻译
+    /// </summary>
+    private static readonly HashSet<string> TranslatedTexts = new();
+
+    /// <summary>
     ///     初始化 XUAT 互操作功能
     /// </summary>
     /// <returns>如果成功初始化返回true，否则返回false</returns>
-    public static bool Initialize()
+    public static bool Init()
     {
-        // 如果已经初始化，则检查字段是否有效
         if (_initialized)
-            return _hasRedirectedTextsField != null;
+            return true;
 
-        _initialized = true;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         try
         {
@@ -97,10 +103,14 @@ public static class XUATInterop
         }
         catch (Exception e)
         {
-            LogManager.Error($"XUAT interop failed: {e.Message}");
+            LogManager.Error(
+                $"XUAT interop init failed, set default value/XUAT 互操作初始化失败，设置为默认值: {e.Message}");
+            XuatSpicalMaker = "\u180e";
+            _initialized = false;
             return false;
         }
 
+        _initialized = true;
         return true;
     }
 
@@ -112,18 +122,35 @@ public static class XUATInterop
     /// <returns>标记后的文本</returns>
     public static string MarkTranslated(string text, bool skipMark = false)
     {
-        if (string.IsNullOrEmpty(text) || skipMark) return text;
+        if (StringTool.IsNullOrWhiteSpace(text)) return text;
 
-        // 尝试初始化
-        var initialized = Initialize();
+        // 去除各种空白后添加到已翻译记录
+        var cleanText = StringTool.NormalizeText(text).Replace(XuatSpicalMaker, "");
+        TranslatedTexts.Add(cleanText);
 
-        // 强制设置 XUAT 的检测标志，否则 XUAT 会跳过 IsRedirected 检查
-        if (initialized && _hasRedirectedTextsField != null) setXUATHasRedirectedTextsField();
+        if (skipMark) return text;
+
+        // 强制设置 XUAT 的检测标志，否则 XUAT 可能会跳过 IsRedirected 检查
+        setXUATHasRedirectedTextsField();
 
         // 添加特殊标记
         if (!text.Contains(XuatSpicalMaker)) return string.Concat(text, XuatSpicalMaker);
 
         return text;
+    }
+
+    /// <summary>
+    ///     判断指定文本是否已被 JAT 翻译
+    /// </summary>
+    /// <param name="text">需要检查的文本内容</param>
+    /// <returns>如果文本存在于已翻译记录中返回true，否则返回false</returns>
+    public static bool IsJATTranslatedText(string text)
+    {
+        if (StringTool.IsNullOrWhiteSpace(text))
+            return false;
+
+        return TranslatedTexts.Contains(
+            StringTool.NormalizeText(text).Replace(XuatSpicalMaker, ""));
     }
 
     /// <summary>
@@ -133,7 +160,8 @@ public static class XUATInterop
     {
         try
         {
-            _hasRedirectedTextsField.SetValue(null, true);
+            if (_initialized && _hasRedirectedTextsField != null)
+                _hasRedirectedTextsField.SetValue(null, true);
         }
         catch
         {
@@ -160,12 +188,79 @@ public static class XUATInterop
     /// <returns></returns>
     private static bool XUAT_IsTranslatable_Prefix(string text, ref bool __result)
     {
-        if (IsContainsXuatSpicalMaker(text) || TextTranslateManger.IsInTranslateDict(text))
+        try
         {
-            __result = false;
+            // 检查是否包含 XUAT/JAT 标记
+            if (IsContainsXuatSpicalMaker(text))
+            {
+                LogManager.Debug($"Block XUAT translate because contain spical mark: {text}");
+                __result = false;
+                return false;
+            }
+
+            // 检查是否在 JAT 翻译字典中（作为原文），阻止以免 XUAT 先于 JAT 翻译
+            if (TextTranslateManger.IsInTranslateDict(text))
+            {
+                LogManager.Debug(
+                    $"Block XUAT translate because it could be translate by JAT: {text}");
+                __result = false;
+                return false;
+            }
+
+            // 检查是否是 JAT 的翻译结果（防止 XUAT 翻译 JAT 的译文）
+            if (IsJATTranslatedText(text))
+            {
+                LogManager.Debug(
+                    $"Block XUAT translate because it already translate by JAT: {text}");
+                __result = false;
+                return false;
+            }
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Error during XUAT block translation/阻止 XUAT 翻译失败: {e.Message}");
             return false;
         }
+    }
 
-        return true;
+
+    /// <summary>
+    ///     场景卸载时清理资源
+    /// </summary>
+    /// <param name="scene"></param>
+    private static void OnSceneUnloaded(Scene scene)
+    {
+        try
+        {
+            TranslatedTexts.Clear(); // 场景卸载时清理已标记的文本，以免过大
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Error during cleanup scene resources/清理场景资源失败: {e.Message}");
+        }
+    }
+
+
+    /// <summary>
+    ///     卸载插件时清理资源
+    /// </summary>
+    public static void Unload()
+    {
+        try
+        {
+            TranslatedTexts.Clear();
+            XuatSpicalMaker = "\u180e";
+            _hasRedirectedTextsField = null;
+            SceneManager.sceneUnloaded -= OnSceneUnloaded;
+
+            _initialized = false;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Error during cleanup resources/清理资源失败: {e.Message}");
+            _initialized = false;
+        }
     }
 }

@@ -418,6 +418,8 @@ COM3D2\BepInEx\JustAnotherTranslator\<你设置的目标语言>
 
 # KISS Rule
 
+[KISS](https://www.kisskiss.tv/) is the company/brand that makes these games.
+
 *This Project is not owned or endorsed by KISS.
 
 *MODs are not supported by KISS.

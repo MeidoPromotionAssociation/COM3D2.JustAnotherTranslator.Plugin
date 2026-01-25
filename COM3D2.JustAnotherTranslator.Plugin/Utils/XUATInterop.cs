@@ -71,18 +71,42 @@ public static class XUATInterop
             _hasRedirectedTextsField = langHelper.GetField("HasRedirectedTexts",
                 BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
 
-            // 获取 IsTranslatable 方法进行补丁
+            var harmony = new Harmony("COM3D2.JustAnotherTranslator.Plugin.XUATInterop");
+
+            // 对 LanguageHelper.IsTranslatable 方法应用补丁
             var isTranslatableMethod = langHelper.GetMethod("IsTranslatable",
                 BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
             if (isTranslatableMethod != null)
             {
-                var harmony = new Harmony("COM3D2.JustAnotherTranslator.Plugin.XUATInterop");
                 harmony.Patch(isTranslatableMethod,
                     new HarmonyMethod(typeof(XUATInterop).GetMethod(
                         nameof(XUAT_IsTranslatable_Prefix),
                         BindingFlags.Static | BindingFlags.NonPublic)));
                 LogManager.Debug("XUAT LanguageHelper.IsTranslatable patched successfully");
+            }
+
+            var translationCacheMethodNames = new[]
+            {
+                "XUnity.AutoTranslator.Plugin.Core.TextTranslationCache",
+                "XUnity.AutoTranslator.Plugin.Core.CompositeTextTranslationCache"
+            };
+
+            // 对 TranslationCache 类型中的 “IsTranslatable”方法应用补丁
+            foreach (var typeName in translationCacheMethodNames)
+            {
+                var type = xuatAssembly.GetType(typeName);
+                if (type == null) continue;
+
+                var method = type.GetMethod("IsTranslatable",
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (method == null) continue;
+
+                harmony.Patch(method,
+                    new HarmonyMethod(typeof(XUATInterop).GetMethod(
+                        nameof(XUAT_IsTranslatable_Prefix),
+                        BindingFlags.Static | BindingFlags.NonPublic)));
+                LogManager.Debug($"XUAT {type.Name}.IsTranslatable patched successfully");
             }
 
             // 通过反射获取 LanguageHelper.MogolianVowelSeparatorString 字段值

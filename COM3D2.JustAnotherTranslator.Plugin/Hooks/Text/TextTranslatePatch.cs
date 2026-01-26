@@ -146,6 +146,33 @@ public static class TextTranslatePatch
         }
     }
 
+    /// <summary>
+    /// CountryReplace 方法会在 menuNameCurrentLanguage 和 infoTextCurrentLanguage 的最后处理后被调用（用于翻译物品名称和说明）
+    /// 我们在此处尝试获取翻译
+    /// </summary>
+    /// <param name="__result"></param>
+    [HarmonyPatch(typeof(SceneEdit.SMenuItem), "CountryReplace", typeof(string))]
+    [HarmonyPostfix]
+    private static void SceneEdit_SMenuItem_CountryReplace_Postfix(ref string __result)
+    {
+        try
+        {
+            if (StringTool.IsNullOrWhiteSpace(__result) || StringTool.IsNumeric(__result))
+                return;
+
+            if (__result.Contains(XUATInterop.XuatSpicalMaker))
+                return;
+
+            if (TextTranslateManger.GetTranslateText(__result, out var translated))
+                __result = translated;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"SceneEdit_SMenuItem_CountryReplace_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
 
     /// <summary>
     ///     Hook for NGUI Text (NGUIText.WrapText(string, out string))

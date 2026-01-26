@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
@@ -77,6 +78,84 @@ public static class UITextTranslatePatch
         }
     }
 
+    /// <summary>
+    /// 对 menuNameCurrentLanguage 进行了重写，取消了原始的 if (Product.systemLanguage != Product.Language.Japanese) 检查
+    /// 以便使用 I2 对物品名称进行翻译
+    /// 请注意 CountryReplace 会被文本翻译模块处理
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="__result"></param>
+    /// <returns></returns>
+    [HarmonyPatch(typeof(SceneEdit.SMenuItem), "menuNameCurrentLanguage", MethodType.Getter)]
+    [HarmonyPrefix]
+    private static bool SceneEdit_SMenuItem_GetMenuNameCurrentLanguage_Prefix(
+        SceneEdit.SMenuItem __instance,
+        ref string __result)
+    {
+        try
+        {
+            if (__instance == null)
+                return true;
+
+            var baseText = __instance.m_strMenuName ?? string.Empty;
+            var menuFileName = __instance.m_strMenuFileName ?? string.Empty;
+            var cateName = __instance.m_strCateName ?? string.Empty;
+            var term = cateName + "/" + Path.GetFileNameWithoutExtension(menuFileName).ToLower();
+            var translation = LocalizationManager.GetTranslation(term + "|name", true, 0, true,
+                false, null, null);
+            var text = !string.IsNullOrEmpty(translation)
+                ? translation.Replace("《改行》", "\n")
+                : baseText;
+            __result = __instance.CountryReplace(text);
+            return false;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"SceneEdit_SMenuItem_GetMenuNameCurrentLanguage_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+            return true;
+        }
+    }
+
+
+    /// <summary>
+    /// 对 infoTextCurrentLanguage 进行了重写，取消了原始的 if (Product.systemLanguage != Product.Language.Japanese) 检查
+    /// 以便使用 I2 对物品说明进行翻译
+    /// 请注意 CountryReplace 会被文本翻译模块处理
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="__result"></param>
+    /// <returns></returns>
+    [HarmonyPatch(typeof(SceneEdit.SMenuItem), "infoTextCurrentLanguage", MethodType.Getter)]
+    [HarmonyPrefix]
+    private static bool SceneEdit_SMenuItem_GetInfoTextCurrentLanguage_Prefix(
+        SceneEdit.SMenuItem __instance,
+        ref string __result)
+    {
+        try
+        {
+            if (__instance == null)
+                return true;
+
+            var baseText = __instance.m_strInfo ?? string.Empty;
+            var menuFileName = __instance.m_strMenuFileName ?? string.Empty;
+            var cateName = __instance.m_strCateName ?? string.Empty;
+            var term = cateName + "/" + Path.GetFileNameWithoutExtension(menuFileName).ToLower();
+            var translation = LocalizationManager.GetTranslation(term + "|info", true, 0, true,
+                false, null, null);
+            var text = !string.IsNullOrEmpty(translation)
+                ? translation.Replace("《改行》", "\n")
+                : baseText;
+            __result = __instance.CountryReplace(text);
+            return false;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"SceneEdit_SMenuItem_GetInfoTextCurrentLanguage_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+            return true;
+        }
+    }
 
     /// <summary>
     ///     强制将 wf.Utility.SetLocalizeTerm 的 forceApply 设为 true

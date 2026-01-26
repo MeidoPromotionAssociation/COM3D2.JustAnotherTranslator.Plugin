@@ -121,7 +121,6 @@ public static class UIDebugPatch
                                cmp.gameObject.activeInHierarchy;
                 string targetText = null;
                 if (cmp != null)
-                {
                     try
                     {
                         targetText = cmp.GetMainTargetsText();
@@ -130,7 +129,6 @@ public static class UIDebugPatch
                     {
                         targetText = null;
                     }
-                }
 
                 var logMessage =
                     $"[DoLocalize] Called on Type: {instanceType}\n" +

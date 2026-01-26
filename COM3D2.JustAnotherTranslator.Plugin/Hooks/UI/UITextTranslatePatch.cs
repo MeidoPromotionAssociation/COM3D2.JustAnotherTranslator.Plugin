@@ -79,9 +79,10 @@ public static class UITextTranslatePatch
     }
 
     /// <summary>
-    /// 对 menuNameCurrentLanguage 进行了重写，取消了原始的 if (Product.systemLanguage != Product.Language.Japanese) 检查
-    /// 以便使用 I2 对物品名称进行翻译
-    /// 请注意 CountryReplace 会被文本翻译模块处理
+    ///     对 menuNameCurrentLanguage 进行了重写，取消了原始的 if (Product.systemLanguage != Product.Language.Japanese)
+    ///     检查
+    ///     以便使用 I2 对物品名称进行翻译
+    ///     请注意 CountryReplace 会被文本翻译模块处理
     /// </summary>
     /// <param name="__instance"></param>
     /// <param name="__result"></param>
@@ -101,8 +102,7 @@ public static class UITextTranslatePatch
             var menuFileName = __instance.m_strMenuFileName ?? string.Empty;
             var cateName = __instance.m_strCateName ?? string.Empty;
             var term = cateName + "/" + Path.GetFileNameWithoutExtension(menuFileName).ToLower();
-            var translation = LocalizationManager.GetTranslation(term + "|name", true, 0, true,
-                false, null, null);
+            var translation = LocalizationManager.GetTranslation(term + "|name");
             var text = !string.IsNullOrEmpty(translation)
                 ? translation.Replace("《改行》", "\n")
                 : baseText;
@@ -119,9 +119,10 @@ public static class UITextTranslatePatch
 
 
     /// <summary>
-    /// 对 infoTextCurrentLanguage 进行了重写，取消了原始的 if (Product.systemLanguage != Product.Language.Japanese) 检查
-    /// 以便使用 I2 对物品说明进行翻译
-    /// 请注意 CountryReplace 会被文本翻译模块处理
+    ///     对 infoTextCurrentLanguage 进行了重写，取消了原始的 if (Product.systemLanguage != Product.Language.Japanese)
+    ///     检查
+    ///     以便使用 I2 对物品说明进行翻译
+    ///     请注意 CountryReplace 会被文本翻译模块处理
     /// </summary>
     /// <param name="__instance"></param>
     /// <param name="__result"></param>
@@ -141,8 +142,7 @@ public static class UITextTranslatePatch
             var menuFileName = __instance.m_strMenuFileName ?? string.Empty;
             var cateName = __instance.m_strCateName ?? string.Empty;
             var term = cateName + "/" + Path.GetFileNameWithoutExtension(menuFileName).ToLower();
-            var translation = LocalizationManager.GetTranslation(term + "|info", true, 0, true,
-                false, null, null);
+            var translation = LocalizationManager.GetTranslation(term + "|info");
             var text = !string.IsNullOrEmpty(translation)
                 ? translation.Replace("《改行》", "\n")
                 : baseText;

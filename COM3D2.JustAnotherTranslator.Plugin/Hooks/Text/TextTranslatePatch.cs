@@ -147,8 +147,8 @@ public static class TextTranslatePatch
     }
 
     /// <summary>
-    /// CountryReplace 方法会在 menuNameCurrentLanguage 和 infoTextCurrentLanguage 的最后处理后被调用（用于翻译物品名称和说明）
-    /// 我们在此处尝试获取翻译
+    ///     CountryReplace 方法会在 menuNameCurrentLanguage 和 infoTextCurrentLanguage 的最后处理后被调用（用于翻译物品名称和说明）
+    ///     我们在此处尝试获取翻译
     /// </summary>
     /// <param name="__result"></param>
     [HarmonyPatch(typeof(SceneEdit.SMenuItem), "CountryReplace", typeof(string))]

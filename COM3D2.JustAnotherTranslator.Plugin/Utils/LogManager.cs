@@ -10,9 +10,9 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 /// </summary>
 public static class LogManager
 {
+    private const int MaxConsoleMessageLength = 512;
     private static ManualLogSource _logSource;
     private static string _lastDebugMessage = "";
-    private const int MaxConsoleMessageLength = 512;
 
 
     /// <summary>
@@ -76,7 +76,7 @@ public static class LogManager
 
 
     /// <summary>
-    /// Safely converts the given object to its string representation.
+    ///     Safely converts the given object to its string representation.
     /// </summary>
     /// <param name="message">The object to convert to a string.</param>
     /// <returns>The string representation of the object, or an error message if the conversion fails.</returns>
@@ -93,7 +93,7 @@ public static class LogManager
     }
 
     /// <summary>
-    /// Safely logs a message at the specified log level, ensuring it adheres to console constraints.
+    ///     Safely logs a message at the specified log level, ensuring it adheres to console constraints.
     /// </summary>
     /// <param name="level">The severity level of the log message.</param>
     /// <param name="message">The message to be logged.</param>
@@ -129,7 +129,7 @@ public static class LogManager
     }
 
     /// <summary>
-    /// Logs a single message to the console with the specified log level.
+    ///     Logs a single message to the console with the specified log level.
     /// </summary>
     /// <param name="level">The log level of the message (e.g., Debug, Info, Warning, Error).</param>
     /// <param name="message">The message to log.</param>
@@ -153,8 +153,8 @@ public static class LogManager
     }
 
     /// <summary>
-    /// Splits the given message into smaller chunks suitable for console output,
-    /// ensuring that each chunk does not exceed the maximum allowed message length.
+    ///     Splits the given message into smaller chunks suitable for console output,
+    ///     ensuring that each chunk does not exceed the maximum allowed message length.
     /// </summary>
     /// <param name="message">The message to be split into chunks.</param>
     /// <returns>A list of string chunks, each within the maximum console message length.</returns>

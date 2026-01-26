@@ -81,7 +81,8 @@ public static class UITextTranslatePatch
     /// <summary>
     ///     强制将 wf.Utility.SetLocalizeTerm 的 forceApply 设为 true
     ///     部分组件是通过此方法来获取翻译的
-    ///     然而原方法有一个条件判断 (Product.supportMultiLanguage || forceApply) && ……
+    ///     然而原方法有一个条件判断 (!Product.supportMultiLanguage && !forceApply) || ……
+    ///     JP 版 Product.supportMultiLanguage 始终为 false，强行启用会导致奇怪的问题
     ///     因此我们直接让 forceApply 为 true 通过此条件
     /// </summary>
     /// <param name="localize"></param>
@@ -105,6 +106,38 @@ public static class UITextTranslatePatch
         {
             LogManager.Error(
                 $"WF_Utility_SetLocalizeTerm_Prefix unknown error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+            return true;
+        }
+    }
+
+    /// <summary>
+    ///     强制将 wf.Utility.SetLocalizeTerm 的 forceApply 设为 true
+    ///     部分组件是通过此方法来获取翻译的
+    ///     然而原方法有一个条件判断 (Product.supportMultiLanguage || forceApply) && ……
+    ///     JP 版 Product.supportMultiLanguage 始终为 false，强行启用会导致奇怪的问题
+    ///     因此我们直接让 forceApply 为 true 通过此条件
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <param name="term"></param>
+    /// <param name="forceApply"></param>
+    /// <returns></returns>
+    [HarmonyPatch(typeof(Utility), "SetLocalizeTerm",
+        typeof(Component),
+        typeof(string),
+        typeof(bool))]
+    [HarmonyPrefix]
+    public static bool WF_Utility_SetLocalizeTerm_Component_Prefix(Component obj, string term,
+        ref bool forceApply)
+    {
+        try
+        {
+            forceApply = true;
+            return true;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"WF_Utility_SetLocalizeTerm_Component_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
             return true;
         }
     }

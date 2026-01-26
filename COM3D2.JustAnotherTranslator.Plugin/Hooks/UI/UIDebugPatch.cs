@@ -110,10 +110,36 @@ public static class UIDebugPatch
                 var instanceType = __instance.GetType().FullName;
                 var gameObjectName =
                     cmp != null && cmp.gameObject != null ? cmp.gameObject.name : "N/A";
+                var term = cmp != null ? cmp.mTerm : null;
+                var finalTerm = cmp != null ? cmp.FinalTerm : null;
+                var secondaryTerm = cmp != null ? cmp.mTermSecondary : null;
+                var finalSecondaryTerm = cmp != null ? cmp.FinalSecondaryTerm : null;
+                var targetName = cmp != null ? cmp.mLocalizeTargetName : null;
+                var hasCallback = cmp != null && cmp.HasCallback();
+                var isEnabled = cmp != null && cmp.enabled;
+                var isActive = cmp != null && cmp.gameObject != null &&
+                               cmp.gameObject.activeInHierarchy;
+                string targetText = null;
+                if (cmp != null)
+                {
+                    try
+                    {
+                        targetText = cmp.GetMainTargetsText();
+                    }
+                    catch
+                    {
+                        targetText = null;
+                    }
+                }
 
                 var logMessage =
                     $"[DoLocalize] Called on Type: {instanceType}\n" +
                     $"  - GameObject: {gameObjectName}\n" +
+                    $"  - Term: '{term}' (Final: '{finalTerm}')\n" +
+                    $"  - SecondaryTerm: '{secondaryTerm}' (Final: '{finalSecondaryTerm}')\n" +
+                    $"  - TargetText: '{targetText}'\n" +
+                    $"  - TargetName: '{targetName}'\n" +
+                    $"  - Enabled: {isEnabled}, Active: {isActive}, HasCallback: {hasCallback}\n" +
                     $"  - Main Translation: '{mainTranslation}'\n" +
                     $"  - Secondary Translation: '{secondaryTranslation}'";
 

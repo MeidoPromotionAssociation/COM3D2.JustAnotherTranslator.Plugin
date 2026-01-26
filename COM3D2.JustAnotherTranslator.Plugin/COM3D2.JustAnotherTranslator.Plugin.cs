@@ -239,7 +239,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "This plugin does not provide translation data, you need to get it somewhere else/本插件不提供翻译数据，您需要自行获取");
 
         // Init our LogManager with the BepInEx logger
-        LogManager.Initialize(Logger);
+        LogManager.Init(Logger);
 
         IsVrMode = Environment.CommandLine.ToLower().Contains("/vr");
 

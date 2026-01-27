@@ -218,7 +218,7 @@ public static class TextTranslateManger
     }
 
     /// <summary>
-    /// 判断指定文本是否已被翻译（包括 JAT 翻译和 XUAT 翻译标记检查）
+    ///     判断指定文本是否已被翻译（包括 JAT 翻译和 XUAT 翻译标记检查）
     /// </summary>
     /// <param name="text">需要检查的文本内容</param>
     /// <returns>如果文本已被翻译返回true，否则返回false</returns>

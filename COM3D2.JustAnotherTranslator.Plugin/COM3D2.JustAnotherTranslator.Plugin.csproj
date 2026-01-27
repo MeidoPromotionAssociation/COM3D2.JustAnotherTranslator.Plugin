@@ -14,6 +14,7 @@
         <!--  However, these two vulnerabilities seem to occur only during decompression. We only decompress to memory because the impact may be smaller. ！-->
         <!--  And we add zip path security check when decompressing, so we should be fine -->
         <PackageReference Include="SharpZipLib" IncludeAssets="compile" Version="0.86.0"/>
+        <PackageReference Include="Newtonsoft.Json" IncludeAssets="compile" Version="13.0.4"/>
       </ItemGroup>
     </When>
 
@@ -32,6 +33,7 @@
         <PackageReference Include="CsvHelper" Version="33.1.0"/>
         <!-- What?! COM3D2.5 still use this version -->
         <PackageReference Include="SharpZipLib" IncludeAssets="compile" Version="0.86.0"/>
+        <PackageReference Include="Newtonsoft.Json" IncludeAssets="compile" Version="13.0.4"/>
       </ItemGroup>
     </When>
   </Choose>

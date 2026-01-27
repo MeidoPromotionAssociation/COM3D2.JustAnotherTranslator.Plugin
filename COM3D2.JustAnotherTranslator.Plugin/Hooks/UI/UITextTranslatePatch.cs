@@ -79,10 +79,13 @@ public static class UITextTranslatePatch
     }
 
     /// <summary>
-    ///     对 menuNameCurrentLanguage 进行了重写，取消了原始的 if (Product.systemLanguage != Product.Language.Japanese)
-    ///     检查
+    ///     对 menuNameCurrentLanguage 进行了重写，取消了原始的 !=Product.Language.Japanese 检查
     ///     以便使用 I2 对物品名称进行翻译
     ///     请注意 CountryReplace 会被文本翻译模块处理
+    ///     term 为动态生成，表达式为 this.m_strCateName + "/" +
+    ///     Path.GetFileNameWithoutExtension(this.m_strMenuFileName).ToLower() + "|name"
+    ///     m_strCateName 是 menu 中的 category 命令的第一个参数，m_strMenuFileName 则是 .menu 文件的文件名
+    ///     例如 wear/dress789_wear_i_|name，因此自行制作的 MOD 同样可以被翻译
     /// </summary>
     /// <param name="__instance"></param>
     /// <param name="__result"></param>
@@ -119,10 +122,13 @@ public static class UITextTranslatePatch
 
 
     /// <summary>
-    ///     对 infoTextCurrentLanguage 进行了重写，取消了原始的 if (Product.systemLanguage != Product.Language.Japanese)
-    ///     检查
+    ///     对 infoTextCurrentLanguage 进行了重写，取消了原始的 !=Product.Language.Japanese 检查
     ///     以便使用 I2 对物品说明进行翻译
     ///     请注意 CountryReplace 会被文本翻译模块处理
+    ///     term 为动态生成，表达式为 this.m_strCateName + "/" +
+    ///     Path.GetFileNameWithoutExtension(this.m_strMenuFileName).ToLower() + "|info"
+    ///     m_strCateName 是 menu 中的 category 命令的第一个参数，m_strMenuFileName 则是 .menu 文件的文件名
+    ///     例如 wear/dress789_wear_i_|info，因此自行制作的 MOD 同样可以被翻译
     /// </summary>
     /// <param name="__instance"></param>
     /// <param name="__result"></param>

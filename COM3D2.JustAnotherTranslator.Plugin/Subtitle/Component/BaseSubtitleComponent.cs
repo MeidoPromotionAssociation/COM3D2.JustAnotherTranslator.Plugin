@@ -4,7 +4,6 @@ using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using UnityEngine;
 using UnityEngine.UI;
-using Random = System.Random;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 
@@ -576,19 +575,9 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <returns>专属颜色</returns>
     protected virtual Color GetSpeakerColor(string speakerName)
     {
-        LogManager.Debug($"Creating Color for {speakerName}");
-
         if (speakerName == null) speakerName = "";
 
-        // 使用哈希值生成颜色，确保相同名称总是获得相同颜色
-        var random = new Random(speakerName.GetHashCode());
-
-        // 生成偏亮的颜色
-        var color = new Color(
-            0.5f + (float)random.NextDouble() * 0.5f, // 0.5-1.0 范围
-            0.5f + (float)random.NextDouble() * 0.5f,
-            0.5f + (float)random.NextDouble() * 0.5f
-        );
+        var color = SubtitleManager.GetSpeakerColor(speakerName);
 
         color.a = Config.TextColor.a;
 

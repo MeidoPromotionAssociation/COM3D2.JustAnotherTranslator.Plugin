@@ -212,8 +212,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     private static ConfigEntry<bool> _FixerTip2;
     public static ConfigEntry<bool> EnableMaidCafeDlcLineBreakCommentFix;
 
-
-    // translation folder path
+    // Translation folder path
     public static readonly string TranslationRootPath =
         Path.Combine(Paths.BepInExRootPath, "JustAnotherTranslator");
 
@@ -228,6 +227,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string TextDumpPath;
     public static string TextureDumpPath;
     public static string SpriteDumpPath;
+    public static string SpeakerColorConfigPath;
 
     private void Awake()
     {
@@ -292,6 +292,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         TextDumpPath = Path.Combine(DumpPath, "Text");
         TextureDumpPath = Path.Combine(DumpPath, "Texture");
         SpriteDumpPath = Path.Combine(DumpPath, "Sprite");
+        SpeakerColorConfigPath = Path.Combine(TranslationRootPath, "SpeakerColor.json");
 
         EnableGeneralTextTranslation = Config.Bind("2General",
             "EnableGeneralTextTranslation/启用通用文本翻译",
@@ -1142,6 +1143,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             Directory.CreateDirectory(TextDumpPath);
             Directory.CreateDirectory(TextureDumpPath);
             Directory.CreateDirectory(SpriteDumpPath);
+            if (!File.Exists(SpeakerColorConfigPath))
+                File.WriteAllText(SpeakerColorConfigPath, "{}");
         }
         catch (Exception e)
         {
@@ -1303,6 +1306,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             TextDumpPath = Path.Combine(DumpPath, "Text");
             TextureDumpPath = Path.Combine(DumpPath, "Texture");
             SpriteDumpPath = Path.Combine(DumpPath, "Sprite");
+            SpeakerColorConfigPath = Path.Combine(TranslationRootPath, "SpeakerColor.json");
             // 创建目录
             try
             {
@@ -1317,6 +1321,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 Directory.CreateDirectory(TextDumpPath);
                 Directory.CreateDirectory(TextureDumpPath);
                 Directory.CreateDirectory(SpriteDumpPath);
+                if (!File.Exists(SpeakerColorConfigPath))
+                    File.WriteAllText(SpeakerColorConfigPath, "{}");
             }
             catch (Exception e)
             {

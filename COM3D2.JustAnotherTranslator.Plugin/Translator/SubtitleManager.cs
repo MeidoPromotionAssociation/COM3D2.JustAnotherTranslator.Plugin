@@ -7,8 +7,10 @@ using COM3D2.JustAnotherTranslator.Plugin.Hooks.Subtitle;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Random = System.Random;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
@@ -25,6 +27,9 @@ public static class SubtitleManager
 
     /// 存储 voiceId 与文本的映射关系
     private static readonly Dictionary<string, string> VoiceIdToTextMap = new(); // voiceId -> text
+
+    /// 储存说话者颜色映射
+    private static Dictionary<string, string> _speakerColorConfig = new(); // maid name -> color
 
     /// 当前正在说话的角色
     private static Maid _currentSpeaker;
@@ -53,6 +58,8 @@ public static class SubtitleManager
 
         // 初始化字幕组件管理器
         SubtitleComponentManager.Init();
+
+        LoadSpeakerColorConfig();
 
         // 应用补丁
         ApplySubtitlePatches();
@@ -173,8 +180,7 @@ public static class SubtitleManager
 
         // 清空映射
         VoiceIdToTextMap.Clear();
-
-        // 重置状态
+        _speakerColorConfig.Clear();
         _currentSpeaker = null;
         _currentVoiceId = null;
     }
@@ -381,6 +387,96 @@ public static class SubtitleManager
         }
 
         LogManager.Debug($"MonitorMaidVoicePlayback ended for Maid {speakerName}");
+    }
+
+
+    /// <summary>
+    ///     获取说话者的专属颜色
+    /// </summary>
+    /// <param name="speakerName">说话者名称</param>
+    /// <returns>专属颜色</returns>
+    public static Color GetSpeakerColor(string speakerName)
+    {
+        LogManager.Debug($"Creating Color for {speakerName}");
+
+        if (speakerName == null) speakerName = "";
+
+        if (_speakerColorConfig.TryGetValue(speakerName, out var colorStr) &&
+            !string.IsNullOrEmpty(colorStr))
+        {
+            if (ColorUtility.TryParseHtmlString(colorStr, out var loadedColor))
+            {
+                LogManager.Debug(
+                    $"Loaded Color R:{loadedColor.r:F2} G:{loadedColor.g:F2} B:{loadedColor.b:F2} for {speakerName}");
+                return loadedColor;
+            }
+
+            LogManager.Warning(
+                $"Invalid speaker color config for {speakerName}: {colorStr}, regenerating");
+        }
+
+        // 使用哈希值生成颜色，确保相同名称总是获得相同颜色
+        // 具体哈希方式不重要，也不需要强一致，因此直接使用GetHashCode
+        var random = new Random(speakerName.GetHashCode());
+
+        // 生成偏亮的颜色
+        var color = new Color(
+            0.5f + (float)random.NextDouble() * 0.5f, // 0.5-1.0 范围
+            0.5f + (float)random.NextDouble() * 0.5f,
+            0.5f + (float)random.NextDouble() * 0.5f
+        );
+
+        LogManager.Debug(
+            $"Created Color R:{color.r:F2} G:{color.g:F2} B:{color.b:F2} for {speakerName}");
+
+        _speakerColorConfig[speakerName] = $"#{ColorUtility.ToHtmlStringRGB(color)}";
+        SaveSpeakerColorConfig();
+
+        return color;
+    }
+
+    /// <summary>
+    ///     加载说话者颜色配置文件。如果配置文件不存在，则创建一个新的空配置文件。
+    ///     如果加载失败，将记录警告并初始化一个空的颜色配置。
+    /// </summary>
+    private static void LoadSpeakerColorConfig()
+    {
+        try
+        {
+            if (!File.Exists(JustAnotherTranslator.SpeakerColorConfigPath))
+            {
+                _speakerColorConfig = new Dictionary<string, string>();
+                SaveSpeakerColorConfig();
+                return;
+            }
+
+            var json = File.ReadAllText(JustAnotherTranslator.SpeakerColorConfigPath);
+            var loaded = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            _speakerColorConfig = loaded ?? new Dictionary<string, string>();
+            LogManager.Debug($"Loaded speaker color config/加载说话者颜色配置成功: {json}");
+        }
+        catch (Exception e)
+        {
+            _speakerColorConfig = new Dictionary<string, string>();
+            LogManager.Warning($"Failed to load speaker color config/加载说话者颜色失败: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    ///     将说话者颜色配置保存到配置文件中。
+    /// </summary>
+    private static void SaveSpeakerColorConfig()
+    {
+        try
+        {
+            var json = JsonConvert.SerializeObject(_speakerColorConfig, Formatting.Indented);
+            File.WriteAllText(JustAnotherTranslator.SpeakerColorConfigPath, json);
+            LogManager.Debug($"Saved speaker color config/保存说话者颜色配置成功: {json}");
+        }
+        catch (Exception e)
+        {
+            LogManager.Warning($"Failed to save speaker color config/保存说话者颜色失败: {e.Message}");
+        }
     }
 
 

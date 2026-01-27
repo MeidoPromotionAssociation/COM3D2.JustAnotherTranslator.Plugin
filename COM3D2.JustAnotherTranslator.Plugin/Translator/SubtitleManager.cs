@@ -83,6 +83,9 @@ public static class SubtitleManager
         // 取消事件订阅
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
+        // 清理说话者颜色配置，注意放在 CleanResources 会导致场景切换时被清理
+        _speakerColorConfig.Clear();
+
         // 清理资源
         CleanResources();
 
@@ -180,7 +183,6 @@ public static class SubtitleManager
 
         // 清空映射
         VoiceIdToTextMap.Clear();
-        _speakerColorConfig.Clear();
         _currentSpeaker = null;
         _currentVoiceId = null;
     }

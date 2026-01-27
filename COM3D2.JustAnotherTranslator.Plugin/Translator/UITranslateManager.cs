@@ -165,45 +165,45 @@ public static class UITranslateManager
     #region Text
 
     /// <summary>
-    /// 通过将给定的文本term与已加载的翻译词典进行匹配来处理其翻译。
+    ///     通过将给定的文本term与已加载的翻译词典进行匹配来处理其翻译。
     /// </summary>
     /// <param name="term">要翻译的文本术语。</param>
     /// <param name="translation">如果找到翻译结果，则将输出此参数。</param>
     /// <returns> 返回一个布尔值，指示是否成功找到给定术语的翻译。</returns>
     public static bool HandleTextTermTranslation(string term, out string translation)
-         {
-             if (string.IsNullOrEmpty(term))
-             {
-                 translation = string.Empty;
-                 return false;
-             }
+    {
+        if (string.IsNullOrEmpty(term))
+        {
+            translation = string.Empty;
+            return false;
+        }
 
-             // SceneDaily/ボタン文字/男エディット
-             if (_translations.TryGetValue(term, out translation))
-             {
-                 TextTranslateManger.MarkTranslated(translation);
-                 LogManager.Debug($"Found translation for term: {term}    =>    {translation}");
-                 return true;
-             }
+        // SceneDaily/ボタン文字/男エディット
+        if (_translations.TryGetValue(term, out translation))
+        {
+            TextTranslateManger.MarkTranslated(translation);
+            LogManager.Debug($"Found translation for term: {term}    =>    {translation}");
+            return true;
+        }
 
-             // 剔除第一个/前的字符
-             // ボタン文字/男エディット
-             var slashIndex = term.IndexOf('/');
-             if (slashIndex > -1)
-             {
-                 var newTerm = term.Substring(slashIndex + 1);
-                 if (_translations.TryGetValue(newTerm, out translation))
-                 {
-                     TextTranslateManger.MarkTranslated(translation);
-                     LogManager.Debug(
-                         $"Found translation for term: {term} (as {newTerm})    =>    {translation}");
-                     return true;
-                 }
-             }
+        // 剔除第一个/前的字符
+        // ボタン文字/男エディット
+        var slashIndex = term.IndexOf('/');
+        if (slashIndex > -1)
+        {
+            var newTerm = term.Substring(slashIndex + 1);
+            if (_translations.TryGetValue(newTerm, out translation))
+            {
+                TextTranslateManger.MarkTranslated(translation);
+                LogManager.Debug(
+                    $"Found translation for term: {term} (as {newTerm})    =>    {translation}");
+                return true;
+            }
+        }
 
-             translation = string.Empty;
-             return false;
-         }
+        translation = string.Empty;
+        return false;
+    }
 
     /// <summary>
     ///     异步加载翻译文件
@@ -644,10 +644,7 @@ public static class UITranslateManager
                 Directory.CreateDirectory(directoryPath);
 
             var fileInfo = new FileInfo(TermDumpFilePath);
-            if (fileInfo.Exists && fileInfo.Length > 0)
-            {
-                _shouldWriteHeader = false;
-            }
+            if (fileInfo.Exists && fileInfo.Length > 0) _shouldWriteHeader = false;
 
             using (var writer = new StreamWriter(TermDumpFilePath, true, new UTF8Encoding(true)))
             using (var csv = new CsvWriter(writer, CsvConfig))

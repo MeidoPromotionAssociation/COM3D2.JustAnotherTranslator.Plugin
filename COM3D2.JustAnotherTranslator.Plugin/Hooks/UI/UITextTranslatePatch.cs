@@ -49,7 +49,8 @@ public static class UITextTranslatePatch
                 $"LocalizationManager_TryGetTranslation_Postfix: Term {Term}, Translation {Translation}, FixForRTL {FixForRTL}, maxLineLengthForRTL {maxLineLengthForRTL}, ignoreRTLnumbers {ignoreRTLnumbers}, applyParameters {applyParameters}, localParametersRoot {localParametersRoot}, overrideLanguage {overrideLanguage}, __result {__result}");
 
             // 如果原方法已经找到翻译，尝试替换
-            var customTranslation = UITranslateManager.HandleTextTermTranslation(Term);
+            if (!UITranslateManager.HandleTextTermTranslation(Term, out var customTranslation))
+                return;
 
             // 如果有自定义翻译，替换它
             if (!string.IsNullOrEmpty(customTranslation))

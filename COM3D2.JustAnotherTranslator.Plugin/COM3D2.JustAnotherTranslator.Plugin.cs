@@ -206,6 +206,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<int> TextDumpThreshold;
     public static ConfigEntry<bool> FlushTextDumpNow;
     public static ConfigEntry<bool> EnableDumpDanceInfo;
+    public static ConfigEntry<bool> EnableTermDump;
+    public static ConfigEntry<int> TermDumpThreshold;
+    public static ConfigEntry<bool> FlushTermDumpNow;
 
     // patch相关配置
     private static ConfigEntry<bool> _fixerTip1;
@@ -221,12 +224,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string TextureReplacePath;
     public static string LyricPath;
     public static string UIPath;
+    public static string DumpUIPath;
     public static string UITextPath;
     public static string UISpritePath;
     public static string DumpPath;
     public static string TextDumpPath;
     public static string TextureDumpPath;
     public static string SpriteDumpPath;
+    public static string TermDumpPath;
     public static string SpeakerColorConfigPath;
 
     private void Awake()
@@ -289,9 +294,11 @@ public class JustAnotherTranslator : BaseUnityPlugin
         UITextPath = Path.Combine(UIPath, "Text");
         UISpritePath = Path.Combine(UIPath, "Sprite");
         DumpPath = Path.Combine(TranslationRootPath, "Dump");
+        DumpUIPath = Path.Combine(DumpPath, "UI");
         TextDumpPath = Path.Combine(DumpPath, "Text");
         TextureDumpPath = Path.Combine(DumpPath, "Texture");
-        SpriteDumpPath = Path.Combine(DumpPath, "Sprite");
+        SpriteDumpPath = Path.Combine(DumpUIPath, "Sprite");
+        TermDumpPath = Path.Combine(DumpUIPath, "Text");
         SpeakerColorConfigPath = Path.Combine(TranslationRootPath, "SpeakerColor.json");
 
         EnableGeneralTextTranslation = Config.Bind("2General",
@@ -1099,6 +1106,28 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 null,
                 new ConfigurationManagerAttributes { Order = 9090 }));
 
+        EnableTermDump = Config.Bind("9Dump",
+            "EnableDumpTerm/是否启用Term转储",
+            false,
+            new ConfigDescription(
+                "Only export term that has not translated, write out when the threshold is reached or switching scenes or the game correct exits/仅转储未替换过的term，达到阈值或切换场景或正确退出游戏时写出",
+                null, new ConfigurationManagerAttributes { Order = 9100 }));
+
+        TermDumpThreshold = Config.Bind("9Dump",
+            "TermDumpThreshold/Term转储阈值",
+            20,
+            new ConfigDescription("How many lines of term to write out at once/累计多少条term后写出一次",
+                null,
+                new ConfigurationManagerAttributes { Order = 9110 }));
+
+        FlushTermDumpNow = Config.Bind("9Dump",
+            "FlushTermDumpNow/立即写出Term",
+            false,
+            new ConfigDescription(
+                "Immediately write out all cached term when the option status changes/立即写出所有已缓存的term，选项状态变更时立即写出",
+                null,
+                new ConfigurationManagerAttributes { Order = 9120 }));
+
         # endregion
 
         # region FixerSettings
@@ -1137,12 +1166,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
             Directory.CreateDirectory(TextureReplacePath);
             Directory.CreateDirectory(LyricPath);
             Directory.CreateDirectory(UIPath);
+            Directory.CreateDirectory(DumpUIPath);
             Directory.CreateDirectory(UITextPath);
             Directory.CreateDirectory(UISpritePath);
             Directory.CreateDirectory(DumpPath);
             Directory.CreateDirectory(TextDumpPath);
             Directory.CreateDirectory(TextureDumpPath);
             Directory.CreateDirectory(SpriteDumpPath);
+            Directory.CreateDirectory(TermDumpPath);
             if (!File.Exists(SpeakerColorConfigPath))
                 File.WriteAllText(SpeakerColorConfigPath, "{}");
         }
@@ -1300,12 +1331,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
             TextureReplacePath = Path.Combine(TargetLanguePath, "Texture");
             LyricPath = Path.Combine(TargetLanguePath, "Lyric");
             UIPath = Path.Combine(TargetLanguePath, "UI");
+            DumpUIPath = Path.Combine(TranslationRootPath, "DumpUI");
             UITextPath = Path.Combine(UIPath, "Text");
             UISpritePath = Path.Combine(UIPath, "Sprite");
             DumpPath = Path.Combine(TranslationRootPath, "Dump");
             TextDumpPath = Path.Combine(DumpPath, "Text");
             TextureDumpPath = Path.Combine(DumpPath, "Texture");
-            SpriteDumpPath = Path.Combine(DumpPath, "Sprite");
+            SpriteDumpPath = Path.Combine(DumpUIPath, "Sprite");
+            TermDumpPath = Path.Combine(DumpUIPath, "UI");
             SpeakerColorConfigPath = Path.Combine(TranslationRootPath, "SpeakerColor.json");
             // 创建目录
             try
@@ -1315,12 +1348,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 Directory.CreateDirectory(TextureReplacePath);
                 Directory.CreateDirectory(LyricPath);
                 Directory.CreateDirectory(UIPath);
+                Directory.CreateDirectory(DumpUIPath);
                 Directory.CreateDirectory(UITextPath);
                 Directory.CreateDirectory(UISpritePath);
                 Directory.CreateDirectory(DumpPath);
                 Directory.CreateDirectory(TextDumpPath);
                 Directory.CreateDirectory(TextureDumpPath);
                 Directory.CreateDirectory(SpriteDumpPath);
+                Directory.CreateDirectory(TermDumpPath);
                 if (!File.Exists(SpeakerColorConfigPath))
                     File.WriteAllText(SpeakerColorConfigPath, "{}");
             }
@@ -2475,6 +2510,19 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 LogManager.Info("Text dump disabled/禁用文本转储");
         };
 
+        // 注册Dump文本阈值变更事件
+        TextDumpThreshold.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("Text dump threshold changed/文本转储阈值已更改");
+        };
+
+        // 注册Dump文本立即写出变更事件
+        FlushTextDumpNow.SettingChanged += (_, _) =>
+        {
+            TextTranslateManger.FlushDumpBuffer();
+            LogManager.Info("Text dump flushed/文本转储缓存已写出");
+        };
+
         // 注册Dump纹理启用状态变更事件
         EnableTexturesDump.SettingChanged += (_, _) =>
         {
@@ -2493,19 +2541,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 LogManager.Info("Sprite dump disabled/禁用Sprite转储");
         };
 
-        // 注册Dump文本阈值变更事件
-        TextDumpThreshold.SettingChanged += (_, _) =>
-        {
-            LogManager.Info("Text dump threshold changed/文本转储阈值已更改");
-        };
-
-        // 注册Dump文本立即写出变更事件
-        FlushTextDumpNow.SettingChanged += (_, _) =>
-        {
-            TextTranslateManger.FlushDumpBuffer();
-            LogManager.Info("Text dump flushed/文本转储缓存已写出");
-        };
-
+        // 注册Dump舞蹈信息变更事件
         EnableDumpDanceInfo.SettingChanged += (_, _) =>
         {
             if (EnableDumpDanceInfo.Value)
@@ -2513,6 +2549,37 @@ public class JustAnotherTranslator : BaseUnityPlugin
                     "Dance info dump enabled, will be exported when playing dances/启用舞蹈信息转储，播放舞蹈时会转储舞蹈信息");
             else
                 LogManager.Info("Dance info dump disabled/禁用舞蹈信息转储");
+        };
+
+        // 注册DumpTerm启用状态变更事件
+        EnableTermDump.SettingChanged += (_, _) =>
+        {
+            if (EnableTermDump.Value || EnableUITextTranslation.Value)
+            {
+                UITranslateManager.Unload();
+                UITranslateManager.Init();
+                LogManager.Info(
+                    "Term dump enabled, will be exported when playing dances/启用Term转储");
+            }
+            else if (!EnableTermDump.Value && EnableUITextTranslation.Value)
+            {
+                UITranslateManager.Unload();
+                UITranslateManager.Init();
+                LogManager.Info("Term dump disabled/禁用term转储");
+            }
+        };
+
+        // 注册DumpTerm阈值变更事件
+        TermDumpThreshold.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("Term dump threshold changed/Term转储阈值已更改");
+        };
+
+        // 注册DumpTerm立即写出变更事件
+        FlushTermDumpNow.SettingChanged += (_, _) =>
+        {
+            UITranslateManager.FlushTermDumpBuffer();
+            LogManager.Info("Term dump flushed/Term转储缓存已写出");
         };
     }
 

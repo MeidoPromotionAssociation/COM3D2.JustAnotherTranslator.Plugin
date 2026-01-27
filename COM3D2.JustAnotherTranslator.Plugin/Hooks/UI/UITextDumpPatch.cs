@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using I2.Loc;
@@ -8,9 +9,9 @@ using I2.Loc;
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 
 /// <summary>
-///     Harmony patch to debug UI translations
+///     用于 Dump 未翻译的 UI 文本的 Patch
 /// </summary>
-public static class UIDebugPatch
+public static class UITextDumpPatch
 {
     /// <summary>
     ///     Hooks into every ILocalizeTarget implementation to log calls to DoLocalize
@@ -59,7 +60,7 @@ public static class UIDebugPatch
                 }
 
                 var prefix = new HarmonyMethod(typeof(DoLocalizePatches),
-                    nameof(DoLocalizePatches.LogDoLocalizeCallPrefix));
+                    nameof(DoLocalizePatches.DoLocalizeCallPrefix));
                 var patchedCount = 0;
 
                 foreach (var type in implementingTypes)
@@ -96,49 +97,34 @@ public static class UIDebugPatch
         }
     }
 
+
     /// <summary>
     ///     This prefix will run before every call to a patched DoLocalize method
     /// </summary>
     public static class DoLocalizePatches
     {
-        public static void LogDoLocalizeCallPrefix(ILocalizeTarget __instance, Localize cmp,
+        public static void DoLocalizeCallPrefix(ILocalizeTarget __instance, Localize cmp,
             string mainTranslation,
             string secondaryTranslation)
         {
             try
             {
                 var cmpExist = cmp != null;
-                var instanceType = __instance.GetType().FullName;
-                var gameObjectName =
-                    cmpExist && cmp.gameObject != null ? cmp.gameObject.name : "N/A";
-                var term = cmpExist ? cmp.mTerm : null;
+
                 var finalTerm = cmpExist ? cmp.FinalTerm : null;
-                var secondaryTerm = cmpExist ? cmp.mTermSecondary : null;
-                var finalSecondaryTerm = cmpExist ? cmp.FinalSecondaryTerm : null;
-                var targetName = cmpExist ? cmp.mLocalizeTargetName : null;
-                var hasCallback = cmpExist && cmp.HasCallback();
-                var isEnabled = cmpExist && cmp.enabled;
-                var isActive = cmpExist && cmp.gameObject != null &&
-                               cmp.gameObject.activeInHierarchy;
+                if (finalTerm == "-" || StringTool.IsNullOrWhiteSpace(finalTerm)) return;
+
                 var targetText = cmpExist ? cmp.GetMainTargetsText() : null;
 
-                var logMessage =
-                    $"[DoLocalize] Called on Type: {instanceType}\n" +
-                    $"  - GameObject: {gameObjectName}\n" +
-                    $"  - Term: '{term}' (Final: '{finalTerm}')\n" +
-                    $"  - SecondaryTerm: '{secondaryTerm}' (Final: '{finalSecondaryTerm}')\n" +
-                    $"  - TargetText: '{targetText}'\n" +
-                    $"  - TargetName: '{targetName}'\n" +
-                    $"  - Enabled: {isEnabled}, Active: {isActive}, HasCallback: {hasCallback}\n" +
-                    $"  - Main Translation: '{mainTranslation}'\n" +
-                    $"  - Secondary Translation: '{secondaryTranslation}'";
+                if (UITranslateManager.HandleTextTermTranslation(finalTerm, out _))
+                    return;
 
-                LogManager.Debug(logMessage);
+                UITranslateManager.DumpTerm(finalTerm, targetText);
             }
             catch (Exception e)
             {
                 LogManager.Error(
-                    $"LogDoLocalizeCallPrefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+                    $"DoLocalizeCallPrefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
             }
         }
     }

@@ -1,14 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Text;
 using BepInEx.Logging;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
+using CsvHelper;
+using CsvHelper.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
+#if COM3D25_UNITY_2022
+using System.Linq;
+#endif
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
 
@@ -20,6 +27,7 @@ public static class UITranslateManager
     private static Harmony _uiTextTranslatePatch;
     private static Harmony _uiSpriteReplacePatch;
     private static Harmony _uiDebugPatch;
+    private static Harmony _uiTextDumpPtach;
     private static bool _initialized;
 
     /// 存储翻译数据的字典
@@ -33,6 +41,56 @@ public static class UITranslateManager
 
     /// 记录已经 dump 过的精灵图
     private static readonly HashSet<string> DumpedSprite = new();
+
+    /// 记录已经 dump 过的未翻译 term
+    private static readonly HashSet<string> DumpedTerm = new();
+
+    /// term 导出缓存区
+    private static readonly List<AsyncUiTextLoader.CsvEntry> TermDumpBuffer = new();
+
+    /// 未翻译的 term 导出路径
+    private static readonly string TermDumpFilePath =
+        Path.Combine(JustAnotherTranslator.TermDumpPath,
+            DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + "_untranslate_term.csv");
+
+    /// 是否需要写入 csv header
+    private static bool _shouldWriteHeader = true;
+
+    /// <summary>
+    ///     CsvHelper 配置
+    /// </summary>
+    /// CSV配置
+#if COM3D25_UNITY_2022
+    private static readonly CsvConfiguration CsvConfig = new(CultureInfo.InvariantCulture)
+    {
+        AllowComments = true,
+        HasHeaderRecord = true,
+        Encoding = Encoding
+            .UTF8, // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
+        IgnoreBlankLines = true,
+        PrepareHeaderForMatch = args => args.Header?.Trim().ToLowerInvariant(),
+        ShouldSkipRecord = args =>
+        {
+            var record = args.Row?.Context?.Parser?.Record;
+            return record == null || record.All(string.IsNullOrWhiteSpace);
+        },
+        MissingFieldFound = null
+    };
+#else
+    private static readonly CsvConfiguration CsvConfig = new()
+    {
+        CultureInfo = CultureInfo.InvariantCulture,
+        AllowComments = true,
+        HasHeaderRecord = true,
+        Encoding = Encoding
+            .UTF8, // The Encoding config is only used for byte counting. https://github.com/JoshClose/CsvHelper/issues/2278#issuecomment-2274128445
+        IgnoreBlankLines = true,
+        IgnoreHeaderWhiteSpace = true,
+        IsHeaderCaseSensitive = false,
+        SkipEmptyRecords = true,
+        WillThrowOnMissingField = false
+    };
+#endif
 
     public static void Init()
     {
@@ -57,11 +115,20 @@ public static class UITranslateManager
             UIDebugPatch.LocalizeTargetPatcher.ApplyPatch(_uiDebugPatch);
         }
 
-        if (JustAnotherTranslator.EnableSpriteDump.Value)
+        if (JustAnotherTranslator.EnableTermDump.Value)
+        {
+            _uiTextDumpPtach = new Harmony(
+                "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitextdumppatch");
+            UITextDumpPatch.LocalizeTargetPatcher.ApplyPatch(_uiTextDumpPtach);
+        }
+
+        if (JustAnotherTranslator.EnableTermDump.Value ||
+            JustAnotherTranslator.EnableSpriteDump.Value)
             SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _initialized = true;
     }
+
 
     public static void Unload()
     {
@@ -79,64 +146,64 @@ public static class UITranslateManager
         _uiDebugPatch?.UnpatchSelf();
         _uiDebugPatch = null;
 
+        _uiTextDumpPtach?.UnpatchSelf();
+        _uiTextDumpPtach = null;
+
         _translations.Clear();
         SpritePathCache.Clear();
 
-        _initialized = false;
-    }
+        FlushTermDumpBuffer();
 
-    /// <summary>
-    ///     场景卸载时清理资源
-    /// </summary>
-    /// <param name="scene"></param>
-    private static void OnSceneUnloaded(Scene scene)
-    {
-        try
-        {
-            DumpedSprite.Clear();
-        }
-        catch (Exception e)
-        {
-            LogManager.Error($"Error during cleanup scene resources/清理场景资源失败: {e.Message}");
-        }
+        DumpedSprite.Clear();
+        DumpedTerm.Clear();
+
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+
+        _initialized = false;
     }
 
     #region Text
 
     /// <summary>
-    ///     处理UI文本翻译
+    /// 通过将给定的文本term与已加载的翻译词典进行匹配来处理其翻译。
     /// </summary>
-    /// <param name="term"></param>
-    /// <returns></returns>
-    public static string HandleTextTermTranslation(string term)
-    {
-        if (string.IsNullOrEmpty(term)) return term;
+    /// <param name="term">要翻译的文本术语。</param>
+    /// <param name="translation">如果找到翻译结果，则将输出此参数。</param>
+    /// <returns> 返回一个布尔值，指示是否成功找到给定术语的翻译。</returns>
+    public static bool HandleTextTermTranslation(string term, out string translation)
+         {
+             if (string.IsNullOrEmpty(term))
+             {
+                 translation = string.Empty;
+                 return false;
+             }
 
-        // SceneDaily/ボタン文字/男エディット
-        if (_translations.TryGetValue(term, out var translation))
-        {
-            TextTranslateManger.MarkTranslated(translation);
-            LogManager.Debug($"Found translation for term: {term}    =>    {translation}");
-            return translation;
-        }
+             // SceneDaily/ボタン文字/男エディット
+             if (_translations.TryGetValue(term, out translation))
+             {
+                 TextTranslateManger.MarkTranslated(translation);
+                 LogManager.Debug($"Found translation for term: {term}    =>    {translation}");
+                 return true;
+             }
 
-        // 剔除第一个/前的字符
-        // ボタン文字/男エディット
-        var slashIndex = term.IndexOf('/');
-        if (slashIndex > -1)
-        {
-            var newTerm = term.Substring(slashIndex + 1);
-            if (_translations.TryGetValue(newTerm, out translation))
-            {
-                TextTranslateManger.MarkTranslated(translation);
-                LogManager.Debug(
-                    $"Found translation for term: {term} (as {newTerm})    =>    {translation}");
-                return translation;
-            }
-        }
+             // 剔除第一个/前的字符
+             // ボタン文字/男エディット
+             var slashIndex = term.IndexOf('/');
+             if (slashIndex > -1)
+             {
+                 var newTerm = term.Substring(slashIndex + 1);
+                 if (_translations.TryGetValue(newTerm, out translation))
+                 {
+                     TextTranslateManger.MarkTranslated(translation);
+                     LogManager.Debug(
+                         $"Found translation for term: {term} (as {newTerm})    =>    {translation}");
+                     return true;
+                 }
+             }
 
-        return "";
-    }
+             translation = string.Empty;
+             return false;
+         }
 
     /// <summary>
     ///     异步加载翻译文件
@@ -559,4 +626,114 @@ public static class UITranslateManager
     }
 
     # endregion
+
+
+    /// <summary>
+    ///     将term转储缓冲区的内容写入指定文件
+    ///     以便将未翻译的术语及其原文保存下来。
+    /// </summary>
+    public static void FlushTermDumpBuffer()
+    {
+        if (TermDumpBuffer.Count == 0)
+            return;
+
+        try
+        {
+            var directoryPath = Path.GetDirectoryName(TermDumpFilePath);
+            if (!string.IsNullOrEmpty(directoryPath))
+                Directory.CreateDirectory(directoryPath);
+
+            var fileInfo = new FileInfo(TermDumpFilePath);
+            if (fileInfo.Exists && fileInfo.Length > 0)
+            {
+                _shouldWriteHeader = false;
+            }
+
+            using (var writer = new StreamWriter(TermDumpFilePath, true, new UTF8Encoding(true)))
+            using (var csv = new CsvWriter(writer, CsvConfig))
+            {
+                if (_shouldWriteHeader)
+                {
+                    csv.WriteHeader(typeof(AsyncUiTextLoader.CsvEntry));
+#if COM3D25_UNITY_2022
+                    csv.NextRecord();
+#endif
+                    _shouldWriteHeader = false;
+                }
+
+                foreach (var entry in TermDumpBuffer)
+                {
+                    csv.WriteRecord(entry);
+#if COM3D25_UNITY_2022
+                    csv.NextRecord();
+#endif
+                }
+            }
+
+            TermDumpBuffer.Clear();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to dump term/导出 term 失败: {e.Message}");
+        }
+    }
+
+
+    /// <summary>
+    ///     将未翻译的术语及其原文导出到 CSV 文件，以便进行后续本地化工作。
+    /// </summary>
+    /// <param name="term">未翻译的术语</param>
+    /// <param name="original">与未翻译术语对应的原文</param>
+    public static void DumpTerm(string term, string original)
+    {
+        if (!JustAnotherTranslator.EnableTermDump.Value)
+            return;
+
+        try
+        {
+            if (StringTool.IsNullOrWhiteSpace(term))
+                return;
+
+            if (!DumpedTerm.Add(term))
+                return;
+
+            LogManager.Debug($"Term not translated, dumping: {term}, original: {original}");
+
+            var entry = new AsyncUiTextLoader.CsvEntry
+            {
+                Term = term,
+                Original = original,
+                Translation = ""
+            };
+
+            TermDumpBuffer.Add(entry);
+
+            if (TermDumpBuffer.Count >= JustAnotherTranslator.TermDumpThreshold.Value)
+                FlushTermDumpBuffer();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Failed to dump term/导出 term 失败: {e.Message}");
+        }
+    }
+
+
+    /// <summary>
+    ///     场景卸载时清理资源
+    /// </summary>
+    /// <param name="scene"></param>
+    private static void OnSceneUnloaded(Scene scene)
+    {
+        try
+        {
+            if (JustAnotherTranslator.EnableTermDump.Value) FlushTermDumpBuffer();
+
+            // DumpedTerm.Clear();
+            // DumpedSprite.Clear();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Error during cleanup scene resources/清理场景资源失败: {e.Message}");
+        }
+    }
 }

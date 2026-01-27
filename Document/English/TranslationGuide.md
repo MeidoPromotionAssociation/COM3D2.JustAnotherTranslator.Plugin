@@ -840,7 +840,7 @@ For example, in `stream001_adv_0002.ks`:
 
 # DUMP
 
-JAT supports exporting untranslated text, along with unreplaced textures and sprites, to facilitate subsequent translation. Enabling these features can reduce performance, so it's recommended to only enable them when needed.
+JAT supports exporting untranslated text and terms, along with unreplaced textures and sprites, to facilitate subsequent translation. Enabling these features can reduce performance, so it's recommended to only enable them when needed.
 
 ## Output Location
 
@@ -849,23 +849,31 @@ JAT supports exporting untranslated text, along with unreplaced textures and spr
   - `yyyy-MM-dd-HH-mm_untranslate_normalized.txt` (Text with \r, \n, \t, and whitespace characters removed and converted to uppercase can be used directly to create translation files)
 - Textures: `BepInEx/JustAnotherTranslator/Dump/Texture/*.png`
 - Sprites: `BepInEx/JustAnotherTranslator/Dump/Sprite/*.png`
+- UI 文本（Term）：`BepInEx/JustAnotherTranslator/Dump/UI/Text/yyyy-MM-dd-HH-mm_untranslate_term.csv`
 
 ## Switches and Dependencies (Configuration Section [9Dump])
 
-- EnableDumpText/是否启用文本转储
-  - Only collects "untranslated" original text; writes each line to `year-month-day-hour-minute.txt` at game startup
+- `EnableDumpText/是否启用文本转储`
+  - Only collects "untranslated" original text; writes each line to `yyyy-MM-dd-HH-mm_untranslate.txt` at game startup
   - Requires `General Text Translation` to be enabled
-- TextDumpThreshold/文本转储阈值 (default 20)
-  - Writes to disk when the cache entry threshold is reached or when switching scenes. Set to 1 for real-time writing.
-- FlushTextDumpNow/立即写出文本
+- `TextDumpThreshold/文本转储阈值 (default 20)`
+  - Write to disk only when the number of untranslated term cache entries reaches the threshold or when switching scenes. Setting it to 1 indicates real-time writing.
+- `FlushTextDumpNow/立即写出文本`
   - Write out the cache immediately when the option status changes.
-- EnableDumpTexture/是否启用纹理转储
+- `EnableDumpTexture/是否启用纹理转储`
   - Exports the original texture as a PNG only if a texture with "no corresponding replacement file" is found.
   - Requires the `Texture Replacement` feature to be enabled.
-- EnableDumpSprite/是否启用精灵图转储
+- `EnableDumpSprite/是否启用精灵图转储`
   - When texture dumping is enabled, the underlying textures used by sprites are exported. If you use the `Texture Replacement` feature to replace the atlas that a sprite belongs to, the sprites from the replaced atlas will also be exported.
-- EnableDumpDanceInfo/是否启用舞蹈信息转储
+- `EnableDumpDanceInfo/是否启用舞蹈信息转储`
   - See the `Dance Mode Lyrics and Subtitles` section.
+- `EnableDumpTerm/是否启用Term转储`
+  - Only collect "untranslated" terms; write them line by line to `yyyy-MM-dd-HH-mm_untranslate_term.csv` at game startup
+  - Requires enabling the `Enable UI Text Translation` function
+- `TermDumpThreshold/Term转储阈值 (default 20)`
+  - Write to disk only when the number of untranslated term cache entries reaches the threshold or when switching scenes. Setting it to 1 indicates real-time writing.
+- `FlushTermDumpNow/立即写出Term`
+  - Write the cache immediately when the state of options in the game changes.
 
 ## Details
 
@@ -883,12 +891,19 @@ JAT supports exporting untranslated text, along with unreplaced textures and spr
   - When the game accesses a sprite that supports replacement, the unreplaced sprite will be exported.
   - If a file with the same name already exists, it will not be overwritten.
   - If you use the texture replacement feature to replace the atlas to which a sprite belongs, the sprites from the replaced atlas will also be exported.
+- UI Text (Terms)
+  - Terms without a matching translation are added to the cache; they are written to a file when a threshold is reached, a scene is switched, or the game exits normally.
+  - Cached text that has not reached the threshold may be lost upon abnormal exit.
+  - Simple deduplication has been performed; duplicate lines are generally not exported.
+  - The file is appended.
+  - Not all terms need to be translated.
 
 ## Debugging and Performance Tips
 
 - Switching to Debug in the `Log Level` setting can help troubleshoot issues.
 - Dumping increases disk IO and memory usage: Enable only when needed; too low a threshold will cause frequent disk writes and degrade game performance, while too high a threshold will cause more cache loss during crashes.
 - Dumped textures and sprites can be used directly with the replacement feature; do not modify their size.
+- To avoid dumping duplicate content, JAT records all dumped content. This content is not cleaned up during game runtime, and its memory usage depends on the number of untranslated texts.
 
 ## FAQ
 
@@ -896,3 +911,4 @@ JAT supports exporting untranslated text, along with unreplaced textures and spr
   - Text: Always append
   - Texture: Not overwrite if the target file already exists
   - Sprite: Not overwrite if the target file already exists
+  - UI Text: Always append

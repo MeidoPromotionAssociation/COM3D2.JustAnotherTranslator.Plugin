@@ -49,6 +49,7 @@ public static class TextureReplaceManger
 
         _textureReplacePatch?.UnpatchSelf();
         _textureReplacePatch = null;
+        DumpedTextures.Clear();
 
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
@@ -248,7 +249,7 @@ public static class TextureReplaceManger
     {
         try
         {
-            DumpedTextures.Clear();
+            // DumpedTextures.Clear();
         }
         catch (Exception e)
         {

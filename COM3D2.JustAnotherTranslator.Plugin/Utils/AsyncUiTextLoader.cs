@@ -432,7 +432,7 @@ public class AsyncUiTextLoader
     /// <summary>
     ///     CSV 结构
     /// </summary>
-    private class CsvEntry
+    public class CsvEntry
     {
         public string Term { get; set; } // 键名
         [CanBeNull] public string Original { get; set; } // 原文

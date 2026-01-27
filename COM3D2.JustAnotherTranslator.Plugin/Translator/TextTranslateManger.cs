@@ -42,12 +42,13 @@ public static class TextTranslateManger
     /// 导出规范化文本缓冲区
     private static readonly List<string> DumpBufferNormalized = new();
 
-    /// 导出目标路径
+    /// 未翻译文本导出目标路径
     private static readonly string DumpFilePath =
         Path.Combine(JustAnotherTranslator.TextDumpPath,
             DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + "_untranslate.txt");
 
-    private static readonly string DumpFilePathNormalized =
+    /// 未翻译的规范化文本导出目标路径
+    private static readonly string NormalizedDumpFilePath =
         Path.Combine(JustAnotherTranslator.TextDumpPath,
             DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + "_untranslate_normalized.txt");
 
@@ -90,6 +91,9 @@ public static class TextTranslateManger
         TranslatedTexts.Clear();
 
         FlushDumpBuffer();
+        DumpBuffer.Clear();
+        DumpBufferNormalized.Clear();
+        DumpedTexts.Clear();
 
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
@@ -417,7 +421,7 @@ public static class TextTranslateManger
 
         try
         {
-            using (var streamWriter = new StreamWriter(DumpFilePathNormalized, true))
+            using (var streamWriter = new StreamWriter(NormalizedDumpFilePath, true))
             {
                 foreach (var line in DumpBufferNormalized) streamWriter.WriteLine(line);
             }
@@ -439,11 +443,8 @@ public static class TextTranslateManger
         try
         {
             TranslatedTexts.Clear();
-            if (JustAnotherTranslator.EnableTextDump.Value)
-            {
-                FlushDumpBuffer();
-                DumpedTexts.Clear();
-            }
+            if (JustAnotherTranslator.EnableTextDump.Value) FlushDumpBuffer();
+            // DumpedTexts.Clear();
         }
         catch (Exception e)
         {

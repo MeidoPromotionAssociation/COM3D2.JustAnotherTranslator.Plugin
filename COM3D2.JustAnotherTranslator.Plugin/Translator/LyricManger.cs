@@ -294,8 +294,19 @@ public static class LyricManger
             using (var csv = new CsvWriter(writer, CsvConfig))
             {
                 csv.WriteHeader(typeof(DanceInfoCsvEntry));
-                foreach (var r in list) csv.WriteRecord(r);
+#if COM3D25_UNITY_2022
                 csv.NextRecord();
+#endif
+                foreach (var r in list)
+                {
+                    csv.WriteRecord(r);
+#if COM3D25_UNITY_2022
+                    csv.NextRecord();
+#endif
+                }
+#if !COM3D25_UNITY_2022
+                csv.NextRecord();
+#endif
             }
 
             LogManager.Info($"Upsert dance info succeeded/写入 {Path.GetFileName(summaryPath)} 成功");

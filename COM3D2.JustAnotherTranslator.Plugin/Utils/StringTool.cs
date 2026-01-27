@@ -162,4 +162,38 @@ public static class StringTool
         s = s.Replace("\n", "\\n");
         return s;
     }
+
+
+    /// <summary>
+    /// 从输入字符串中移除所有指定的字符。
+    /// 此方法仅扫描并复制目标字符，因此效率很高。
+    /// </summary>
+    /// <param name="input">要从中移除目标字符的输入字符串。</param>
+    /// <param name="target">要从输入字符串中移除的字符。</param>
+    /// <returns>
+    /// 一个移除了所有目标字符的新字符串。
+    /// 如果输入字符串不包含目标字符，则返回原始输入字符串。
+    /// </returns>
+    public static string FastRemoveChar(string input, char target)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+
+        // 第一次扫描，确认是否有目标字符，如果没有直接返回原字符串
+        int firstIndex = input.IndexOf(target);
+        if (firstIndex == -1) return input;
+
+        char[] buffer = new char[input.Length];
+        int idx = 0;
+
+        for (int i = 0; i < input.Length; i++)
+        {
+            char c = input[i];
+            if (c != target)
+            {
+                buffer[idx++] = c;
+            }
+        }
+
+        return new string(buffer, 0, idx);
+    }
 }

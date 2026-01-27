@@ -130,7 +130,7 @@ public static class TextTranslatePatch
                 // Just too much logs
                 if (StringTool.IsNullOrWhiteSpace(text) || StringTool.IsNumeric(text)) return;
 
-                if (text.Contains(XUATInterop.XuatSpicalMaker))
+                if (TextTranslateManger.IsTranslatedText(text))
                     return;
 
                 LogManager.Debug($"Graphic SetVerticesDirty called: {text}");
@@ -160,7 +160,7 @@ public static class TextTranslatePatch
             if (StringTool.IsNullOrWhiteSpace(__result) || StringTool.IsNumeric(__result))
                 return;
 
-            if (__result.Contains(XUATInterop.XuatSpicalMaker))
+            if (TextTranslateManger.IsTranslatedText(__result))
                 return;
 
             if (TextTranslateManger.GetTranslateText(__result, out var translated))
@@ -185,7 +185,7 @@ public static class TextTranslatePatch
         {
             // Just too much logs
             if (StringTool.IsNullOrWhiteSpace(text) || StringTool.IsNumeric(text) ||
-                text.Contains(XUATInterop.XuatSpicalMaker))
+                TextTranslateManger.IsTranslatedText(text))
                 return;
 
             LogManager.Debug($"NGUIText WrapText(string, out string) called: {text}");

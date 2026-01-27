@@ -30,6 +30,9 @@ public static class TextTranslateManger
     /// 翻译是否已加载完成
     private static bool _isTranslationLoaded;
 
+    /// 存储已翻译文本的集合，用于防止重复翻译
+    private static readonly HashSet<string> TranslatedTexts = new();
+
     /// 已导出文本
     private static readonly HashSet<string> DumpedTexts = new();
 
@@ -56,12 +59,11 @@ public static class TextTranslateManger
         if (_initialized) return;
 
         _isTranslationLoaded = false;
-        LoadTextAsync();
 
+        LoadTextAsync();
         RegisterPatch();
 
-        if (JustAnotherTranslator.EnableTextDump.Value)
-            SceneManager.sceneUnloaded += OnSceneUnloaded;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _initialized = true;
     }
@@ -84,6 +86,8 @@ public static class TextTranslateManger
         _translationDict.Clear();
         _regexTranslationDict.Clear();
         _isTranslationLoaded = false;
+
+        TranslatedTexts.Clear();
 
         FlushDumpBuffer();
 
@@ -201,16 +205,51 @@ public static class TextTranslateManger
         return false;
     }
 
+    /// <summary>
+    ///     判断指定文本是否已被 JAT 翻译
+    /// </summary>
+    /// <param name="text">需要检查的文本内容</param>
+    /// <returns>如果文本存在于已翻译记录中返回true，否则返回false</returns>
+    public static bool IsJatTranslatedText(string text)
+    {
+        return TranslatedTexts.Contains(text.Replace(XUATInterop.XuatSpicalMaker, "")) ||
+               TranslatedTexts.Contains(
+                   StringTool.NormalizeText(text.Replace(XUATInterop.XuatSpicalMaker, "")));
+    }
+
+    /// <summary>
+    /// 判断指定文本是否已被翻译（包括 JAT 翻译和 XUAT 翻译标记检查）
+    /// </summary>
+    /// <param name="text">需要检查的文本内容</param>
+    /// <returns>如果文本已被翻译返回true，否则返回false</returns>
+    public static bool IsTranslatedText(string text)
+    {
+        return IsJatTranslatedText(text) || text.Contains(XUATInterop.XuatSpicalMaker);
+    }
+
+    /// <summary>
+    ///     标记文本为已翻译
+    /// </summary>
+    /// <param name="text">要标记的文本</param>
+    /// <returns>标记后的文本</returns>
+    public static void MarkTranslated(string text)
+    {
+        if (StringTool.IsNullOrWhiteSpace(text))
+            return;
+
+        // 去除各种空白后添加到已翻译记录
+        var cleanText = StringTool.NormalizeText(text.Replace(XUATInterop.XuatSpicalMaker, ""));
+        TranslatedTexts.Add(cleanText);
+    }
+
 
     /// <summary>
     ///     尝试获取翻译文本
     /// </summary>
     /// <param name="original">原文</param>
     /// <param name="translated">译文输出</param>
-    /// <param name="skipMark">跳过已翻译标记</param>
     /// <returns>是否翻译成功</returns>
-    public static bool GetTranslateText(string original, out string translated,
-        bool skipMark = false)
+    public static bool GetTranslateText(string original, out string translated)
     {
         translated = original;
 
@@ -238,7 +277,7 @@ public static class TextTranslateManger
         // 然而因为某种原因，StartsWith 和 EndsWith 会把所有文本都标记为已翻译，因此必须使用 Contains
         if (original.Contains(XUATInterop.XuatSpicalMaker))
         {
-            LogManager.Debug($"Text already marked, skipping: {original}");
+            LogManager.Debug($"Text contain XUAT mark, skipping: {original}");
             return false;
         }
 
@@ -251,7 +290,8 @@ public static class TextTranslateManger
 
         if (_translationDict.TryGetValue(original, out var value))
         {
-            translated = XUATInterop.MarkTranslated(value, skipMark);
+            translated = value;
+            MarkTranslated(translated);
             LogManager.Debug($"Translated {original}    =>    {translated}");
             return true;
         }
@@ -263,7 +303,8 @@ public static class TextTranslateManger
 
         if (_translationDict.TryGetValue(normalizedOriginal, out var lowerValue2))
         {
-            translated = XUATInterop.MarkTranslated(lowerValue2, skipMark);
+            translated = lowerValue2;
+            MarkTranslated(translated);
             LogManager.Debug(
                 $"Translated (upper, replace and trimmed) {normalizedOriginal}    =>    {translated}");
             return true;
@@ -316,7 +357,7 @@ public static class TextTranslateManger
                 return capturedString;
             });
 
-            translated = XUATInterop.MarkTranslated(translated, skipMark);
+            MarkTranslated(translated);
             LogManager.Debug(
                 $"Translated (Regex) {keyValuePair.Key}:{keyValuePair.Value}    =>    {translated}");
             return true;
@@ -397,8 +438,12 @@ public static class TextTranslateManger
     {
         try
         {
-            FlushDumpBuffer();
-            DumpedTexts.Clear();
+            TranslatedTexts.Clear();
+            if (JustAnotherTranslator.EnableTextDump.Value)
+            {
+                FlushDumpBuffer();
+                DumpedTexts.Clear();
+            }
         }
         catch (Exception e)
         {

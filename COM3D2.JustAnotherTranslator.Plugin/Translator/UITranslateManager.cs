@@ -115,10 +115,9 @@ public static class UITranslateManager
         // SceneDaily/ボタン文字/男エディット
         if (_translations.TryGetValue(term, out var translation))
         {
-            var markedTranslation = XUATInterop.MarkTranslated(translation);
-            LogManager.Debug(
-                $"Found translation for term: {term}    =>    {markedTranslation}");
-            return markedTranslation;
+            TextTranslateManger.MarkTranslated(translation);
+            LogManager.Debug($"Found translation for term: {term}    =>    {translation}");
+            return translation;
         }
 
         // 剔除第一个/前的字符
@@ -129,10 +128,10 @@ public static class UITranslateManager
             var newTerm = term.Substring(slashIndex + 1);
             if (_translations.TryGetValue(newTerm, out translation))
             {
-                var markedTranslation = XUATInterop.MarkTranslated(translation);
+                TextTranslateManger.MarkTranslated(translation);
                 LogManager.Debug(
-                    $"Found translation for term: {term} (as {newTerm})    =>    {markedTranslation}");
-                return markedTranslation;
+                    $"Found translation for term: {term} (as {newTerm})    =>    {translation}");
+                return translation;
             }
         }
 

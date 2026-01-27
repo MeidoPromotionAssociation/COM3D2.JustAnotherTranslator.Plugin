@@ -396,7 +396,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             displayText = $"<color=#{speakerColor}>{_translatedSpeakerName}</color>: {text}";
 
             // 记录以避免被 XUAT 翻译
-            displayText = XUATInterop.MarkTranslated(displayText);
+            TextTranslateManger.MarkTranslated(displayText);
 
             LogManager.Debug($"SetText displayText: {displayText}");
         }

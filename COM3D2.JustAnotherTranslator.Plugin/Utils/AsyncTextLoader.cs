@@ -430,7 +430,7 @@ public class AsyncTextLoader
 
         // Unescape 将字符串中的转义序列转换为对应的实际字符
         var original = parts[0].Unescape();
-        var translation = parts[1].Unescape();
+        var translation = StringTool.FastRemoveChar(parts[1].Unescape(), '\u180e');
 
         if (string.IsNullOrEmpty(original) || string.IsNullOrEmpty(translation))
             return false;

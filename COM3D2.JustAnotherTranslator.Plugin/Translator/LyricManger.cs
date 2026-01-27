@@ -204,10 +204,9 @@ public static class LyricManger
             var infoEntry = MapDanceDataToCsvEntry(DanceMain.SelectDanceData);
             if (infoEntry != null)
             {
-                TextTranslateManger.GetTranslateText(infoEntry.Title, out var translatedTitle,
-                    true);
+                TextTranslateManger.GetTranslateText(infoEntry.Title, out var translatedTitle);
                 TextTranslateManger.GetTranslateText(infoEntry.CommentaryText,
-                    out var translatedCommentaryText, true);
+                    out var translatedCommentaryText);
 
                 var mode = isKaraoke ? "Karaoke" : "Dance";
 
@@ -647,7 +646,7 @@ public static class LyricManger
                 break;
         }
 
-        lyric = XUATInterop.MarkTranslated(lyric);
+        TextTranslateManger.MarkTranslated(lyric);
         return lyric;
     }
 

@@ -85,7 +85,8 @@ public static class UITextTranslatePatch
     ///     term 为动态生成，表达式为 this.m_strCateName + "/" +
     ///     Path.GetFileNameWithoutExtension(this.m_strMenuFileName).ToLower() + "|name"
     ///     m_strCateName 是 menu 中的 category 命令的第一个参数，m_strMenuFileName 则是 .menu 文件的文件名
-    ///     例如 wear/dress789_wear_i_|name，因此自行制作的 MOD 同样可以被翻译
+    ///     例如 dress789_wear_i_.menu 的物品名 term 为 wear/dress789_wear_i_|name
+    ///     因此自行制作的 MOD 同样可以使用 term 进行翻译
     /// </summary>
     /// <param name="__instance"></param>
     /// <param name="__result"></param>
@@ -128,7 +129,8 @@ public static class UITextTranslatePatch
     ///     term 为动态生成，表达式为 this.m_strCateName + "/" +
     ///     Path.GetFileNameWithoutExtension(this.m_strMenuFileName).ToLower() + "|info"
     ///     m_strCateName 是 menu 中的 category 命令的第一个参数，m_strMenuFileName 则是 .menu 文件的文件名
-    ///     例如 wear/dress789_wear_i_|info，因此自行制作的 MOD 同样可以被翻译
+    ///     例如 dress789_wear_i_.menu 的物品描述 term 为 wear/dress789_wear_i_|info
+    ///     因此自行制作的 MOD 同样可以使用 term 进行翻译
     /// </summary>
     /// <param name="__instance"></param>
     /// <param name="__result"></param>

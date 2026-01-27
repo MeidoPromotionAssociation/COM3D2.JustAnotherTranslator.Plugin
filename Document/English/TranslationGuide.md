@@ -478,6 +478,25 @@ We provide a script to convert the extracted csv files to the format used by JAT
 
 > You can set the log level to `Debug` in the plugin configuration, then trigger the UI you want to translate in the game. You will see output like `LocalizationManager_GetTranslation_Prefix Term: SceneDaily/ボタン文字/男エディット` in the console or log file. This is the `Term` you need.
 
+#### Dynamically Generated Terms
+
+Some terms are dynamically generated, such as the terms for items in edit mode:
+
+Item Name:
+``` 
+The expression is this.m_strCateName + "/" + Path.GetFileNameWithoutExtension(this.m_strMenuFileName).ToLower() + "|name"
+m_strCateName is the first parameter of the category command in the menu, and m_strMenuFileName is the filename of the .menu file.
+For example, the term for the item name dress789_wear_i_.menu is wear/dress789_wear_i_|name
+Therefore, custom-made mods can also use terms for translation.
+```
+
+Item Description:
+``` 
+The expression is this.m_strCateName + "/" + Path.GetFileNameWithoutExtension(this.m_strMenuFileName).ToLower() + "|info"
+m_strCateName is the category in the menu. The first parameter of the command, `m_strMenuFileName`, is the filename of the `.menu` file.
+For example, the item description term for `dress789_wear_i_.menu` is `wear/dress789_wear_i_|info`.
+Therefore, custom-made mods can also use `term` for translation.
+```
 
 ## 2. UI Image (Sprite) Translation
 

@@ -285,6 +285,12 @@ public static class TextTranslateManger
             return false;
         }
 
+        if (IsJatTranslatedText(original))
+        {
+            LogManager.Debug($"Text already translated by JAT, skipping: {original}");
+            return true;
+        }
+
         // 注意：翻译到纯 [HF] 时如果被添加了特殊标记，会导致游戏崩溃，游戏还有其他的特殊标记，因此这里直接检查 []
         if (original.StartsWith("[") & original.EndsWith("]"))
         {

@@ -367,7 +367,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         EnableAdvSubtitle = Config.Bind("3Subtitle",
             "EnableADVSubtitle/启用ADV字幕",
-            true,
+            false,
             new ConfigDescription(
                 "Enable ADV subtitles. Since ADV scenes have their own subtitles, this setting is only useful in VR mode and is invalid in non-VR mode./启用ADV字幕，由于 ADV 场景自带字幕，因此仅在 VR 模式下有用，非 VR 模式此设置无效",
                 null, new ConfigurationManagerAttributes { Order = 3010 }));

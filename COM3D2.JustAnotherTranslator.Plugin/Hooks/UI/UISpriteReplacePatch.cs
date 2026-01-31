@@ -25,19 +25,20 @@ public static class UISpriteReplacePatch
 
             LogManager.Debug($"UIButton_SetSprite_Postfix called with sp: {sp}");
 
-            // 检查 atlas 名称
-            var sprite = __instance.mSprite;
-            if (sprite != null && sprite.atlas != null && sprite.atlas.name.StartsWith("JAT_"))
+            // 检查 atlas 是否已被 JAT 替换为相同的精灵图
+            // 注意：不能用 sprite.spriteName == sp 判断，因为这是 Postfix，
+            // NGUI 原方法已经将 spriteName 更新为 sp，即使 JAT atlas 中不含该 sprite
+            var sprite = __instance.tweenTarget?.GetComponent<UISprite>() ??
+                         __instance.GetComponent<UISprite>();
+            if (sprite != null && sprite.atlas != null
+                               && sprite.atlas.name ==
+                               $"JAT_ReplacementAtlas_{sp}") // ProcessSpriteReplacementWithNewAtlas 中会设置的 atlas 名称
             {
-                // 如果 atlas 已经被替换，并且 spriteName 也匹配，就无需任何操作
-                if (sprite.spriteName == sp) return;
-
-                // 如果 spriteName 不匹配（例如按钮状态改变），只需更新 spriteName 即可，无需重新创建图集
-                sprite.spriteName = sp;
+                // 已经替换为相同的精灵图，跳过
                 return;
             }
 
-            // 如果 atlas 不是我们的动态图集，则按需判断是否替换
+            // 进行精灵图替换
             UITranslateManager.ProcessSpriteReplacementWithNewAtlas(__instance, sp);
         }
         catch (Exception e)

@@ -128,6 +128,32 @@ Go to the [**Releases**](https://github.com/MeidoPromotionAssociation/COM3D2.Jus
 
 The `COM3D2\` at the beginning of the path refers to your game's root directory, which is where `COM3D2.exe` is located.
 
+```
+COM3D2/            (Game root)
+├─ BepInEx/
+│  ├─ plugins/
+│  │  └─ COM3D2.JustAnotherTranslator/
+│  │     ├─ COM3D2.JustAnotherTranslator.Plugin.dll         (Plugin itself)
+│  │     └─ (Other JAT dependent DLLs)
+│  ├─ config/
+│  │  └─ Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg   (Plugin configuration file)
+│  └─ JustAnotherTranslator/                     (Created on first run)
+│     ├─ <TargetLanguage>/                       (Default: zh-CN)
+│     │  ├─ Text/                                (Text translation folder)
+│     │  ├─ UI/
+│     │  │  ├─ Text/                             (UI Text Translation Folder)
+│     │  │  └─ Sprite/                           (UI Sprite Replacement Folder)
+│     │  ├─ Texture/                             (Texture Replacement Folder)
+│     │  └─ Lyric/                               (Lyrics Folder)
+│     │       ├─ danceInfos.csv                  (Lyrics Information Dump)
+│     │       └─ _Karaoke/                       (Karaoke Mode Dedicated Lyrics Folder)
+│     │             └─ danceInfosKaraoke.csv     (Karaoke Mode Dedicated Lyrics Information Dump)
+│     ├─ Dump/                                   (For translators)
+│     └─ SpeakerColor.json                       (Subtitle speaker colors)
+└─ COM3D2.exe                                    (Game Launcher)
+```
+
+
 ### Initial Setup
 
 #### File Generation:
@@ -142,6 +168,8 @@ The plugin will automatically generate the default configuration file and transl
 After the first launch, a default `zh-CN` folder and a `Dump` folder will be created inside `JustAnotherTranslator`. (The `Dump` folder is for translators to dump game assets and can be ignored by regular users).
 
 #### Set Target Language
+
+(If you use a translation package provided by a someone, they will likely also provide a JAT configuration file with `TargetLanguage/目标语言` pre-configured.)
 
 Open the configuration file and find the `TargetLanguage/目标语言` option under `[2General]`.
 
@@ -328,9 +356,36 @@ MeidoPromotionAssociation 始终致力于让每个人都能更容易的享受妹
 
 路径开头的 `COM3D2\` 都是指您的游戏根目录，也就是 `COM3D2.exe` 所在的位置。
 
+```
+COM3D2/        (游戏文件夹根目录)
+├─ BepInEx/
+│  ├─ plugins/
+│  │  └─ COM3D2.JustAnotherTranslator/
+│  │     ├─ COM3D2.JustAnotherTranslator.Plugin.dll       (插件本体)
+│  │     └─ (其他 JAT 依赖的 DLL)
+│  ├─ config/
+│  │   └─ Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg  (插件配置文件)
+│  └─ JustAnotherTranslator/                (第一次运行时自动创建)
+│     ├─ <目标语言>/                         (默认: zh-CN)
+│     │  ├─ Text/                           (文本翻译文件夹)
+│     │  ├─ UI/                          
+│     │  │  ├─ Text/                        (UI 文本翻译文件夹）
+│     │  │  └─ Sprite/                      (UI 精灵图替换文件夹)
+│     │  ├─ Texture/                        (纹理替换文件夹)
+│     │  └─ Lyric/                          (歌词文件夹)
+│     │       ├─ danceInfos.csv             (歌词信息转储)
+│     │       └─ _Karaoke/                  (卡拉OK模式专用歌词文件夹)
+│     │            └─danceInfosKaraoke.csv  (卡拉OK模式专用歌词信息转储)
+│     ├─ Dump/                              (翻译人员专用)
+│     └─ SpeakerColor.json                  (字幕-说话人名字颜色)
+└─ COM3D2.exe                               (游戏启动器)
+```
+
 ### 初始化配置
 
 #### 生成文件:
+
+（如果您使用他人提供的翻译软件包，他们很可能还会提供一个 JAT 配置文件，其中已预先配置了 `TargetLanguage/目标语言`。）
 
 完成上述安装后，启动一次游戏。
 

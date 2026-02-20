@@ -8,8 +8,6 @@
 
 Just Another COM3D2 Translator plugin, or JAT for short.
 
-This plugin is still under active development and is currently in an early beta stage, so no official release is available for download yet. The download link below is just a placeholder.
-
 Please join our Discord channel: [https://discord.gg/custommaid](https://discord.gg/custommaid)
 
 And report issues in the JAT sub-channel: [https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
@@ -36,6 +34,7 @@ When reporting an issue, please set the plugin's log level to DEBUG, restart the
 - A completely self-implemented subtitle system: The subtitle feature (including general subtitles and dance lyrics) is fully implemented by JAT and does not depend on any in-game resources or official systems, requiring no official support.
 - It can provide subtitles in various scenes that lack them, such as dances, the fishing minigame, VR karaoke, the shooting minigame, night scenes (Yotogi), etc.
 - It also features specially designed VR subtitles, with options to display them on a virtual tablet or in world space, floating just like in other VR games.
+- Supports setting individual colors for each speaker (maid).
 
 **Performance Optimizations**
 - Translation files for UI and general text are loaded asynchronously, so it won't slow down your game's startup.
@@ -243,8 +242,6 @@ There are 4 main folders in the translation folder of the corresponding language
 
 只是另一个 COM3D2 翻译插件，JustAnotherTranslator，简称 JAT。
 
-此插件仍在积极开发中，目前处于早期测试版状态，因此暂未提供正式版本下载，下面的下载链接只是提前写完了。
-
 请加入 Discord 频道：[https://discord.gg/custommaid](https://discord.gg/custommaid)
 
 并通过 JAT 子区反馈问题：[https://discord.com/channels/297072643797155840/1398579642599870564](https://discord.com/channels/297072643797155840/1398579642599870564)
@@ -271,6 +268,7 @@ There are 4 main folders in the translation folder of the corresponding language
 - 完全自实现的字幕系统：字幕功能（包括普通字幕和舞蹈歌词）完全由 JAT 实现，不依赖任何游戏内资源或官方系统，无需官方系统支持。
 - 可以在各种无字幕场景下为您提供字幕，例如舞蹈、钓鱼小游戏、VR卡拉OK、射击小游戏、夜伽等。
 - 它还拥有专门设计的 VR 字幕，可选显示在虚拟平板电脑上或世界空间中，就像其他 VR 游戏一样，它是悬浮在世界空间中的。
+- 支持为每个说话者（女仆）单独设置颜色。
 
 性能优化：
 - UI 与通用文本翻译的翻译文件是异步加载的，它不会减慢你的游戏启动速度。

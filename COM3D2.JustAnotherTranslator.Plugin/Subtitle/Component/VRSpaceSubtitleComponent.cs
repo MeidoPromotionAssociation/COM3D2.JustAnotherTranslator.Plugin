@@ -291,8 +291,8 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
         // 设置默认文本样式
         TextComponent.alignment = TextAnchor.MiddleCenter; // 居中对齐
-        TextComponent.horizontalOverflow = HorizontalWrapMode.Overflow; // 水平溢出时允许超出边界
-        TextComponent.verticalOverflow = VerticalWrapMode.Truncate; // 垂直溢出时截断
+        TextComponent.horizontalOverflow = HorizontalWrapMode.Wrap; // 水平溢出时自动换行
+        TextComponent.verticalOverflow = VerticalWrapMode.Truncate; // 垂直溢出时截断，所以不会影响字幕高度计算
 
         // 添加描边组件
         OutlineComponents = TextComponent.gameObject.AddComponent<Outline>();

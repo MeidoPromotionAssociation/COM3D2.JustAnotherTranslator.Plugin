@@ -226,6 +226,11 @@ There are 4 main folders in the translation folder of the corresponding language
 - The `UI` folder is a dedicated folder for interface translation. Sprite is used to replace a single sprite, and Text
   is used to translate UI text.
 
+## Frequently Asked Questions
+
+- **The Chinese characters in the BepinEx console are ??**
+  - Open `COM3D2\BepInEx\config\BepInEx.cfg`, find `ShiftJisEncoding`, and change the option to `false`.
+
 <br>
 <br>
 <br>
@@ -452,6 +457,11 @@ COM3D2\BepInEx\JustAnotherTranslator\<你设置的目标语言>
 - `Texture` 文件夹用于替换游戏内纹理（各种图片）
 - `Lyric` 文件夹放置歌词字幕专用的文件。
 - `UI` 文件夹是界面翻译专用的文件夹，Sprite 用于替换单个精灵图、Text 则用于翻译 UI 文本。
+
+## 常见问题
+
+- **BepinEx 控制台中文为 ??**
+  - 打开 `COM3D2\BepInEx\config\BepInEx.cfg` 找到 `ShiftJisEncoding` 将选项改为 `false`
 
 <br>
 <br>

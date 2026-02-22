@@ -230,6 +230,8 @@ There are 4 main folders in the translation folder of the corresponding language
 
 - **The Chinese characters in the BepinEx console are ??**
   - Open `COM3D2\BepInEx\config\BepInEx.cfg`, find `ShiftJisEncoding`, and change the option to `false`.
+- **The BepinEx console does not display DEBUG logs, but the log file contains**
+  - Open `COM3D2\BepInEx\config\BepInEx.cfg` and find `LogLevels`. Change the option to `All`.
 
 <br>
 <br>
@@ -462,6 +464,8 @@ COM3D2\BepInEx\JustAnotherTranslator\<你设置的目标语言>
 
 - **BepinEx 控制台中文为 ??**
   - 打开 `COM3D2\BepInEx\config\BepInEx.cfg` 找到 `ShiftJisEncoding` 将选项改为 `false`
+- **BepinEx 控制台不显示 DEBUG 日志，日志文件内有**
+  - 打开 `COM3D2\BepInEx\config\BepInEx.cfg` 找到 `LogLevels` 将选项改为 `All`
 
 <br>
 <br>

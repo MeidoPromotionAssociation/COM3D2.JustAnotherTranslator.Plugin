@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
@@ -15,6 +16,9 @@ public static class StringTool
         '\u200b', '\u2028', '\u2029', '\u3000', '\ufeff'
     };
 
+    /// 用于识别占位符（如 [HF]、[HF2]、[AZ]）的正则表达式
+    public static readonly Regex CharaNameTokenRegex =
+        new(@"\[[A-Z][A-Z0-9]*\]", RegexOptions.Compiled);
 
     /// <summary>
     ///     规范化字符串
@@ -192,5 +196,26 @@ public static class StringTool
         }
 
         return new string(buffer, 0, idx);
+    }
+
+    /// <summary>
+    ///     为含有角色名占位符的已翻译文本构建正则匹配模式。
+    ///     占位符位置将匹配任意字符序列，固定部分进行转义。
+    ///     例如 "...为什么[HF]的状态..." → 模式 ^...为什么.+的状态...$
+    /// </summary>
+    public static Regex BuildTokenPattern(string normalizedText)
+    {
+        var parts = CharaNameTokenRegex.Split(normalizedText);
+        var matches = CharaNameTokenRegex.Matches(normalizedText);
+        var sb = new StringBuilder("^");
+        for (var i = 0; i < parts.Length; i++)
+        {
+            sb.Append(Regex.Escape(parts[i]));
+            if (i < matches.Count)
+                sb.Append(".+");
+        }
+
+        sb.Append("$");
+        return new Regex(sb.ToString(), RegexOptions.Compiled);
     }
 }

@@ -33,6 +33,9 @@ public static class TextTranslateManger
     /// 存储已翻译文本的集合，用于防止重复翻译
     private static readonly HashSet<string> TranslatedTexts = new();
 
+    /// 含有角色名占位符的已翻译文本的正则匹配模式（用于检测角色名替换后的文本）
+    private static readonly List<Regex> TranslatedTextPatterns = new();
+
     /// 已导出文本
     private static readonly HashSet<string> DumpedTexts = new();
 
@@ -89,6 +92,7 @@ public static class TextTranslateManger
         _isTranslationLoaded = false;
 
         TranslatedTexts.Clear();
+        TranslatedTextPatterns.Clear();
 
         FlushDumpBuffer();
         DumpBuffer.Clear();
@@ -216,9 +220,18 @@ public static class TextTranslateManger
     /// <returns>如果文本存在于已翻译记录中返回true，否则返回false</returns>
     public static bool IsJatTranslatedText(string text)
     {
-        return TranslatedTexts.Contains(text.Replace(XUATInterop.XuatSpicalMaker, "")) ||
-               TranslatedTexts.Contains(
-                   StringTool.NormalizeText(text.Replace(XUATInterop.XuatSpicalMaker, "")));
+        var cleanText = text.Replace(XUATInterop.XuatSpicalMaker, "");
+        var normalizedText = StringTool.NormalizeText(cleanText);
+
+        if (TranslatedTexts.Contains(cleanText) || TranslatedTexts.Contains(normalizedText))
+            return true;
+
+        // 检查角色名替换后的文本是否匹配已翻译文本的模式
+        foreach (var pattern in TranslatedTextPatterns)
+            if (pattern.IsMatch(normalizedText))
+                return true;
+
+        return false;
     }
 
     /// <summary>
@@ -244,8 +257,11 @@ public static class TextTranslateManger
         // 去除各种空白后添加到已翻译记录
         var cleanText = StringTool.NormalizeText(text.Replace(XUATInterop.XuatSpicalMaker, ""));
         TranslatedTexts.Add(cleanText);
-    }
 
+        // 若文本含角色名占位符（如 [HF]），构建正则模式以匹配游戏替换角色名后的版本
+        if (StringTool.CharaNameTokenRegex.IsMatch(cleanText))
+            TranslatedTextPatterns.Add(StringTool.BuildTokenPattern(cleanText));
+    }
 
     /// <summary>
     ///     尝试获取翻译文本
@@ -449,6 +465,7 @@ public static class TextTranslateManger
         try
         {
             TranslatedTexts.Clear();
+            TranslatedTextPatterns.Clear();
             if (JustAnotherTranslator.EnableTextDump.Value) FlushDumpBuffer();
             // DumpedTexts.Clear();
         }

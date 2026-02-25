@@ -131,6 +131,9 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         // 设置文本内容
         SetText(text, speakerName, SpeakerColor, Config.EnableSpeakerName);
 
+        // 应用每个说话人的自定义字幕颜色
+        ApplyCustomSubtitleColors(speakerName);
+
         // 显示字幕
         SetActive(true);
 
@@ -577,7 +580,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     {
         if (speakerName == null) speakerName = "";
 
-        var color = SubtitleManager.GetSpeakerColor(speakerName);
+        var color = SubtitleManager.GetSpeakerColor(speakerName, Config.SubtitleType);
 
         color.a = Config.TextColor.a;
 
@@ -585,6 +588,43 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             $"Created Color R:{color.r:F2} G:{color.g:F2} B:{color.b:F2} A:{color.a:F2} for {speakerName}");
 
         return color;
+    }
+
+    /// <summary>
+    ///     应用每个说话人的自定义字幕颜色（如果该说话人在当前字幕类型下启用了自定义颜色）
+    /// </summary>
+    /// <param name="speakerName">说话者名称</param>
+    protected virtual void ApplyCustomSubtitleColors(string speakerName)
+    {
+        var entry = SubtitleManager.GetSubtitleColorEntry(speakerName, Config.SubtitleType);
+        if (entry is not { Enabled: true }) return;
+
+        // 覆盖文本颜色
+        if (TextComponent != null &&
+            ColorUtility.TryParseHtmlString(entry.TextColor, out var textColor))
+        {
+            textColor.a = entry.TextOpacity;
+            TextComponent.color = textColor;
+        }
+
+        // 覆盖背景颜色
+        if (BackgroundImageComponents != null &&
+            ColorUtility.TryParseHtmlString(entry.BackgroundColor, out var bgColor))
+        {
+            bgColor.a = entry.BackgroundOpacity;
+            BackgroundImageComponents.color = bgColor;
+        }
+
+        // 覆盖描边颜色
+        if (OutlineComponents != null && Config.EnableOutline &&
+            ColorUtility.TryParseHtmlString(entry.OutlineColor, out var outlineColor))
+        {
+            outlineColor.a = entry.OutlineOpacity;
+            OutlineComponents.effectColor = outlineColor;
+        }
+
+        LogManager.Debug(
+            $"Applied custom subtitle colors for {speakerName} in {Config.SubtitleType} mode");
     }
 
     /// <summary>

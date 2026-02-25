@@ -28,8 +28,9 @@ public static class SubtitleManager
     /// 存储 voiceId 与文本的映射关系
     private static readonly Dictionary<string, string> VoiceIdToTextMap = new(); // voiceId -> text
 
-    /// 储存说话者颜色映射
-    private static Dictionary<string, string> _speakerColorConfig = new(); // maid name -> color
+    /// 储存说话者颜色及字幕颜色配置
+    private static Dictionary<string, SpeakerColorConfig>
+        _colorConfig = new(); // maid name -> config
 
     /// 当前正在说话的角色
     private static Maid _currentSpeaker;
@@ -59,7 +60,7 @@ public static class SubtitleManager
         // 初始化字幕组件管理器
         SubtitleComponentManager.Init();
 
-        LoadSpeakerColorConfig();
+        LoadColorConfig();
 
         // 应用补丁
         ApplySubtitlePatches();
@@ -83,8 +84,8 @@ public static class SubtitleManager
         // 取消事件订阅
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
-        // 清理说话者颜色配置，注意放在 CleanResources 会导致场景切换时被清理
-        _speakerColorConfig.Clear();
+        // 清理颜色配置，注意放在 CleanResources 会导致场景切换时被清理
+        _colorConfig.Clear();
 
         // 清理资源
         CleanResources();
@@ -396,27 +397,80 @@ public static class SubtitleManager
     ///     获取说话者的专属颜色
     /// </summary>
     /// <param name="speakerName">说话者名称</param>
+    /// <param name="subtitleType">字幕类型</param>
     /// <returns>专属颜色</returns>
-    public static Color GetSpeakerColor(string speakerName)
+    public static Color GetSpeakerColor(string speakerName,
+        JustAnotherTranslator.SubtitleTypeEnum subtitleType)
     {
         LogManager.Debug($"Creating Color for {speakerName}");
 
         if (speakerName == null) speakerName = "";
 
-        if (_speakerColorConfig.TryGetValue(speakerName, out var colorStr) &&
-            !string.IsNullOrEmpty(colorStr))
+        // 确保说话人条目存在
+        if (!_colorConfig.ContainsKey(speakerName))
         {
-            if (ColorUtility.TryParseHtmlString(colorStr, out var loadedColor))
+            var newEntry = CreateDefaultSpeakerEntry(speakerName);
+            _colorConfig[speakerName] = newEntry;
+            SaveColorConfig();
+        }
+
+        var entry = _colorConfig[speakerName];
+        var typeKey = subtitleType.ToString();
+
+        // 从对应字幕类型的条目中读取 SpeakerColor
+        if (entry.SubtitleColors.TryGetValue(typeKey, out var colorEntry) &&
+            !string.IsNullOrEmpty(colorEntry.SpeakerColor))
+        {
+            if (ColorUtility.TryParseHtmlString(colorEntry.SpeakerColor, out var loadedColor))
             {
                 LogManager.Debug(
-                    $"Loaded Color R:{loadedColor.r:F2} G:{loadedColor.g:F2} B:{loadedColor.b:F2} for {speakerName}");
+                    $"Loaded Color R:{loadedColor.r:F2} G:{loadedColor.g:F2} B:{loadedColor.b:F2} for {speakerName} ({typeKey})");
                 return loadedColor;
             }
 
             LogManager.Warning(
-                $"Invalid speaker color config for {speakerName}: {colorStr}, regenerating");
+                $"Invalid speaker color config for {speakerName} ({typeKey}): {colorEntry.SpeakerColor}");
         }
 
+        // 兜底：使用哈希生成颜色
+        var random = new Random(speakerName.GetHashCode());
+        var color = new Color(
+            0.5f + (float)random.NextDouble() * 0.5f,
+            0.5f + (float)random.NextDouble() * 0.5f,
+            0.5f + (float)random.NextDouble() * 0.5f
+        );
+
+        LogManager.Debug(
+            $"Created fallback Color R:{color.r:F2} G:{color.g:F2} B:{color.b:F2} for {speakerName}");
+
+        return color;
+    }
+
+    /// <summary>
+    ///     获取说话者在指定字幕类型下的自定义颜色配置
+    /// </summary>
+    /// <param name="speakerName">说话者名称</param>
+    /// <param name="subtitleType">字幕类型</param>
+    /// <returns>自定义颜色配置，不存在则返回 null</returns>
+    public static SubtitleColorEntry GetSubtitleColorEntry(
+        string speakerName, JustAnotherTranslator.SubtitleTypeEnum subtitleType)
+    {
+        if (speakerName == null) speakerName = "";
+
+        if (!_colorConfig.TryGetValue(speakerName, out var entry))
+            return null;
+
+        var typeKey = subtitleType.ToString();
+        return entry.SubtitleColors.TryGetValue(typeKey, out var colorEntry) ? colorEntry : null;
+    }
+
+    /// <summary>
+    ///     创建说话者的默认颜色条目（含说话人颜色和全部字幕类型的默认颜色）
+    /// </summary>
+    /// <param name="speakerName">说话者名称</param>
+    /// <returns>默认颜色配置</returns>
+    private static SpeakerColorConfig CreateDefaultSpeakerEntry(string speakerName)
+    {
         // 使用哈希值生成颜色，确保相同名称总是获得相同颜色
         // 具体哈希方式不重要，也不需要强一致，因此直接使用GetHashCode
         var random = new Random(speakerName.GetHashCode());
@@ -428,56 +482,116 @@ public static class SubtitleManager
             0.5f + (float)random.NextDouble() * 0.5f
         );
 
-        LogManager.Debug(
-            $"Created Color R:{color.r:F2} G:{color.g:F2} B:{color.b:F2} for {speakerName}");
+        var speakerColorHex = $"#{ColorUtility.ToHtmlStringRGB(color)}";
 
-        _speakerColorConfig[speakerName] = $"#{ColorUtility.ToHtmlStringRGB(color)}";
-        SaveSpeakerColorConfig();
+        var entry = new SpeakerColorConfig
+        {
+            SubtitleColors = new Dictionary<string, SubtitleColorEntry>()
+        };
 
-        return color;
+        // 为每种字幕类型创建默认颜色配置
+        foreach (JustAnotherTranslator.SubtitleTypeEnum type in
+                 Enum.GetValues(typeof(JustAnotherTranslator.SubtitleTypeEnum)))
+            entry.SubtitleColors[type.ToString()] =
+                CreateDefaultSubtitleColorEntry(type, speakerColorHex);
+
+        return entry;
     }
 
     /// <summary>
-    ///     加载说话者颜色配置文件。如果配置文件不存在，则创建一个新的空配置文件。
+    ///     为指定字幕类型创建默认的颜色配置条目，从 BepInEx 配置读取当前默认值
+    /// </summary>
+    private static SubtitleColorEntry CreateDefaultSubtitleColorEntry(
+        JustAnotherTranslator.SubtitleTypeEnum type, string speakerColorHex)
+    {
+        return type switch
+        {
+            JustAnotherTranslator.SubtitleTypeEnum.Base => new SubtitleColorEntry
+            {
+                SpeakerColor = speakerColorHex,
+                TextColor = JustAnotherTranslator.BaseSubtitleColor.Value,
+                TextOpacity = JustAnotherTranslator.BaseSubtitleOpacity.Value,
+                BackgroundColor = JustAnotherTranslator.BaseSubtitleBackgroundColor.Value,
+                BackgroundOpacity = JustAnotherTranslator.BaseSubtitleBackgroundOpacity.Value,
+                OutlineColor = JustAnotherTranslator.BaseSubtitleOutlineColor.Value,
+                OutlineOpacity = JustAnotherTranslator.BaseSubtitleOutlineOpacity.Value
+            },
+            JustAnotherTranslator.SubtitleTypeEnum.Yotogi => new SubtitleColorEntry
+            {
+                SpeakerColor = speakerColorHex,
+                TextColor = JustAnotherTranslator.YotogiSubtitleColor.Value,
+                TextOpacity = JustAnotherTranslator.YotogiSubtitleOpacity.Value,
+                BackgroundColor = JustAnotherTranslator.YotogiSubtitleBackgroundColor.Value,
+                BackgroundOpacity = JustAnotherTranslator.YotogiSubtitleBackgroundOpacity.Value,
+                OutlineColor = JustAnotherTranslator.YotogiSubtitleOutlineColor.Value,
+                OutlineOpacity = JustAnotherTranslator.YotogiSubtitleOutlineOpacity.Value
+            },
+            JustAnotherTranslator.SubtitleTypeEnum.Adv => new SubtitleColorEntry
+            {
+                SpeakerColor = speakerColorHex,
+                TextColor = JustAnotherTranslator.AdvSubtitleColor.Value,
+                TextOpacity = JustAnotherTranslator.AdvSubtitleOpacity.Value,
+                BackgroundColor = JustAnotherTranslator.AdvSubtitleBackgroundColor.Value,
+                BackgroundOpacity = JustAnotherTranslator.AdvSubtitleBackgroundOpacity.Value,
+                OutlineColor = JustAnotherTranslator.AdvSubtitleOutlineColor.Value,
+                OutlineOpacity = JustAnotherTranslator.AdvSubtitleOutlineOpacity.Value
+            },
+            JustAnotherTranslator.SubtitleTypeEnum.Lyric => new SubtitleColorEntry
+            {
+                SpeakerColor = speakerColorHex,
+                TextColor = JustAnotherTranslator.LyricSubtitleColor.Value,
+                TextOpacity = JustAnotherTranslator.LyricSubtitleOpacity.Value,
+                BackgroundColor = JustAnotherTranslator.LyricSubtitleBackgroundColor.Value,
+                BackgroundOpacity = JustAnotherTranslator.LyricSubtitleBackgroundOpacity.Value,
+                OutlineColor = JustAnotherTranslator.LyricSubtitleOutlineColor.Value,
+                OutlineOpacity = JustAnotherTranslator.LyricSubtitleOutlineOpacity.Value
+            },
+            _ => new SubtitleColorEntry { SpeakerColor = speakerColorHex }
+        };
+    }
+
+    /// <summary>
+    ///     加载颜色配置文件。如果配置文件不存在，则创建一个新的空配置文件。
     ///     如果加载失败，将记录警告并初始化一个空的颜色配置。
     /// </summary>
-    private static void LoadSpeakerColorConfig()
+    private static void LoadColorConfig()
     {
         try
         {
-            if (!File.Exists(JustAnotherTranslator.SpeakerColorConfigPath))
+            if (!File.Exists(JustAnotherTranslator.SubtitleColorsConfigPath))
             {
-                _speakerColorConfig = new Dictionary<string, string>();
-                SaveSpeakerColorConfig();
+                _colorConfig = new Dictionary<string, SpeakerColorConfig>();
+                SaveColorConfig();
                 return;
             }
 
-            var json = File.ReadAllText(JustAnotherTranslator.SpeakerColorConfigPath);
-            var loaded = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
-            _speakerColorConfig = loaded ?? new Dictionary<string, string>();
-            LogManager.Debug($"Loaded speaker color config/加载说话者颜色配置成功: {json}");
+            var json = File.ReadAllText(JustAnotherTranslator.SubtitleColorsConfigPath);
+            var loaded =
+                JsonConvert.DeserializeObject<Dictionary<string, SpeakerColorConfig>>(json);
+            _colorConfig = loaded ?? new Dictionary<string, SpeakerColorConfig>();
+            LogManager.Debug($"Loaded color config: {json}");
         }
         catch (Exception e)
         {
-            _speakerColorConfig = new Dictionary<string, string>();
-            LogManager.Warning($"Failed to load speaker color config/加载说话者颜色失败: {e.Message}");
+            _colorConfig = new Dictionary<string, SpeakerColorConfig>();
+            LogManager.Warning($"Failed to load color config/加载颜色配置失败: {e.Message}");
         }
     }
 
     /// <summary>
-    ///     将说话者颜色配置保存到配置文件中。
+    ///     将颜色配置保存到配置文件中。
     /// </summary>
-    private static void SaveSpeakerColorConfig()
+    private static void SaveColorConfig()
     {
         try
         {
-            var json = JsonConvert.SerializeObject(_speakerColorConfig, Formatting.Indented);
-            File.WriteAllText(JustAnotherTranslator.SpeakerColorConfigPath, json);
-            LogManager.Debug($"Saved speaker color config/保存说话者颜色配置成功: {json}");
+            var json = JsonConvert.SerializeObject(_colorConfig, Formatting.Indented);
+            File.WriteAllText(JustAnotherTranslator.SubtitleColorsConfigPath, json);
+            LogManager.Debug($"Saved color config: {json}");
         }
         catch (Exception e)
         {
-            LogManager.Warning($"Failed to save speaker color config/保存说话者颜色失败: {e.Message}");
+            LogManager.Warning($"Failed to save color config/保存颜色配置失败: {e.Message}");
         }
     }
 

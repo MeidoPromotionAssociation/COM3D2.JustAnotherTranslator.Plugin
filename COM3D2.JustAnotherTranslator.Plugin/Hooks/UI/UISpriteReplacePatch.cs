@@ -35,7 +35,8 @@ public static class UISpriteReplacePatch
                                $"JAT_ReplacementAtlas_{sp}") // ProcessSpriteReplacementWithNewAtlas 中会设置的 atlas 名称
             {
                 // 已经替换为相同的精灵图，跳过
-                LogManager.Debug($"UIButton_SetSprite_Postfix {__instance.name} atlas.name is JAT_ReplacementAtlas_{sp} skipped");
+                LogManager.Debug(
+                    $"UIButton_SetSprite_Postfix {__instance.name} atlas.name is JAT_ReplacementAtlas_{sp} skipped");
                 return;
             }
 

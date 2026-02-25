@@ -232,7 +232,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string TextureDumpPath;
     public static string SpriteDumpPath;
     public static string TermDumpPath;
-    public static string SpeakerColorConfigPath;
+    public static string SubtitleColorsConfigPath;
 
     private void Awake()
     {
@@ -299,7 +299,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         TextureDumpPath = Path.Combine(DumpPath, "Texture");
         SpriteDumpPath = Path.Combine(DumpUIPath, "Sprite");
         TermDumpPath = Path.Combine(DumpUIPath, "Text");
-        SpeakerColorConfigPath = Path.Combine(TranslationRootPath, "SpeakerColor.json");
+        SubtitleColorsConfigPath = Path.Combine(TranslationRootPath, "SubtitleColors.json");
 
         EnableGeneralTextTranslation = Config.Bind("2General",
             "EnableGeneralTextTranslation/启用通用文本翻译",
@@ -346,7 +346,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogLevel.Info,
             new ConfigDescription("Log Level, DEBUG will log more information/日志级别，DEBUG 级别将记录详细信息",
                 null,
-                new ConfigurationManagerAttributes { Order = 2060 }));
+                new ConfigurationManagerAttributes { Order = 2080 }));
 
         # endregion
 
@@ -1174,8 +1174,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             Directory.CreateDirectory(TextureDumpPath);
             Directory.CreateDirectory(SpriteDumpPath);
             Directory.CreateDirectory(TermDumpPath);
-            if (!File.Exists(SpeakerColorConfigPath))
-                File.WriteAllText(SpeakerColorConfigPath, "{}");
+            if (!File.Exists(SubtitleColorsConfigPath))
+                File.WriteAllText(SubtitleColorsConfigPath, "{}");
         }
         catch (Exception e)
         {
@@ -1339,7 +1339,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             TextureDumpPath = Path.Combine(DumpPath, "Texture");
             SpriteDumpPath = Path.Combine(DumpUIPath, "Sprite");
             TermDumpPath = Path.Combine(DumpUIPath, "UI");
-            SpeakerColorConfigPath = Path.Combine(TranslationRootPath, "SpeakerColor.json");
+            SubtitleColorsConfigPath = Path.Combine(TranslationRootPath, "SubtitleColors.json");
             // 创建目录
             try
             {
@@ -1356,8 +1356,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 Directory.CreateDirectory(TextureDumpPath);
                 Directory.CreateDirectory(SpriteDumpPath);
                 Directory.CreateDirectory(TermDumpPath);
-                if (!File.Exists(SpeakerColorConfigPath))
-                    File.WriteAllText(SpeakerColorConfigPath, "{}");
+                if (!File.Exists(SubtitleColorsConfigPath))
+                    File.WriteAllText(SubtitleColorsConfigPath, "{}");
             }
             catch (Exception e)
             {

@@ -148,7 +148,7 @@ COM3D2/            (Game root)
 │     │       └─ _Karaoke/                       (Karaoke Mode Dedicated Lyrics Folder)
 │     │             └─ danceInfosKaraoke.csv     (Karaoke Mode Dedicated Lyrics Information Dump)
 │     ├─ Dump/                                   (For translators)
-│     └─ SpeakerColor.json                       (Subtitle speaker colors)
+│     └─ SubtitleColors.json                    (Subtitle and speaker colors)
 └─ COM3D2.exe                                    (Game Launcher)
 ```
 
@@ -382,7 +382,7 @@ COM3D2/        (游戏文件夹根目录)
 │     │       └─ _Karaoke/                  (卡拉OK模式专用歌词文件夹)
 │     │            └─danceInfosKaraoke.csv  (卡拉OK模式专用歌词信息转储)
 │     ├─ Dump/                              (翻译人员专用)
-│     └─ SpeakerColor.json                  (字幕-说话人名字颜色)
+│     └─ SubtitleColors.json               (字幕及说话人颜色)
 └─ COM3D2.exe                               (游戏启动器)
 ```
 

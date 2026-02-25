@@ -209,11 +209,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<bool> EnableTermDump;
     public static ConfigEntry<int> TermDumpThreshold;
     public static ConfigEntry<bool> FlushTermDumpNow;
+    public static ConfigEntry<bool> PrintOSFont;
 
     // patch相关配置
     private static ConfigEntry<bool> _fixerTip1;
-    private static ConfigEntry<bool> _FixerTip2;
+    private static ConfigEntry<bool> _fixerTip2;
     public static ConfigEntry<bool> EnableMaidCafeDlcLineBreakCommentFix;
+    public static ConfigEntry<bool> EnableUIFontReplace;
+    public static ConfigEntry<string> UIFont;
 
     // Translation folder path
     public static readonly string TranslationRootPath =
@@ -346,7 +349,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogLevel.Info,
             new ConfigDescription("Log Level, DEBUG will log more information/日志级别，DEBUG 级别将记录详细信息",
                 null,
-                new ConfigurationManagerAttributes { Order = 2080 }));
+                new ConfigurationManagerAttributes { Order = 2060 }));
 
         # endregion
 
@@ -1128,6 +1131,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 null,
                 new ConfigurationManagerAttributes { Order = 9120 }));
 
+        PrintOSFont = Config.Bind("9Dump",
+            "PrintOSFont/打印OS字体",
+            false,
+            new ConfigDescription(
+                "Prints all installed and available fonts in the system to the console and logs, and prints them immediately when the option status changes/将系统内已安装且可用的字体打印到控制台和日志，选项状态变更时立即打印",
+                null,
+                new ConfigurationManagerAttributes { Order = 9130 }));
+
         # endregion
 
         # region FixerSettings
@@ -1139,7 +1150,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription("this config do nothing", null,
                 new ConfigurationManagerAttributes { Order = 10000 }));
 
-        _FixerTip2 = Config.Bind("10Fixer",
+        _fixerTip2 = Config.Bind("10Fixer",
             "这一部分用于禁用或启用一些修复补丁，如果你不知道你在做什么，请不要动",
             true,
             new ConfigDescription("this config do nothing", null,
@@ -1152,6 +1163,20 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 "Enabled a fix for the Maid Cafe DLC's bullet chat not moving/启用女仆咖啡厅DLC的弹幕不移动的修复",
                 null,
                 new ConfigurationManagerAttributes { Order = 10020 }));
+
+        EnableUIFontReplace = Config.Bind("10Fixer",
+            "EnableUIFontReplace/启用UI字体替换",
+            false,
+            new ConfigDescription(
+                "Enable UI Font Replace/启用 UI 字体替换",
+                null, new ConfigurationManagerAttributes { Order = 10030 }));
+
+        UIFont = Config.Bind("10Fixer",
+            "UIFont/UI字体",
+            "Noto Sans CJK SC",
+            new ConfigDescription(
+                "This is used to replace the font and requires a font that is already installed on your system. The game's built-in font is NotoSansCJKjp-DemiLight./用于替换字体，需要已经安装在系统中的字体，游戏内置字体为 NotoSansCJKjp-DemiLight",
+                null, new ConfigurationManagerAttributes { Order = 10040 }));
 
         # endregion
 
@@ -2581,6 +2606,9 @@ public class JustAnotherTranslator : BaseUnityPlugin
             UITranslateManager.FlushTermDumpBuffer();
             LogManager.Info("Term dump flushed/Term转储缓存已写出");
         };
+
+        // 注册打印OS字体变更事件
+        PrintOSFont.SettingChanged += (_, _) => { FontTool.PrintOSInstalledFontNames(); };
     }
 
     # endregion
@@ -2610,6 +2638,26 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 FixerManger.Init();
             }
         };
+
+        // 注册 UI 字体替换启用状态变更事件
+        EnableUIFontReplace.SettingChanged += (_, _) =>
+        {
+            if (EnableUIFontReplace.Value)
+            {
+                LogManager.Info("UI font replace enabled/UI字体替换已启用");
+                FixerManger.Unload();
+                FixerManger.Init();
+            }
+            else
+            {
+                LogManager.Info("UI font replace disabled/UI字体替换已禁用");
+                FixerManger.Unload();
+                FixerManger.Init();
+            }
+        };
+
+        // 注册 UI 字体变更事件
+        UIFont.SettingChanged += (_, _) => { LogManager.Info("UI font changed/UI 字体已变更"); };
     }
 
     # endregion

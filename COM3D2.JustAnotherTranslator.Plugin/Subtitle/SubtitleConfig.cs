@@ -34,13 +34,13 @@ public class SubtitleConfig
             // 字体
             Font = GetSubtitleTypeConfig(
                 subtitleType,
-                () => GetFontByName(JustAnotherTranslator.BaseSubtitleFont.Value,
+                () => FontTool.GetFontByName(JustAnotherTranslator.BaseSubtitleFont.Value,
                     JustAnotherTranslator.BaseSubtitleFontSize.Value),
-                () => GetFontByName(JustAnotherTranslator.YotogiSubtitleFont.Value,
+                () => FontTool.GetFontByName(JustAnotherTranslator.YotogiSubtitleFont.Value,
                     JustAnotherTranslator.YotogiSubtitleFontSize.Value),
-                () => GetFontByName(JustAnotherTranslator.AdvSubtitleFont.Value,
+                () => FontTool.GetFontByName(JustAnotherTranslator.AdvSubtitleFont.Value,
                     JustAnotherTranslator.AdvSubtitleFontSize.Value),
-                () => GetFontByName(JustAnotherTranslator.LyricSubtitleFont.Value,
+                () => FontTool.GetFontByName(JustAnotherTranslator.LyricSubtitleFont.Value,
                     JustAnotherTranslator.LyricSubtitleFontSize.Value),
                 null),
 
@@ -317,37 +317,6 @@ public class SubtitleConfig
         }
 
         return Color.white;
-    }
-
-    /// <summary>
-    ///     获取字体
-    ///     如果字体不存在，使用默认字体
-    /// </summary>
-    /// <param name="name">字体名称</param>
-    /// <param name="size">字体大小</param>
-    /// <returns>字体</returns>
-    private static Font GetFontByName(string name, int size)
-    {
-        if (name == "Arial" || name == "Arial.ttf")
-            return Resources.GetBuiltinResource<Font>("Arial.ttf");
-        try
-        {
-            var font = Font.CreateDynamicFontFromOSFont(name, size);
-            if (font is null)
-            {
-                LogManager.Warning(
-                    $"Failed to load font: {name}, using default font/无法加载字体：{name}。使用默认字体");
-                return Resources.GetBuiltinResource<Font>("Arial.ttf");
-            }
-
-            return font;
-        }
-        catch (Exception e)
-        {
-            LogManager.Warning(
-                $"Failed to load font: {name}, using default font{e.Message}/无法加载字体：{name}。使用默认字体");
-            return Resources.GetBuiltinResource<Font>("Arial.ttf");
-        }
     }
 
     /// <summary>

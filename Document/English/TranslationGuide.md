@@ -19,6 +19,7 @@ JAT adopts a modular design, where each module can be enabled or disabled indepe
 - UI Translation
 - Lyrics Subtitles
 - Standard Subtitles
+- Fix patch
 
 <br>
 
@@ -44,6 +45,8 @@ Harmony patches are registered in each Init() method.
 
 If you have additional requirements, please file an issue.
 
+JAT also includes detailed code comments to help you explore its code.
+
 # General Text Translation
 
 The General Text Translation module is where the main text translation occurs. It can translate content including daily ADV dialogues, NGUI text, uGUI text, and the game's built-in multi-language support text.
@@ -57,6 +60,8 @@ JAT loads all translation files into a single, large in-memory database upon sta
 This approach has its advantages and disadvantages.
 
 The most notable is that it will consume more memory than i18nEx.
+
+After toggling the `EnableGeneralTextTranslation/启用通用文本翻译` option in-game, translated text will be hot-reloaded.
 
 ## 1. Translation File Location
 
@@ -912,3 +917,27 @@ JAT supports exporting untranslated text and terms, along with unreplaced textur
   - Texture: Not overwrite if the target file already exists
   - Sprite: Not overwrite if the target file already exists
   - UI Text: Always append
+
+
+
+# Fix Patch
+
+## Maid Cafe Line Break Fix
+
+This fixes a bug where the line breaks in the Maid Cafe DLC sometimes stop scrolling after translation.
+
+Due to inconsistent replacement timing, sometimes the line breaks only occur after the official text length check, causing errors.
+
+Function is the same as [maid_cafe_line_break_fix.cs](https://github.com/90135/COM3D2_Scripts_901), and JAT is automatically compatible.
+
+## UI Font Replacement
+
+Don't ask me why it's in the patch category, because it's the most suitable place here.
+
+JAT supports replacing the fonts for uGUI, NGUI, and JAT's own subtitles. Switching the `PrintOSFont/打印系统字体` option in the dump settings within the game will print installed and usable fonts to the console and logs.
+
+The game defaults to `NotoSansCJKjp-DemiLight`. Although it's a CJK font, the glyphs are Japanese, which users in other regions may find unfamiliar. You can replace it with another font.
+
+For example, you can download [NotoSansCJKsc-DemiLight.otf](https://github.com/notofonts/noto-cjk/blob/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-DemiLight.otf) and set the font to `Noto Sans CJK SC`, which will give you Simplified Chinese fonts.
+
+You can use the fonts shown in the logs. Unity 5.6 generally only supports .otf and .ttf formats, **and you must right-click the font and select "Install for all users"**.

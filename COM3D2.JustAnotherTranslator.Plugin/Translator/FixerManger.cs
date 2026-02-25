@@ -13,12 +13,17 @@ public static class FixerManger
 
     private static Harmony _maidCafeDlcLineBreakCommentFixPatch;
 
+    private static Harmony _uiFontReplacePatch;
+
     public static void Init()
     {
         if (_initialized) return;
 
         if (JustAnotherTranslator.EnableMaidCafeDlcLineBreakCommentFix.Value)
             RegisterMaidCafeDlcFixPatch();
+
+        if (JustAnotherTranslator.EnableUIFontReplace.Value)
+            RegisterUIFontReplacePatch();
 
         _initialized = true;
     }
@@ -30,9 +35,23 @@ public static class FixerManger
         _maidCafeDlcLineBreakCommentFixPatch?.UnpatchSelf();
         _maidCafeDlcLineBreakCommentFixPatch = null;
 
+        _uiFontReplacePatch?.UnpatchSelf();
+        _uiFontReplacePatch = null;
+
         _initialized = false;
     }
 
+    /// <summary>
+    ///     Registers and applies the "UIFontReplace" Harmony patch to replace the game's default font with
+    ///     a custom font.
+    ///     Checks if the custom font is available and ensures patches are not already applied by other
+    ///     plugins
+    ///     or legacy scripts. If it detects prior patches, it logs a warning and skips this patch to
+    ///     prevent duplication.
+    ///     Otherwise, it attempts to apply the required Harmony patch to the target method.
+    ///     Logs warnings in case of errors during the patching process or if conflicts with existing
+    ///     patches are detected.
+    /// </summary>
     private static void RegisterMaidCafeDlcFixPatch()
     {
         if (MaidCafeManagerHelper.IsMaidCafeAvailable())
@@ -70,5 +89,21 @@ public static class FixerManger
                 LogManager.Warning(
                     $"Failed to patch MaidCafeDlcLineBreakCommentFix/补丁 MaidCafeDlcLineBreakCommentFix 失败: {e.Message}");
             }
+    }
+
+
+    /// <summary>
+    ///     Registers and applies the Harmony patch for replacing default UI fonts with custom fonts.
+    ///     This method initializes the patching process by creating and applying all the required
+    ///     patches defined in the <c>UIFontReplace</c> class. Ensures that the patch is applied only once
+    ///     and associates it with a unique Harmony ID. The purpose of these patches is to intercept
+    ///     and modify text rendering logic, enabling the use of custom fonts across UI elements such as
+    ///     Unity's Text components and UILabels.
+    /// </summary>
+    private static void RegisterUIFontReplacePatch()
+    {
+        _uiFontReplacePatch = Harmony.CreateAndPatchAll(
+            typeof(UIFontReplace),
+            "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.fixer.uifontreplace");
     }
 }

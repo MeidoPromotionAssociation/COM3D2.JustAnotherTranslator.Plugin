@@ -341,41 +341,45 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     }
 
     /// <summary>
-    ///     获取当前画布在参考单位下的可见高度（将屏幕像素高度除以 Canvas 的 scaleFactor）
-    ///     用于将像素单位（参考分辨率 1920x1080）下的位置转换为在当前分辨率下可见的上限
+    ///     获取 CanvasScaler 参考分辨率高度。
+    ///     不依赖 Canvas.scaleFactor（Init 时 CanvasScaler 尚未更新，scaleFactor 仍为默认值 1，
+    ///     会导致用 Screen.height/scaleFactor 算出错误的可见高度）。
     /// </summary>
-    /// <returns>可见高度（单位：参考分辨率单位）</returns>
-    protected virtual float GetVisibleCanvasHeightInUnits()
+    /// <returns>参考高度（默认 1080）</returns>
+    public virtual float GetReferenceHeight()
     {
-        try
-        {
-            var scale = 1f;
-            if (CanvasComponents != null)
-            {
-                // Canvas.scaleFactor 即 CanvasScaler 计算后的缩放因子
-                scale = CanvasComponents.scaleFactor;
-                if (scale <= 0f) scale = 1f;
-            }
-
-            return Screen.height / scale;
-        }
-        catch
-        {
-            // 回退到参考高度
-            return 1080f;
-        }
+        if (CanvasScalerComponents != null)
+            return CanvasScalerComponents.referenceResolution.y;
+        LogManager.Warning(
+            "CanvasScalerComponents is null, using default reference height 1080/CanvasScaler 为空，使用默认参考高度 1080");
+        return 1080f;
     }
 
     /// <summary>
-    ///     钳制垂直位置到可见范围 [0, 可见高度-字幕高度]
+    ///     获取 Canvas 的渲染模式
+    /// </summary>
+    /// <returns>渲染模式，默认 ScreenSpaceOverlay</returns>
+    public virtual RenderMode GetCanvasRenderMode()
+    {
+        if (CanvasComponents != null)
+            return CanvasComponents.renderMode;
+        LogManager.Warning(
+            "CanvasComponents is null, using default render mode ScreenSpaceOverlay/Canvas 为空，使用默认渲染模式 ScreenSpaceOverlay");
+        return RenderMode.ScreenSpaceOverlay;
+    }
+
+    /// <summary>
+    ///     钳制垂直位置到可见范围 [0, 参考高度-字幕高度]
+    ///     CanvasScaler 使用 ScaleWithScreenSize + matchWidthOrHeight=1，
+    ///     所有坐标均在参考分辨率单位下，可见高度恒为参考高度，与实际分辨率无关。
     /// </summary>
     /// <param name="y">期望的垂直位置</param>
     /// <param name="subtitleHeight">字幕高度</param>
     /// <returns>钳制后的垂直位置</returns>
     protected virtual float ClampVerticalPosition(float y, float subtitleHeight)
     {
-        var visibleHeight = GetVisibleCanvasHeightInUnits();
-        var maxY = Mathf.Max(0f, visibleHeight - Mathf.Max(0f, subtitleHeight));
+        var referenceHeight = GetReferenceHeight();
+        var maxY = Mathf.Max(0f, referenceHeight - Mathf.Max(0f, subtitleHeight));
         return Mathf.Clamp(y, 0f, maxY);
     }
 

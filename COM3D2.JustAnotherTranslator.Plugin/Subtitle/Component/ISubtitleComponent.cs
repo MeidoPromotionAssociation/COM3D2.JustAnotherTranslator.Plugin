@@ -97,4 +97,16 @@ public interface ISubtitleComponent
     /// </summary>
     /// <returns>游戏对象</returns>
     GameObject GetGameObject();
+
+    /// <summary>
+    ///     获取 CanvasScaler 参考分辨率高度
+    /// </summary>
+    /// <returns>参考高度（默认 1080）</returns>
+    float GetReferenceHeight();
+
+    /// <summary>
+    ///     获取 Canvas 的渲染模式
+    /// </summary>
+    /// <returns>渲染模式</returns>
+    RenderMode GetCanvasRenderMode();
 }

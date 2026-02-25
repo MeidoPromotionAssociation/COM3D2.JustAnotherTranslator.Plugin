@@ -247,7 +247,7 @@ public static class SubtitleComponentManager
             var finalY = initialY;
 
             const int maxSearchDistance = 1080; // 上下最大搜索距离（以参考单位计）
-            var screenHeight = GetVisibleHeightInUnits(subtitleComponent); // 动态可见高度（以参考单位计）
+            var screenHeight = GetCanvasReferenceHeight(subtitleComponent); // 动态可见高度（以参考单位计）
 
             // 检查位置是否与任何活动字幕重叠
             // 屏幕模式以左下角为锚点，VerticalPosition 是字幕的“底边”像素
@@ -264,7 +264,7 @@ public static class SubtitleComponentManager
             }
 
             LogManager.Debug(
-                $"Finding available position for {currentSubtitleId}, checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {Overlaps(initialY)}, for subtitle: {currentSubtitleId}");
+                $"Finding available position for {currentSubtitleId}, InitialVerticalPosition: {existingEntry.InitialVerticalPosition}, CurrentVerticalPosition: {config.CurrentVerticalPosition}, checking initial position: {initialY}, subtitle height: {subtitleHeight}, overlaps: {Overlaps(initialY)}, for subtitle: {currentSubtitleId}");
 
             foreach (var subtitle in ActiveSubtitles)
                 LogManager.Debug(
@@ -327,29 +327,13 @@ public static class SubtitleComponentManager
     }
 
     /// <summary>
-    ///     获取组件所处 Canvas 的可见高度（参考单位）。
-    ///     对于 ScreenSpaceOverlay + CanvasScaler(ScaleWithScreenSize, matchHeight=1)，可见高度通常为 1080。
-    ///     在其它缩放场景下，使用 Screen.height / Canvas.scaleFactor 进行换算。
+    ///     获取组件所处 Canvas 的参考分辨率高度，直接从 CanvasScaler 读取，不依赖 Canvas.scaleFactor。
     /// </summary>
-    private static float GetVisibleHeightInUnits(ISubtitleComponent component)
+    private static float GetCanvasReferenceHeight(ISubtitleComponent component)
     {
-        try
-        {
-            var scale = 1f;
-            var go = component != null ? component.GetGameObject() : null;
-            if (go != null)
-            {
-                var canvas = go.GetComponentInChildren<Canvas>();
-                if (canvas != null && canvas.scaleFactor > 0f)
-                    scale = canvas.scaleFactor;
-            }
-
-            return Screen.height / scale;
-        }
-        catch
-        {
-            return 1080f; // 回退到参考高度
-        }
+        if (component != null)
+            return component.GetReferenceHeight();
+        return 1080f;
     }
 
     /// <summary>

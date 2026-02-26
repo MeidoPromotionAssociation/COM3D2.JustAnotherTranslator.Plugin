@@ -1,6 +1,6 @@
 using System;
 using System.Collections;
-using COM3D2.JustAnotherTranslator.Plugin.Translator;
+using COM3D2.JustAnotherTranslator.Plugin.Manger;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using UnityEngine;
 using UnityEngine.UI;

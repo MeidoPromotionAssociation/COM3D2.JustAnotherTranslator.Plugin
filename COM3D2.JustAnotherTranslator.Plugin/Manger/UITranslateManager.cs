@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using BepInEx.Logging;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
+using COM3D2.JustAnotherTranslator.Plugin.Loader;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -17,7 +18,7 @@ using Object = UnityEngine.Object;
 using System.Linq;
 #endif
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
+namespace COM3D2.JustAnotherTranslator.Plugin.Manger;
 
 /// <summary>
 ///     UI 翻译管理器
@@ -27,7 +28,7 @@ public static class UITranslateManager
     private static Harmony _uiTextTranslatePatch;
     private static Harmony _uiSpriteReplacePatch;
     private static Harmony _uiDebugPatch;
-    private static Harmony _uiTextDumpPtach;
+    private static Harmony _uiTextDumpPatch;
     private static bool _initialized;
 
     /// 存储翻译数据的字典
@@ -117,9 +118,9 @@ public static class UITranslateManager
 
         if (JustAnotherTranslator.EnableTermDump.Value)
         {
-            _uiTextDumpPtach = new Harmony(
+            _uiTextDumpPatch = new Harmony(
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitextdumppatch");
-            UITextDumpPatch.LocalizeTargetPatcher.ApplyPatch(_uiTextDumpPtach);
+            UITextDumpPatch.LocalizeTargetPatcher.ApplyPatch(_uiTextDumpPatch);
         }
 
         if (JustAnotherTranslator.EnableTermDump.Value ||
@@ -146,8 +147,8 @@ public static class UITranslateManager
         _uiDebugPatch?.UnpatchSelf();
         _uiDebugPatch = null;
 
-        _uiTextDumpPtach?.UnpatchSelf();
-        _uiTextDumpPtach = null;
+        _uiTextDumpPatch?.UnpatchSelf();
+        _uiTextDumpPatch = null;
 
         _translations.Clear();
         SpritePathCache.Clear();

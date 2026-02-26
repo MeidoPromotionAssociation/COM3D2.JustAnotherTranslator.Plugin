@@ -5,7 +5,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using MaidCafe;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
+namespace COM3D2.JustAnotherTranslator.Plugin.Manger;
 
 public static class FixerManger
 {

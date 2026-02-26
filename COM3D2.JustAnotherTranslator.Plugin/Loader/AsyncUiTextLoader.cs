@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using CsvHelper;
 using CsvHelper.Configuration;
 using ICSharpCode.SharpZipLib.Zip;
@@ -13,7 +14,7 @@ using JetBrains.Annotations;
 using System.Linq;
 #endif
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
+namespace COM3D2.JustAnotherTranslator.Plugin.Loader;
 
 /// <summary>
 ///     异步UI翻译加载器

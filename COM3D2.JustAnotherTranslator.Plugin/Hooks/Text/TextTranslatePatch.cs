@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using COM3D2.JustAnotherTranslator.Plugin.Translator;
+using COM3D2.JustAnotherTranslator.Plugin.Manger;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using Scourt.Loc;

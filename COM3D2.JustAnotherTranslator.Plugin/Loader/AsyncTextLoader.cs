@@ -5,9 +5,10 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using ICSharpCode.SharpZipLib.Zip;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
+namespace COM3D2.JustAnotherTranslator.Plugin.Loader;
 
 /// <summary>
 ///     异步文件加载器，用于在后台线程中加载翻译文件

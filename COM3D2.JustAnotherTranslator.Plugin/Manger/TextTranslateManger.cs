@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
+using COM3D2.JustAnotherTranslator.Plugin.Loader;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using UnityEngine.SceneManagement;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
+namespace COM3D2.JustAnotherTranslator.Plugin.Manger;
 
 /// <summary>
 ///     文本翻译管理器

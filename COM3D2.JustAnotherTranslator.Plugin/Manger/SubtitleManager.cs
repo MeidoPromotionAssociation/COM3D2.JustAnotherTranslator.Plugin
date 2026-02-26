@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = System.Random;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
+namespace COM3D2.JustAnotherTranslator.Plugin.Manger;
 
 /// <summary>
 ///     字幕管理器，负责管理语音监控和补丁应用

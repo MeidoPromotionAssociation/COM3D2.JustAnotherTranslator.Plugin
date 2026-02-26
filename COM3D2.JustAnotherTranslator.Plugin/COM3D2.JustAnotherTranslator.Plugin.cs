@@ -4,8 +4,8 @@ using System.IO;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using COM3D2.JustAnotherTranslator.Plugin.Manger;
 using COM3D2.JustAnotherTranslator.Plugin.Subtitle;
-using COM3D2.JustAnotherTranslator.Plugin.Translator;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 namespace COM3D2.JustAnotherTranslator.Plugin;

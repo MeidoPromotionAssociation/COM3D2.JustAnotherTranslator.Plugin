@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
+namespace COM3D2.JustAnotherTranslator.Plugin.Manger;
 
 /// <summary>
 ///     纹理替换管理器

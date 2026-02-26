@@ -17,7 +17,7 @@ using UnityEngine.SceneManagement;
 using System.Linq;
 #endif
 
-namespace COM3D2.JustAnotherTranslator.Plugin.Translator;
+namespace COM3D2.JustAnotherTranslator.Plugin.Manger;
 
 /// <summary>
 ///     歌词翻译管理器

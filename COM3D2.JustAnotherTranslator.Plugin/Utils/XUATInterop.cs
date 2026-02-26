@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using COM3D2.JustAnotherTranslator.Plugin.Translator;
+using COM3D2.JustAnotherTranslator.Plugin.Manger;
 using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
@@ -11,17 +11,14 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 /// </summary>
 public static class XUATInterop
 {
-    /// <summary>
-    ///     是否已初始化
-    /// </summary>
     private static bool _initialized;
+    private static Harmony _xuatInteropPatch;
 
     /// <summary>
     ///     XUAT 用来标记已翻译的特殊字符，可以提前检查
     ///     初始化时会从插件实际获取，安全起见设置默认值
     /// </summary>
     public static string XuatSpicalMaker = "\u180e";
-
 
     /// <summary>
     ///     初始化 XUAT 互操作功能
@@ -55,7 +52,9 @@ public static class XUATInterop
             }
 
 
-            var harmony = new Harmony("COM3D2.JustAnotherTranslator.Plugin.XUATInterop");
+            _xuatInteropPatch =
+                new Harmony(
+                    "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.utils.xuatinterop");
 
             // 对 LanguageHelper.IsTranslatable 方法应用补丁
             var isTranslatableMethod = langHelper.GetMethod("IsTranslatable",
@@ -63,7 +62,7 @@ public static class XUATInterop
 
             if (isTranslatableMethod != null)
             {
-                harmony.Patch(isTranslatableMethod,
+                _xuatInteropPatch.Patch(isTranslatableMethod,
                     new HarmonyMethod(typeof(XUATInterop).GetMethod(
                         nameof(XUAT_IsTranslatable_Prefix),
                         BindingFlags.Static | BindingFlags.NonPublic)));
@@ -86,7 +85,7 @@ public static class XUATInterop
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
                 if (method == null) continue;
 
-                harmony.Patch(method,
+                _xuatInteropPatch.Patch(method,
                     new HarmonyMethod(typeof(XUATInterop).GetMethod(
                         nameof(XUAT_IsTranslatable_Prefix),
                         BindingFlags.Static | BindingFlags.NonPublic)));
@@ -186,6 +185,8 @@ public static class XUATInterop
         {
             XuatSpicalMaker = "\u180e";
             _initialized = false;
+            _xuatInteropPatch?.UnpatchSelf();
+            _xuatInteropPatch = null;
         }
         catch (Exception e)
         {

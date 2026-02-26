@@ -23,29 +23,27 @@ JAT adopts a modular design, where each module can be enabled or disabled indepe
 
 <br>
 
-# Integration with XUnity.AutoTranslator
+# Integration with JAT
 
-JAT automatically integrates with [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator). Text translated by JAT will not be translated again by XUAT.
+## Interaction between JAT and XUnity.AutoTranslator
 
-If you are developing software and want to integrate with JAT, please check https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/COM3D2.JustAnotherTranslator.Plugin/Utils/XUATInterop.cs
+JAT automatically integrates with [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator).
 
-JAT uses the same special tags as XUAT.
+JAT actively intervenes in XUnity's translation decisions; text translated by JAT will not be translated by XUnity again, and text translated by XUnity is unlikely to be in the JAT dictionary.
 
-# Integrating with XUnity.AutoTranslator/Integrating with JAT
+If you have developed a plugin that you wish to integrate with JAT, please check https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/COM3D2.JustAnotherTranslator.Plugin/Utils/XUATInterop.cs
 
-JAT automatically integrates with [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator). Text translated by JAT will not be translated again by XUAT.
+JAT does not use special tags. You can refer to the `XUAT_IsTranslatable_Prefix` method in `XUATInterop.cs` to check if text has been JAT translated. Sprite sheets/atlases and textures replaced by JAT also have their own special prefixes.
 
-If you have developed a plugin and would like to integrate with JAT, please check https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/COM3D2.JustAnotherTranslator.Plugin/Utils/XUATInterop.cs
+<br>
 
-JAT uses the same special tags as XUAT.
+All Harmony patches for JAT have fixed IDs. Please check https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/COM3D2.JustAnotherTranslator.Plugin/Manger
 
-All Harmony patches have fixed IDs. Please check https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/tree/main/COM3D2.JustAnotherTranslator.Plugin/Translator
+Harmony patches are registered in the `Init()` method.
 
-Harmony patches are registered in each Init() method.
+JAT also includes detailed code comments to facilitate your exploration of its code.
 
-If you have additional requirements, please file an issue.
-
-JAT also includes detailed code comments to help you explore its code.
+If you have any other needs, please submit an issue.
 
 # General Text Translation
 

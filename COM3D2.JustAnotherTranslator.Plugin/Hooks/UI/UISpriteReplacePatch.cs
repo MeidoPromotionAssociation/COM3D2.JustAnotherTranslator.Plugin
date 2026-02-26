@@ -11,6 +11,45 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 public static class UISpriteReplacePatch
 {
     /// <summary>
+    ///     挂钩到 UIButton.OnInit 中以在按钮初始化时替换精灵图
+    ///     UIButton 初始化时（Start → OnInit）仅记录 mNormalSprite = mSprite.spriteName，
+    ///     并不会调用 SetSprite，导致初始加载的精灵图无法被替换。
+    ///     此钩子确保按钮一经初始化就立即进行精灵图替换。
+    /// </summary>
+    [HarmonyPatch(typeof(UIButton), "OnInit")]
+    [HarmonyPostfix]
+    public static void UIButton_OnInit_Postfix(UIButton __instance)
+    {
+        try
+        {
+            if (__instance == null) return;
+
+            var sprite = __instance.tweenTarget?.GetComponent<UISprite>() ??
+                         __instance.GetComponent<UISprite>();
+            if (sprite == null || string.IsNullOrEmpty(sprite.spriteName)) return;
+            var sp = sprite.spriteName;
+            LogManager.Debug($"UIButton_OnInit_Postfix called with sp: {sp}");
+
+            // 检查 atlas 是否已被 JAT 替换
+            if (sprite.atlas != null && sprite.atlas.name == $"JAT_ReplacementAtlas_{sp}")
+            {
+                LogManager.Debug(
+                    $"UIButton_OnInit_Postfix {__instance.name} atlas.name is JAT_ReplacementAtlas_{sp} skipped");
+                return;
+            }
+
+            LogManager.Debug($"UIButton_OnInit_Postfix triggering replacement for sp: {sp}");
+            UITranslateManager.ProcessSpriteReplacementWithNewAtlas(__instance, sp);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"UIButton_OnInit_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+
+    /// <summary>
     ///     挂钩到 UIButton.SetSprite 中以拦截精灵变化并应用替换
     ///     当 L2 Localization 翻译图片时，最后会得到 SpriteName 然后此方法会被调用
     ///     当然，不通过 L2 Localization 翻译时也会调用
@@ -41,6 +80,7 @@ public static class UISpriteReplacePatch
             }
 
             // 进行精灵图替换
+            LogManager.Debug($"UIButton_SetSprite_Postfix triggering replacement for sp: {sp}");
             UITranslateManager.ProcessSpriteReplacementWithNewAtlas(__instance, sp);
         }
         catch (Exception e)

@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
 using COM3D2.JustAnotherTranslator.Plugin.Loader;
+using COM3D2.JustAnotherTranslator.Plugin.Loader.Processor;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using UnityEngine.SceneManagement;
@@ -26,7 +27,7 @@ public static class TextTranslateManger
     private static Dictionary<Regex, string> _regexTranslationDict = new(); // regex -> translation
 
     /// 异步加载器
-    private static AsyncTextLoader _asyncLoader;
+    private static IAsyncTranslationLoader _asyncLoader;
 
     /// 翻译是否已加载完成
     private static bool _isTranslationLoaded;
@@ -113,10 +114,12 @@ public static class TextTranslateManger
         IsLoading = true;
 
         // 创建异步加载器
-        _asyncLoader = new AsyncTextLoader(
+        _asyncLoader = new AsyncTranslationLoader(
+            "Text",
             JustAnotherTranslator.TranslationTextPath,
             OnLoadingProgress,
-            OnLoadingComplete
+            OnLoadingComplete,
+            new TxtTranslationFileProcessor()
         );
 
         LogManager.Info("Starting asynchronous translation loading/开始异步加载翻译");
@@ -154,26 +157,19 @@ public static class TextTranslateManger
     /// <summary>
     ///     异步加载加载完成回调
     /// </summary>
-    /// <param name="result"></param>
-    /// <param name="regexResult"></param>
-    /// <param name="totalEntries"></param>
-    /// <param name="totalFiles"></param>
-    /// <param name="elapsedMilliseconds"></param>
-    private static void OnLoadingComplete(Dictionary<string, string> result,
-        Dictionary<Regex, string> regexResult,
-        int totalEntries, int totalFiles,
-        long elapsedMilliseconds)
+    /// <param name="result">翻译加载结果</param>
+    private static void OnLoadingComplete(TranslationLoadResult result)
     {
         // 更新状态
         IsLoading = false;
         _isTranslationLoaded = true;
 
         // 更新翻译字典
-        _translationDict = result;
-        _regexTranslationDict = regexResult;
+        _translationDict = result.Translations;
+        _regexTranslationDict = result.RegexTranslations;
 
         LogManager.Info(
-            $"Asynchronous translation loading complete: {totalEntries} entries from {totalFiles} files, cost {elapsedMilliseconds} ms/异步翻译加载完成: 从 {totalFiles} 个文件中加载了 {totalEntries} 条翻译，耗时 {elapsedMilliseconds} 毫秒");
+            $"Asynchronous translation loading complete: {result.TotalEntries} entries from {result.TotalFiles} files, cost {result.ElapsedMilliseconds} ms/异步翻译加载完成: 从 {result.TotalFiles} 个文件中加载了 {result.TotalEntries} 条翻译，耗时 {result.ElapsedMilliseconds} 毫秒");
     }
 
 

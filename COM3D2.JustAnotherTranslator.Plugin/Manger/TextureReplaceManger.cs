@@ -80,7 +80,7 @@ public static class TextureReplaceManger
         var files = Directory.GetFiles(JustAnotherTranslator.TextureReplacePath, "*.png",
             SearchOption.AllDirectories);
         LogManager.Info(
-            $"Found {files.Length} texture files in translation texture directory/在翻译贴图目录中找到 {files.Length} 个贴图文件");
+            $"Found {files.Length} texture files in texture replace directory/在纹理替换目录中找到 {files.Length} 个贴图文件");
 
         // Cache all texture file path
         foreach (var path in files)

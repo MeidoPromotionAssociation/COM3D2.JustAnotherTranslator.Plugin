@@ -87,10 +87,18 @@ public static class CoroutineManager
         /// </summary>
         public string RunCoroutine(IEnumerator coroutine)
         {
-            var id = Guid.NewGuid().ToString();
-            var handle = StartCoroutine(WrapCoroutine(coroutine, id));
-            _runningCoroutines[id] = handle;
-            return id;
+            try
+            {
+                var id = Guid.NewGuid().ToString();
+                var handle = StartCoroutine(WrapCoroutine(coroutine, id));
+                _runningCoroutines[id] = handle;
+                return id;
+            }
+            catch (Exception e)
+            {
+                LogManager.Error($"Failed to start coroutine/启动协程失败 {e.Message}\n{e.StackTrace}");
+                return null;
+            }
         }
 
         /// <summary>
@@ -98,10 +106,17 @@ public static class CoroutineManager
         /// </summary>
         public void StopCoroutineById(string id)
         {
-            if (_runningCoroutines.TryGetValue(id, out var handle))
+            try
             {
-                StopCoroutine(handle);
-                _runningCoroutines.Remove(id);
+                if (_runningCoroutines.TryGetValue(id, out var handle))
+                {
+                    StopCoroutine(handle);
+                    _runningCoroutines.Remove(id);
+                }
+            }
+            catch (Exception e)
+            {
+                LogManager.Error($"Failed to stop coroutine/停止协程失败 {e.Message}\n{e.StackTrace}");
             }
         }
 
@@ -110,8 +125,15 @@ public static class CoroutineManager
         /// </summary>
         public new void StopAllCoroutines()
         {
-            base.StopAllCoroutines();
-            _runningCoroutines.Clear();
+            try
+            {
+                base.StopAllCoroutines();
+                _runningCoroutines.Clear();
+            }
+            catch (Exception e)
+            {
+                LogManager.Error($"Failed to stop coroutine/停止协程失败 {e.Message}\n{e.StackTrace}");
+            }
         }
 
         /// <summary>
@@ -131,7 +153,7 @@ public static class CoroutineManager
             yield return StartCoroutine(coroutine);
 
             // 协程完成后，从字典中移除
-            if (_runningCoroutines.ContainsKey(id)) _runningCoroutines.Remove(id);
+            _runningCoroutines.Remove(id);
         }
     }
 }

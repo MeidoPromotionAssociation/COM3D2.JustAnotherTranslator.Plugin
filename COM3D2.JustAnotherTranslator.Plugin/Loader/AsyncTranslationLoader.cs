@@ -253,18 +253,7 @@ public class AsyncTranslationLoader : IAsyncTranslationLoader
     {
         try
         {
-            var fileInfo = new FileInfo(filePath);
-            var fileSize = fileInfo.Length;
-
-            if (fileSize > 10 * 1024 * 1024) // > 10MB
-                LogManager.Info(
-                    $"Processing large file/正在处理大文件: {Path.GetFileName(filePath)} ({fileSize / (1024 * 1024):F1} MB)");
-
-            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read,
-                       FileShare.Read))
-            {
-                return processor.ProcessStream(fileStream, result);
-            }
+            return processor.ProcessFile(filePath, result);
         }
         catch (Exception e)
         {

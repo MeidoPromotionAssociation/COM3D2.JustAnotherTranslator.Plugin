@@ -85,6 +85,21 @@ public class CsvTranslationFileProcessor : ITranslationFileProcessor
     }
 
     /// <summary>
+    ///     从文件路径处理 CSV 翻译数据
+    /// </summary>
+    /// <param name="filePath">文件路径</param>
+    /// <param name="result">翻译结果对象，解析的条目将追加到该对象中</param>
+    /// <returns>成功加载的翻译条目数</returns>
+    public int ProcessFile(string filePath, TranslationLoadResult result)
+    {
+        using (var fileStream =
+               new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            return ProcessStream(fileStream, result);
+        }
+    }
+
+    /// <summary>
     ///     CSV 结构
     /// </summary>
     public class CsvEntry

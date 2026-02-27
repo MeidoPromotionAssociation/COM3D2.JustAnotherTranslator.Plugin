@@ -647,16 +647,23 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// </summary>
     protected virtual void DestroySubtitleUI()
     {
-        if (CanvasComponents != null)
+        try
         {
-            Destroy(CanvasComponents.gameObject);
-            CanvasComponents = null;
-        }
+            if (CanvasComponents != null)
+            {
+                Destroy(CanvasComponents.gameObject);
+                CanvasComponents = null;
+            }
 
-        BackgroundImageComponents = null;
-        CanvasGroupComponents = null;
-        CanvasScalerComponents = null;
-        TextComponent = null;
-        OutlineComponents = null;
+            BackgroundImageComponents = null;
+            CanvasGroupComponents = null;
+            CanvasScalerComponents = null;
+            TextComponent = null;
+            OutlineComponents = null;
+        }
+        catch (Exception e)
+        {
+            LogManager.Warning($"Failed to destroy subtitle UI/销毁字幕UI失败: {e.Message}");
+        }
     }
 }

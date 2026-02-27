@@ -39,6 +39,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
         [Description("EnStyle/英式")] EnStyle
     }
 
+    public enum SubtitleSearchDirectionEnum
+    {
+        [Description("DownFirst/先向下搜索")] DownFirst,
+        [Description("UpFirst/先向上搜索")] UpFirst
+    }
+
     public enum SubtitleTypeEnum
     {
         [Description("Base/基础字幕")] Base,
@@ -90,6 +96,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<bool> EnableAdvSubtitle;
     public static ConfigEntry<bool> ForceEnableAdvSubtitle;
     public static ConfigEntry<bool> EnableLyricSubtitle;
+    public static ConfigEntry<SubtitleSearchDirectionEnum> SubtitleSearchDirection;
 
     // 基础字幕相关配置
     public static ConfigEntry<bool> EnableBaseSubtitleSpeakerName;
@@ -366,27 +373,34 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "EnableYotogiSubtitle/启用夜伽字幕",
             true,
             new ConfigDescription("Enable Yotogi Subtitle/启用夜伽字幕", null,
-                new ConfigurationManagerAttributes { Order = 2010 }));
+                new ConfigurationManagerAttributes { Order = 3010 }));
 
         EnableAdvSubtitle = Config.Bind("3Subtitle",
             "EnableADVSubtitle/启用ADV字幕",
             false,
             new ConfigDescription(
                 "Enable ADV subtitles. Since ADV scenes have their own subtitles, this setting is only useful in VR mode and is invalid in non-VR mode./启用ADV字幕，由于 ADV 场景自带字幕，因此仅在 VR 模式下有用，非 VR 模式此设置无效",
-                null, new ConfigurationManagerAttributes { Order = 3010 }));
+                null, new ConfigurationManagerAttributes { Order = 3020 }));
 
         ForceEnableAdvSubtitle = Config.Bind("3Subtitle",
             "ForceEnableADVSubtitle/强制启用ADV字幕",
             false,
             new ConfigDescription(
                 "Force Enable ADV subtitles, whether in VR mode or not/强制启用ADV字幕，无论是不是 VR 模式", null,
-                new ConfigurationManagerAttributes { Order = 3020 }));
+                new ConfigurationManagerAttributes { Order = 3030 }));
 
         EnableLyricSubtitle = Config.Bind("3Subtitle",
             "EnableLyricSubtitle/启用歌词字幕",
             true,
             new ConfigDescription("Enable Lyric Subtitle/启用歌词字幕", null,
-                new ConfigurationManagerAttributes { Order = 3030 }));
+                new ConfigurationManagerAttributes { Order = 3040 }));
+
+        SubtitleSearchDirection = Config.Bind("3Subtitle",
+            "SubtitleSearchDirection/字幕搜索方向",
+            SubtitleSearchDirectionEnum.DownFirst,
+            new ConfigDescription(
+                "Default search direction when finding available subtitle positions/查找可用字幕位置时的默认搜索方向",
+                null, new ConfigurationManagerAttributes { Order = 3050 }));
 
         # endregion
 
@@ -1588,6 +1602,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 LogManager.Info("Lyric Subtitle Disabled/歌词字幕已禁用");
                 LyricManger.Unload();
             }
+        };
+
+        SubtitleSearchDirection.SettingChanged += (_, _) =>
+        {
+            LogManager.Info(
+                $"Subtitle search direction changed to {SubtitleSearchDirection.Value}/字幕搜索方向已更改为 {SubtitleSearchDirection.Value}");
+            SubtitleComponentManager.DestroyAllSubtitleComponents();
         };
     }
 

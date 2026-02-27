@@ -272,12 +272,18 @@ public static class SubtitleComponentManager
 
             if (Overlaps(initialY))
             {
+                var searchUpFirst =
+                    JustAnotherTranslator.SubtitleSearchDirection.Value ==
+                    JustAnotherTranslator.SubtitleSearchDirectionEnum.UpFirst;
+                var primarySign = searchUpFirst ? 1 : -1;
+                var fallbackSign = -primarySign;
+
                 var foundPosition = false;
-                // 先向下搜索可用位置
+                // 首选方向搜索可用位置
                 for (var offset = 1; offset <= maxSearchDistance; offset++)
                 {
-                    var testY = initialY - offset;
-                    if (testY < 0) break; // 到达屏幕底部
+                    var testY = initialY + primarySign * offset;
+                    if (testY < 0 || testY + subtitleHeight > screenHeight) break;
 
                     if (!Overlaps(testY))
                     {
@@ -287,12 +293,12 @@ public static class SubtitleComponentManager
                     }
                 }
 
-                // 如果向下搜索不到，则向上搜索
+                // 首选方向搜索不到，则向反方向搜索
                 if (!foundPosition)
                     for (var offset = 1; offset <= maxSearchDistance; offset++)
                     {
-                        var testY = initialY + offset;
-                        if (testY + subtitleHeight > screenHeight) break; // 到达屏幕顶部
+                        var testY = initialY + fallbackSign * offset;
+                        if (testY < 0 || testY + subtitleHeight > screenHeight) break;
 
                         if (!Overlaps(testY))
                         {
@@ -388,11 +394,17 @@ public static class SubtitleComponentManager
 
             if (Overlaps(initialZ))
             {
+                var searchUpFirst =
+                    JustAnotherTranslator.SubtitleSearchDirection.Value ==
+                    JustAnotherTranslator.SubtitleSearchDirectionEnum.UpFirst;
+                var primarySign = searchUpFirst ? 1 : -1;
+                var fallbackSign = -primarySign;
+
                 var found = false;
-                // 先向下搜索（Z 轴负方向）
+                // 首选方向搜索
                 for (var i = 1; i <= maxSteps; i++)
                 {
-                    var testZ = initialZ - i * step;
+                    var testZ = initialZ + primarySign * i * step;
                     if (!Overlaps(testZ))
                     {
                         finalZ = testZ;
@@ -401,11 +413,11 @@ public static class SubtitleComponentManager
                     }
                 }
 
-                // 如果向下搜索不到，则向上搜索
+                // 反方向搜索
                 if (!found)
                     for (var i = 1; i <= maxSteps; i++)
                     {
-                        var testZ = initialZ + i * step;
+                        var testZ = initialZ + fallbackSign * i * step;
                         if (!Overlaps(testZ))
                         {
                             finalZ = testZ;
@@ -495,11 +507,17 @@ public static class SubtitleComponentManager
 
             if (Overlaps(initialY))
             {
+                var searchUpFirst =
+                    JustAnotherTranslator.SubtitleSearchDirection.Value ==
+                    JustAnotherTranslator.SubtitleSearchDirectionEnum.UpFirst;
+                var primarySign = searchUpFirst ? 1 : -1;
+                var fallbackSign = -primarySign;
+
                 var found = false;
-                // 先向下搜索（Y 轴负方向）
+                // 首选方向搜索
                 for (var i = 1; i <= maxSteps; i++)
                 {
-                    var testY = initialY - i * step;
+                    var testY = initialY + primarySign * i * step;
                     if (!Overlaps(testY))
                     {
                         finalY = testY;
@@ -508,11 +526,11 @@ public static class SubtitleComponentManager
                     }
                 }
 
-                // 如果向下搜索不到，则向上搜索
+                // 反方向搜索
                 if (!found)
                     for (var i = 1; i <= maxSteps; i++)
                     {
-                        var testY = initialY + i * step;
+                        var testY = initialY + fallbackSign * i * step;
                         if (!Overlaps(testY))
                         {
                             finalY = testY;

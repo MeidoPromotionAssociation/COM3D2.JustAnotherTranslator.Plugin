@@ -1365,8 +1365,6 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
             if (EnableBaseSubtitle.Value || EnableYotogiSubtitle.Value || EnableAdvSubtitle.Value)
                 SubtitleManager.Reload();
-
-            LogManager.Info("All translation resources reloaded./所有翻译资源已重载。");
         }
     }
 

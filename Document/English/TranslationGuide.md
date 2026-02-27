@@ -23,6 +23,13 @@ JAT adopts a modular design, where each module can be enabled or disabled indepe
 
 <br>
 
+- **Configuration File:** `COM3D2\BepInEx\config\Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg`
+- **Root Translation Folder:** `COM3D2\BepInEx\JustAnotherTranslator`
+
+All the in-game configuration file modifications described in the document need to be done using [BepInEx.ConfigurationManager](https://github.com/BepInEx/BepInEx.ConfigurationManager), whose default shortcut key is F1, and will not be elaborated further below.
+
+<br>
+
 # Integration with JAT
 
 ## Interaction between JAT and XUnity.AutoTranslator
@@ -44,6 +51,28 @@ Harmony patches are registered in the `Init()` method.
 JAT also includes detailed code comments to facilitate your exploration of its code.
 
 If you have any other needs, please submit an issue.
+
+# Hot Reload Resources
+
+If you have modified translation files in-game, you can hot reload translation resources by pressing the shortcut key with `No Default Shortcut`.
+
+Please set your own keyboard shortcut in the `ReloadTranslateResource/重载翻译资源` option.
+
+After pressing the shortcut key, the following resources will be hot reloaded:
+
+- General Text Translation
+- Texture Replacement
+- UI Translation (Text and Sprites)
+- Regular Subtitles (Current subtitles will be destroyed)
+- Speaker color configuration (SubtitleColors.json)
+
+Unlike the modules corresponding to the toggle switch, this will not uninstall and reload the corresponding modules; it will only reload the translation files.
+
+Text and UI translations are still loaded asynchronously. Please pay attention to console messages; JAT will return the original text before loading is complete.
+
+Resources will not be hot-reloaded if the corresponding module is not enabled.
+
+<br>
 
 # General Text Translation
 

@@ -42,6 +42,24 @@ public static class TextureReplaceManger
         _initialized = true;
     }
 
+    /// <summary>
+    ///     热重载纹理替换数据（不重新注册补丁，仅重新扫描纹理文件）
+    /// </summary>
+    public static void Reload()
+    {
+        if (!_initialized)
+        {
+            LogManager.Info(
+                "TextureReplaceManger is not initialized, cannot reload/纹理替换管理器未初始化，无法重载");
+            return;
+        }
+
+        FilePathCache.Clear();
+        ScanReplaceTextures();
+
+        LogManager.Info("Texture replace data reloaded/纹理替换数据已重载");
+    }
+
     public static void Unload()
     {
         if (!_initialized)

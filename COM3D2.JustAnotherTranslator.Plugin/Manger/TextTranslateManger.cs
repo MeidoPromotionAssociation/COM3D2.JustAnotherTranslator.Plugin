@@ -27,7 +27,7 @@ public static class TextTranslateManger
     private static Dictionary<Regex, string> _regexTranslationDict = new(); // regex -> translation
 
     /// 异步加载器
-    private static IAsyncTranslationLoader _asyncLoader;
+    private static IAsyncTranslationLoader _asyncTextLoader;
 
     /// 翻译是否已加载完成
     private static bool _isTranslationLoaded;
@@ -58,7 +58,7 @@ public static class TextTranslateManger
             DateTime.Now.ToString("yyyy-MM-dd-HH-mm") + "_untranslate_normalized.txt");
 
     /// 加载状态
-    private static bool IsLoading { get; set; }
+    private static bool _isLoading;
 
     public static void Init()
     {
@@ -74,16 +74,39 @@ public static class TextTranslateManger
         _initialized = true;
     }
 
+    /// <summary>
+    ///     热重载翻译文本（不重新注册补丁，仅重新加载数据）
+    /// </summary>
+    public static void Reload()
+    {
+        if (!_initialized)
+        {
+            LogManager.Info(
+                "TextTranslateManger is not initialized, cannot reload/文本翻译管理器未初始化，无法重载");
+            return;
+        }
+
+        // 如果异步加载正在进行，取消它
+        if (_isLoading && _asyncTextLoader != null)
+            _asyncTextLoader.Cancel();
+
+        // 清除已翻译文本记录
+        TranslatedTexts.Clear();
+        TranslatedTextPatterns.Clear();
+
+        LoadTextAsync();
+    }
+
     public static void Unload()
     {
         if (!_initialized) return;
 
         // 如果异步加载正在进行，取消它
-        if (IsLoading && _asyncLoader != null)
+        if (_isLoading && _asyncTextLoader != null)
         {
-            _asyncLoader.Cancel();
-            IsLoading = false;
-            _asyncLoader = null;
+            _asyncTextLoader.Cancel();
+            _isLoading = false;
+            _asyncTextLoader = null;
         }
 
         _textTranslatePatch?.UnpatchSelf();
@@ -103,6 +126,7 @@ public static class TextTranslateManger
 
         SceneManager.sceneUnloaded -= OnSceneUnloaded;
 
+
         _initialized = false;
     }
 
@@ -111,10 +135,10 @@ public static class TextTranslateManger
     /// </summary>
     private static void LoadTextAsync()
     {
-        IsLoading = true;
+        _isLoading = true;
 
         // 创建异步加载器
-        _asyncLoader = new AsyncTranslationLoader(
+        _asyncTextLoader = new AsyncTranslationLoader(
             "Text",
             JustAnotherTranslator.TranslationTextPath,
             OnLoadingProgress,
@@ -124,7 +148,7 @@ public static class TextTranslateManger
 
         LogManager.Info("Starting asynchronous translation loading/开始异步加载翻译");
 
-        _asyncLoader.StartLoading();
+        _asyncTextLoader.StartLoading();
     }
 
 
@@ -160,8 +184,7 @@ public static class TextTranslateManger
     /// <param name="result">翻译加载结果</param>
     private static void OnLoadingComplete(TranslationLoadResult result)
     {
-        // 更新状态
-        IsLoading = false;
+        _isLoading = false;
         _isTranslationLoaded = true;
 
         // 更新翻译字典

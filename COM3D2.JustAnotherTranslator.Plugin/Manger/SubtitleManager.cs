@@ -109,6 +109,15 @@ public static class SubtitleManager
         }
     }
 
+    /// <summary>
+    ///     重新加载配置并销毁所有现有的字幕组件。
+    /// </summary>
+    public static void Reload()
+    {
+        LoadColorConfig();
+        SubtitleComponentManager.DestroyAllSubtitleComponents();
+    }
+
 
     /// <summary>
     ///     应用字幕补丁
@@ -386,6 +395,7 @@ public static class SubtitleManager
         {
             SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
             MaidMonitorCoroutineIds.Remove(maid);
+            // 重新创建字幕以重新排序
             SubtitleComponentManager.UpdateSubtitleConfigBySpeakerName(speakerName);
         }
 

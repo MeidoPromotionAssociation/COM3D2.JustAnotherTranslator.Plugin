@@ -573,7 +573,7 @@ public static class SubtitleComponentManager
     }
 
     /// <summary>
-    ///     更新所有字幕配置
+    ///     更新所有字幕配置，不包括说话人字幕颜色配置
     /// </summary>
     public static void UpdateAllSubtitleConfig()
     {

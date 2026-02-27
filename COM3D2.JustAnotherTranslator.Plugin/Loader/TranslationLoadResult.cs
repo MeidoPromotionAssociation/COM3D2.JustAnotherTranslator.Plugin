@@ -9,14 +9,19 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Loader;
 public class TranslationLoadResult
 {
     /// <summary>
+    ///     正则翻译字典 (正则 -> 译文模板)，仅文本加载器使用
+    /// </summary>
+    public readonly Dictionary<Regex, string> RegexTranslations = new();
+
+    /// <summary>
     ///     翻译字典 (原文 -> 译文)
     /// </summary>
     public readonly Dictionary<string, string> Translations = new();
 
     /// <summary>
-    ///     正则翻译字典 (正则 -> 译文模板)，仅文本加载器使用
+    ///     加载耗时（毫秒）
     /// </summary>
-    public readonly Dictionary<Regex, string> RegexTranslations = new();
+    public long ElapsedMilliseconds;
 
     /// <summary>
     ///     总条目数
@@ -27,9 +32,4 @@ public class TranslationLoadResult
     ///     总文件数
     /// </summary>
     public int TotalFiles;
-
-    /// <summary>
-    ///     加载耗时（毫秒）
-    /// </summary>
-    public long ElapsedMilliseconds;
 }

@@ -34,7 +34,7 @@ public static class UITranslateManager
     private static readonly Dictionary<string, string> SpritePathCache = new(); // filename -> path
 
     /// 异步 UI 文本加载器
-    private static IAsyncTranslationLoader _uiTextLoader;
+    private static IAsyncTranslationLoader _asyncUITextLoader;
 
     /// 记录已经 dump 过的精灵图
     private static readonly HashSet<string> DumpedSprite = new();
@@ -53,6 +53,8 @@ public static class UITranslateManager
     /// 是否需要写入 csv header
     private static bool _shouldWriteHeader = true;
 
+    /// 加载状态
+    private static bool _isLoading;
 
     public static void Init()
     {
@@ -92,12 +94,41 @@ public static class UITranslateManager
     }
 
 
+    /// <summary>
+    ///     热重载 UI 翻译数据（不重新注册补丁，仅重新加载文本翻译和精灵图缓存）
+    /// </summary>
+    public static void Reload()
+    {
+        if (!_initialized)
+        {
+            LogManager.Info(
+                "UITranslateManager is not initialized, cannot reload/UI 翻译管理器未初始化，无法重载");
+            return;
+        }
+
+        // 如果异步加载正在进行，取消它
+        if (_isLoading && _asyncUITextLoader != null)
+            _asyncUITextLoader.Cancel();
+
+        // 重新异步加载文本翻译
+        LoadTextTranslationsAsync();
+
+        // 重新扫描精灵图（同步，内部会清除旧缓存）
+        LoadSpriteTextures();
+
+        LogManager.Info("Starting UI translation reload/开始重载 UI 翻译");
+    }
+
     public static void Unload()
     {
         if (!_initialized) return;
 
-        _uiTextLoader?.Cancel();
-        _uiTextLoader = null;
+        if (_isLoading && _asyncUITextLoader != null)
+        {
+            _asyncUITextLoader.Cancel();
+            _isLoading = false;
+            _asyncUITextLoader = null;
+        }
 
         _uiTextTranslatePatch?.UnpatchSelf();
         _uiTextTranslatePatch = null;
@@ -279,10 +310,10 @@ public static class UITranslateManager
     /// </summary>
     private static void LoadTextTranslationsAsync()
     {
-        _uiTextLoader =
+        _asyncUITextLoader =
             new AsyncTranslationLoader("UI", JustAnotherTranslator.UITextPath, OnUiTextLoadProgress,
                 OnUiTextLoadComplete, new CsvTranslationFileProcessor());
-        _uiTextLoader.StartLoading();
+        _asyncUITextLoader.StartLoading();
     }
 
     /// <summary>

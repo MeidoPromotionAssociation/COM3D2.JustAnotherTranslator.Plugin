@@ -89,6 +89,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<MaidNameStyleEnum> MaidNameStyle;
     public static ConfigEntry<LogLevel> LogLevelConfig;
     public static ConfigEntry<bool> AllowFilesInZipLoadInOrder;
+    public static ConfigEntry<KeyboardShortcut> ReloadTranslateResourceShortcut;
 
     // 字幕启用相关配置
     public static ConfigEntry<bool> EnableBaseSubtitle;
@@ -348,7 +349,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
             MaidNameStyleEnum.JpStyle,
             new ConfigDescription(
                 "Maid Name Style, JpStyle is family name first and given name last, English style is opposite, cannot change at runtime/女仆名字样式，日式姓前名后，英式相反。无法在运行时更改",
-                null, new ConfigurationManagerAttributes { Order = 2050 }));
+                null, new ConfigurationManagerAttributes { Order = 2060 }));
+
+        ReloadTranslateResourceShortcut = Config.Bind("2General",
+            "ReloadTranslateResource/重载翻译资源",
+            new KeyboardShortcut(),
+            new ConfigDescription(
+                "Press this shortcut to hot reload all translation resources/按下此快捷键来热重载所有翻译资源",
+                null, new ConfigurationManagerAttributes { Order = 2070 }));
 
         // 声明后才能使用日志
         LogLevelConfig = Config.Bind("2General",
@@ -356,7 +364,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogLevel.Info,
             new ConfigDescription("Log Level, DEBUG will log more information/日志级别，DEBUG 级别将记录详细信息",
                 null,
-                new ConfigurationManagerAttributes { Order = 2060 }));
+                new ConfigurationManagerAttributes { Order = 2080 }));
 
         # endregion
 
@@ -1340,6 +1348,28 @@ public class JustAnotherTranslator : BaseUnityPlugin
             XUATInterop.Init();
     }
 
+    private void Update()
+    {
+        if (ReloadTranslateResourceShortcut.Value.IsPressed())
+        {
+            LogManager.Info("Reloading all translation resources.../正在重载所有翻译资源...");
+
+            if (EnableGeneralTextTranslation.Value)
+                TextTranslateManger.Reload();
+
+            if (EnableTextureReplace.Value)
+                TextureReplaceManger.Reload();
+
+            if (EnableUITextTranslation.Value || EnableUISpriteReplace.Value)
+                UITranslateManager.Reload();
+
+            if (EnableBaseSubtitle.Value || EnableYotogiSubtitle.Value || EnableAdvSubtitle.Value)
+                SubtitleManager.Reload();
+
+            LogManager.Info("All translation resources reloaded./所有翻译资源已重载。");
+        }
+    }
+
     private void OnDestroy()
     {
         TextTranslateManger.Unload();
@@ -1502,6 +1532,11 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             LogManager.Info(
                 "Not Support change maid name style during runtime, please restart game/不支持在运行时更改角色名字样式，请重启游戏");
+        };
+
+        ReloadTranslateResourceShortcut.SettingChanged += (_, _) =>
+        {
+            LogManager.Info("Reload translate resource shortcut changed/翻译资源快捷键已更改");
         };
 
         // 注册日志级别变更事件

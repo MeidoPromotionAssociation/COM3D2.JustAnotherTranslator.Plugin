@@ -84,6 +84,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<string> TargetLanguage;
     public static ConfigEntry<bool> EnableGeneralTextTranslation;
     public static ConfigEntry<bool> EnableUITextTranslation;
+    public static ConfigEntry<bool> EnableUITextExtraPatch;
     public static ConfigEntry<bool> EnableUISpriteReplace;
     public static ConfigEntry<bool> EnableTextureReplace;
     public static ConfigEntry<MaidNameStyleEnum> MaidNameStyle;
@@ -335,6 +336,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
             true,
             new ConfigDescription("Enable UI Translation/启用 UI 精灵图替换", null,
                 new ConfigurationManagerAttributes { Order = 2040 }));
+
+        EnableUITextExtraPatch = Config.Bind("2General",
+            "EnableUITextExtraPatch/启用UI文本翻译额外补丁",
+            true,
+            new ConfigDescription(
+                "Enable patches that cover UI translations not translated by the UI translation module depending on whether the game is a multilingual version/启用用于覆盖因游戏是否为多语言版本而未被 UI 翻译模块翻译的补丁",
+                null,
+                new ConfigurationManagerAttributes { Order = 2030 }));
 
         AllowFilesInZipLoadInOrder = Config.Bind("2General",
             "AllowFilesInZipLoadInOrder/允许 ZIP 文件内文件按顺序加载",
@@ -1251,6 +1260,16 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogManager.Info("UI Translation Disabled/UI 翻译已禁用");
         }
 
+        if (EnableUITextExtraPatch.Value)
+        {
+            LogManager.Info("UI Translation Extra Patch Enabled/UI 翻译额外补丁已启用");
+            UITranslateManager.Init();
+        }
+        else
+        {
+            LogManager.Info("UI Translation Extra Patch Disabled/UI 翻译额外补丁已禁用");
+        }
+
         if (EnableUISpriteReplace.Value)
         {
             LogManager.Info("UI Sprite Replace Enabled/UI 精灵图替换已启用");
@@ -1494,8 +1513,24 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
+        EnableUITextExtraPatch.SettingChanged += (_, _) =>
+        {
+            if (EnableUITextExtraPatch.Value)
+            {
+                LogManager.Info("UI Translation Extra Patch Enabled/UI 文本翻译额外补丁已启用");
+                UITranslateManager.Unload();
+                UITranslateManager.Init();
+            }
+            else
+            {
+                LogManager.Info("UI Translation Extra Patch Disabled/UI 文本翻译额外补丁已禁用");
+                UITranslateManager.Unload();
+                UITranslateManager.Init();
+            }
+        };
+
         // 注册UI精灵图替换启用状态变更事件
-        EnableUITextTranslation.SettingChanged += (_, _) =>
+        EnableUISpriteReplace.SettingChanged += (_, _) =>
         {
             if (EnableUITextTranslation.Value)
             {
@@ -1517,18 +1552,20 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableTextureReplace.Value)
             {
                 LogManager.Info("Texture Replace Enabled/贴图替换已启用");
+                TextureReplaceManger.Unload();
                 TextureReplaceManger.Init();
             }
             else
             {
                 LogManager.Info("Texture Replace Disabled/贴图替换已禁用");
                 TextureReplaceManger.Unload();
+                TextureReplaceManger.Init();
             }
         };
 
         MaidNameStyle.SettingChanged += (_, _) =>
         {
-            LogManager.Info(
+            LogManager.Warning(
                 "Not Support change maid name style during runtime, please restart game/不支持在运行时更改角色名字样式，请重启游戏");
         };
 

@@ -22,6 +22,7 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Manger;
 public static class UITranslateManager
 {
     private static Harmony _uiTextTranslatePatch;
+    private static Harmony _uiTextTranslateExtraPatch;
     private static Harmony _uiSpriteReplacePatch;
     private static Harmony _uiDebugPatch;
     private static Harmony _uiTextDumpPatch;
@@ -66,6 +67,10 @@ public static class UITranslateManager
         if (JustAnotherTranslator.EnableUITextTranslation.Value)
             _uiTextTranslatePatch = Harmony.CreateAndPatchAll(typeof(UITextTranslatePatch),
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitexttranslatepatch");
+
+        if (JustAnotherTranslator.EnableUITextExtraPatch.Value)
+            _uiTextTranslateExtraPatch = Harmony.CreateAndPatchAll(typeof(UITextTranslatePatch),
+                "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitexttranslateextrapatch");
 
         if (JustAnotherTranslator.EnableUISpriteReplace.Value)
             _uiSpriteReplacePatch = Harmony.CreateAndPatchAll(typeof(UISpriteReplacePatch),
@@ -132,6 +137,9 @@ public static class UITranslateManager
 
         _uiTextTranslatePatch?.UnpatchSelf();
         _uiTextTranslatePatch = null;
+
+        _uiTextTranslateExtraPatch?.UnpatchSelf();
+        _uiTextTranslateExtraPatch = null;
 
         _uiSpriteReplacePatch?.UnpatchSelf();
         _uiSpriteReplacePatch = null;

@@ -329,6 +329,14 @@ Please note that for a UI element (text or image) to be translatable by this mod
 
 Although some UI text can also be translated by the generic text translation module, using this dedicated module provides a more stable and accurate translation that can handle homonyms correctly.
 
+In some cases, the game checks if it's a multilingual version (Product.supportMultiLanguage) or a Japanese version (Product.isJapan).
+
+Only if the check passes will I2.Localization be used for translation. Unlike i18nEx, JAT doesn't directly modify these values to support the check, as this would introduce confusing side effects.
+
+Therefore, JAT patches most of the places that perform these checks. However, for update compatibility and stability considerations, JAT hasn't fully covered them and has added the `EnableUITextExtraPatch/启用UI文本翻译额外补丁` option to allow users to toggle it on/off.
+
+If the UI text module isn't covered, please use the general text translation module for translation.
+
 <br>
 
 UI translation is divided into two parts: **UI Text Translation** and **UI Image Translation**.

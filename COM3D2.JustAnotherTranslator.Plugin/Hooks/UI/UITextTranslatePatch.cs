@@ -75,7 +75,7 @@ public static class UITextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"LocalizationManager_TryGetTranslation_Postfix error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+                $"LocalizationManager_TryGetTranslation_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
         }
     }
 
@@ -117,7 +117,7 @@ public static class UITextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"SceneEdit_SMenuItem_GetMenuNameCurrentLanguage_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+                $"SceneEdit_SMenuItem_GetMenuNameCurrentLanguage_Prefix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
             return true;
         }
     }
@@ -161,7 +161,7 @@ public static class UITextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"SceneEdit_SMenuItem_GetInfoTextCurrentLanguage_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+                $"SceneEdit_SMenuItem_GetInfoTextCurrentLanguage_Prefix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
             return true;
         }
     }
@@ -193,7 +193,7 @@ public static class UITextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"WF_Utility_SetLocalizeTerm_Prefix unknown error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+                $"WF_Utility_SetLocalizeTerm_Prefix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
             return true;
         }
     }
@@ -225,7 +225,7 @@ public static class UITextTranslatePatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"WF_Utility_SetLocalizeTerm_Component_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+                $"WF_Utility_SetLocalizeTerm_Component_Prefix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
             return true;
         }
     }

@@ -238,8 +238,8 @@ public static class SubtitleComponentManager
             var existingEntry = ActiveSubtitles.FirstOrDefault(s => s.Id == currentSubtitleId);
             // 如果已存在条目，尝试放回上次放置过的位置
             var initialY = existingEntry.Id != null
-                ? existingEntry.InitialVerticalPosition
-                : config.CurrentVerticalPosition;
+                ? existingEntry.InitialVerticalPosition // 上次放置的位置
+                : config.VerticalPosition; // 配置的垂直位置
 
             // 在查找新位置之前，删除此字幕的现有条目
             ActiveSubtitles.RemoveAll(s => s.Id == currentSubtitleId);

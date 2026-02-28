@@ -15,7 +15,7 @@ If you're unsure which translation plugin you're using, you can quickly determin
 
 - If you see any of the following, LBWtranslation/LBWmodifier is being used.
   - `LBWmodifier.dll`
-  - `LBWmodifier-Transator D3V.dll` or `LBWmodifier-Transator D4V.dll`
+  - `LBWmodifier-Transator D3V.dll` or `LBWmodifier-Transator D4V.dll` or `LBWmodifier-Transator D2.dll` or `LBWmodifier-Transator D3.dll`
 - If you see any of the following, COM3D2.i18nEx is being used.
   - `COM3D2\BepInEx\plugins\I18N\` folder
 - If you see any of the following, COM3D2.YATranslator / CM3D2.YATranslator is being used.
@@ -40,7 +40,7 @@ Next steps:
 
 Note:
 - The JAT coexists with XUnity.AutoTranslator. XUAT is typically located in `COM3D2\BepInEx\plugins\XUnity.AutoTranslator\`. It is not one of the three libraries listed above and does not require migration according to this page.
-
+- IMGUITranslationLoader is a plugin specifically designed for translating the IMGUI window. JAT does not have this function and does not need to be removed.
 
 <br>
 <br>
@@ -98,21 +98,43 @@ Download the conversion script `lyric_csv_format_convert_English.py`
 
 For most users, using Python scripts can be daunting. If you don't know how, copy the script contents to AI and let it teach you.
 
+## LBW Modifier
+
+Newer versions of LBWmodifier are divided into translators and modifiers.
+
+DLLs containing `LBWmodifier-Modifier` are modifier plugins (e.g., `LBWmodifier-Modifier D2.dll`), which can be kept.
+
+DLLs containing `LBWmodifier-Transator` are translation plugins (e.g., `LBWmodifier-Transator D2.dll`), which need to be deleted.
+
 ## Cleanup
 
-The file locations are not fixed. It is recommended to search for the filenames directly and delete `LBWmodifier.dll`, `LBWmodifier-Transator D3V.dll`, and `LBWmodifier-Transator D4V.dll`.
+The file locations are not fixed. It is recommended to directly search for the filenames and delete `LBWmodifier.dll`, `LBWmodifier-Transator D3V.dll`, `LBWmodifier-Transator D4V.dll`, `LBWmodifier-Transator D2.dll`, and `LBWmodifier-Transator D3.dll`.
 
-Delete the `COM3D2\BepInEx\plugins\LBWmodifier.dll` file; this is where the plugin DLL is located.
+Delete the file `COM3D2\BepInEx\plugins\LBWmodifier.dll`. This file is the plugin DLL.
 
-Delete the `COM3D2\BepInEx\plugins\Translator D3V` folder; this is where the plugin DLL is located.
+Delete the file `COM3D2\BepInEx\plugins\LBWmodifier-Transator D3V.dll`. This file is the plugin DLL.
 
-Delete the `COM3D2\BepInEx\plugins\LBWmodifier-Transator D3V.dll` file; this is where the plugin DLL is located.
+Delete the folder `COM3D2\BepInEx\plugins\Translator D4V`. This file is the plugin DLL.
 
-Delete the `COM3D2\BepInEx\plugins\Translator D4V` folder; this is where the plugin DLL is located.
+Delete the folder `COM3D2\BepInEx\plugins\Translator D3V` This folder contains the plugin DLLs.
 
-Delete the `COM3D2\BepInEx\plugins\LBWmodifier-Transator D4V.dll` file; this is where the plugin DLL is located.
+Delete the folder `COM3D2\BepInEx\plugins\Translator D2` This folder contains the plugin DLLs.
 
-Delete `COM3D2\LBWtranslation`; this is your translation folder (optional).
+Delete the folder `COM3D2\BepInEx\plugins\Translator D3` This folder contains the plugin DLLs.
+
+Delete the file `COM3D2\BepInEx\plugins\LBWmodifier-Transator D4V.dll`. This file is the plugin DLL.
+
+Delete the file `COM3D2\BepInEx\plugins\Transator D2\LBWmodifier-Transator D2.dll`. This file is the plugin DLL.
+
+Delete the file `COM3D2\BepInEx\plugins\Modifier D2\LBWmodifier-Transator D2.dll`. This file is the plugin DLL.
+
+Delete the file `COM3D2\BepInEx\plugins\Modifier D2\LBWmodifier-Transator D2.dll`. This file is the plugin DLL.
+
+Delete the file `COM3D2\BepInEx\plugins\Transator D3\LBWmodifier-Transator D3.dll`. This file is the plugin DLL.
+
+Delete the file `COM3D2\BepInEx\plugins\Modifier D3\LBWmodifier-Transator D3.dll`. This file is the plugin DLL.
+
+Delete `COM3D2\LBWtranslation`, which is your translation folder (optional).
 
 <br>
 <br>

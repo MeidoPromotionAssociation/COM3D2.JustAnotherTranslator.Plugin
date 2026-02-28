@@ -983,12 +983,29 @@ Non-Japanese branches should use ShrinkContent (automatic shrinking to fit) and 
 
 ## UI Font Replacement
 
-Don't ask me why it's in the patch category, because it's the most suitable place here.
+Don't ask me why it's in the bug fix category, because this is where it fits best.
 
-JAT supports replacing the fonts for uGUI, NGUI, and JAT's own subtitles. Switching the `PrintOSFont/打印系统字体` option in the dump settings within the game will print installed and usable fonts to the console and logs.
+JAT supports font replacement for uGUI, NGUI, and JAT's built-in subtitles.
 
-The game defaults to `NotoSansCJKjp-DemiLight`. Although it's a CJK font, the glyphs are Japanese, which users in other regions may find unfamiliar. You can replace it with another font.
+How to view available fonts:Find `PrintOSFont/打印系统字体` in the in-game plugin settings. After toggling the option, the console and log files will list all installed and available font names in the current system.
 
-For example, you can download [NotoSansCJKsc-DemiLight.otf](https://github.com/notofonts/noto-cjk/blob/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-DemiLight.otf) and set the font to `Noto Sans CJK SC`, which will give you Simplified Chinese fonts.
+The game uses `NotoSansCJKjp-DemiLight` (CJK Japanese glyphs) by default. If you are more accustomed to reading Simplified Chinese, it is recommended to replace it with the Simplified Chinese glyph version:
 
-You can use the fonts shown in the logs. Unity 5.6 generally only supports .otf and .ttf formats, **and you must right-click the font and select "Install for all users"**.
+Recommended download: [NotoSansCJKsc-DemiLight.otf](https://github.com/notofonts/noto-cjk/blob/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-DemiLight.otf) (CJK Simplified Chinese glyphs). After downloading, you must **right-click the font and select "Install for all users"** for it to be read.
+
+Setup method: After downloading, find the `EnableUIFontReplace/启用UI字体替换` option in the in-game plugin settings and enable it, then set the font name to `Noto Sans CJK SC` in the `UIFont/UI字体` option.
+
+
+Unity 5.6 usually only supports .otf and .ttf font formats, and you **must right-click the font and select "Install for all users"** for it to be recognized by Unity.
+
+When using other fonts, please be sure to refer to the exact font name displayed in the log for configuration.
+
+Understanding these two concepts can help you choose fonts better:
+
+CJK:
+- Stands for Chinese, Japanese, and Korean. Since these three languages historically share a large number of Han characters, they often share the same code point in Unicode encoding.
+
+Glyphs:
+- Although the encoding is the same, the writing habits (strokes, structure) of the same character often differ across different regions.
+- For example, for the same character like "复" or "门", the Japanese glyph, Simplified Chinese glyph, and Traditional Chinese glyph will have differences in detail.
+- COM3D2 defaults to `NotoSansCJKjp-DemiLight` (Japanese glyphs). As it is a CJK font, it can also display Chinese, but Chinese players might feel that some characters look "strange" or have a sense of incongruity, which is caused by glyph differences.

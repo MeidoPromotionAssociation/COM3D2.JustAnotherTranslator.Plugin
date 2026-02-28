@@ -15,6 +15,11 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
 public static class TextTranslatePatch
 {
     /// <summary>
+    ///     当为 true 时，LocalizationManager.GetTranslationText 的 Postfix 不会修改返回值。
+    /// </summary>
+    internal static bool SuppressLocalizationTranslation;
+
+    /// <summary>
     ///     Hook for ADV text
     /// </summary>
     /// <param name="__result"></param>
@@ -78,6 +83,9 @@ public static class TextTranslatePatch
         {
             if (__result == null) return;
 
+            // 在某些情况下跳过跳过翻译
+            if (SuppressLocalizationTranslation) return;
+
             // 提取日文原文
             var originalText = __result[Product.Language.Japanese];
 
@@ -108,6 +116,29 @@ public static class TextTranslatePatch
             LogManager.Error(
                 $"LocalizationManager_GetTranslationText_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
+    }
+
+    /// <summary>
+    ///     修复翻译 NPC 名称后 GetVoiceTargetMaid 无法匹配 Maid 导致口型同步失效的问题。
+    ///     当通用翻译文件中包含 NPC 名称翻译时，LocalizationManager.GetTranslationText 的 Postfix
+    ///     会将 LocalizationString 中的日文名称替换为译文，导致 GetVoiceTargetMaid 中基于
+    ///     maid.status.firstName 的匹配失败，控制台输出 'ボイス再生対象のメイドを特定できませんでした'，
+    ///     NPC 语音播放时嘴巴不会动。
+    ///     此补丁在 GetVoiceTargetMaid 执行期间抑制 LocalizationManager.GetTranslationText 的翻译，
+    ///     确保名称匹配使用原始日文文本。
+    /// </summary>
+    [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.GetVoiceTargetMaid))]
+    [HarmonyPrefix]
+    private static void GetVoiceTargetMaid_Prefix()
+    {
+        SuppressLocalizationTranslation = true;
+    }
+
+    [HarmonyPatch(typeof(BaseKagManager), nameof(BaseKagManager.GetVoiceTargetMaid))]
+    [HarmonyFinalizer]
+    private static void GetVoiceTargetMaid_Finalizer()
+    {
+        SuppressLocalizationTranslation = false;
     }
 
 

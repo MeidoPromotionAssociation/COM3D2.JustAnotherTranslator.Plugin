@@ -965,6 +965,22 @@ Due to inconsistent replacement timing, sometimes the line breaks only occur aft
 
 Function is the same as [maid_cafe_line_break_fix.cs](https://github.com/90135/COM3D2_Scripts_901), and JAT is automatically compatible.
 
+## Non-CJK Language Fixes
+
+Fixed text compression and stretching issues that may exist in non-CJK languages such as English. If your target language is not CJK, please enable this option.
+
+Stretching Reason:
+
+The I2.Localization plugin has an AddSpacesToJoinedLanguages function, which was originally designed to add spaces to CJK text displayed in non-CJK environments.
+
+Some components have this function enabled, causing JAT-injected translation text to have spaces inserted character by character. This causes English text, such as `LUST`, to look like `L U S T` in some cases.
+
+Compression Reason:
+
+NGUILabelLocalizeSupport.OnLocalize() always uses the Japanese branch, processing NGUI labels with label attributes designed for Japanese CJK characters (fixed width, specific spacing, possibly Clamp overflow mode).
+
+Non-Japanese branches should use ShrinkContent (automatic shrinking to fit) and reset spacing.
+
 ## UI Font Replacement
 
 Don't ask me why it's in the patch category, because it's the most suitable place here.

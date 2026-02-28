@@ -15,6 +15,8 @@ public static class FixerManger
 
     private static Harmony _uiFontReplacePatch;
 
+    private static Harmony _i2LocalizeNoneCjkFixPatch;
+
     public static void Init()
     {
         if (_initialized) return;
@@ -24,6 +26,9 @@ public static class FixerManger
 
         if (JustAnotherTranslator.EnableUIFontReplace.Value)
             RegisterUIFontReplacePatch();
+
+        if (JustAnotherTranslator.EnableNoneCjkFix.Value)
+            RegisterI2LocalizeNoneCjkFixPatch();
 
         _initialized = true;
     }
@@ -37,6 +42,9 @@ public static class FixerManger
 
         _uiFontReplacePatch?.UnpatchSelf();
         _uiFontReplacePatch = null;
+
+        _i2LocalizeNoneCjkFixPatch?.UnpatchSelf();
+        _i2LocalizeNoneCjkFixPatch = null;
 
         _initialized = false;
     }
@@ -105,5 +113,17 @@ public static class FixerManger
         _uiFontReplacePatch = Harmony.CreateAndPatchAll(
             typeof(UIFontReplace),
             "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.fixer.uifontreplace");
+    }
+
+    /// <summary>
+    ///     Registers and applies the Harmony patch for fixing I2 Localization behaviors
+    ///     that incorrectly apply when JAT provides non-CJK translations while the game
+    ///     language code remains "ja".
+    /// </summary>
+    private static void RegisterI2LocalizeNoneCjkFixPatch()
+    {
+        _i2LocalizeNoneCjkFixPatch = Harmony.CreateAndPatchAll(
+            typeof(I2LocalizeNoneCjkFix),
+            "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.fixer.i2localizefix");
     }
 }

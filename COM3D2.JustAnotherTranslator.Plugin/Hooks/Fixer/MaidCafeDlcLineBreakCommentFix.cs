@@ -76,7 +76,7 @@ public static class MaidCafeDlcLineBreakCommentFix
         catch (Exception e)
         {
             LogManager.Error(
-                $"SuperChatLineBreakCommentPrefix failed (input: '{text}'), please report this issue/发生错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+                $"SuperChatLineBreakCommentPrefix failed (input: '{text}') unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
             return true;
         }
     }

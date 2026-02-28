@@ -226,6 +226,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<bool> EnableMaidCafeDlcLineBreakCommentFix;
     public static ConfigEntry<bool> EnableUIFontReplace;
     public static ConfigEntry<string> UIFont;
+    public static ConfigEntry<bool> EnableNoneCjkFix;
 
     // Translation folder path
     public static readonly string TranslationRootPath =
@@ -1195,19 +1196,26 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 null,
                 new ConfigurationManagerAttributes { Order = 9970 }));
 
+        EnableNoneCjkFix = Config.Bind("10Fixer",
+            "EnableNoneCJKFix/启用非CJK语言修复",
+            false,
+            new ConfigDescription(
+                "Fix potential text compression and stretching issues. If your target language is not in Chinese or Korean, please enable this option/修复可能存在的文字压缩和拉伸问题，如果您的目标语言不是中日韩语言，请启用此选项",
+                null, new ConfigurationManagerAttributes { Order = 9960 }));
+
         EnableUIFontReplace = Config.Bind("10Fixer",
             "EnableUIFontReplace/启用UI字体替换",
             false,
             new ConfigDescription(
                 "Enable UI Font Replace/启用 UI 字体替换",
-                null, new ConfigurationManagerAttributes { Order = 9960 }));
+                null, new ConfigurationManagerAttributes { Order = 9950 }));
 
         UIFont = Config.Bind("10Fixer",
             "UIFont/UI字体",
             "Noto Sans CJK SC",
             new ConfigDescription(
                 "This is used to replace the font and requires a font that is already installed on your system. The game's built-in font is NotoSansCJKjp-DemiLight./用于替换字体，需要已经安装在系统中的字体，游戏内置字体为 NotoSansCJKjp-DemiLight",
-                null, new ConfigurationManagerAttributes { Order = 9950 }));
+                null, new ConfigurationManagerAttributes { Order = 9940 }));
 
         # endregion
 
@@ -1410,6 +1418,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             LogManager.Info(
                 $"Target language changed to {TargetLanguage.Value}/目标语言已更改为 {TargetLanguage.Value}");
+            LogManager.Warning(
+                "Change this option at runtime may cause problems/运行时修改此选项可能会导致问题，请重启游戏");
 
             // 更新翻译路径
             TargetLanguePath = Path.Combine(TranslationRootPath, TargetLanguage.Value);
@@ -2725,6 +2735,22 @@ public class JustAnotherTranslator : BaseUnityPlugin
             {
                 LogManager.Info(
                     "Maid Cafe DLC Line Break Comment Fix disabled/女仆咖啡厅DLC的弹幕不移动的修复已禁用");
+                FixerManger.Unload();
+                FixerManger.Init();
+            }
+        };
+
+        EnableNoneCjkFix.SettingChanged += (_, _) =>
+        {
+            if (EnableNoneCjkFix.Value)
+            {
+                LogManager.Info("None CJK Fix enabled/非CJK语言修复已启用");
+                FixerManger.Unload();
+                FixerManger.Init();
+            }
+            else
+            {
+                LogManager.Info("None CJK Fix disabled/非CJK语言修复已禁用");
                 FixerManger.Unload();
                 FixerManger.Init();
             }

@@ -1,4 +1,5 @@
-﻿using COM3D2.JustAnotherTranslator.Plugin.Utils;
+﻿using System;
+using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Fixer;
@@ -16,7 +17,15 @@ public static class UIFontReplace
     [HarmonyPrefix]
     public static void ChangeUEUIFont(UnityEngine.UI.Text __instance)
     {
-        __instance.font = FontTool.SwapUIFont(__instance.font);
+        try
+        {
+            __instance.font = FontTool.SwapUIFont(__instance.font);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"UIFontReplace failed (input: '{__instance.font.name}') unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+        }
     }
 
     /// <summary>
@@ -27,6 +36,14 @@ public static class UIFontReplace
     [HarmonyPrefix]
     public static void ChangeFont(UILabel __instance)
     {
-        __instance.trueTypeFont = FontTool.SwapUIFont(__instance.trueTypeFont);
+        try
+        {
+            __instance.trueTypeFont = FontTool.SwapUIFont(__instance.trueTypeFont);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"UIFontReplace failed (input: '{__instance.trueTypeFont.name}') unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+        }
     }
 }

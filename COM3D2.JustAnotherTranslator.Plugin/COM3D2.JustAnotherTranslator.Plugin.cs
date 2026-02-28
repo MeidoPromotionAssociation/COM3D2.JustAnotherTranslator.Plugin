@@ -267,24 +267,24 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "Configuration options tips do not prompt in the game, please open the configuration file to view",
             true,
             new ConfigDescription("this config do nothing", null,
-                new ConfigurationManagerAttributes { Order = 1000 }));
+                new ConfigurationManagerAttributes { Order = 990 }));
 
         _tip2 = Config.Bind("1Tips",
             "configuration file location is COM3D2/BepInEx/config/Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg",
             true,
             new ConfigDescription("this config do nothing", null,
-                new ConfigurationManagerAttributes { Order = 1010 }));
+                new ConfigurationManagerAttributes { Order = 980 }));
 
         _tip3 = Config.Bind("1Tips",
             "配置选项提示不会在游戏内提示，请打开配置文件查看", true,
             new ConfigDescription("这个配置不做任何事情", null,
-                new ConfigurationManagerAttributes { Order = 1020 }));
+                new ConfigurationManagerAttributes { Order = 970 }));
 
         _tip4 = Config.Bind("1Tips",
             "配置文件位于 /COM3D2/BepInEx/config/Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin.cfg",
             true,
             new ConfigDescription("这个配置不做任何事情", null,
-                new ConfigurationManagerAttributes { Order = 1030 }));
+                new ConfigurationManagerAttributes { Order = 960 }));
 
         # endregion
 
@@ -296,7 +296,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Target Language, only affect the path of reading translation files/目标语言，只控制读取翻译文件的路径",
                 null,
-                new ConfigurationManagerAttributes { Order = 2000 }));
+                new ConfigurationManagerAttributes { Order = 1990 }));
 
         TargetLanguePath = Path.Combine(TranslationRootPath, TargetLanguage.Value);
         TranslationTextPath = Path.Combine(TargetLanguePath, "Text");
@@ -317,25 +317,25 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "EnableGeneralTextTranslation/启用通用文本翻译",
             true,
             new ConfigDescription("Enable Text Translation/启用文本翻译", null,
-                new ConfigurationManagerAttributes { Order = 2010 }));
+                new ConfigurationManagerAttributes { Order = 1980 }));
 
         EnableTextureReplace = Config.Bind("2General",
             "EnableTextureReplace/启用纹理替换",
             true,
             new ConfigDescription("Enable Texture Replace/启用纹理替换", null,
-                new ConfigurationManagerAttributes { Order = 2020 }));
+                new ConfigurationManagerAttributes { Order = 1970 }));
 
         EnableUITextTranslation = Config.Bind("2General",
             "EnableUITextTranslation/启用UI文本翻译",
             true,
             new ConfigDescription("Enable UI Translation/启用 UI 文本翻译", null,
-                new ConfigurationManagerAttributes { Order = 2030 }));
+                new ConfigurationManagerAttributes { Order = 1960 }));
 
         EnableUISpriteReplace = Config.Bind("2General",
             "EnableUISpriteReplace/启用UI精灵图替换",
             true,
             new ConfigDescription("Enable UI Translation/启用 UI 精灵图替换", null,
-                new ConfigurationManagerAttributes { Order = 2040 }));
+                new ConfigurationManagerAttributes { Order = 1950 }));
 
         EnableUITextExtraPatch = Config.Bind("2General",
             "EnableUITextExtraPatch/启用UI文本翻译额外补丁",
@@ -343,7 +343,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Enable patches that cover UI translations not translated by the UI translation module depending on whether the game is a multilingual version/启用用于覆盖因游戏是否为多语言版本而未被 UI 翻译模块翻译的补丁",
                 null,
-                new ConfigurationManagerAttributes { Order = 2030 }));
+                new ConfigurationManagerAttributes { Order = 1940 }));
 
         AllowFilesInZipLoadInOrder = Config.Bind("2General",
             "AllowFilesInZipLoadInOrder/允许 ZIP 文件内文件按顺序加载",
@@ -351,21 +351,21 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Allow files In zip Load in order, This will lower the loading speed/允许 ZIP 文件内文件按顺序加载，这会降低加载速度",
                 null,
-                new ConfigurationManagerAttributes { Order = 2050 }));
+                new ConfigurationManagerAttributes { Order = 1940 }));
 
         MaidNameStyle = Config.Bind("2General",
             "MaidNameStyle/女仆名字样式",
             MaidNameStyleEnum.JpStyle,
             new ConfigDescription(
                 "Maid Name Style, JpStyle is family name first and given name last, English style is opposite, cannot change at runtime/女仆名字样式，日式姓前名后，英式相反。无法在运行时更改",
-                null, new ConfigurationManagerAttributes { Order = 2060 }));
+                null, new ConfigurationManagerAttributes { Order = 1930 }));
 
         ReloadTranslateResourceShortcut = Config.Bind("2General",
             "ReloadTranslateResource/重载翻译资源",
             new KeyboardShortcut(),
             new ConfigDescription(
                 "Press this shortcut to hot reload all translation resources/按下此快捷键来热重载所有翻译资源",
-                null, new ConfigurationManagerAttributes { Order = 2070 }));
+                null, new ConfigurationManagerAttributes { Order = 1920 }));
 
         // 声明后才能使用日志
         LogLevelConfig = Config.Bind("2General",
@@ -373,7 +373,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogLevel.Info,
             new ConfigDescription("Log Level, DEBUG will log more information/日志级别，DEBUG 级别将记录详细信息",
                 null,
-                new ConfigurationManagerAttributes { Order = 2080 }));
+                new ConfigurationManagerAttributes { Order = 1910 }));
 
         # endregion
 
@@ -384,40 +384,40 @@ public class JustAnotherTranslator : BaseUnityPlugin
             true,
             new ConfigDescription(
                 "Enable Base Subtitle, usually Karaoke, Casino, etc Some voices are matched by audio file name, so may not be displayed if text translation is not enabled/启用基础字幕，通常是卡拉OK、赌场等字幕。部分语音按音频文件名匹配，因此未启用文本翻译时可能无法显示",
-                null, new ConfigurationManagerAttributes { Order = 3000 }));
+                null, new ConfigurationManagerAttributes { Order = 2990 }));
 
         EnableYotogiSubtitle = Config.Bind("3Subtitle",
             "EnableYotogiSubtitle/启用夜伽字幕",
             true,
             new ConfigDescription("Enable Yotogi Subtitle/启用夜伽字幕", null,
-                new ConfigurationManagerAttributes { Order = 3010 }));
+                new ConfigurationManagerAttributes { Order = 2980 }));
 
         EnableAdvSubtitle = Config.Bind("3Subtitle",
             "EnableADVSubtitle/启用ADV字幕",
             false,
             new ConfigDescription(
                 "Enable ADV subtitles. Since ADV scenes have their own subtitles, this setting is only useful in VR mode and is invalid in non-VR mode./启用ADV字幕，由于 ADV 场景自带字幕，因此仅在 VR 模式下有用，非 VR 模式此设置无效",
-                null, new ConfigurationManagerAttributes { Order = 3020 }));
+                null, new ConfigurationManagerAttributes { Order = 2970 }));
 
         ForceEnableAdvSubtitle = Config.Bind("3Subtitle",
             "ForceEnableADVSubtitle/强制启用ADV字幕",
             false,
             new ConfigDescription(
                 "Force Enable ADV subtitles, whether in VR mode or not/强制启用ADV字幕，无论是不是 VR 模式", null,
-                new ConfigurationManagerAttributes { Order = 3030 }));
+                new ConfigurationManagerAttributes { Order = 2960 }));
 
         EnableLyricSubtitle = Config.Bind("3Subtitle",
             "EnableLyricSubtitle/启用歌词字幕",
             true,
             new ConfigDescription("Enable Lyric Subtitle/启用歌词字幕", null,
-                new ConfigurationManagerAttributes { Order = 3040 }));
+                new ConfigurationManagerAttributes { Order = 2950 }));
 
         SubtitleSearchDirection = Config.Bind("3Subtitle",
             "SubtitleSearchDirection/字幕搜索方向",
             SubtitleSearchDirectionEnum.DownFirst,
             new ConfigDescription(
                 "Default search direction when finding available subtitle positions/查找可用字幕位置时的默认搜索方向",
-                null, new ConfigurationManagerAttributes { Order = 3050 }));
+                null, new ConfigurationManagerAttributes { Order = 2940 }));
 
         # endregion
 
@@ -428,7 +428,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "EnableBaseSubtitleSpeakerName/启用基础字幕显示说话人名",
             true,
             new ConfigDescription("Enable Base Subtitle Speaker Name/启用基础字幕显示说话人名", null,
-                new ConfigurationManagerAttributes { Order = 4000 }));
+                new ConfigurationManagerAttributes { Order = 3990 }));
 
         BaseSubtitleFont = Config.Bind("4BaseSubtitle",
             "BaseSubtitleFont/基础字幕字体",
@@ -436,115 +436,115 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Base Subtitle Font, need to already installed the font on the system/基础字幕字体，需要已经安装在系统中的字体",
                 null,
-                new ConfigurationManagerAttributes { Order = 4010 }));
+                new ConfigurationManagerAttributes { Order = 3980 }));
 
         BaseSubtitleFontSize = Config.Bind("4BaseSubtitle",
             "BaseSubtitleFontSize/基础字幕字体大小",
             24,
             new ConfigDescription("Base Subtitle Font Size/基础字幕字体大小", null,
-                new ConfigurationManagerAttributes { Order = 4020 }));
+                new ConfigurationManagerAttributes { Order = 3970 }));
 
         BaseSubtitleTextAlignment = Config.Bind("4BaseSubtitle",
             "BaseSubtitleTextAlignment/基础字幕文本对齐方式",
             TextAnchorEnum.MiddleCenter,
             new ConfigDescription("Base Subtitle Text Alignment/基础字幕文本对齐方式", null,
-                new ConfigurationManagerAttributes { Order = 4030 }));
+                new ConfigurationManagerAttributes { Order = 3960 }));
 
         BaseSubtitleColor = Config.Bind("4BaseSubtitle",
             "BaseSubtitleColor/基础字幕颜色",
             "#FFFFFF",
             new ConfigDescription("Base Subtitle Color, use hex color code/基础字幕颜色，使用十六进制颜色代码", null,
-                new ConfigurationManagerAttributes { Order = 4040 }));
+                new ConfigurationManagerAttributes { Order = 3950 }));
 
         BaseSubtitleOpacity = Config.Bind("4BaseSubtitle",
             "BaseSubtitleOpacity/基础字幕不透明度",
             1f,
             new ConfigDescription("Base Subtitle Opacity (0-1)/基础字幕不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 4050 }));
+                new ConfigurationManagerAttributes { Order = 3940 }));
 
         BaseSubtitleBackgroundColor = Config.Bind("4BaseSubtitle",
             "BaseSubtitleBackgroundColor/基础字幕背景颜色",
             "#000000",
             new ConfigDescription(
                 "Base Subtitle Background Color, use hex color code/基础字幕背景颜色，使用十六进制颜色代码", null,
-                new ConfigurationManagerAttributes { Order = 4060 }));
+                new ConfigurationManagerAttributes { Order = 3930 }));
 
         BaseSubtitleBackgroundOpacity = Config.Bind("4BaseSubtitle",
             "BaseSubtitleBackgroundOpacity/基础字幕背景不透明度",
             0.1f,
             new ConfigDescription("Base Subtitle Background Opacity (0-1)/基础字幕背景不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 4070 }));
+                new ConfigurationManagerAttributes { Order = 3820 }));
 
         BaseSubtitleWidth = Config.Bind("4BaseSubtitle",
             "BaseSubtitleWidth/基础字幕背景宽度",
             1920f,
             new ConfigDescription(
                 "Subtitle Width(pixel), reference resolution is 1920x1080, so set to 1920 will fill the whole screen width/字幕背景宽度(像素)，参考分辨率为1920x1080，因此设置为1920时将填满整个屏幕宽",
-                null, new ConfigurationManagerAttributes { Order = 4080 }));
+                null, new ConfigurationManagerAttributes { Order = 3910 }));
 
         BaseSubtitleHeight = Config.Bind("4BaseSubtitle",
             "BaseSubtitleHeight/基础字幕背景高度",
             30f,
             new ConfigDescription(
                 "Subtitle Height(pixel), reference resolution is 1920x1080, so set to 1080 will fill the whole screen height/字幕背景高度(像素)，参考分辨率为1920x1080，因此设置为1080时将填满整个屏幕高",
-                null, new ConfigurationManagerAttributes { Order = 4090 }));
+                null, new ConfigurationManagerAttributes { Order = 3900 }));
 
         BaseSubtitleHorizontalPosition = Config.Bind("4BaseSubtitle",
             "BaseSubtitleHorizontalPosition/基础字幕水平位置",
             0f,
             new ConfigDescription(
                 "Distance to the left side of the screen (0 is the left, 1920 is the right)/到屏幕左边的距离（0为左边，1920为最右边）",
-                null, new ConfigurationManagerAttributes { Order = 4100 }));
+                null, new ConfigurationManagerAttributes { Order = 3890 }));
 
         BaseSubtitleVerticalPosition = Config.Bind("4BaseSubtitle",
             "BaseSubtitleVerticalPosition/基础字幕垂直位置",
             1050f,
             new ConfigDescription(
                 "Distance to bottom of screen (0 is bottom, 1 is top, note 1080 will go out of screen, should subtract background height)/到屏幕底部的距离（0为底部，1080为顶部，注意1080会超出屏幕，应减去背景高度）",
-                null, new ConfigurationManagerAttributes { Order = 4110 }));
+                null, new ConfigurationManagerAttributes { Order = 3880 }));
 
         EnableBaseSubtitleAnimation = Config.Bind("4BaseSubtitle",
             "BaseSubtitleAnimation/基础字幕动画",
             true,
             new ConfigDescription("Enable Base Subtitle Animation/启用基础字幕动画", null,
-                new ConfigurationManagerAttributes { Order = 4120 }));
+                new ConfigurationManagerAttributes { Order = 3870 }));
 
         BaseSubtitleFadeInDuration = Config.Bind("4BaseSubtitle",
             "BaseSubtitleFadeInDuration/基础字幕淡入时长",
             0.5f,
             new ConfigDescription("Base Subtitle Fade In Duration in seconds/基础字幕淡入时长（秒）", null,
-                new ConfigurationManagerAttributes { Order = 4130 }));
+                new ConfigurationManagerAttributes { Order = 3860 }));
 
         BaseSubtitleFadeOutDuration = Config.Bind("4BaseSubtitle",
             "BaseSubtitleFadeOutDuration/基础字幕淡出时长",
             0.5f,
             new ConfigDescription("Base Subtitle Fade Out Duration in seconds/基础字幕淡出时长（秒）", null,
-                new ConfigurationManagerAttributes { Order = 4140 }));
+                new ConfigurationManagerAttributes { Order = 3850 }));
 
         EnableBaseSubtitleOutline = Config.Bind("4BaseSubtitle",
             "EnableBaseSubtitleOutline/启用基础字幕描边",
             true,
             new ConfigDescription("Enable Base Subtitle Outline/启用基础字幕描边", null,
-                new ConfigurationManagerAttributes { Order = 4150 }));
+                new ConfigurationManagerAttributes { Order = 3840 }));
 
         BaseSubtitleOutlineColor = Config.Bind("4BaseSubtitle",
             "BaseSubtitleOutlineColor/基础字幕描边颜色",
             "#000000",
             new ConfigDescription(
                 "Base Subtitle Outline Color, use hex color code/基础字幕描边颜色，使用十六进制颜色代码", null,
-                new ConfigurationManagerAttributes { Order = 4160 }));
+                new ConfigurationManagerAttributes { Order = 3830 }));
 
         BaseSubtitleOutlineOpacity = Config.Bind("4BaseSubtitle",
             "BaseSubtitleOutlineOpacity/基础字幕描边不透明度",
             0.5f,
             new ConfigDescription("Base Subtitle Outline Opacity (0-1)/基础字幕描边不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 4170 }));
+                new ConfigurationManagerAttributes { Order = 3820 }));
 
         BaseSubtitleOutlineWidth = Config.Bind("4BaseSubtitle",
             "BaseSubtitleOutlineWidth/基础字幕描边宽度",
             1f,
             new ConfigDescription("Base Subtitle Outline Width in pixels/基础字幕描边宽度（像素）", null,
-                new ConfigurationManagerAttributes { Order = 4180 }));
+                new ConfigurationManagerAttributes { Order = 3810 }));
 
         # endregion
 
@@ -555,7 +555,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "EnableYotogiSubtitleSpeakerName/启用夜伽字幕显示说话人名",
             true,
             new ConfigDescription("Enable Yotogi Subtitle Speaker Name/启用夜伽字幕显示说话人名", null,
-                new ConfigurationManagerAttributes { Order = 5000 }));
+                new ConfigurationManagerAttributes { Order = 4990 }));
 
         YotogiSubtitleFont = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleFont/夜伽字幕字体",
@@ -563,116 +563,116 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Yotogi Subtitle Font, need to already installed the font on the system/夜伽字幕字体，需要已经安装在系统中的字体",
                 null,
-                new ConfigurationManagerAttributes { Order = 5010 }));
+                new ConfigurationManagerAttributes { Order = 4980 }));
 
         YotogiSubtitleFontSize = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleFontSize/夜伽字幕字体大小",
             24,
             new ConfigDescription("Yotogi Subtitle Font Size/夜伽字幕字体大小", null,
-                new ConfigurationManagerAttributes { Order = 5020 }));
+                new ConfigurationManagerAttributes { Order = 4970 }));
 
         YotogiSubtitleTextAlignment = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleTextAlignment/夜伽字幕文本对齐",
             TextAnchorEnum.MiddleCenter,
             new ConfigDescription("Yotogi Subtitle Text Alignment/夜伽字幕文本对齐方式", null,
-                new ConfigurationManagerAttributes { Order = 5030 }));
+                new ConfigurationManagerAttributes { Order = 4960 }));
 
         YotogiSubtitleColor = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleColor/夜伽字幕颜色",
             "#FFFFFF",
             new ConfigDescription("Yotogi Subtitle Color, use hex color code/夜伽字幕颜色，使用十六进制颜色代码",
                 null,
-                new ConfigurationManagerAttributes { Order = 5040 }));
+                new ConfigurationManagerAttributes { Order = 4950 }));
 
         YotogiSubtitleOpacity = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleOpacity/夜伽字幕不透明度",
             1f,
             new ConfigDescription("Yotogi Subtitle Opacity (0-1)/夜伽字幕不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 5050 }));
+                new ConfigurationManagerAttributes { Order = 4940 }));
 
         YotogiSubtitleBackgroundColor = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleBackgroundColor/夜伽字幕背景颜色",
             "#000000",
             new ConfigDescription(
                 "Yotogi Subtitle Background Color, use hex color code/夜伽字幕背景颜色，使用十六进制颜色代码", null,
-                new ConfigurationManagerAttributes { Order = 5060 }));
+                new ConfigurationManagerAttributes { Order = 4930 }));
 
         YotogiSubtitleBackgroundOpacity = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleBackgroundOpacity/夜伽字幕背景不透明度",
             0.1f,
             new ConfigDescription("Yotogi Subtitle Background Opacity (0-1)/夜伽字幕背景不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 5070 }));
+                new ConfigurationManagerAttributes { Order = 4920 }));
 
         YotogiSubtitleWidth = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleWidth/夜伽字幕背景宽度",
             1920f,
             new ConfigDescription(
                 "Subtitle Width(pixel), reference resolution is 1920x1080, so set to 1920 will fill the whole screen width/字幕宽度(像素)，参考分辨率为1920x1080，因此设置为1920时将填满整个屏幕宽",
-                null, new ConfigurationManagerAttributes { Order = 5080 }));
+                null, new ConfigurationManagerAttributes { Order = 4910 }));
 
         YotogiSubtitleHeight = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleHeight/夜伽字幕背景高度",
             30f,
             new ConfigDescription(
                 "Subtitle Height(pixel), reference resolution is 1920x1080, so set to 1080 will fill the whole screen height/字幕高度(像素)，参考分辨率为1920x1080，因此设置为1080时将填满整个屏幕高",
-                null, new ConfigurationManagerAttributes { Order = 5090 }));
+                null, new ConfigurationManagerAttributes { Order = 4900 }));
 
         YotogiSubtitleHorizontalPosition = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleHorizontalPosition/夜伽字幕水平位置",
             0f,
             new ConfigDescription(
                 "Distance to the left side of the screen (0 is the left, 1920 is the right)/到屏幕左边的距离（0为左边，1920为最右边）",
-                null, new ConfigurationManagerAttributes { Order = 5100 }));
+                null, new ConfigurationManagerAttributes { Order = 4890 }));
 
         YotogiSubtitleVerticalPosition = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleVerticalPosition/夜伽字幕垂直位置",
             1050f,
             new ConfigDescription(
                 "Distance to the left side of the screen (0 is the left, 1920 is the right)/到屏幕左边的距离（0为左边，1920为最右边）",
-                null, new ConfigurationManagerAttributes { Order = 5110 }));
+                null, new ConfigurationManagerAttributes { Order = 4880 }));
 
         EnableYotogiSubtitleAnimation = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleAnimation/夜伽字幕动画",
             true,
             new ConfigDescription("Enable Yotogi Subtitle Animation/启用夜伽字幕动画", null,
-                new ConfigurationManagerAttributes { Order = 5120 }));
+                new ConfigurationManagerAttributes { Order = 4870 }));
 
         YotogiSubtitleFadeInDuration = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleFadeInDuration/夜伽字幕淡入时长",
             0.5f,
             new ConfigDescription("Yotogi Subtitle Fade In Duration in seconds/夜伽字幕淡入时长（秒）", null,
-                new ConfigurationManagerAttributes { Order = 5130 }));
+                new ConfigurationManagerAttributes { Order = 4860 }));
 
         YotogiSubtitleFadeOutDuration = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleFadeOutDuration/夜伽字幕淡出时长",
             0.5f,
             new ConfigDescription("Yotogi Subtitle Fade Out Duration in seconds/夜伽字幕淡出时长（秒）", null,
-                new ConfigurationManagerAttributes { Order = 5140 }));
+                new ConfigurationManagerAttributes { Order = 4850 }));
 
         EnableYotogiSubtitleOutline = Config.Bind("5YotogiSubtitle",
             "EnableYotogiSubtitleOutline/启用夜伽字幕描边",
             true,
             new ConfigDescription("Enable Yotogi Subtitle Outline/启用夜伽字幕描边", null,
-                new ConfigurationManagerAttributes { Order = 5150 }));
+                new ConfigurationManagerAttributes { Order = 4840 }));
 
         YotogiSubtitleOutlineColor = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleOutlineColor/夜伽字幕描边颜色",
             "#000000",
             new ConfigDescription(
                 "Yotogi Subtitle Outline Color, use hex color code/夜伽字幕描边颜色，使用十六进制颜色代码", null,
-                new ConfigurationManagerAttributes { Order = 5160 }));
+                new ConfigurationManagerAttributes { Order = 4830 }));
 
         YotogiSubtitleOutlineOpacity = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleOutlineOpacity/夜伽字幕描边不透明度",
             0.5f,
             new ConfigDescription("Yotogi Subtitle Outline Opacity (0-1)/夜伽字幕描边不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 5170 }));
+                new ConfigurationManagerAttributes { Order = 4820 }));
 
         YotogiSubtitleOutlineWidth = Config.Bind("5YotogiSubtitle",
             "YotogiSubtitleOutlineWidth/夜伽字幕描边宽度",
             1f,
             new ConfigDescription("Yotogi Subtitle Outline Width in pixels/夜伽字幕描边宽度（像素）", null,
-                new ConfigurationManagerAttributes { Order = 5180 }));
+                new ConfigurationManagerAttributes { Order = 4810 }));
 
         # endregion
 
@@ -683,7 +683,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "EnableAdvSubtitleSpeakerName/启用ADV字幕显示说话人名",
             true,
             new ConfigDescription("Enable ADV Subtitle Speaker Name/启用ADV字幕显示说话人名", null,
-                new ConfigurationManagerAttributes { Order = 6000 }));
+                new ConfigurationManagerAttributes { Order = 5990 }));
 
         AdvSubtitleFont = Config.Bind("6AdvSubtitle",
             "AdvSubtitleFont/ADV字幕字体",
@@ -691,116 +691,116 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "ADV Subtitle Font, need to already installed the font on the system/ADV字幕字体，需要已经安装在系统中的字体",
                 null,
-                new ConfigurationManagerAttributes { Order = 6010 }));
+                new ConfigurationManagerAttributes { Order = 5980 }));
 
         AdvSubtitleFontSize = Config.Bind("6AdvSubtitle",
             "AdvSubtitleFontSize/ADV字幕字体大小",
             24,
             new ConfigDescription("ADV Subtitle Font Size/ADV字幕字体大小", null,
-                new ConfigurationManagerAttributes { Order = 6020 }));
+                new ConfigurationManagerAttributes { Order = 5970 }));
 
         AdvSubtitleTextAlignment = Config.Bind("6AdvSubtitle",
             "AdvSubtitleTextAlignment/ADV字幕文本对齐方式",
             TextAnchorEnum.MiddleCenter,
             new ConfigDescription("ADV Subtitle Text Alignment/ADV字幕文本对齐方式", null,
-                new ConfigurationManagerAttributes { Order = 6030 }));
+                new ConfigurationManagerAttributes { Order = 5960 }));
 
         AdvSubtitleColor = Config.Bind("6AdvSubtitle",
             "AdvSubtitleColor/ADV字幕颜色",
             "#FFFFFF",
             new ConfigDescription("ADV Subtitle Color, use hex color code/ADV字幕颜色，使用十六进制颜色代码", null,
-                new ConfigurationManagerAttributes { Order = 6040 }));
+                new ConfigurationManagerAttributes { Order = 5950 }));
 
         AdvSubtitleOpacity = Config.Bind("6AdvSubtitle",
             "AdvSubtitleOpacity/ADV字幕不透明度",
             1f,
             new ConfigDescription("ADV Subtitle Opacity (0-1)/ADV字幕不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 6050 }));
+                new ConfigurationManagerAttributes { Order = 5940 }));
 
         AdvSubtitleBackgroundColor = Config.Bind("6AdvSubtitle",
             "AdvSubtitleBackgroundColor/ADV字幕背景颜色",
             "#000000",
             new ConfigDescription(
                 "ADV Subtitle Background Color, use hex color code/ADV字幕背景颜色，使用十六进制颜色代码", null,
-                new ConfigurationManagerAttributes { Order = 6060 }));
+                new ConfigurationManagerAttributes { Order = 5930 }));
 
         AdvSubtitleBackgroundOpacity = Config.Bind("6AdvSubtitle",
             "AdvSubtitleBackgroundOpacity/ADV字幕背景不透明度",
             0.1f,
             new ConfigDescription("ADV Subtitle Background Opacity (0-1)/ADV字幕背景不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 6070 }));
+                new ConfigurationManagerAttributes { Order = 5920 }));
 
         AdvSubtitleWidth = Config.Bind("6AdvSubtitle",
             "AdvSubtitleWidth/ADV字幕背景宽度",
             1920f,
             new ConfigDescription(
                 "Subtitle Width(pixel), reference resolution is 1920x1080, so set to 1920 will fill the whole screen width/字幕宽度(像素)，参考分辨率为1920x1080，因此设置为1920时将填满整个屏幕宽",
-                null, new ConfigurationManagerAttributes { Order = 6080 }));
+                null, new ConfigurationManagerAttributes { Order = 5910 }));
 
         AdvSubtitleHeight = Config.Bind("6AdvSubtitle",
             "AdvSubtitleHeight/ADV字幕背景高度",
             30f,
             new ConfigDescription(
                 "Subtitle Height(pixel), reference resolution is 1920x1080, so set to 1080 will fill the whole screen height/字幕高度(像素)，参考分辨率为1920x1080，因此设置为1080时将填满整个屏幕高",
-                null, new ConfigurationManagerAttributes { Order = 6090 }));
+                null, new ConfigurationManagerAttributes { Order = 5900 }));
 
         AdvSubtitleHorizontalPosition = Config.Bind("6AdvSubtitle",
             "AdvSubtitleHorizontalPosition/ADV字幕水平位置",
             0f,
             new ConfigDescription(
                 "Distance to the left side of the screen (0 is the left, 1920 is the right)/到屏幕左边的距离（0为左边，1920为最右边）",
-                null, new ConfigurationManagerAttributes { Order = 6100 }));
+                null, new ConfigurationManagerAttributes { Order = 5890 }));
 
         AdvSubtitleVerticalPosition = Config.Bind("6AdvSubtitle",
             "AdvSubtitleVerticalPosition/ADV字幕垂直位置",
             1050f,
             new ConfigDescription(
                 "Distance to bottom of screen (0 is bottom, 1 is top, note 1080 will go out of screen, should subtract background height)/到屏幕底部的距离（0为底部，1080为顶部，注意1080会超出屏幕，应减去背景高度）",
-                null, new ConfigurationManagerAttributes { Order = 6110 }));
+                null, new ConfigurationManagerAttributes { Order = 5880 }));
 
         EnableAdvSubtitleAnimation = Config.Bind("6AdvSubtitle",
             "AdvSubtitleAnimation/ADV字幕动画",
             true,
             new ConfigDescription("Enable ADV Subtitle Animation/启用ADV字幕动画", null,
-                new ConfigurationManagerAttributes { Order = 6120 }));
+                new ConfigurationManagerAttributes { Order = 5870 }));
 
         AdvSubtitleFadeInDuration = Config.Bind("6AdvSubtitle",
             "AdvSubtitleFadeInDuration/ADV字幕淡入时长",
             0.5f,
             new ConfigDescription("ADV Subtitle Fade In Duration in seconds/ADV字幕淡入时长（秒）", null,
-                new ConfigurationManagerAttributes { Order = 6130 }));
+                new ConfigurationManagerAttributes { Order = 5860 }));
 
         AdvSubtitleFadeOutDuration = Config.Bind("6AdvSubtitle",
             "AdvSubtitleFadeOutDuration/ADV字幕淡出时长",
             0.5f,
             new ConfigDescription("ADV Subtitle Fade Out Duration in seconds/ADV字幕淡出时长（秒）", null,
-                new ConfigurationManagerAttributes { Order = 6140 }));
+                new ConfigurationManagerAttributes { Order = 5850 }));
 
         EnableAdvSubtitleOutline = Config.Bind("6AdvSubtitle",
             "EnableAdvSubtitleOutline/启用ADV字幕描边",
             true,
             new ConfigDescription("Enable ADV Subtitle Outline/启用ADV字幕描边", null,
-                new ConfigurationManagerAttributes { Order = 6150 }));
+                new ConfigurationManagerAttributes { Order = 5840 }));
 
         AdvSubtitleOutlineColor = Config.Bind("6AdvSubtitle",
             "AdvSubtitleOutlineColor/ADV字幕描边颜色",
             "#000000",
             new ConfigDescription(
                 "ADV Subtitle Outline Color, use hex color code/ADV字幕描边颜色，使用十六进制颜色代码", null,
-                new ConfigurationManagerAttributes { Order = 6160 }));
+                new ConfigurationManagerAttributes { Order = 5830 }));
 
         AdvSubtitleOutlineOpacity = Config.Bind("6AdvSubtitle",
             "AdvSubtitleOutlineOpacity/ADV字幕描边不透明度",
             0.5f,
             new ConfigDescription("ADV Subtitle Outline Opacity (0-1)/ADV字幕描边不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 6170 }));
+                new ConfigurationManagerAttributes { Order = 5820 }));
 
 
         AdvSubtitleOutlineWidth = Config.Bind("6AdvSubtitle",
             "AdvSubtitleOutlineWidth/ADV字幕描边宽度",
             1f,
             new ConfigDescription("ADV Subtitle Outline Width in pixels/ADV字幕描边宽度（像素）", null,
-                new ConfigurationManagerAttributes { Order = 6180 }));
+                new ConfigurationManagerAttributes { Order = 5810 }));
 
         # endregion
 
@@ -812,13 +812,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
             false,
             new ConfigDescription(
                 "Enable Lyric Subtitle Speaker Name. The song is played as a BGM, the speaker name is always displayed as the dance main maid/启用歌词字幕显示说话人名。歌曲作为BGM形式播放，人名始终显示为舞蹈主女仆",
-                null, new ConfigurationManagerAttributes { Order = 7000 }));
+                null, new ConfigurationManagerAttributes { Order = 6990 }));
 
         LyricSubtitleType = Config.Bind("7LyricSubtitle",
             "LyricSubtitleType/歌词字幕类型",
             LyricSubtitleTypeEnum.TranslationAndOriginal,
             new ConfigDescription("Lyric Subtitle Type/歌词字幕类型", null,
-                new ConfigurationManagerAttributes { Order = 7010 }));
+                new ConfigurationManagerAttributes { Order = 6980 }));
 
         LyricSubtitleFont = Config.Bind("7LyricSubtitle",
             "LyricSubtitleFont/歌词字幕字体",
@@ -826,116 +826,116 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Lyric Subtitle Font, need to already installed the font on the system/歌词字幕字体，需要已经安装在系统中的字体",
                 null,
-                new ConfigurationManagerAttributes { Order = 7020 }));
+                new ConfigurationManagerAttributes { Order = 6970 }));
 
         LyricSubtitleFontSize = Config.Bind("7LyricSubtitle",
             "LyricSubtitleFontSize/歌词字幕字体大小",
             24,
             new ConfigDescription("Lyric Subtitle Font Size/歌词字幕字体大小", null,
-                new ConfigurationManagerAttributes { Order = 7030 }));
+                new ConfigurationManagerAttributes { Order = 6960 }));
 
         LyricSubtitleTextAlignment = Config.Bind("7LyricSubtitle",
             "LyricSubtitleTextAlignment/歌词字幕文本对齐",
             TextAnchorEnum.MiddleCenter,
             new ConfigDescription("Lyric Subtitle Text Alignment/歌词字幕文本对齐方式", null,
-                new ConfigurationManagerAttributes { Order = 7040 }));
+                new ConfigurationManagerAttributes { Order = 6950 }));
 
         LyricSubtitleColor = Config.Bind("7LyricSubtitle",
             "LyricSubtitleColor/歌词字幕颜色",
             "#FFFFFF",
             new ConfigDescription("Lyric Subtitle Color, use hex color code/歌词字幕颜色，使用十六进制颜色代码",
                 null,
-                new ConfigurationManagerAttributes { Order = 7050 }));
+                new ConfigurationManagerAttributes { Order = 6940 }));
 
         LyricSubtitleOpacity = Config.Bind("7LyricSubtitle",
             "LyricSubtitleOpacity/歌词字幕不透明度",
             1f,
             new ConfigDescription("Lyric Subtitle Opacity (0-1)/歌词字幕不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 7060 }));
+                new ConfigurationManagerAttributes { Order = 6930 }));
 
         LyricSubtitleBackgroundColor = Config.Bind("7LyricSubtitle",
             "LyricSubtitleBackgroundColor/歌词字幕背景颜色",
             "#000000",
             new ConfigDescription(
                 "Lyric Subtitle Background Color, use hex color code/歌词字幕背景颜色，使用十六进制颜色代码", null,
-                new ConfigurationManagerAttributes { Order = 7070 }));
+                new ConfigurationManagerAttributes { Order = 6920 }));
 
         LyricSubtitleBackgroundOpacity = Config.Bind("7LyricSubtitle",
             "LyricSubtitleBackgroundOpacity/歌词字幕背景不透明度",
             0f,
             new ConfigDescription("Lyric Subtitle Background Opacity (0-1)/歌词字幕背景不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 7080 }));
+                new ConfigurationManagerAttributes { Order = 6910 }));
 
         LyricSubtitleWidth = Config.Bind("7LyricSubtitle",
             "LyricSubtitleWidth/歌词字幕背景宽度",
             1920f,
             new ConfigDescription(
                 "Subtitle Width(pixel), reference resolution is 1920x1080, so set to 1920 will fill the whole screen width/字幕宽度(像素），参考分辨率为1920x1080，因此设置为1920时将填满整个屏幕宽",
-                null, new ConfigurationManagerAttributes { Order = 7090 }));
+                null, new ConfigurationManagerAttributes { Order = 6900 }));
 
         LyricSubtitleHeight = Config.Bind("7LyricSubtitle",
             "LyricSubtitleHeight/歌词字幕背景高度",
             70f,
             new ConfigDescription(
                 "Subtitle Height(pixel), reference resolution is 1920x1080, so set to 1080 will fill the whole screen height/字幕高度(像素)，参考分辨率为1920x1080，因此设置为1080时将填满整个屏幕高",
-                null, new ConfigurationManagerAttributes { Order = 7100 }));
+                null, new ConfigurationManagerAttributes { Order = 6890 }));
 
         LyricSubtitleHorizontalPosition = Config.Bind("7LyricSubtitle",
             "LyricSubtitleHorizontalPosition/歌词字幕水平位置",
             0f,
             new ConfigDescription(
                 "Distance to the left side of the screen (0 is the left, 1920 is the right)/到屏幕左边的距离（0为左边，1920为最右边）",
-                null, new ConfigurationManagerAttributes { Order = 7110 }));
+                null, new ConfigurationManagerAttributes { Order = 6980 }));
 
         LyricSubtitleVerticalPosition = Config.Bind("7LyricSubtitle",
             "LyricSubtitleVerticalPosition/歌词字幕垂直位置",
             200f,
             new ConfigDescription(
                 "Distance to bottom of screen (0 is bottom, 1 is top, note 1080 will go out of screen, should subtract background height)/到屏幕底部的距离（0为底部，1080为顶部，注意1080会超出屏幕，应减去背景高度）",
-                null, new ConfigurationManagerAttributes { Order = 7120 }));
+                null, new ConfigurationManagerAttributes { Order = 6870 }));
 
         EnableLyricSubtitleAnimation = Config.Bind("7LyricSubtitle",
             "LyricSubtitleAnimation/歌词字幕动画",
             true,
             new ConfigDescription("Enable Lyric Subtitle Animation/启用歌词字幕动画", null,
-                new ConfigurationManagerAttributes { Order = 7130 }));
+                new ConfigurationManagerAttributes { Order = 6860 }));
 
         LyricSubtitleFadeInDuration = Config.Bind("7LyricSubtitle",
             "LyricSubtitleFadeInDuration/歌词字幕淡入时长",
             0.5f,
             new ConfigDescription("Lyric Subtitle Fade In Duration in seconds/歌词字幕淡入时长（秒）", null,
-                new ConfigurationManagerAttributes { Order = 7140 }));
+                new ConfigurationManagerAttributes { Order = 6850 }));
 
         LyricSubtitleFadeOutDuration = Config.Bind("7LyricSubtitle",
             "LyricSubtitleFadeOutDuration/歌词字幕淡出时长",
             0.5f,
             new ConfigDescription("Lyric Subtitle Fade Out Duration in seconds/歌词字幕淡出时长（秒）", null,
-                new ConfigurationManagerAttributes { Order = 7150 }));
+                new ConfigurationManagerAttributes { Order = 6840 }));
 
         EnableLyricSubtitleOutline = Config.Bind("7LyricSubtitle",
             "EnableLyricSubtitleOutline/启用歌词字幕描边",
             true,
             new ConfigDescription("Enable Lyric Subtitle Outline/启用歌词字幕描边", null,
-                new ConfigurationManagerAttributes { Order = 7160 }));
+                new ConfigurationManagerAttributes { Order = 6830 }));
 
         LyricSubtitleOutlineColor = Config.Bind("7LyricSubtitle",
             "LyricSubtitleOutlineColor/歌词字幕描边颜色",
             "#000000",
             new ConfigDescription(
                 "Lyric Subtitle Outline Color, use hex color code/歌词字幕描边颜色，使用十六进制颜色代码", null,
-                new ConfigurationManagerAttributes { Order = 7170 }));
+                new ConfigurationManagerAttributes { Order = 6820 }));
 
         LyricSubtitleOutlineOpacity = Config.Bind("7LyricSubtitle",
             "LyricSubtitleOutlineOpacity/歌词字幕描边不透明度",
             0.5f,
             new ConfigDescription("Lyric Subtitle Outline Opacity (0-1)/歌词字幕描边不透明度（0-1）", null,
-                new ConfigurationManagerAttributes { Order = 7180 }));
+                new ConfigurationManagerAttributes { Order = 6810 }));
 
         LyricSubtitleOutlineWidth = Config.Bind("7LyricSubtitle",
             "LyricSubtitleOutlineWidth/歌词字幕描边宽度",
             1f,
             new ConfigDescription("Lyric Subtitle Outline Width in pixels/歌词字幕描边宽度（像素）", null,
-                new ConfigurationManagerAttributes { Order = 7190 }));
+                new ConfigurationManagerAttributes { Order = 6800 }));
 
         # endregion
 
@@ -947,48 +947,48 @@ public class JustAnotherTranslator : BaseUnityPlugin
             VRSubtitleModeEnum.Tablet,
             new ConfigDescription(
                 "VR Subtitle Mode: Tablet=On Control tablet, Space=Floating in world space following head movement/VR字幕模式：Space=跟随头部运动的世界空间悬浮字幕上，Tablet=字幕在控制平板上",
-                null, new ConfigurationManagerAttributes { Order = 8000 }));
+                null, new ConfigurationManagerAttributes { Order = 7990 }));
 
         VRSpaceSubtitleWidth = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleWidth/VR空间字幕宽度",
             510f,
             new ConfigDescription(
                 "VR Space Subtitle Width(1000 unit=1 meter)/VR空间字幕宽度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8010 }));
+                new ConfigurationManagerAttributes { Order = 7980 }));
 
         VRSpaceSubtitleHeight = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleHeight/VR空间字幕高度",
             15f,
             new ConfigDescription(
                 "VR Space Subtitle Height(1000 unit=1 meter)/VR空间字幕高度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8020 }));
+                new ConfigurationManagerAttributes { Order = 7970 }));
 
         VRSpaceSubtitleDistance = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleDistance/VR空间字幕距离",
             0.5f,
             new ConfigDescription(
                 "VR Space Subtitle Distance from center of view in meters/VR空间字幕距离视线中心有多远（米）", null,
-                new ConfigurationManagerAttributes { Order = 8030 }));
+                new ConfigurationManagerAttributes { Order = 7960 }));
 
         VRSpaceSubtitleVerticalOffset = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleVerticalOffset/VR空间字幕垂直偏移",
             20f,
             new ConfigDescription(
                 "VR Space Subtitle Vertical Offset in degrees, positive value to the bottom (relative to center of view)/VR空间字幕垂直偏移，正值向下（度，相对于视线中心）",
-                null, new ConfigurationManagerAttributes { Order = 8040 }));
+                null, new ConfigurationManagerAttributes { Order = 7950 }));
 
         VRSpaceSubtitleHorizontalOffset = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleHorizontalOffset/VR空间字幕水平偏移",
             0f,
             new ConfigDescription(
                 "VR Space Subtitle Horizontal Offset in degrees, positive value to the right (relative to center of view)/VR空间字幕水平偏移，正值向右（度，相对于视线中心）",
-                null, new ConfigurationManagerAttributes { Order = 8050 }));
+                null, new ConfigurationManagerAttributes { Order = 7940 }));
 
         VRSpaceSubtitleTextSizeMultiplier = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleTextSizeMultiplier/VR空间字幕文字大小倍率",
             14f,
             new ConfigDescription("VR Space Subtitle Text Size Multiplier/VR空间字幕文本大小倍数", null,
-                new ConfigurationManagerAttributes { Order = 8060 }));
+                new ConfigurationManagerAttributes { Order = 7930 }));
 
         VRSpaceSubtitleOutlineScaleFactor = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleOutlineScaleFactor/VR空间字幕描边缩放因子",
@@ -996,7 +996,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Space Subtitle Outline Scale Factor, if outline shadow appears, try increasing this value/VR空间字幕描边缩放因子，若出现描边重影请尝试调高此值",
                 null,
-                new ConfigurationManagerAttributes { Order = 8070 }));
+                new ConfigurationManagerAttributes { Order = 7920 }));
 
         VRSpaceSubtitlePixelPerfect = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitlePixelPerfect/VR空间字幕像素完美",
@@ -1004,7 +1004,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Space Subtitle Pixel Perfect(whether to perform anti-aliasing)/VR空间字幕像素完美（是否进行抗锯齿处理）",
                 null,
-                new ConfigurationManagerAttributes { Order = 8080 }));
+                new ConfigurationManagerAttributes { Order = 7910 }));
 
         VRSpaceSubtitleFollowSmoothness = Config.Bind("8VRSubtitle",
             "VRSpaceSubtitleFollowSmoothness/VR空间字幕跟随平滑度",
@@ -1012,7 +1012,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Space Subtitle Follow Smoothness, the higher the value, the faster it follows(set to 5 is about 0.6s to catch 95% of movement)/VR空间字幕跟随平滑度，数值越大跟踪越迅速（设置为 5 则约 0.6s 追上 95% 位移）",
                 null,
-                new ConfigurationManagerAttributes { Order = 8090 }));
+                new ConfigurationManagerAttributes { Order = 7900 }));
 
         // VR平板电脑字幕相关配置
         VRTabletSubtitleWidth = Config.Bind("8VRSubtitle",
@@ -1020,14 +1020,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
             500f,
             new ConfigDescription(
                 "VR Tablet Subtitle Width(1000 unit = 1 meter)/VR平板电脑字幕宽度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8100 }));
+                new ConfigurationManagerAttributes { Order = 7890 }));
 
         VRTabletSubtitleHeight = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleHeight/VR平板电脑字幕高度",
             10f,
             new ConfigDescription(
                 "VR Tablet Subtitle Height(1000 unit = 1 meter)/VR平板电脑字幕高度（1000单位=1米）", null,
-                new ConfigurationManagerAttributes { Order = 8110 }));
+                new ConfigurationManagerAttributes { Order = 7880 }));
 
         VRTabletSubtitleVerticalPosition = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleVerticalPosition/VR平板电脑字幕垂直位置",
@@ -1035,7 +1035,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Tablet Subtitle Vertical Position in meter, 0 is VR tablet center, the larger the value the higher/VR平板电脑字幕垂直位置（米），0 为平板电脑中央，数值越大越往上",
                 null,
-                new ConfigurationManagerAttributes { Order = 8110 }));
+                new ConfigurationManagerAttributes { Order = 7870 }));
 
         VRTabletSubtitleHorizontalPosition = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleHorizontalPosition/VR平板电脑字幕水平位置",
@@ -1043,13 +1043,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Tablet Subtitle Horizontal Position in meters, 0 is VR tablet center, the larger the value the right/VR平板电脑字幕水平位置（米），0 为平板电脑中央，数值越大越往右",
                 null,
-                new ConfigurationManagerAttributes { Order = 8120 }));
+                new ConfigurationManagerAttributes { Order = 7860 }));
 
         VRTabletSubtitleTextSizeMultiplier = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleTextSizeMultiplier/VR平板电脑字幕文字大小倍率",
             12f,
             new ConfigDescription("VR Tablet Subtitle Text Size Multiplier/VR平板电脑字幕文字大小倍率", null,
-                new ConfigurationManagerAttributes { Order = 8130 }));
+                new ConfigurationManagerAttributes { Order = 7850 }));
 
         VRTabletSubtitleOutlineScaleFactor = Config.Bind("8VRSubtitle",
             "VRTabletSubtitleOutlineScaleFactor/VR平板电脑字幕描边缩放因子",
@@ -1057,7 +1057,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Tablet Subtitle Outline Scale Factor, if outline shadow appears, try increasing this value/VR平板电脑字幕描边缩放因子，若出现描边重影请尝试调高此值",
                 null,
-                new ConfigurationManagerAttributes { Order = 8140 }));
+                new ConfigurationManagerAttributes { Order = 7840 }));
 
         VRTabletSubtitlePixelPerfect = Config.Bind("8VRSubtitle",
             "VRTabletSubtitlePixelPerfect/VR平板电脑字幕像素完美",
@@ -1065,7 +1065,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "VR Tablet Subtitle Pixel Perfect(whether to perform anti-aliasing)/VR平板电脑字幕像素完美（是否进行抗锯齿处理）",
                 null,
-                new ConfigurationManagerAttributes { Order = 8150 }));
+                new ConfigurationManagerAttributes { Order = 7830 }));
 
         # endregion
 
@@ -1076,32 +1076,32 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "this section is for translators. If you are not planning to change translate file, please do not enable it, it will slow down the game",
             true,
             new ConfigDescription("this config do nothing", null,
-                new ConfigurationManagerAttributes { Order = 9000 }));
+                new ConfigurationManagerAttributes { Order = 8990 }));
 
         _dumpTip2 = Config.Bind("9Dump",
             "这个部分是为翻译者准备的，如果您不计划改动翻译文件，请不要启用它, 会减慢游戏速度",
             true,
             new ConfigDescription("这个配置不做任何事情", null,
-                new ConfigurationManagerAttributes { Order = 9010 }));
+                new ConfigurationManagerAttributes { Order = 8980 }));
 
         _dumpTip3 = Config.Bind("9Dump",
             "Turn log level to Debug to make it easier to debug and find problems",
             true,
             new ConfigDescription("this config do nothing", null,
-                new ConfigurationManagerAttributes { Order = 9020 }));
+                new ConfigurationManagerAttributes { Order = 8970 }));
 
         _dumpTip4 = Config.Bind("9Dump",
             "在通用设置内将日志等级调至 Debug 能让您更方便的调试，以及排查各类不生效原因",
             true,
             new ConfigDescription("这个配置不做任何事情", null,
-                new ConfigurationManagerAttributes { Order = 9030 }));
+                new ConfigurationManagerAttributes { Order = 8960 }));
 
         EnableTexturesDump = Config.Bind("9Dump",
             "EnableDumpTexture/是否启用纹理转储",
             false,
             new ConfigDescription("Only export textures that have not been replaced/仅转储未替换过的纹理",
                 null,
-                new ConfigurationManagerAttributes { Order = 9040 }));
+                new ConfigurationManagerAttributes { Order = 8950 }));
 
         EnableSpriteDump = Config.Bind("9Dump",
             "EnableDumpSprite/是否启用精灵图转储",
@@ -1109,20 +1109,20 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Only export sprites that have not been replaced, if atlas has been replaced, the sprite from the replaced atlas will be dump/仅转储未替换过的精灵图，若是Atlas图集被替换过，则会转储替换过Atlas上的精灵图",
                 null,
-                new ConfigurationManagerAttributes { Order = 9050 }));
+                new ConfigurationManagerAttributes { Order = 8940 }));
 
         EnableTextDump = Config.Bind("9Dump",
             "EnableDumpText/是否启用文本转储",
             false,
             new ConfigDescription(
                 "Only export text that has not been replaced, write out when the threshold is reached or switching scenes or the game correct exits/仅转储未替换过的文本，达到阈值或切换场景或正确退出游戏时写出",
-                null, new ConfigurationManagerAttributes { Order = 9060 }));
+                null, new ConfigurationManagerAttributes { Order = 8930 }));
 
         TextDumpThreshold = Config.Bind("9Dump",
             "TextDumpThreshold/文本转储阈值",
             20,
             new ConfigDescription("How many lines of text to write out at once/累计多少条文本后写出一次", null,
-                new ConfigurationManagerAttributes { Order = 9070 }));
+                new ConfigurationManagerAttributes { Order = 8920 }));
 
         FlushTextDumpNow = Config.Bind("9Dump",
             "FlushTextDumpNow/立即写出文本",
@@ -1130,7 +1130,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Immediately write out all cached text when the option status changes/立即写出所有已缓存的文本，选项状态变更时立即写出",
                 null,
-                new ConfigurationManagerAttributes { Order = 9080 }));
+                new ConfigurationManagerAttributes { Order = 8910 }));
 
         EnableDumpDanceInfo = Config.Bind("9Dump",
             "EnableDumpDanceInfo/是否启用舞蹈信息转储",
@@ -1138,21 +1138,21 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Dump dance info to danceInfo.csv(after playing a dance)/播放舞蹈后在 danceInfos.csv 内输出舞蹈信息",
                 null,
-                new ConfigurationManagerAttributes { Order = 9090 }));
+                new ConfigurationManagerAttributes { Order = 8900 }));
 
         EnableTermDump = Config.Bind("9Dump",
             "EnableDumpTerm/是否启用Term转储",
             false,
             new ConfigDescription(
                 "Only export term that has not translated, write out when the threshold is reached or switching scenes or the game correct exits/仅转储未替换过的term，达到阈值或切换场景或正确退出游戏时写出",
-                null, new ConfigurationManagerAttributes { Order = 9100 }));
+                null, new ConfigurationManagerAttributes { Order = 8890 }));
 
         TermDumpThreshold = Config.Bind("9Dump",
             "TermDumpThreshold/Term转储阈值",
             20,
             new ConfigDescription("How many lines of term to write out at once/累计多少条term后写出一次",
                 null,
-                new ConfigurationManagerAttributes { Order = 9110 }));
+                new ConfigurationManagerAttributes { Order = 8880 }));
 
         FlushTermDumpNow = Config.Bind("9Dump",
             "FlushTermDumpNow/立即写出Term",
@@ -1160,7 +1160,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Immediately write out all cached term when the option status changes/立即写出所有已缓存的term，选项状态变更时立即写出",
                 null,
-                new ConfigurationManagerAttributes { Order = 9120 }));
+                new ConfigurationManagerAttributes { Order = 8870 }));
 
         PrintOSFont = Config.Bind("9Dump",
             "PrintOSFont/打印OS字体",
@@ -1168,7 +1168,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Prints all installed and available fonts in the system to the console and logs, and prints them immediately when the option status changes/将系统内已安装且可用的字体打印到控制台和日志，选项状态变更时立即打印",
                 null,
-                new ConfigurationManagerAttributes { Order = 9130 }));
+                new ConfigurationManagerAttributes { Order = 8860 }));
 
         # endregion
 
@@ -1179,13 +1179,13 @@ public class JustAnotherTranslator : BaseUnityPlugin
             "This section is used to disable or enable some fixes. If you dont know what you are doing, please do not touch it",
             true,
             new ConfigDescription("this config do nothing", null,
-                new ConfigurationManagerAttributes { Order = 10000 }));
+                new ConfigurationManagerAttributes { Order = 9990 }));
 
         _fixerTip2 = Config.Bind("10Fixer",
             "这一部分用于禁用或启用一些修复补丁，如果你不知道你在做什么，请不要动",
             true,
             new ConfigDescription("this config do nothing", null,
-                new ConfigurationManagerAttributes { Order = 10010 }));
+                new ConfigurationManagerAttributes { Order = 9980 }));
 
         EnableMaidCafeDlcLineBreakCommentFix = Config.Bind("10Fixer",
             "EnableMaidCafeDlcLineBreakCommentFix/启用女仆咖啡厅DLC的弹幕不移动的修复",
@@ -1193,21 +1193,21 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Enabled a fix for the Maid Cafe DLC's bullet chat not moving/启用女仆咖啡厅DLC的弹幕不移动的修复",
                 null,
-                new ConfigurationManagerAttributes { Order = 10020 }));
+                new ConfigurationManagerAttributes { Order = 9970 }));
 
         EnableUIFontReplace = Config.Bind("10Fixer",
             "EnableUIFontReplace/启用UI字体替换",
             false,
             new ConfigDescription(
                 "Enable UI Font Replace/启用 UI 字体替换",
-                null, new ConfigurationManagerAttributes { Order = 10030 }));
+                null, new ConfigurationManagerAttributes { Order = 9960 }));
 
         UIFont = Config.Bind("10Fixer",
             "UIFont/UI字体",
             "Noto Sans CJK SC",
             new ConfigDescription(
                 "This is used to replace the font and requires a font that is already installed on your system. The game's built-in font is NotoSansCJKjp-DemiLight./用于替换字体，需要已经安装在系统中的字体，游戏内置字体为 NotoSansCJKjp-DemiLight",
-                null, new ConfigurationManagerAttributes { Order = 10040 }));
+                null, new ConfigurationManagerAttributes { Order = 9950 }));
 
         # endregion
 

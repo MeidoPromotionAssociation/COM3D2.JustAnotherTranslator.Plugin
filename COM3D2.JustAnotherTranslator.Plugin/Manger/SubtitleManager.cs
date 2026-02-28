@@ -439,7 +439,7 @@ public static class SubtitleManager
             }
 
             LogManager.Warning(
-                $"Invalid speaker color config for {speakerName} ({typeKey}): {colorEntry.SpeakerColor}");
+                $"Invalid speaker color config for {speakerName} ({typeKey}): {colorEntry.SpeakerColor}, regenerate/无效的说话人颜色配置{speakerName} ({typeKey}): {colorEntry.SpeakerColor}，重新生成");
         }
 
         // 兜底：使用哈希生成颜色

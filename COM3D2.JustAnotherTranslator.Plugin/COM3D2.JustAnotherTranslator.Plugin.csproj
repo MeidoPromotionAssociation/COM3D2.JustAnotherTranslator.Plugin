@@ -116,7 +116,8 @@
   <PropertyGroup>
     <Authors>MeidoPromotionAssociation</Authors>
     <Company>MeidoPromotionAssociation</Company>
-    <Copyright>MeidoPromotionAssociation released under the Bsd 3-Clause License</Copyright>
+    <Copyright>Bsd 3-Clause License</Copyright>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+    <Description>https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin</Description>  <!-- For BepInEx.ConfigurationManager -->
   </PropertyGroup>
 </Project>

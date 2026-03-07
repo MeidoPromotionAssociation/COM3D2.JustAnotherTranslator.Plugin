@@ -16,6 +16,8 @@ You can also raise issues or start discussions in the Issues or Discussions tabs
 
 When reporting an issue, please set the plugin's log level to DEBUG, restart the game to reproduce the issue, and then attach the log file located at `COM3D2\COM3D2x64_Data\output_log.txt` with your submission.
 
+If you like it, please light up the Star~
+
 ## Highlights of JAT
 
 **Robust and Independent UI Translation**
@@ -256,6 +258,8 @@ There are 4 main folders in the translation folder of the corresponding language
 您也可以在 Issue 或 Discussions 中提出问题。
 
 在您反馈问题时，请将插件日志等级调至 DEBUG，重启游戏后复现该问题，然后在提交时附上位于 `COM3D2\COM3D2x64_Data\output_log.txt` 的日志文件。
+
+如果您喜欢，请点亮 Star~
 
 ## JAT 的亮点
 

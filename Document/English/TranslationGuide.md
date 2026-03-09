@@ -577,9 +577,11 @@ However, creating a separate Atlas does increase draw calls, which can lead to a
 
 ### **How do I obtain sprites? **
 
-Use an unpacking tool like [AssetStudio](https://github.com/Perfare/AssetStudio) to open the `COM3D2\COM3D2x64_Data` folder.
+Use a Unity unpacking tool such as [Perfare/AssetStudio](https://github.com/Perfare/AssetStudio) or [aelurum/AssetStudio](https://github.com/aelurum/AssetStudio) to open the `COM3D2\COM3D2x64_Data` folder.
 
-Alternatively, you can set the log level to `Debug` in the plugin configuration, enable `EnableDumpSprite/是否启用精灵图导出` in the settings, and then trigger the UI you want to translate in-game.
+Alternatively, you can adjust the log level to `Debug` in the plugin configuration, then enable `EnableDumpSprite/是否启用精灵图导出` in the settings, and then trigger the UI you want to translate in the game.
+
+If a dump is possible, the sprite will be dumped to `COM3D2\BepInEx\JustAnotherTranslator\Dump\UI\Sprite`.
 
 # Texture Replacement
 

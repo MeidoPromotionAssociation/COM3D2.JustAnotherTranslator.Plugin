@@ -61,9 +61,6 @@ public static class LyricPatch
             LogManager.Debug("RhythmActionMgr_Awake_Postfix called");
 
             var musicName = Traverse.Create(__instance).Field<string>("m_UseMusicName").Value;
-            if (string.IsNullOrEmpty(musicName))
-                return;
-
             LyricManger.HandleDanceLoaded(musicName);
         }
         catch (Exception e)
@@ -113,6 +110,55 @@ public static class LyricPatch
         {
             LogManager.Error(
                 $"RhythmActionMgr_RhythmGame_End_Prefix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     记录主舞蹈音频
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="f_strFileName"></param>
+    [HarmonyPatch(typeof(SoundMgr), "PlayDanceBGM")]
+    [HarmonyPostfix]
+    public static void SoundMgr_PlayDanceBGM_Postfix(SoundMgr __instance, string f_strFileName)
+    {
+        try
+        {
+            var audioSource = __instance.GetAudioSourceBgm();
+            if (audioSource == null || audioSource.clip == null)
+                return;
+
+            LyricManger.TrackPlayedDanceAudio(f_strFileName, false);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"SoundMgr_PlayDanceBGM_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     记录并行舞蹈音频
+    /// </summary>
+    /// <param name="__result"></param>
+    /// <param name="f_strFileName"></param>
+    [HarmonyPatch(typeof(SoundMgr), "PlayDanceBGMParallel")]
+    [HarmonyPostfix]
+    public static void SoundMgr_PlayDanceBGMParallel_Postfix(AudioSourceMgr __result,
+        string f_strFileName)
+    {
+        try
+        {
+            if (__result == null || __result.audiosource == null ||
+                __result.audiosource.clip == null)
+                return;
+
+            LyricManger.TrackPlayedDanceAudio(f_strFileName, true);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"SoundMgr_PlayDanceBGMParallel_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
         }
     }
 }

@@ -43,6 +43,49 @@ public static class LyricManger
     /// 主舞蹈Maid名
     private static string _mainDanceMaidName = "";
 
+    /// 当前舞蹈或卡拉OK的歌词目录名
+    private static string _currentLyricFolderName = "";
+
+    /// 当前舞蹈ID
+    private static string _currentDanceId = "";
+
+    /// 当前官方 musicName
+    private static string _currentMusicName = "";
+
+    /// 当前官方 BgmFileName
+    private static string _currentBgmFileName = "";
+
+    /// 当前是否为卡拉OK模式
+    private static bool _currentIsKaraoke;
+
+    /// 当前卡拉OK乐曲ID
+    private static string _currentKaraokeMusicId = "";
+
+    /// 当前卡拉OK的主 .ogg 文件名
+    private static string _currentKaraokeOggFileName = "";
+
+    /// 当前卡拉OK场景名
+    private static string _currentKaraokeSceneName = "";
+
+    /// 当前卡拉OK缩略图名
+    private static string _currentKaraokeThumbnailName = "";
+
+    /// 当前卡拉OK插件类型
+    private static string _currentKaraokePluginType = "";
+
+    /// 当前卡拉OK二进制资源目录
+    private static string _currentKaraokeBinaryFolderName = "";
+
+    /// 当前卡拉OK口型文件列表
+    private static string _currentKaraokeKuchiPakuFileList = "";
+
+    /// 当前实际播放过的 .ogg 文件
+    private static readonly List<string> CurrentPlayedOggFiles = new();
+
+    /// 用于对实际播放过的 .ogg 文件去重
+    private static readonly HashSet<string> CurrentPlayedOggFileSet =
+        new(StringComparer.OrdinalIgnoreCase);
+
 
     /// <summary>
     ///     CsvHelper 配置
@@ -128,6 +171,145 @@ public static class LyricManger
     }
 
     /// <summary>
+    ///     重置当前舞蹈上下文
+    /// </summary>
+    private static void ResetDanceContext()
+    {
+        _currentLyricFolderName = "";
+        _currentDanceId = "";
+        _currentMusicName = "";
+        _currentBgmFileName = "";
+        _currentIsKaraoke = false;
+        _currentKaraokeMusicId = "";
+        _currentKaraokeOggFileName = "";
+        _currentKaraokeSceneName = "";
+        _currentKaraokeThumbnailName = "";
+        _currentKaraokePluginType = "";
+        _currentKaraokeBinaryFolderName = "";
+        _currentKaraokeKuchiPakuFileList = "";
+        _mainDanceMaidName = "";
+
+        CurrentPlayedOggFiles.Clear();
+        CurrentPlayedOggFileSet.Clear();
+    }
+
+    /// <summary>
+    ///     捕获当前卡拉OK上下文
+    /// </summary>
+    /// <param name="karaokeData"></param>
+    private static void CaptureKaraokeContext(KaraokeDataManager.MusicData karaokeData)
+    {
+        if (karaokeData == null)
+            return;
+
+        _currentKaraokeMusicId = karaokeData.ID.ToString(CultureInfo.InvariantCulture);
+        _currentKaraokeOggFileName = karaokeData.strFileNameOgg ?? string.Empty;
+        _currentKaraokeSceneName = karaokeData.strSceneName ?? string.Empty;
+        _currentKaraokeThumbnailName = karaokeData.strThumbnailName ?? string.Empty;
+        _currentKaraokePluginType = karaokeData.pluginType ?? string.Empty;
+        _currentKaraokeBinaryFolderName = karaokeData.binaryFolderName ?? string.Empty;
+        _currentKaraokeKuchiPakuFileList =
+            StringTool.JoinStringList(karaokeData.kuchiPakuFileList) ?? string.Empty;
+    }
+
+    /// <summary>
+    ///     输出当前卡拉OK上下文
+    /// </summary>
+    /// <param name="selectDanceData"></param>
+    private static void LogKaraokeContext(DanceData selectDanceData)
+    {
+        var danceDataId = selectDanceData != null
+            ? selectDanceData.ID.ToString(CultureInfo.InvariantCulture)
+            : string.Empty;
+        var danceBinaryFolderName = selectDanceData?.binaryFolderName ?? string.Empty;
+        var danceKuchiPakuFileList =
+            StringTool.JoinStringList(selectDanceData?.kuchiPakuFileList) ?? string.Empty;
+
+        var lyricFolderSource = string.Equals(_currentLyricFolderName, _currentKaraokeMusicId,
+            StringComparison.Ordinal)
+            ? "KaraokeMusicId"
+            : "fallback BgmFileName";
+
+        LogManager.Info(
+            $"Karaoke lyric folder resolved to {lyricFolderSource}: {_currentLyricFolderName} (KaraokeMusicId: {_currentKaraokeMusicId}, KaraokeOggFileName: {_currentKaraokeOggFileName}, ScriptInjectedBgmFileName: {_currentBgmFileName}, MusicName: {_currentMusicName})/卡拉OK歌词目录解析结果: {_currentLyricFolderName}（优先主键为 KaraokeMusicId: {_currentKaraokeMusicId}，KaraokeOggFileName: {_currentKaraokeOggFileName}，脚本注入的 BgmFileName: {_currentBgmFileName}，MusicName: {_currentMusicName}）");
+        LogManager.Info(
+            $"Karaoke data summary - KaraokeMusicId: {_currentKaraokeMusicId}, KaraokeOggFileName: {_currentKaraokeOggFileName}, KaraokeSceneName: {_currentKaraokeSceneName}, KaraokeThumbnailName: {_currentKaraokeThumbnailName}, KaraokePluginType: {_currentKaraokePluginType}, KaraokeBinaryFolderName: {_currentKaraokeBinaryFolderName}, KaraokeKuchiPakuFileList: {_currentKaraokeKuchiPakuFileList}/卡拉OK数据摘要 - KaraokeMusicId: {_currentKaraokeMusicId}，KaraokeOggFileName: {_currentKaraokeOggFileName}，KaraokeSceneName: {_currentKaraokeSceneName}，KaraokeThumbnailName: {_currentKaraokeThumbnailName}，KaraokePluginType: {_currentKaraokePluginType}，KaraokeBinaryFolderName: {_currentKaraokeBinaryFolderName}，KaraokeKuchiPakuFileList: {_currentKaraokeKuchiPakuFileList}");
+        LogManager.Info(
+            $"Karaoke injected DanceData summary - DanceDataId: {danceDataId}, DanceDataBgmFileName: {_currentBgmFileName}, DanceDataBinaryFolderName: {danceBinaryFolderName}, DanceDataKuchiPakuFileList: {danceKuchiPakuFileList}/卡拉OK注入 DanceData 摘要 - DanceDataId: {danceDataId}，DanceDataBgmFileName: {_currentBgmFileName}，DanceDataBinaryFolderName: {danceBinaryFolderName}，DanceDataKuchiPakuFileList: {danceKuchiPakuFileList}");
+    }
+
+    /// <summary>
+    ///     将传入的音频文件名规范化为用于日志和 CSV 的 .ogg 文件名
+    /// </summary>
+    /// <param name="audioFileName"></param>
+    /// <returns></returns>
+    private static string NormalizePlayedOggFileName(string audioFileName)
+    {
+        if (StringTool.IsNullOrWhiteSpace(audioFileName))
+            return null;
+
+        var normalizedPath = audioFileName.Replace('\\', '/');
+        var fileName = Path.GetFileName(normalizedPath);
+        if (StringTool.IsNullOrWhiteSpace(fileName))
+            fileName = normalizedPath;
+
+        if (string.IsNullOrEmpty(Path.GetExtension(fileName)))
+            fileName += ".ogg";
+
+        return fileName;
+    }
+
+    /// <summary>
+    ///     记录当前舞蹈实际播放的 .ogg 文件
+    /// </summary>
+    /// <param name="audioFileName"></param>
+    /// <param name="isParallel"></param>
+    public static void TrackPlayedDanceAudio(string audioFileName, bool isParallel)
+    {
+        if (string.IsNullOrEmpty(_currentLyricFolderName))
+            return;
+
+        var normalizedFileName = NormalizePlayedOggFileName(audioFileName);
+        if (string.IsNullOrEmpty(normalizedFileName))
+            return;
+
+        if (!CurrentPlayedOggFileSet.Add(normalizedFileName))
+            return;
+
+        CurrentPlayedOggFiles.Add(normalizedFileName);
+
+        var modeNameEn = _currentIsKaraoke ? "karaoke" : "dance";
+        var modeNameZh = _currentIsKaraoke ? "卡拉OK" : "舞蹈";
+        var audioTypeEn = isParallel ? "parallel track" : "main track";
+        var audioTypeZh = isParallel ? "并行轨道" : "主轨道";
+        if (_currentIsKaraoke)
+            LogManager.Info(
+                $"Tracked played {modeNameEn} audio ({audioTypeEn}): {normalizedFileName} (KaraokeMusicId: {_currentKaraokeMusicId}, LyricFolderName: {_currentLyricFolderName}, KaraokeOggFileName: {_currentKaraokeOggFileName}, DanceDataBgmFileName: {_currentBgmFileName})/记录到卡拉OK实际播放音频（{audioTypeZh}）: {normalizedFileName}（KaraokeMusicId: {_currentKaraokeMusicId}，歌词目录名: {_currentLyricFolderName}，KaraokeOggFileName: {_currentKaraokeOggFileName}，DanceDataBgmFileName: {_currentBgmFileName}）");
+        else
+            LogManager.Info(
+                $"Tracked played {modeNameEn} audio ({audioTypeEn}): {normalizedFileName}/记录到{modeNameZh}实际播放音频（{audioTypeZh}）: {normalizedFileName}");
+
+        TryDumpDanceInfo();
+    }
+
+    /// <summary>
+    ///     输出当前舞蹈实际播放音频摘要
+    /// </summary>
+    private static void LogTrackedDanceAudioSummary()
+    {
+        if (string.IsNullOrEmpty(_currentLyricFolderName))
+            return;
+
+        var playedOggFiles = StringTool.JoinStringList(CurrentPlayedOggFiles) ?? string.Empty;
+        if (_currentIsKaraoke)
+            LogManager.Info(
+                $"Karaoke audio summary - KaraokeMusicId: {_currentKaraokeMusicId}, LyricFolderName: {_currentLyricFolderName}, KaraokeOggFileName: {_currentKaraokeOggFileName}, PlayedOggFiles: {playedOggFiles}/卡拉OK音频摘要 - KaraokeMusicId: {_currentKaraokeMusicId}，歌词目录名: {_currentLyricFolderName}，KaraokeOggFileName: {_currentKaraokeOggFileName}，实际播放Ogg: {playedOggFiles}");
+        else
+            LogManager.Info(
+                $"Dance audio summary - Id: {_currentDanceId}, LyricFolderName: {_currentLyricFolderName}, PlayedOggFiles: {playedOggFiles}/舞蹈音频摘要 - ID: {_currentDanceId}，歌词目录名: {_currentLyricFolderName}，实际播放Ogg: {playedOggFiles}");
+    }
+
+    /// <summary>
     ///     将 DanceData 映射为 DanceInfoCsvEntry（列表序列化为逗号分隔字符串）
     /// </summary>
     /// <param name="data"></param>
@@ -142,6 +324,7 @@ public static class LyricManger
             Title = data.title,
 
             MusicName = null,
+            LyricFolderName = null,
             TranslatedTitle = null,
             TranslatedCommentaryText = null,
             Mode = null,
@@ -154,6 +337,7 @@ public static class LyricManger
             SampleImageName = data.sample_image_name,
             CommentaryText = data.commentary_text,
             BgmFileName = data.bgm_file_name,
+            PlayedOggFiles = null,
 
             PresetName = StringTool.JoinStringList(data.preset_name),
             ScenarioProgress = data.scenario_progress,
@@ -189,34 +373,45 @@ public static class LyricManger
     }
 
     /// <summary>
-    ///     将舞曲信息写入汇总文件
+    ///     根据当前舞蹈上下文写入汇总文件
     /// </summary>
-    /// <param name="musicName"></param>
-    /// <param name="isKaraoke"></param>
-    /// <param name="bgmFileName"></param>
-    public static void DumpDanceInfo(string musicName, bool isKaraoke, string bgmFileName)
+    private static void DumpDanceInfo()
     {
         try
         {
-            if (DanceMain.SelectDanceData == null)
+            if (string.IsNullOrEmpty(_currentLyricFolderName))
                 return;
 
-            var infoEntry = MapDanceDataToCsvEntry(DanceMain.SelectDanceData);
-            if (infoEntry != null)
+            var selectDanceData = DanceMain.SelectDanceData;
+            if (_currentIsKaraoke)
             {
-                TextTranslateManger.GetTranslateText(infoEntry.Title, out var translatedTitle);
-                TextTranslateManger.GetTranslateText(infoEntry.CommentaryText,
-                    out var translatedCommentaryText);
+                var karaokeInfoEntry = BuildKaraokeInfoCsvEntry(selectDanceData);
+                if (karaokeInfoEntry == null)
+                    return;
 
-                var mode = isKaraoke ? "Karaoke" : "Dance";
-
-                infoEntry.MusicName = isKaraoke ? bgmFileName : musicName;
-                infoEntry.TranslatedTitle = translatedTitle;
-                infoEntry.TranslatedCommentaryText = translatedCommentaryText;
-                infoEntry.Mode = mode;
-
-                UpsertDanceInfoSummary(infoEntry, isKaraoke);
+                UpsertKaraokeInfoSummary(karaokeInfoEntry);
+                return;
             }
+
+            if (selectDanceData == null)
+                return;
+
+            var infoEntry = MapDanceDataToCsvEntry(selectDanceData);
+            if (infoEntry == null)
+                return;
+
+            TextTranslateManger.GetTranslateText(infoEntry.Title, out var translatedTitle);
+            TextTranslateManger.GetTranslateText(infoEntry.CommentaryText,
+                out var translatedCommentaryText);
+
+            infoEntry.MusicName = _currentMusicName;
+            infoEntry.LyricFolderName = _currentLyricFolderName;
+            infoEntry.TranslatedTitle = translatedTitle;
+            infoEntry.TranslatedCommentaryText = translatedCommentaryText;
+            infoEntry.Mode = "Dance";
+            infoEntry.PlayedOggFiles = StringTool.JoinStringList(CurrentPlayedOggFiles);
+
+            UpsertDanceInfoSummary(infoEntry);
         }
         catch (Exception e)
         {
@@ -225,15 +420,68 @@ public static class LyricManger
     }
 
     /// <summary>
-    ///     Upsert 舞曲信息到汇总文件 danceInfos.csv 或 danceInfosKaraoke.csv
+    ///     按配置决定是否转储当前舞蹈信息
+    /// </summary>
+    private static KaraokeInfoCsvEntry BuildKaraokeInfoCsvEntry(DanceData selectDanceData)
+    {
+        var title = selectDanceData?.title;
+        var commentaryText = selectDanceData?.commentary_text;
+        var translatedTitle = string.Empty;
+        var translatedCommentaryText = string.Empty;
+
+        if (!string.IsNullOrEmpty(title))
+            TextTranslateManger.GetTranslateText(title, out translatedTitle);
+
+        if (!string.IsNullOrEmpty(commentaryText))
+            TextTranslateManger.GetTranslateText(commentaryText, out translatedCommentaryText);
+
+        return new KaraokeInfoCsvEntry
+        {
+            KaraokeMusicId = _currentKaraokeMusicId,
+            LyricFolderName = _currentLyricFolderName,
+            Title = title,
+            TranslatedTitle = translatedTitle,
+            CommentaryText = commentaryText,
+            TranslatedCommentaryText = translatedCommentaryText,
+            KaraokeOggFileName = _currentKaraokeOggFileName,
+            PlayedOggFiles = StringTool.JoinStringList(CurrentPlayedOggFiles),
+            KaraokeSceneName = _currentKaraokeSceneName,
+            KaraokeThumbnailName = _currentKaraokeThumbnailName,
+            KaraokePluginType = _currentKaraokePluginType,
+            KaraokeBinaryFolderName = _currentKaraokeBinaryFolderName,
+            KaraokeKuchiPakuFileList = _currentKaraokeKuchiPakuFileList,
+            DanceDataId = selectDanceData != null
+                ? selectDanceData.ID.ToString(CultureInfo.InvariantCulture)
+                : string.Empty,
+            DanceDataBgmFileName = selectDanceData?.bgm_file_name ?? _currentBgmFileName,
+            DanceDataBinaryFolderName = selectDanceData?.binaryFolderName ?? string.Empty,
+            DanceDataKuchiPakuFileList =
+                StringTool.JoinStringList(selectDanceData?.kuchiPakuFileList) ?? string.Empty,
+            DanceDataCsvFolderName = selectDanceData?.csvFolderName ?? string.Empty,
+            ObservedMusicName = _currentMusicName,
+            SubtitleSheetName = selectDanceData?.SubtitleSheetName ?? string.Empty,
+            DanceSceneName = selectDanceData?.scene_name ?? string.Empty,
+            Mode = "Karaoke"
+        };
+    }
+
+    private static void TryDumpDanceInfo()
+    {
+        if (!JustAnotherTranslator.EnableDumpDanceInfo.Value)
+            return;
+
+        DumpDanceInfo();
+    }
+
+    /// <summary>
+    ///     Upsert 普通舞曲信息到汇总文件 danceInfos.csv
     /// </summary>
     /// <param name="entry">要写入的条目</param>
-    /// <param name="isKaraoke">是否为卡拉OK模式</param>
-    private static void UpsertDanceInfoSummary(DanceInfoCsvEntry entry, bool isKaraoke)
+    private static void UpsertDanceInfoSummary(DanceInfoCsvEntry entry)
     {
         if (entry == null) return;
 
-        var key = isKaraoke ? entry.BgmFileName : entry.Id;
+        var key = entry.Id;
         if (string.IsNullOrEmpty(key))
         {
             LogManager.Error(
@@ -243,17 +491,7 @@ public static class LyricManger
 
         try
         {
-            var summaryPath = "";
-
-            if (isKaraoke)
-            {
-                summaryPath = Path.Combine(JustAnotherTranslator.LyricPath, "_Karaoke");
-                summaryPath = Path.Combine(summaryPath, "danceInfosKaraoke.csv");
-            }
-            else
-            {
-                summaryPath = Path.Combine(JustAnotherTranslator.LyricPath, "danceInfos.csv");
-            }
+            var summaryPath = Path.Combine(JustAnotherTranslator.LyricPath, "danceInfos.csv");
 
             Directory.CreateDirectory(Path.GetDirectoryName(summaryPath));
 
@@ -272,7 +510,7 @@ public static class LyricManger
                 var existing = list[i];
                 if (existing == null) continue;
 
-                var existingKey = isKaraoke ? existing.BgmFileName : existing.Id;
+                var existingKey = existing.Id;
                 if (string.Equals(existingKey, key, StringComparison.Ordinal))
                 {
                     list[i] = entry;
@@ -284,10 +522,7 @@ public static class LyricManger
             if (!replaced) list.Add(entry);
 
             // 根据模式选择排序方式
-            if (isKaraoke)
-                list.Sort(CompareDanceInfoByBgmFileName);
-            else
-                list.Sort(CompareDanceInfoById);
+            list.Sort(CompareDanceInfoById);
 
             // new UTF8Encoding(true) make sure it's UTF-8-BOM
             using (var writer = new StreamWriter(summaryPath, false, new UTF8Encoding(true)))
@@ -318,11 +553,102 @@ public static class LyricManger
     }
 
     /// <summary>
-    ///     比较 DanceInfoCsvEntry 的 Id
+    ///     Upsert 卡拉OK模式舞蹈信息到汇总文件 danceInfosKaraoke.csv
     /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
-    /// <returns></returns>
+    /// <param name="entry">要写入的条目</param>
+    private static void UpsertKaraokeInfoSummary(KaraokeInfoCsvEntry entry)
+    {
+        if (entry == null) return;
+
+        var key = entry.KaraokeMusicId;
+        if (string.IsNullOrEmpty(key))
+        {
+            LogManager.Warning(
+                "Upsert karaoke info skipped: KaraokeMusicId is null or empty/跳过写入卡拉OK汇总：KaraokeMusicId 为空");
+            return;
+        }
+
+        try
+        {
+            var summaryPath = Path.Combine(JustAnotherTranslator.KaraokeLyricPath,
+                "danceInfosKaraoke.csv");
+            Directory.CreateDirectory(Path.GetDirectoryName(summaryPath));
+
+            var list = new List<KaraokeInfoCsvEntry>();
+            if (File.Exists(summaryPath))
+                try
+                {
+                    using (var reader = new StreamReader(summaryPath, Encoding.UTF8, true, 4096))
+                    using (var csv = new CsvReader(reader, CsvConfig))
+                    {
+                        foreach (var r in csv.GetRecords<KaraokeInfoCsvEntry>())
+                            if (r != null && !string.IsNullOrEmpty(r.KaraokeMusicId))
+                                list.Add(r);
+                    }
+                }
+                catch (Exception e)
+                {
+                    LogManager.Warning(
+                        $"Existing danceInfosKaraoke.csv could not be parsed with the new karaoke schema and will be rebuilt/旧版 danceInfosKaraoke.csv 无法按新版卡拉OK结构解析，将重建: {e.Message}");
+                }
+
+            var replaced = false;
+            for (var i = 0; i < list.Count; i++)
+            {
+                var existing = list[i];
+                if (existing == null) continue;
+
+                if (string.Equals(existing.KaraokeMusicId, key, StringComparison.Ordinal))
+                {
+                    list[i] = entry;
+                    replaced = true;
+                    break;
+                }
+            }
+
+            if (!replaced) list.Add(entry);
+
+            list.Sort(CompareKaraokeInfoByMusicId);
+
+            using (var writer = new StreamWriter(summaryPath, false, new UTF8Encoding(true)))
+            using (var csv = new CsvWriter(writer, CsvConfig))
+            {
+                csv.WriteHeader(typeof(KaraokeInfoCsvEntry));
+#if COM3D25_UNITY_2022
+                csv.NextRecord();
+#endif
+                foreach (var r in list)
+                {
+                    csv.WriteRecord(r);
+#if COM3D25_UNITY_2022
+                    csv.NextRecord();
+#endif
+                }
+#if !COM3D25_UNITY_2022
+                csv.NextRecord();
+#endif
+            }
+
+            LogManager.Info($"Upsert karaoke info succeeded/写入 {Path.GetFileName(summaryPath)} 成功");
+        }
+        catch (Exception e)
+        {
+            LogManager.Error($"Upsert karaoke info failed/写入卡拉OK汇总失败: {e.Message}");
+        }
+    }
+
+
+    /// <summary>
+    ///     通过 ID 比较两个 <see cref="DanceInfoCsvEntry" /> 对象。
+    /// </summary>
+    /// <param name="a">要比较的第一个 <see cref="DanceInfoCsvEntry" /> 对象。</param>
+    /// <param name="b">要比较的第二个 <see cref="DanceInfoCsvEntry" /> 对象。</param>
+    /// <returns>
+    ///     返回一个整数，指示被比较对象的相对顺序。
+    ///     如果 <paramref name="a" /> 小于 <paramref name="b" />，则返回小于零的值。
+    ///     如果 <paramref name="a" /> 等于 <paramref name="b" />，则返回零。
+    ///     如果 <paramref name="a" /> 大于 <paramref name="b" />，则返回大于零的值。
+    /// </returns>
     private static int CompareDanceInfoById(DanceInfoCsvEntry a, DanceInfoCsvEntry b)
     {
         if (a == null && b == null) return 0;
@@ -339,20 +665,31 @@ public static class LyricManger
         return string.Compare(sa, sb, StringComparison.Ordinal);
     }
 
+
     /// <summary>
-    ///     比较 DanceInfoCsvEntry 的 BgmFileName
+    ///     根据 KaraokeMusicId 属性比较两个 KaraokeInfoCsvEntry 实例。
+    ///     如果 KaraokeMusicId 值为整数，则按数值进行比较；
+    ///     否则，按字符串进行比较。
     /// </summary>
-    /// <param name="a"></param>
-    /// <param name="b"></param>
-    /// <returns></returns>
-    private static int CompareDanceInfoByBgmFileName(DanceInfoCsvEntry a, DanceInfoCsvEntry b)
+    /// <param name="a">要比较的第一个 KaraokeInfoCsvEntry 实例。</param>
+    /// <param name="b">要比较的第二个 KaraokeInfoCsvEntry 实例。</param>
+    /// <returns>
+    ///     一个整数值，指示条目的相对顺序：
+    ///     如果两者相等或为空，则返回 0；如果第一个小于第二个，则返回 -1；
+    ///     如果第一个大于第二个，则返回 1。
+    /// </returns>
+    private static int CompareKaraokeInfoByMusicId(KaraokeInfoCsvEntry a, KaraokeInfoCsvEntry b)
     {
         if (a == null && b == null) return 0;
         if (a == null) return -1;
         if (b == null) return 1;
 
-        var sa = a.BgmFileName ?? string.Empty;
-        var sb = b.BgmFileName ?? string.Empty;
+        var sa = a.KaraokeMusicId ?? string.Empty;
+        var sb = b.KaraokeMusicId ?? string.Empty;
+
+        int ia, ib;
+        if (int.TryParse(sa, out ia) && int.TryParse(sb, out ib))
+            return ia.CompareTo(ib);
 
         return string.Compare(sa, sb, StringComparison.Ordinal);
     }
@@ -364,6 +701,7 @@ public static class LyricManger
     {
         ClearLyric();
         _rhythmActionMgr = null;
+        ResetDanceContext();
 
         if (_playbackMonitorCoroutineID != null)
         {
@@ -474,51 +812,90 @@ public static class LyricManger
     /// <param name="musicName"></param>
     public static void HandleDanceLoaded(string musicName)
     {
-        if (string.IsNullOrEmpty(musicName))
+        ClearLyric();
+        ResetDanceContext();
+
+        _currentMusicName = musicName ?? string.Empty;
+        _currentIsKaraoke = DanceMain.KaraokeMode;
+
+        var selectDanceData = DanceMain.SelectDanceData;
+        if (selectDanceData == null)
         {
-            LogManager.Warning("musicName is null, subtitle will not be displayed/音乐名称为空，字幕将不会显示");
+            LogManager.Warning(
+                "DanceMain.SelectDanceData is null, subtitle will not be displayed/选择的舞蹈数据为空，字幕将不会显示");
             return;
         }
 
+        _currentDanceId = selectDanceData.ID.ToString(CultureInfo.InvariantCulture);
+        _currentBgmFileName = selectDanceData.bgm_file_name ?? string.Empty;
 
-        var path = Path.Combine(JustAnotherTranslator.LyricPath, musicName);
-        var isKaraoke = DanceMain.KaraokeMode;
-        var bgmFileName = "";
+        var path = JustAnotherTranslator.LyricPath;
 
-        LogManager.Info($"Current dance name (musicName)/当前舞蹈（musicName）: {musicName}");
+        LogManager.Info($"Current dance name (musicName)/当前舞蹈（musicName）: {_currentMusicName}");
 
-
-        // 如果是卡拉OK模式，那么 MusicName 是无效的，ID 也是无效的（0），只有 BgmFileName 是有效的
-        if (isKaraoke)
+        if (_currentIsKaraoke)
         {
-            if (DanceMain.SelectDanceData == null)
+            var selectKaraokeData = DanceMain.SelectKaraokeData;
+            CaptureKaraokeContext(selectKaraokeData);
+            _currentLyricFolderName = _currentKaraokeMusicId;
+
+            if (string.IsNullOrEmpty(_currentLyricFolderName))
+            {
+                _currentLyricFolderName = _currentBgmFileName;
+
+                if (!string.IsNullOrEmpty(_currentLyricFolderName))
+                    LogManager.Warning(
+                        $"KaraokeMusicId is null, fallback to BgmFileName for lyric folder: {_currentLyricFolderName}/KaraokeMusicId 为空，歌词目录回退到 BgmFileName: {_currentLyricFolderName}");
+            }
+
+            if (selectKaraokeData == null)
+                LogManager.Warning(
+                    "DanceMain.SelectKaraokeData is null, karaoke diagnostics will rely on the injected DanceData only/当前 DanceMain.SelectKaraokeData 为空，卡拉OK诊断将只能依赖注入后的 DanceData");
+
+            if (string.IsNullOrEmpty(_currentLyricFolderName))
             {
                 LogManager.Warning(
-                    "DanceMain.SelectDanceData is null, subtitle will not be displayed/选择的舞蹈数据为空，字幕将不会显示");
+                    "BgmFileName is null, subtitle will not be displayed/BgmFileName 为空，字幕将不会显示");
                 return;
             }
 
-            bgmFileName = DanceMain.SelectDanceData.bgm_file_name;
+            Directory.CreateDirectory(JustAnotherTranslator.KaraokeLyricPath);
+            path = Path.Combine(JustAnotherTranslator.KaraokeLyricPath, _currentLyricFolderName);
+            LogManager.Info(
+                $"Mode: Karaoke, Current dance name (musicName)/模式: 卡拉OK，当前观察到的 musicName: {_currentMusicName}");
+            LogKaraokeContext(selectDanceData);
 
             LogManager.Info(
-                $"Mode: Karaoke, Current dance internal name (BgmFileName)/模式：卡拉OK，当前舞蹈内部名称（BgmFileName）: {bgmFileName}");
+                $"Mode: Karaoke, Current dance internal name (DanceData.bgm_file_name)/模式：卡拉OK，当前注入后的 DanceData.bgm_file_name: {_currentBgmFileName}");
+            LogManager.Info(
+                $"Karaoke lyric folder resolved summary/卡拉OK歌词目录解析摘要: {_currentLyricFolderName}");
 
-            path = Path.Combine(JustAnotherTranslator.LyricPath, "_Karaoke");
-            Directory.CreateDirectory(path);
-            path = Path.Combine(path, bgmFileName);
+            if (DanceMain.SelectKaraokeData != null)
+                LogManager.Info(
+                    $"Observed KaraokeDataManager.MusicData.ID: {DanceMain.SelectKaraokeData.ID}/观察到的卡拉OK MusicData.ID: {DanceMain.SelectKaraokeData.ID}");
         }
         else
         {
-            LogManager.Info(
-                $"Mode: Dance, Current dance internal name (musicName)/模式：舞蹈，当前舞蹈内部名称（musicName）: {musicName}");
-        }
+            _currentLyricFolderName = _currentDanceId;
 
+            if (string.IsNullOrEmpty(_currentLyricFolderName))
+            {
+                LogManager.Warning(
+                    "dance ID is null, subtitle will not be displayed/舞蹈 ID 为空，字幕将不会显示");
+                return;
+            }
+
+            path = Path.Combine(path, _currentLyricFolderName);
+
+            LogManager.Info(
+                $"Mode: Dance, Current dance internal name (musicName)/模式：舞蹈，当前舞蹈内部名称（musicName）: {_currentMusicName}");
+            LogManager.Info(
+                $"Dance lyric folder resolved to ID: {_currentLyricFolderName} (MusicName: {_currentMusicName}, CsvFolderName: {selectDanceData.csvFolderName})/舞蹈歌词目录按 ID 解析: {_currentLyricFolderName}（MusicName: {_currentMusicName}，CsvFolderName: {selectDanceData.csvFolderName}）");
+        }
 
         CreateMusicPath(path);
         TryToLoadLyric(path);
-
-        if (JustAnotherTranslator.EnableDumpDanceInfo.Value)
-            DumpDanceInfo(musicName, isKaraoke, bgmFileName);
+        TryDumpDanceInfo();
     }
 
     /// <summary>
@@ -537,6 +914,8 @@ public static class LyricManger
         else
             _mainDanceMaidName = "";
 
+        TryDumpDanceInfo();
+
         // Start the playback monitor coroutine
         if (_playbackMonitorCoroutineID == null)
             _playbackMonitorCoroutineID = CoroutineManager.LaunchCoroutine(PlaybackMonitor());
@@ -547,6 +926,9 @@ public static class LyricManger
     /// </summary>
     public static void HandleDanceEnd()
     {
+        LogTrackedDanceAudioSummary();
+        TryDumpDanceInfo();
+
         // Stop the playback monitor coroutine
         if (_playbackMonitorCoroutineID != null)
         {
@@ -556,6 +938,8 @@ public static class LyricManger
 
         ClearLyric();
         SubtitleComponentManager.DestroyAllSubtitleComponents();
+        _rhythmActionMgr = null;
+        ResetDanceContext();
     }
 
     /// <summary>
@@ -684,6 +1068,7 @@ public static class LyricManger
         // 自定义字段或移动过顺序
         [CanBeNull] public string Id { get; set; }
         [CanBeNull] public string MusicName { get; set; }
+        [CanBeNull] public string LyricFolderName { get; set; }
         [CanBeNull] public string Title { get; set; }
         [CanBeNull] public string TranslatedTitle { get; set; }
         [CanBeNull] public string CommentaryText { get; set; }
@@ -699,6 +1084,7 @@ public static class LyricManger
         public int? SelectCharaNum { get; set; }
         [CanBeNull] public string SampleImageName { get; set; }
         [CanBeNull] public string BgmFileName { get; set; }
+        [CanBeNull] public string PlayedOggFiles { get; set; } // 实际播放过的 .ogg，使用竖线(|)分隔
 
         // 预设、进度与标签
         [CanBeNull] public string PresetName { get; set; } // 多值用竖线(|)分隔
@@ -733,5 +1119,31 @@ public static class LyricManger
         // 过滤器
         [CanBeNull] public string PersonalityFilter { get; set; } // 竖线(|)分隔
         [CanBeNull] public string BodyFilterMode { get; set; }
+    }
+
+    private class KaraokeInfoCsvEntry
+    {
+        [CanBeNull] public string KaraokeMusicId { get; set; }
+        [CanBeNull] public string LyricFolderName { get; set; }
+        [CanBeNull] public string Title { get; set; }
+        [CanBeNull] public string TranslatedTitle { get; set; }
+        [CanBeNull] public string CommentaryText { get; set; }
+        [CanBeNull] public string TranslatedCommentaryText { get; set; }
+        [CanBeNull] public string KaraokeOggFileName { get; set; }
+        [CanBeNull] public string PlayedOggFiles { get; set; }
+        [CanBeNull] public string KaraokeSceneName { get; set; }
+        [CanBeNull] public string KaraokeThumbnailName { get; set; }
+        [CanBeNull] public string KaraokePluginType { get; set; }
+        [CanBeNull] public string KaraokeBinaryFolderName { get; set; }
+        [CanBeNull] public string KaraokeKuchiPakuFileList { get; set; }
+        [CanBeNull] public string DanceDataId { get; set; }
+        [CanBeNull] public string DanceDataBgmFileName { get; set; }
+        [CanBeNull] public string DanceDataBinaryFolderName { get; set; }
+        [CanBeNull] public string DanceDataKuchiPakuFileList { get; set; }
+        [CanBeNull] public string DanceDataCsvFolderName { get; set; }
+        [CanBeNull] public string ObservedMusicName { get; set; }
+        [CanBeNull] public string SubtitleSheetName { get; set; }
+        [CanBeNull] public string DanceSceneName { get; set; }
+        [CanBeNull] public string Mode { get; set; }
     }
 }

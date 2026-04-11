@@ -236,6 +236,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string TranslationTextPath;
     public static string TextureReplacePath;
     public static string LyricPath;
+    public static string KaraokeLyricPath;
     public static string UIPath;
     public static string DumpUIPath;
     public static string UITextPath;
@@ -303,6 +304,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         TranslationTextPath = Path.Combine(TargetLanguePath, "Text");
         TextureReplacePath = Path.Combine(TargetLanguePath, "Texture");
         LyricPath = Path.Combine(TargetLanguePath, "Lyric");
+        KaraokeLyricPath = Path.Combine(LyricPath, "_Karaoke");
         UIPath = Path.Combine(TargetLanguePath, "UI");
         UITextPath = Path.Combine(UIPath, "Text");
         UISpritePath = Path.Combine(UIPath, "Sprite");
@@ -1229,6 +1231,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             Directory.CreateDirectory(TranslationTextPath);
             Directory.CreateDirectory(TextureReplacePath);
             Directory.CreateDirectory(LyricPath);
+            Directory.CreateDirectory(KaraokeLyricPath);
             Directory.CreateDirectory(UIPath);
             Directory.CreateDirectory(DumpUIPath);
             Directory.CreateDirectory(UITextPath);
@@ -1426,6 +1429,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             TranslationTextPath = Path.Combine(TargetLanguePath, "Text");
             TextureReplacePath = Path.Combine(TargetLanguePath, "Texture");
             LyricPath = Path.Combine(TargetLanguePath, "Lyric");
+            KaraokeLyricPath = Path.Combine(LyricPath, "_Karaoke");
             UIPath = Path.Combine(TargetLanguePath, "UI");
             DumpUIPath = Path.Combine(TranslationRootPath, "DumpUI");
             UITextPath = Path.Combine(UIPath, "Text");
@@ -1443,6 +1447,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 Directory.CreateDirectory(TranslationTextPath);
                 Directory.CreateDirectory(TextureReplacePath);
                 Directory.CreateDirectory(LyricPath);
+                Directory.CreateDirectory(KaraokeLyricPath);
                 Directory.CreateDirectory(UIPath);
                 Directory.CreateDirectory(DumpUIPath);
                 Directory.CreateDirectory(UITextPath);

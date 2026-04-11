@@ -649,27 +649,34 @@ However, like other parts, JAT does not use any in-game resources. The dance sub
 
 The dance mode lyrics translation file should be placed in the following directory:
 
-`COM3D2\BepInEx\JustAnotherTranslator\<your language>\Lyric\<song's internal name (musicName)>\lyric.csv`
+`COM3D2\BepInEx\JustAnotherTranslator\<your language>\Lyric\<song ID>\lyric.csv`
 
-- `<song's internal name (musicName)>`: corresponds to the in-game song's internal name. See below for details.
+- `<song ID>`: corresponds to `DanceData.ID`. JAT now uses the dance `ID` as the lyric folder name in dance mode instead of `musicName`, which avoids the official `m_UseMusicName` fallback problem when `csvFolderName` is empty.
 - The file name must be `lyric.csv`.
 
 The VR Karaoke mode lyrics translation file should be placed in the following directory:
 
 VR karaoke mode refers to the mode where there is a tablet in front of you, and has nothing to do with whether you are actually playing with a VR device.
 
-`COM3D2\BepInEx\JustAnotherTranslator\<your language>\Lyric\_Karaoke\<song's internal name (BgmFileName)>\lyric.csv`
+`COM3D2\BepInEx\JustAnotherTranslator\<your language>\Lyric\_Karaoke\<KaraokeMusicId>\lyric.csv`
 
-- `<song's internal name (BgmFileName)>`: corresponds to the in-game song's internal name. See below for details.
+- `<KaraokeMusicId>`: normally comes from `KaraokeDataManager.MusicData.ID`. If it is unexpectedly empty at runtime, JAT temporarily falls back to `BgmFileName` so subtitle loading still has a folder to use, but the preferred key is still `KaraokeMusicId`.
 - The file name must be `lyric.csv`.
 
 ## 2. How to Get the Music Name and Create Translation Files
 
 Songs available in the English or Chinese versions will certainly have official timelines, while very few are included in the Japanese version.
 
-Therefore, it is recommended to use SybarisArcEditor in the English or Chinese version to unpack the arc, search for the `Dance_subtitle.nei` file, which is the timeline file.
+Therefore, it is recommended to use SybarisArcEditor or the open-source [MeidoSerialization CLI](https://github.com/MeidoPromotionAssociation/MeidoSerialization) in the English or Chinese version to unpack the .arc file and search for the Dance_subtitle.nei file, which is the timeline file.
 
 The folder containing the `Dance_subtitle.nei` file is the song's internal name.
+
+Please note that this internal name is still what you use to locate the official timeline source, but it is no longer the JAT lyric folder name in dance mode.
+
+The actual JAT dance lyric folder name now comes from `DanceData.ID`. The easiest ways to confirm it are:
+
+1. Check the log line `Dance lyric folder resolved to ID ...`
+2. Enable dance info dump and read the `LyricFolderName` field in `danceInfos.csv`
 
 If it doesn't exist, your only option is to create the timeline yourself.
 
@@ -689,23 +696,28 @@ We provide a script to convert the official timeline file into JAT's lyric trans
 
 Please note that you need to convert the .nei file to a .csv file first, and then use the script for conversion.
 
+To convert a .nei file to a .csv file, you can use either [COM3D2 MOD EDITOR V2](https://github.com/MeidoPromotionAssociation/COM3D2_MOD_EDITOR) or [MeidoSerialization CLI](https://github.com/MeidoPromotionAssociation/MeidoSerialization).
+
 <br>
 
 For Dance Mode:
 
 1. Enter dance mode in the game, select and start the song you want to create subtitles for.
-2. The log will print `Mode: Dance, Current dance name (musicName)/模式：舞蹈，当前舞蹈名称（musicName）: {musicName}`.
-3. The plugin will automatically create a folder named after the song's `musicName` in the `...\Lyric\` directory and generate a `lyric.csv` file with a header.
-4. (When the dance information export option is enabled) the plugin will automatically create a `danceInfos.csv` file in the `...\Lyric\` directory. This file will dump the song name (musicName), song title, and other internal information for easy matching.
+2. The log will print the official `musicName`, and will also print `Dance lyric folder resolved to ID ...`, which tells you the actual lyric folder used by JAT.
+3. The plugin will automatically create a folder named after the song's `ID` in the `...\Lyric\` directory and generate a `lyric.csv` file with a header.
+4. (When the dance information export option is enabled) the plugin will automatically create or update `danceInfos.csv` in the `...\Lyric\` directory. In addition to official fields, it also records:
+    - `LyricFolderName`: the actual lyric folder name used by JAT
+    - `PlayedOggFiles`: the `.ogg` files that were actually played for this dance
+5. If the song also uses extra vocal tracks in addition to the main BGM, JAT records them when `SoundMgr.PlayDanceBGM` and `SoundMgr.PlayDanceBGMParallel` are called, and writes them into both the log and `danceInfos.csv`.
 
 For VR Karaoke Mode (the one with the tablet in front of you):
 
 1. Enter VR Karaoke mode in the game, select and start a song for which you want to create subtitles. 
-2. The log will print `Mode: Karaoke, Current dance name (BgmFileName)/模式：卡拉OK，当前舞蹈名称（BgmFileName）: {bgmFileName}`.
-3. The plugin will automatically create a folder named after the song's `BgmFileName` in the `...\Lyric\_Karaoke\` directory and generate a `lyric.csv` file with a header.
-4. (When the dance information export option is enabled) the plugin will automatically create a file named `danceInfosKaraoke.csv` in the `...\Lyric\_Karaoke\` directory. This file will contain internal information such as the background music name (BgmFileName) and song title for easy matching.
+2. The log will print the observed `musicName`, the resolved Karaoke lyric folder, and detailed Karaoke diagnostics such as `KaraokeMusicId`, `strFileNameOgg`, scene name, thumbnail name, plugin type, and the script-injected `DanceData` fields.
+3. The plugin will automatically create a folder named after the song's `KaraokeMusicId` in the `...\Lyric\_Karaoke\` directory and generate a `lyric.csv` file with a header.
+4. (When the dance information export option is enabled) the plugin will automatically create or update `danceInfosKaraoke.csv` in the `...\Lyric\_Karaoke\` directory. This file now uses a Karaoke-specific schema keyed by `KaraokeMusicId`, while also preserving `KaraokeOggFileName`, `PlayedOggFiles`, and the script-injected `DanceDataBgmFileName` for matching and debugging.
 5. Unlike dance mode, this mode does not have an official timeline file; you must create lyrics by your own. 
-6. In addition, musicName is invalid in this mode, and ID is also invalid (0). Only BgmFileName is valid. In `danceInfosKaraoke.csv`, BgmFileName will overwrite musicName.
+6. JAT now prefers `KaraokeMusicId` for Karaoke lyric folders and for the primary key of `danceInfosKaraoke.csv`. `BgmFileName` and `strFileNameOgg` are kept only as diagnostic fields.
 
 
 ## 3. File Format
@@ -734,36 +746,133 @@ StartTime,EndTime,OriginalLyric,TranslatedLyric
 - **Note**: The plugin reads this file to sort, deduplicate, and rewrite it. Do not modify it at will.
 - **Header**: See the example. Only a few important fields are listed here. Most of the content is a direct dump of official information. For some list-type data, JAT automatically serializes it, separating it with `|`.
     -   `Id`: The song's ID.
-    -   `MusicName`: The MusicName, which is the song's internal name, and JAT's folder name.
+    -   `MusicName`: The official `musicName`. It is preserved for investigation/debugging, but it is no longer JAT's dance lyric folder name.
+    -   `LyricFolderName`: The actual lyric folder name used by JAT. In `danceInfos.csv` it equals `Id`. The Karaoke-specific folder key is documented below in `danceInfosKaraoke.csv`.
     -   `Title`: The song's title, which is the song's title displayed in-game.
-    -   `TranslatedTitle`: The song's title translated using the General Text Translation module. - `CommentaryText`: The song's commentary text, typically artist information.
+    -   `TranslatedTitle`: The song's title translated using the General Text Translation module.
+    -   `CommentaryText`: The song's commentary text, typically artist information.
     -   `TranslatedCommentaryText`: The song's commentary text, translated using the general text translation module.
-    -   `Mode`: The song's mode, either `Dance` or `Karaoke`.
+    -   `Mode`: In `danceInfos.csv` this is always `Dance`. Karaoke records are written into `danceInfosKaraoke.csv`.
+    -   `PlayedOggFiles`: The list of `.ogg` files that were actually played for this song, separated with `|`. It is collected from JAT's runtime tracking of `SoundMgr.PlayDanceBGM` and `SoundMgr.PlayDanceBGMParallel`.
     -   `SceneName`: The name of the dance scene (Unity Scene name).
     -   `BodyFilterMode`: The body filter mode, either `Both`, `OnlyOld`, `OnlyNew`, or `Either`. High-polygon bodies using KCES are treated as `new`.
 
 **Example `danceInfos.csv`**:
 ```csv
-Id,MusicName,Title,TranslatedTitle,CommentaryText,TranslatedCommentaryText,Mode,TitleFontSize,TitleOffsetY,SceneName,SelectCharaNum,SampleImageName,BgmFileName,PresetName,ScenarioProgress,Term,AppealCutinName,ReversalCutinName,DanceshowScene,DanceshowImage,MaidOrder,BgType,InitialPlayable,IsPlayable,RhythmGameCorrespond,SubtitleSheetName,IsShowSelectScene,CsvFolderName,KuchiPakuFileList,MotionFileList,MovieFileName,BinaryFolderName,SingPartList,PersonalityFilter,BodyFilterMode
-100,dokidoki_fallinlove,ドキドキ ☆ Fallin' Love,DokiDoki ☆ Fallin' Love,Vocal1 . nao / Vocal2 . 美郷あき / Vocal3 . 佐咲紗花,Vocal1 . nao / Vocal2 . 美乡秋 / Vocal3 . 佐咲紗花,Dance,25,0,SceneDance_DDFL_Release,3,dance_select_image_ddfl_live,,||,6,VS外,Novice,Novice,SceneDance_DDFLT_Release,dance_select_image_ddfl_th,0|1|2,LiveStage,False,True,True,SceneDance_DDFL_Release,True,,,,,,,,Both
-101,dokidoki_fallinlove,ドキドキ ☆ Fallin' Love-in劇場,DokiDoki ☆ Fallin' Love-in剧场,Vocal1 . nao / Vocal2 . 美郷あき / Vocal3 . 佐咲紗花,Vocal1 . nao / Vocal2 . 美乡秋 / Vocal3 . 佐咲紗花,Dance,25,0,SceneDance_DDFLT_Release,3,dance_select_image_ddfl_th,,||,6,VS外,Novice,Novice,SceneDance_DDFLT_Release,dance_select_image_ddfl_th,0|1|2,Theater,False,True,True,SceneDance_DDFL_Release,True,,,,,,,,Both
-170,kimini_aijo_delicious,キミに愛情でりぃしゃす,爱的美味献给你,"Vocal1 . nao / Vocal2 . 中恵光城 / Vocal3 . 彩音 ","Vocal1 . nao / Vocal2 . 中恵光城 / Vocal3 . 彩音 ",Dance,25,0,SceneDance_KAD_Release,3,dance_select_image_kad_live,,||,2,レストラン,Novice,Novice,SceneDance_KADT_Release,dance_select_image_kad_th,0|1|2,LiveStage,False,True,True,SceneDance_KAD_Release,True,,,,,,,,Both
-210,sakura_uraraka_harahirari,さくらうららか、はらひらり,樱花烂漫，飘落纷纷,"Vocal1 . nao ","Vocal1 . nao ",Dance,25,0,SceneDance_SUH_Release,1,dance_select_image_sakurara_live,,,0,VS外,Novice,Novice,SceneDance_SUHT_Release,dance_select_image_sakurara_th,,LiveStage,True,True,True,SceneDance_SUH_Release,True,,,,,,,,Both
-260,1oy,1st only you ver.nao,1st only you ver.nao,"Vocal1 . nao ","Vocal1 . nao ",Dance,25,0,SceneDance_1OY_Release,1,dance_select_image_1oy_live,,,0,None,Novice,Novice,SceneDance_1OYT_Release,dance_select_image_1oy_th,,LiveStage,True,True,True,SceneDance_1OY_Release,True,,,,,,,,Both
+Id,MusicName,LyricFolderName,Title,TranslatedTitle,CommentaryText,TranslatedCommentaryText,Mode,TitleFontSize,TitleOffsetY,SceneName,SelectCharaNum,SampleImageName,BgmFileName,PlayedOggFiles,PresetName,ScenarioProgress,Term,AppealCutinName,ReversalCutinName,DanceshowScene,DanceshowImage,MaidOrder,BgType,InitialPlayable,IsPlayable,RhythmGameCorrespond,SubtitleSheetName,IsShowSelectScene,CsvFolderName,KuchiPakuFileList,MotionFileList,MovieFileName,BinaryFolderName,SingPartList,PersonalityFilter,BodyFilterMode
+100,dokidoki_fallinlove,100,ドキドキ ☆ Fallin' Love,DokiDoki ☆ Fallin' Love,Vocal1 . nao / Vocal2 . 美郷あき / Vocal3 . 佐咲紗花,Vocal1 . nao / Vocal2 . 美乡秋 / Vocal3 . 佐咲紗花,Dance,25,0,SceneDance_DDFL_Release,3,dance_select_image_ddfl_live,,dokidoki_fallinlove.ogg,||,6,VS外,Novice,Novice,SceneDance_DDFLT_Release,dance_select_image_ddfl_th,0|1|2,LiveStage,False,True,True,SceneDance_DDFL_Release,True,,,,,,,,Both
+930,entrance_to_you,930,Sample Title,Sample Title,Vocal1 . sample,Vocal1 . sample,Dance,25,0,SceneDance_EXAMPLE,1,dance_select_image_example,entrance_to_you_oke,entrance_to_you_oke.ogg|rub_rin_normal_vo.ogg,,0,None,Novice,Novice,SceneDance_EXAMPLE,dance_select_image_example,,LiveStage,True,True,True,SceneDance_EXAMPLE,True,,,,,,,,Both
 ```
-### danceInfosBgmFileName.csv
+### danceInfosKaraoke.csv
 
-Same as `danceInfos.csv`
+This file is now a Karaoke-specific diagnostic dump instead of reusing the exact `danceInfos.csv` layout.
+
+- `KaraokeMusicId`: the primary key used by JAT for normal VR Karaoke lyric folders.
+- `LyricFolderName`: the actual folder name used by JAT at runtime.
+- `KaraokeOggFileName`: `KaraokeDataManager.MusicData.strFileNameOgg`.
+- `PlayedOggFiles`: the `.ogg` files that were actually played for this Karaoke song, tracked from `SoundMgr.PlayDanceBGM` and `SoundMgr.PlayDanceBGMParallel`.
+- `DanceDataBgmFileName`: the script-injected `DanceData.bgm_file_name`.
+- `ObservedMusicName`: the observed `musicName`/`m_UseMusicName`.
+- The dump also preserves `KaraokeSceneName`, `KaraokeThumbnailName`, `KaraokePluginType`, `KaraokeBinaryFolderName`, `KaraokeKuchiPakuFileList`, `DanceDataId`, `DanceDataBinaryFolderName`, `DanceDataKuchiPakuFileList`, `DanceDataCsvFolderName`, `SubtitleSheetName`, `DanceSceneName`, `Title`, `TranslatedTitle`, `CommentaryText`, `TranslatedCommentaryText`, and `Mode`.
+
+**Example `danceInfosKaraoke.csv`**:
+```csv
+KaraokeMusicId,LyricFolderName,Title,TranslatedTitle,CommentaryText,TranslatedCommentaryText,KaraokeOggFileName,PlayedOggFiles,KaraokeSceneName,KaraokeThumbnailName,KaraokePluginType,KaraokeBinaryFolderName,KaraokeKuchiPakuFileList,DanceDataId,DanceDataBgmFileName,DanceDataBinaryFolderName,DanceDataKuchiPakuFileList,DanceDataCsvFolderName,ObservedMusicName,SubtitleSheetName,DanceSceneName,Mode
+12,12,Sample Karaoke Title,Sample Karaoke Title,Sample Artist,Sample Artist,entiyou_karaoke,entiyou_karaoke.ogg|rub_rin_normal_vo.ogg,SceneKaraoke_EXAMPLE,thumbnail_example,VRKaraoke,binary_karaoke_sample,kuchi_a|kuchi_b,9999,entiyou_karaoke,binary_karaoke_sample,kuchi_a|kuchi_b,,entrance_to_you,,SceneDance_Karaoke,Karaoke
+```
 
 ## 4. How It Works
 
 JAT uses Harmony patches to intercept the game's dance management module (`RhythmAction_Mgr`).
 
--   **Loading**: When you select a song and enter the dance scene, JAT gets the current song's music name and then tries to load the corresponding `...\Lyric\<Music_Name>\lyric.csv` file. This is loaded in real-time, so adding new files does not require restarting the game.
--   **Synchronization**: After the dance starts, JAT starts a monitoring program that displays the corresponding lyrics on the screen during the time period matching `StartTime` and `EndTime`, based on the dance's real-time playback time (`DanceTimer`).
--   **Display**: You can adjust the lyric display method in the plugin's configuration, for example, showing only the original, only the translation, or bilingual display.
+The full process is:
 
-## 5. Recommendations
+1. `RhythmAction_Mgr.Awake`
+   - JAT reads the official `m_UseMusicName`
+   - It also reads `DanceMain.SelectDanceData` and `DanceMain.KaraokeMode`
+2. Lyric folder resolution
+   - Dance mode: JAT uses `DanceData.ID` as `LyricFolderName`
+   - Karaoke mode: JAT prefers `DanceMain.SelectKaraokeData.ID` (`KaraokeMusicId`) as `LyricFolderName`; if that runtime ID is unexpectedly missing, it temporarily falls back to the script-injected `BgmFileName`
+   - `musicName` is still written to the log and `danceInfos.csv`, but in dance mode it no longer controls the JAT lyric folder name
+3. `lyric.csv` creation and loading
+   - JAT creates `lyric.csv` under the resolved folder
+   - If the file already exists, it is loaded immediately and sorted by `StartTime`
+4. Actual audio tracking
+   - When the game calls `SoundMgr.PlayDanceBGM`, JAT records the main `.ogg`
+   - When the game calls `SoundMgr.PlayDanceBGMParallel`, JAT records extra parallel `.ogg` tracks
+   - These results are written to the log and synchronized into the `PlayedOggFiles` field of `danceInfos.csv` or `danceInfosKaraoke.csv`
+5. `RhythmAction_Mgr.RhythmGame_Start`
+   - JAT starts a monitoring coroutine
+   - The coroutine matches `StartTime` and `EndTime` against the real-time `DanceTimer`
+6. Subtitle display
+   - When the current time enters a lyric row's time range, JAT calls `SubtitleComponentManager` to show the subtitle
+   - When the current time leaves that range, JAT hides it
+7. `RhythmAction_Mgr.RhythmGame_End`
+   - JAT writes the final `.ogg` summary for the current dance
+   - Then it stops the coroutine and clears current scene resources
+
+## 5. Official Loading Flow and Karaoke Differences
+
+If you want to understand why `musicName`, `csvFolderName`, `BgmFileName`, and the actually played `.ogg` files sometimes do not line up, the official code can be split into the following layers:
+
+### How official dance subtitles are loaded
+
+1. `DanceSelect.CreateDanceData()` reads `dance_setting.nei` first, and fills `DanceData` with fields such as `ID`, `SubtitleSheetName`, `csvFolderName`, `bgm_file_name`, `binaryFolderName`, and `kuchiPakuFileList`.
+2. `RhythmAction_Mgr.Awake()` only replaces `m_UseMusicName` when `DanceMain.SelectDanceData.csvFolderName` is not empty. After that, `MusicCSV_Path` is fixed as `csv_rhythm_action/<m_UseMusicName>/`.
+3. `DanceSubtitleMgr.Start()` only enables the official dance subtitle system when all of the following are true:
+   - `DanceMain.SelectDanceData != null`
+   - `DanceSetting.Settings.IsSubtitleOn`
+   - `!Product.isJapan`
+   - `!DanceMain.KaraokeMode`, which is also enforced indirectly by `PartsMgrBase`
+4. The official timeline file is `RhythmAction_Mgr.Instance.MusicCSV_Path + "dance_subtitle.nei"`, in other words `csv_rhythm_action/<m_UseMusicName>/dance_subtitle.nei`.
+5. `dance_subtitle.nei` does not contain the final display text. It contains `ID`, `StartTime`, `EndTime`, and `TranslationKey`.
+6. When text is actually displayed, `DanceSubtitleMgr.DrawSubtitle()` passes `DanceMain.SelectDanceData.SubtitleSheetName + "/" + TranslationKey` to `LocalizationManager.GetTranslation(...)`. In other words, the official lyric subtitle system is really split into two parts:
+   - Timeline and keys: `dance_subtitle.nei`
+   - Actual localized text: `SubtitleSheetName/...` inside I2.Localization
+
+### What else the official dance scene loads
+
+- `csv_rhythm_action/<m_UseMusicName>/note_data.nei`: rhythm note data, read by `Note_Mgr`
+- `csv_rhythm_action/<m_UseMusicName>/action_data.nei`: action/judge data, read by `MotionAction_Mgr`
+- `csv_rhythm_action/<m_UseMusicName>/time_data.nei`: branch / show timing data, read by `Product_Mgr`
+- `csv_rhythm_action/<m_UseMusicName>/reward_data.nei`: challenge reward conditions, read by `Score_Mgr`
+- `Assets/Resources/SceneDance/<binaryFolderName>/item_data.bytes`
+- `Assets/Resources/SceneDance/<binaryFolderName>/event_data.bytes`
+- `Assets/Resources/SceneDance/<binaryFolderName>/maid_data.bytes`
+- `Assets/Resources/SceneDance/<binaryFolderName>/timeline_data.bytes`
+- `SceneDance/<kuchiPakuFile>.txt`: lip-sync data, read by `DanceMain.LoadKuchipaku()`
+- Audio: `bgm_file_name + ".ogg"` or `m_strMasterAudioFileName`, plus extra `vocalFile` entries from `singPartList` via `PlayDanceBGMParallel`
+
+### Why VR Karaoke mode is different
+
+1. VR Karaoke song metadata does not come from `dance_setting.nei`. Instead, `KaraokeDataManager` reads these files:
+   - `karaoke_music_enable_list_{001..100}.nei`
+   - `karaoke_music.nei`
+   - `karaoke_back_ground_enable_list_{001..100}.nei`
+   - `karaoke_back_ground.nei`
+   - `karaoke_food_enable_list_{001..100}.nei`
+   - `karaoke_food.nei`
+2. After `StartKaraoke(int musicID)` selects a `MusicData`, it sets `DanceMain.SelectKaraokeData`, writes `VRカラオケ曲番号`, and passes `strFileNameOgg` plus `strSceneName` into the script side through `karaoke_start_9999.ks`.
+3. After entering the shared dance scene, `DanceMain.Awake()` injects `SelectKaraokeData.binaryFolderName` and `kuchiPakuFileList` into the common dance resource loading path, so Karaoke still keeps loading `item_data.bytes`, `event_data.bytes`, `maid_data.bytes`, `timeline_data.bytes`, and lip-sync `.txt`.
+4. However, the official `DanceSubtitleMgr` path is disabled entirely when `DanceMain.KaraokeMode` is true because `PartsMgrBase` turns it off. So VR Karaoke does not read `csv_rhythm_action/<...>/dance_subtitle.nei`, and does not use the `SubtitleSheetName + TranslationKey` pipeline either.
+5. That is why VR Karaoke does not provide an official timeline file equivalent to dance mode that JAT can reuse directly; JAT has to maintain its own `lyric.csv`.
+6. In addition, some special karaoke / rotor variants, such as `RotaKara2Main` and `RotorKaraokeMain`, go even further: they bypass `dance_subtitle.nei`, call `DanceSubtitleMgr.ForceDrawSubtitle(...)` directly, and organize audio through multiple `PlayDanceBGMParallel` calls or extra `.ogg` files.
+
+### Why JAT now uses ID folders and tracks actual `.ogg`
+
+Because in the official flow, the timeline folder, subtitle text, main BGM, extra vocal tracks, and Karaoke metadata are already split across different fields and files:
+
+- `m_UseMusicName` / `csvFolderName` only controls `csv_rhythm_action/<...>/`
+- `SubtitleSheetName` controls which I2.Localization sheet provides the official subtitle text
+- `bgm_file_name`, `strFileNameOgg`, and `singPartList.vocalFile` are closer to the real audio playback
+
+That is why JAT now:
+
+1. uses `DanceData.ID` as the lyric folder name in dance mode
+2. keeps the official `musicName` only as a diagnostic field in the log and `danceInfos.csv`
+3. records the `.ogg` files actually requested at runtime from `PlayDanceBGM` and `PlayDanceBGMParallel`
+
+## 6. Recommendations
 
 -   Lyric files are only loaded when entering dance mode and have no performance impact on game startup or daily play.
 -   Since it matches the timeline in real-time, ensure the accuracy of `StartTime` and `EndTime` for the best viewing experience.

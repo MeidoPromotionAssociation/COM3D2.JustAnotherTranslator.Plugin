@@ -3,6 +3,7 @@ using System.Reflection;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using I2.Loc;
+using MaidCafe;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Fixer;
 
@@ -109,6 +110,53 @@ public static class I2LocalizeNoneCjkFix
             LogManager.Error(
                 $"NGUILabelLocalizeSupport_OnLocalize_Prefix unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
             return true;
+        }
+    }
+}
+
+/// <summary>
+/// 修复 I2 Localization 在 Maid Cafe 场景中处理非 CJK 翻译时的两个问题：
+/// 1. 在 MaidCafe Stream UI 初始化前，强制切换到英文评论布局以避免翻译错位。
+/// 2. 在 StartStreamingPart 执行后，覆盖系统语言回写的评论布局设置，确保评论布局始终使用英文模式。
+/// </summary>
+public static class I2LocalizeNoneCjkFixMaidCafe
+{
+    /// <summary>
+    ///     在 MaidCafe Stream UI 初始化前，切换到英文评论布局。
+    /// </summary>
+    [HarmonyPatch(typeof(MaidCafeStreamManager), "Awake")]
+    [HarmonyPrefix]
+    public static void MaidCafeStreamManager_Awake_Prefix(MaidCafeStreamManager __instance)
+    {
+        try
+        {
+            if (MaidCafeManager.streamingPartManager != null)
+                __instance.isEnCommentMode = true;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"MaidCafeStreamManager_Awake_Prefix unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     StartStreamingPart 会在实例化后再次按 Product.systemLanguage 回写 isEnCommentMode。
+    ///     在 Postfix 中覆盖回来，保证后续 CommentData 和坐标计算都使用英文布局分支。
+    /// </summary>
+    [HarmonyPatch(typeof(MaidCafeManager), "StartStreamingPart")]
+    [HarmonyPostfix]
+    public static void MaidCafeManager_StartStreamingPart_Postfix()
+    {
+        try
+        {
+            if (MaidCafeManager.streamingPartManager != null)
+                MaidCafeManager.streamingPartManager.isEnCommentMode = true;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"MaidCafeManager_StartStreamingPart_Postfix unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
         }
     }
 }

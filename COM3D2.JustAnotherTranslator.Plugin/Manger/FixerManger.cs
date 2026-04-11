@@ -13,9 +13,14 @@ public static class FixerManger
 
     private static Harmony _maidCafeDlcLineBreakCommentFixPatch;
 
+    private static Harmony _maidCafeDlcCommentTranslatePatch;
+
     private static Harmony _uiFontReplacePatch;
 
     private static Harmony _i2LocalizeNoneCjkFixPatch;
+
+    private static Harmony _i2LocalizeNoneCjkFixMaidCafePatch;
+
 
     public static void Init()
     {
@@ -40,25 +45,29 @@ public static class FixerManger
         _maidCafeDlcLineBreakCommentFixPatch?.UnpatchSelf();
         _maidCafeDlcLineBreakCommentFixPatch = null;
 
+        _maidCafeDlcCommentTranslatePatch?.UnpatchSelf();
+        _maidCafeDlcCommentTranslatePatch = null;
+
         _uiFontReplacePatch?.UnpatchSelf();
         _uiFontReplacePatch = null;
 
         _i2LocalizeNoneCjkFixPatch?.UnpatchSelf();
         _i2LocalizeNoneCjkFixPatch = null;
 
+        _i2LocalizeNoneCjkFixMaidCafePatch?.UnpatchSelf();
+        _i2LocalizeNoneCjkFixMaidCafePatch = null;
+
         _initialized = false;
     }
 
     /// <summary>
-    ///     Registers and applies the "UIFontReplace" Harmony patch to replace the game's default font with
-    ///     a custom font.
-    ///     Checks if the custom font is available and ensures patches are not already applied by other
-    ///     plugins
-    ///     or legacy scripts. If it detects prior patches, it logs a warning and skips this patch to
-    ///     prevent duplication.
-    ///     Otherwise, it attempts to apply the required Harmony patch to the target method.
-    ///     Logs warnings in case of errors during the patching process or if conflicts with existing
-    ///     patches are detected.
+    /// Registers and applies the Harmony patch for fixing line break issues
+    /// in Maid Cafe DLC comments. This method ensures compatibility by checking
+    /// if the patch has already been applied by other plugins or legacy scripts
+    /// before proceeding. If no conflicting patches are detected, it applies the
+    /// necessary patch for handling line breaks and translations in Maid Cafe-specific
+    /// dialogue comments. Reports warnings if conflicts are found or if the patch
+    /// application fails.
     /// </summary>
     private static void RegisterMaidCafeDlcFixPatch()
     {
@@ -84,13 +93,31 @@ public static class FixerManger
                         "github.meidopromotionassociation.com3d2_scripts.maidcafelinebreakcommentfix");
 
                 if (isPatchedByLegacy || isPatchedByOthers)
+                {
                     LogManager.Warning(
                         "MaidCafeDlcLineBreakCommentFix patch already applied by someone else, skipping/MaidCafeDlcLineBreakCommentFix 已被其他人应用，跳过\n" +
                         "if you got maid_cafe_line_break_fix.cs in your scripts folder, please remove it/如果你在 scripts 脚本文件夹中有 maid_cafe_line_break_fix.cs，请删除它");
+                }
                 else
+                {
                     _maidCafeDlcLineBreakCommentFixPatch = Harmony.CreateAndPatchAll(
                         typeof(MaidCafeDlcLineBreakCommentFix),
                         "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.fixer.maidcafedlclinebreakcommentfix");
+                }
+
+                // MaidCafe专用 翻译补丁
+                _maidCafeDlcCommentTranslatePatch = new Harmony(
+                    "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.fixer.maidcafedlccommenttranslatepatch");
+                MaidCafeDlcLineBreakCommentFix.ApplyTranslatePatches(
+                    _maidCafeDlcLineBreakCommentFixPatch);
+
+                // 英文弹幕模式
+                if (JustAnotherTranslator.EnableNoneCjkFix.Value)
+                {
+                    _i2LocalizeNoneCjkFixMaidCafePatch = Harmony.CreateAndPatchAll(
+                        typeof(I2LocalizeNoneCjkFixMaidCafe),
+                        "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.fixer.i2localizenonecjkfixmaidcafe");
+                }
             }
             catch (Exception e)
             {

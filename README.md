@@ -180,6 +180,9 @@ For example, if you want to use English translations, you can place your transla
 
 **Note:** This setting only specifies the folder path. The language actually displayed in-game depends entirely on the content of the translation files you provide. Therefore, you can also keep the setting as `zh-CN` and simply place your translation files into that folder.
 
+**Important for none Chinese, Japanese and Korean languages users:** Please manually enable `EnableNoneCJKFix/启用非CJK语言修复` under `[10Fixer]`.
+If this optional fix is not enabled, some UI may show text compressed together, overlapping, or with spaces inserted between every character.
+
 Example Configuration:
 
 ```
@@ -416,6 +419,9 @@ COM3D2/        (游戏文件夹根目录)
 请注意：此设置仅用于指定文件夹路径，您游戏中实际显示的语言完全取决于您所提供的翻译文件内容。
 
 因此您保留原始 `zh-CN` 设置也无妨，只需将翻译文件放到对于文件夹即可。
+
+**非中日韩语言用户请注意：** 请手动启用 `[10Fixer]` 下的 `EnableNoneCJKFix/启用非CJK语言修复`。
+如果未启用此可选修复，部分界面可能会出现文字挤在一起、重叠，或者文字之间被自动插入空格的情况。
 
 配置示例：
 

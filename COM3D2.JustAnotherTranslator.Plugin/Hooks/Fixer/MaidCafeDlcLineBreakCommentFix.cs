@@ -15,7 +15,7 @@ public static class MaidCafeDlcLineBreakCommentFix
     private const string MaidCafeCommentDataTypeName = "MaidCafe.MaidCafeStreamManager+CommentData";
 
     /// <summary>
-    /// 修改 MaidCafe private CommentDataGetter，以便布局代码在计算宽度和高度之前看到翻译后的文本。
+    ///     修改 MaidCafe private CommentDataGetter，以便布局代码在计算宽度和高度之前看到翻译后的文本。
     /// </summary>
     public static void ApplyTranslatePatches(Harmony harmony)
     {
@@ -114,7 +114,7 @@ public static class MaidCafeDlcLineBreakCommentFix
     }
 
     /// <summary>
-    /// 尝试翻译给定的文本内容
+    ///     尝试翻译给定的文本内容
     /// </summary>
     /// <param name="text">需要翻译的文本字符串引用。</param>
     private static void TryTranslateMaidCafeText(ref string text)
@@ -136,8 +136,8 @@ public static class MaidCafeDlcLineBreakCommentFix
     }
 
     /// <summary>
-    /// 尝试修补 MaidCafe CommentData 类型中指定属性的 getter 方法
-    /// 以便在执行布局计算之前预翻译文本值。
+    ///     尝试修补 MaidCafe CommentData 类型中指定属性的 getter 方法
+    ///     以便在执行布局计算之前预翻译文本值。
     /// </summary>
     /// <param name="harmony">用于应用修补的 Harmony 实例。</param>
     /// <param name="propertyName">要修补其 getter 的属性的名称。</param>

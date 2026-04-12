@@ -61,13 +61,13 @@ public static class FixerManger
     }
 
     /// <summary>
-    /// Registers and applies the Harmony patch for fixing line break issues
-    /// in Maid Cafe DLC comments. This method ensures compatibility by checking
-    /// if the patch has already been applied by other plugins or legacy scripts
-    /// before proceeding. If no conflicting patches are detected, it applies the
-    /// necessary patch for handling line breaks and translations in Maid Cafe-specific
-    /// dialogue comments. Reports warnings if conflicts are found or if the patch
-    /// application fails.
+    ///     Registers and applies the Harmony patch for fixing line break issues
+    ///     in Maid Cafe DLC comments. This method ensures compatibility by checking
+    ///     if the patch has already been applied by other plugins or legacy scripts
+    ///     before proceeding. If no conflicting patches are detected, it applies the
+    ///     necessary patch for handling line breaks and translations in Maid Cafe-specific
+    ///     dialogue comments. Reports warnings if conflicts are found or if the patch
+    ///     application fails.
     /// </summary>
     private static void RegisterMaidCafeDlcFixPatch()
     {
@@ -93,17 +93,13 @@ public static class FixerManger
                         "github.meidopromotionassociation.com3d2_scripts.maidcafelinebreakcommentfix");
 
                 if (isPatchedByLegacy || isPatchedByOthers)
-                {
                     LogManager.Warning(
                         "MaidCafeDlcLineBreakCommentFix patch already applied by someone else, skipping/MaidCafeDlcLineBreakCommentFix 已被其他人应用，跳过\n" +
                         "if you got maid_cafe_line_break_fix.cs in your scripts folder, please remove it/如果你在 scripts 脚本文件夹中有 maid_cafe_line_break_fix.cs，请删除它");
-                }
                 else
-                {
                     _maidCafeDlcLineBreakCommentFixPatch = Harmony.CreateAndPatchAll(
                         typeof(MaidCafeDlcLineBreakCommentFix),
                         "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.fixer.maidcafedlclinebreakcommentfix");
-                }
 
                 // MaidCafe专用 翻译补丁
                 _maidCafeDlcCommentTranslatePatch = new Harmony(
@@ -113,11 +109,9 @@ public static class FixerManger
 
                 // 英文弹幕模式
                 if (JustAnotherTranslator.EnableNoneCjkFix.Value)
-                {
                     _i2LocalizeNoneCjkFixMaidCafePatch = Harmony.CreateAndPatchAll(
                         typeof(I2LocalizeNoneCjkFixMaidCafe),
                         "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.fixer.i2localizenonecjkfixmaidcafe");
-                }
             }
             catch (Exception e)
             {

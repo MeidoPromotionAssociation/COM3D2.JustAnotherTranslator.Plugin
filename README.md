@@ -199,7 +199,7 @@ If this optional fix is ​​not enabled, some interfaces may exhibit text that
 
 Please manually enable the `EnableUIFontReplace/启用UI字体替换` option under `[10Fixer]`.
 
-You can find the usage instructions and default font download link here: [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/Document/English/TranslationGuide.md#ui-font-replacement].
+You can find the usage instructions and default font download link [here](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/Document/English/TranslationGuide.md#ui-font-replacement).
 
 Example Configuration:
 

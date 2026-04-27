@@ -42,13 +42,19 @@ If you like it, please light up the Star~
 - Translation files for UI and general text are loaded asynchronously, so it won't slow down your game's startup.
 - Supports using `.zip` archives to speed up the loading of many small files.
 
+**Compatibility**:
+- JAT's general text translation module is compatible with LBWtranslation and YATranslator, so you can use existing translated text.
+- JAT's texture replacement module is compatible with LBWtranslation, YATranslator, and i18nEX, so you can use existing replacement textures (note that if you replace the Atlas, the icon will still be misaligned after the game changes the Atlas).
+
 **Other**
 - JAT does not enable the game's built-in multilingual support, reducing user confusion and potential bugs.
 - JAT does not use any in-game resources, avoiding some potential bugs.
-- JAT automatically integrates with [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator), so you don't need to worry about the text being translated repeatedly by XUAT and no need to add special mark to the text in advance. (Please do not modify the default `RedirectedResourceDetectionStrategy`  setting of XUAT, That setting must be set to `AppendMongolianVowelSeparatorAndRemoveAll`.)
+- JAT automatically integrates with [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator), eliminating concerns about text being repeatedly translated by XUAT and requiring no special markers in the text. (Do not modify XUAT's default setting `RedirectedResourceDetectionStrategy`, which must be set to `AppendMongolianVowelSeparatorAndRemoveAll`.)
+- JAT is modular design, allowing users to freely toggle multiple features on and off.
 
 **Drawbacks:**
-- JAT loads all translation text into memory, which does lead to higher memory usage.
+- JAT does load all translated text into memory, resulting in higher memory usage (LBW also loads all content compared to I18nEX).
+- JAT's I2.Localization translation module does not cover all paths (some text cannot be translated via the UI translation module).
 
 ## Why another translation plugin?
 
@@ -183,6 +189,18 @@ For example, if you want to use English translations, you can place your transla
 **Important for none Chinese, Japanese and Korean languages users:** Please manually enable `EnableNoneCJKFix/启用非CJK语言修复` under `[10Fixer]`.
 If this optional fix is not enabled, some UI may show text compressed together, overlapping, or with spaces inserted between every character.
 
+#### Please Note
+
+**Important for none Chinese, Japanese and Korean languages users:** Please manually enable the `EnableNoneCJKFix/启用非CJK语言修复` option under `[10Fixer]`.
+
+If this optional fix is ​​not enabled, some interfaces may exhibit text that is crowded together, overlapping, or has spaces automatically inserted between text.
+
+**Recommended for Chinese, Japanese, and Korean users:** Due to regional font inconsistencies, replacing the font with your region's preferred font will provide a better experience.
+
+Please manually enable the `EnableUIFontReplace/启用UI字体替换` option under `[10Fixer]`.
+
+You can find the usage instructions and default font download link here: [https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/Document/English/TranslationGuide.md#ui-font-replacement].
+
 Example Configuration:
 
 ```
@@ -288,13 +306,19 @@ There are 4 main folders in the translation folder of the corresponding language
 - UI 与通用文本翻译的翻译文件是异步加载的，它不会减慢你的游戏启动速度。
 - 支持使用 `.zip` 压缩包来加快小文件加载速度。
 
+兼容性：
+- JAT 的通用文本翻译模块与 LBWtranslation 和 YATranslator 兼容，所以您可以使用旧有翻译文本。
+- JAT 的纹理替换模块模块与 LBWtranslation 和 YATranslator 和 i18nEX 兼容，所以您可以使用旧有替换纹理（请注意，如果您替换了 Atlas，游戏更改该 Altas 后图标依然会错位）。
+
 其他：
 - JAT 不启用游戏内的多语言支持，减少了使用户困惑的内容和可能出现的 BUG。
 - JAT 不使用任何游戏内资源，避免了一些可能出现的 BUG。
-- JAT 自动与 [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator) 集成，无需担心文本被 XUAT 重复翻译，无需预先在文本中添加特殊标记。（请勿修改 XUAT 的默认设置 `RedirectedResourceDetectionStrategy`，该设置必须为 `AppendMongolianVowelSeparatorAndRemoveAll`）
+- JAT 自动与 [XUnity.AutoTranslator](https://github.com/bbepis/XUnity.AutoTranslator) 集成，无需担心文本被 XUAT 重复翻译，无需在文本中添加特殊标记。（请勿修改 XUAT 的默认设置 `RedirectedResourceDetectionStrategy`，该设置必须为 `AppendMongolianVowelSeparatorAndRemoveAll`）
+- JAT 使用模块化设计，可以自由开关多项功能。
 
 缺点：
-- JAT 确实会将所有翻译文本加载到内存，这确实会导致较高的内存占用。
+- JAT 确实会将所有翻译文本加载到内存，这确实会导致较高的内存占用（相较于 I18nEX 来说，LBW 同样会加载所有内容）。
+- JAT 的 I2.Localization 翻译模块未覆盖所有路径（部分文本无法通过 UI 翻译模块翻译）。
 
 ## 为什么需要另一个翻译插件
 
@@ -420,8 +444,17 @@ COM3D2/        (游戏文件夹根目录)
 
 因此您保留原始 `zh-CN` 设置也无妨，只需将翻译文件放到对于文件夹即可。
 
-**非中日韩语言用户请注意：** 请手动启用 `[10Fixer]` 下的 `EnableNoneCJKFix/启用非CJK语言修复`。
+#### 请注意
+
+**非中日韩语言用户请注意：** 请手动启用 `[10Fixer]` 下的 `EnableNoneCJKFix/启用非CJK语言修复` 选项。
+
 如果未启用此可选修复，部分界面可能会出现文字挤在一起、重叠，或者文字之间被自动插入空格的情况。
+
+**推荐中日韩语言用户开启字体替换：** 由于各地区字形不一致，替换为您地区的首选字体可以获得更佳体验。
+
+请手动启用 `[10Fixer]` 下的 `EnableUIFontReplace/启用UI字体替换` 选项。
+
+可以在[这里](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/blob/main/Document/%E7%AE%80%E4%BD%93%E4%B8%AD%E6%96%87_SimplifiedChinese/%E7%BF%BB%E8%AF%91%E6%8C%87%E5%8D%97.md#ui-%E5%AD%97%E4%BD%93%E6%9B%BF%E6%8D%A2)查看使用说明以及默认字体下载链接。
 
 配置示例：
 
@@ -763,9 +796,5 @@ In case of any discrepancy between the translated versions, the Simplified Chine
 
 # Credits
 
-Part of the code is from [https://github.com/Pain-Brioche/COM3D2.i18nEx](https://github.com/Pain-Brioche/COM3D2.i18nEx)
-under the MIT license
-
-Part of the code is
-from [https://github.com/ghorsington/CM3D2.YATranslator](https://github.com/ghorsington/CM3D2.YATranslator) under The
-Unlicense license (for compatibility)
+- Part of the code is from [https://github.com/Pain-Brioche/COM3D2.i18nEx](https://github.com/Pain-Brioche/COM3D2.i18nEx) under the MIT license
+- Part of the code is from [https://github.com/ghorsington/CM3D2.YATranslator](https://github.com/ghorsington/CM3D2.YATranslator) under The Unlicense license (for compatibility)

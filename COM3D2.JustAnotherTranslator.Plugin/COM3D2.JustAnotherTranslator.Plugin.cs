@@ -1482,14 +1482,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LyricPath = Path.Combine(TargetLanguePath, "Lyric");
             KaraokeLyricPath = Path.Combine(LyricPath, "_Karaoke");
             UIPath = Path.Combine(TargetLanguePath, "UI");
-            DumpUIPath = Path.Combine(TranslationRootPath, "DumpUI");
             UITextPath = Path.Combine(UIPath, "Text");
             UISpritePath = Path.Combine(UIPath, "Sprite");
             DumpPath = Path.Combine(TranslationRootPath, "Dump");
+            DumpUIPath = Path.Combine(DumpPath, "UI");
             TextDumpPath = Path.Combine(DumpPath, "Text");
             TextureDumpPath = Path.Combine(DumpPath, "Texture");
             SpriteDumpPath = Path.Combine(DumpUIPath, "Sprite");
-            TermDumpPath = Path.Combine(DumpUIPath, "UI");
+            TermDumpPath = Path.Combine(DumpUIPath, "Text");
             SubtitleColorsConfigPath = Path.Combine(TranslationRootPath, "SubtitleColors.json");
             KeywordReplaceTextPath = Path.Combine(TranslationRootPath, "KeywordReplaceText.json");
             // 创建目录
@@ -1609,8 +1609,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 XUATInterop.Init();
             }
             else
-                LogManager.Info("Keyword Replace Disable/关键词替换已禁用");
             {
+                LogManager.Info("Keyword Replace Disable/关键词替换已禁用");
                 TextTranslateManger.Unload();
                 XUATInterop.Unload();
                 TextTranslateManger.Init();

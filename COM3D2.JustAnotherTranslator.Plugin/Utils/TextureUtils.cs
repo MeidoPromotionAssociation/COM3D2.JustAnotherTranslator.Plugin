@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Utils;
 
@@ -32,10 +33,14 @@ public static class TextureUtils
         }
 #endif
 
+        RenderTexture tmp = null;
+        var previous = RenderTexture.active;
+        Texture2D readableTexture = null;
+
         // Fallback for non-readable textures
         try
         {
-            var tmp = RenderTexture.GetTemporary(
+            tmp = RenderTexture.GetTemporary(
                 texture.width,
                 texture.height,
                 0,
@@ -44,24 +49,31 @@ public static class TextureUtils
 
             // Blit the texture to the temporary render texture
             Graphics.Blit(texture, tmp);
-            var previous = RenderTexture.active;
             RenderTexture.active = tmp;
 
             // Read the temporary render texture into a new readable texture
-            var myTexture2D = new Texture2D(texture.width, texture.height);
-            myTexture2D.ReadPixels(new Rect(0, 0, tmp.width, tmp.height), 0, 0);
-            myTexture2D.Apply();
+            readableTexture =
+                new Texture2D(texture.width, texture.height, TextureFormat.RGBA32, false);
+            readableTexture.ReadPixels(new Rect(0, 0, tmp.width, tmp.height), 0, 0);
+            readableTexture.Apply();
 
-            // Cleanup
-            RenderTexture.active = previous;
-            RenderTexture.ReleaseTemporary(tmp);
-
-            return myTexture2D;
+            var result = readableTexture;
+            readableTexture = null;
+            return result;
         }
         catch (Exception e)
         {
             LogManager.Error($"Failed to create readable texture copy/创建可读纹理副本失败: {e.Message}");
             return null;
+        }
+        finally
+        {
+            // Cleanup
+            RenderTexture.active = previous;
+
+            if (tmp != null) RenderTexture.ReleaseTemporary(tmp);
+
+            if (readableTexture != null) Object.Destroy(readableTexture);
         }
     }
 }

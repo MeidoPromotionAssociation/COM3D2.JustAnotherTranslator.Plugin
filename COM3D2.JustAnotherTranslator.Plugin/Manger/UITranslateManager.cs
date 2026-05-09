@@ -678,52 +678,62 @@ public static class UITranslateManager
     /// <returns></returns>
     private static byte[] GetSpriteBytes(UISprite sprite, string spriteName)
     {
-        if (sprite != null)
-            try
-            {
-                // 获取当前 UIButton 实例正在使用的 spriteName
-                var currentSpriteName = sprite.spriteName;
+        if (sprite == null) return null;
+        Texture2D readableTexture = null;
+        Texture2D destTexture = null;
+        Texture2D atlasTexture = null;
+        try
+        {
+            // 获取当前 UIButton 实例正在使用的 spriteName
+            var currentSpriteName = sprite.spriteName;
+            var atlas = sprite.atlas;
+            if (atlas == null) return null;
 
-                var atlas = sprite.atlas;
-                if (atlas != null)
-                {
-                    // NGUI 的 atlas.GetSprite(name) 返回 UISpriteData，而不是 Unity 的 Sprite
-                    var spriteData = atlas.GetSprite(currentSpriteName);
-                    if (spriteData != null)
-                    {
-                        // 获取图集的大纹理
-                        var atlasTexture = atlas.texture as Texture2D;
-                        if (atlasTexture != null)
-                        {
-                            var readableTexture = TextureUtils.GetReadableTexture(atlasTexture);
+            // NGUI 的 atlas.GetSprite(name) 返回 UISpriteData，而不是 Unity 的 Sprite
+            var spriteData = atlas.GetSprite(currentSpriteName);
+            if (spriteData == null) return null;
 
-                            var x = spriteData.x;
-                            var y = spriteData.y;
-                            var width = spriteData.width;
-                            var height = spriteData.height;
+            // 获取图集的大纹理
+            atlasTexture = atlas.texture as Texture2D;
+            if (atlasTexture == null) return null;
 
-                            var destTexture = new Texture2D(width, height);
-                            // NGUI 图集的坐标系原点在左上角，而 Unity Texture2D.GetPixels 方法的坐标系原点在左下角
-                            destTexture.SetPixels(readableTexture.GetPixels(x,
-                                readableTexture.height - y - height,
-                                width, height));
-                            destTexture.Apply();
+            readableTexture = TextureUtils.GetReadableTexture(atlasTexture);
+            if (readableTexture == null) return null;
 
-                            var pngData = destTexture.EncodeToPNG();
-                            Object.Destroy(destTexture); // 销毁临时纹理
-                            return pngData;
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                LogManager.Error(
-                    $"Failed to get bytes for sprite '{spriteName}'/获取 '{spriteName}' 精灵图的图片数据失败：{e.Message}");
-                return null;
-            }
+            var x = spriteData.x;
+            var y = spriteData.y;
+            var width = spriteData.width;
+            var height = spriteData.height;
 
-        return null;
+            destTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
+
+            // NGUI 图集的坐标系原点在左上角，而 Unity Texture2D.GetPixels 方法的坐标系原点在左下角
+            destTexture.SetPixels(readableTexture.GetPixels(
+                x,
+                readableTexture.height - y - height,
+                width,
+                height));
+
+            destTexture.Apply();
+
+            return destTexture.EncodeToPNG();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"Failed to get bytes for sprite '{spriteName}'/获取 '{spriteName}' 精灵图的图片数据失败：{e.Message}");
+            return null;
+        }
+        finally
+        {
+            // Cleanup
+            if (destTexture != null) Object.Destroy(destTexture);
+
+            // 如果 GetReadableTexture 返回的是原始 atlasTexture，不能销毁。
+            // 只有当它返回的是新创建的临时 Texture2D 时，才由调用方销毁。
+            if (readableTexture != null && readableTexture != atlasTexture)
+                Object.Destroy(readableTexture);
+        }
     }
 
     # endregion

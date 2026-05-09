@@ -46,12 +46,6 @@ public interface ISubtitleComponent
     string GetText();
 
     /// <summary>
-    ///     获取当前说话者名称
-    /// </summary>
-    /// <returns>当前说话者名称</returns>
-    string GetSpeakerName();
-
-    /// <summary>
     ///     设置字幕ID
     /// </summary>
     /// <param name="text">字幕ID</param>

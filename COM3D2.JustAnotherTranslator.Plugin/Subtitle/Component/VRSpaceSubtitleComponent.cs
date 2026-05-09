@@ -123,6 +123,7 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
                     "GameObject is null after creating UI, cannot initialize VR space subtitle component/创建UI后GameObject为空，无法初始化VR空间字幕组件");
             gameObject.name = subtitleId;
             SetActive(false);
+            SetAlpha(0f);
             LogManager.Debug($"VR space subtitle component {subtitleId} initialized");
         }
         catch (Exception e)

@@ -15,11 +15,11 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     // 销毁幂等保护
     private bool _isDestroyed;
 
-    // 翻译后的说话者名称
-    private string _translatedSpeakerName = "";
-
     // 动画协程
     protected Coroutine AnimationCoroutine;
+
+    // 自动隐藏协程
+    protected Coroutine AnimationAutoHideCoroutine;
 
     // 字幕背景图像组件
     protected Image BackgroundImageComponents;
@@ -38,12 +38,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 
     // 字幕描边组件
     protected Outline OutlineComponents;
-
-    // 说话者文本颜色
-    protected string SpeakerColor = "";
-
-    // 说话者名称
-    protected string SpeakerName = "";
 
     // 字幕文本组件
     protected Text TextComponent;
@@ -94,6 +88,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 
             gameObject.name = subtitleId;
             SetActive(false);
+            SetAlpha(0f);
             LogManager.Debug($"base subtitle component {subtitleId} initialized");
         }
         catch (Exception e)
@@ -111,25 +106,23 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// <param name="duration">显示持续时间，0表示持续显示</param>
     public virtual void ShowSubtitle(string text, string speakerName, float duration)
     {
-        // 如果有正在进行的动画，停止它
-        if (AnimationCoroutine is not null)
+        if (Config == null)
         {
-            StopCoroutine(AnimationCoroutine);
-            AnimationCoroutine = null;
+            LogManager.Warning("Subtitle config is null, cannot show subtitle/字幕配置为空，无法显示字幕");
+            return;
         }
 
-        if (string.IsNullOrEmpty(SpeakerName))
-            if (!string.IsNullOrEmpty(speakerName))
-                SpeakerName = speakerName;
-            else
-                SpeakerName = "";
+        // 如果有正在进行的动画，停止它
+        StopAnimation();
 
+        speakerName ??= "";
+        var speakerColor = ColorUtility.ToHtmlStringRGBA(GetSpeakerColor(speakerName));
 
-        if (string.IsNullOrEmpty(SpeakerColor))
-            SpeakerColor = ColorUtility.ToHtmlStringRGBA(GetSpeakerColor(speakerName));
+        // 如果下一个说话者没有自定义颜色，但没有恢复普通值，则会串色
+        RestoreDefaultSubtitleColors();
 
         // 设置文本内容
-        SetText(text, speakerName, SpeakerColor, Config.EnableSpeakerName);
+        SetText(text, speakerName, speakerColor, Config.EnableSpeakerName);
 
         // 应用每个说话人的自定义字幕颜色
         ApplyCustomSubtitleColors(speakerName);
@@ -144,7 +137,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             AnimationCoroutine = StartCoroutine(FadeIn());
 
             // 如果设置了持续时间，则在指定时间后淡出
-            if (duration > 0) StartCoroutine(AutoHide(duration));
+            if (duration > 0)
+                AnimationAutoHideCoroutine = StartCoroutine(AutoHide(duration));
         }
         else
         {
@@ -152,11 +146,12 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             SetAlpha(1);
 
             // 如果设置了持续时间，则在指定时间后隐藏
-            if (duration > 0) StartCoroutine(AutoHide(duration));
+            if (duration > 0)
+                AnimationAutoHideCoroutine = StartCoroutine(AutoHide(duration));
         }
 
         LogManager.Debug(
-            $"Showing subtitle: {text}, SpeakerName: {speakerName}, SpeakerColor: {SpeakerColor}, Duration: {duration}");
+            $"Showing subtitle: {text}, SpeakerName: {speakerName}, SpeakerColor: {speakerColor}, Duration: {duration}");
     }
 
     /// <summary>
@@ -164,6 +159,9 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     /// </summary>
     public virtual void HideSubtitle(bool skipAnimation = false)
     {
+        // 如果有正在进行的动画，停止它
+        StopAnimation();
+
         if (skipAnimation)
         {
             SetAlpha(0f);
@@ -172,12 +170,14 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             return;
         }
 
-        // 如果有正在进行的动画，停止它
-        if (AnimationCoroutine != null)
+        // 如果当前 Alpha 已经是 0，直接跳过
+        if (!gameObject.activeSelf || (CanvasGroupComponents is not null && CanvasGroupComponents.alpha <= 0.01f))
         {
-            StopCoroutine(AnimationCoroutine);
-            AnimationCoroutine = null;
+            SetAlpha(0f);
+            SetActive(false);
+            return;
         }
+
 
         // 如果启用了动画效果
         if (Config.EnableAnimation && gameObject.activeSelf)
@@ -192,6 +192,34 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 
         LogManager.Debug($"Hiding subtitle {gameObject.name}");
     }
+
+    /// <summary>
+    ///     将字幕颜色重置回默认
+    /// </summary>
+    protected virtual void RestoreDefaultSubtitleColors()
+    {
+        if (Config == null)
+            return;
+
+        if (TextComponent != null)
+            TextComponent.color = Config.TextColor;
+
+        if (BackgroundImageComponents != null)
+            BackgroundImageComponents.color = Config.BackgroundColor;
+
+        if (OutlineComponents != null)
+        {
+            OutlineComponents.enabled = Config.EnableOutline;
+
+            if (Config.EnableOutline)
+            {
+                OutlineComponents.effectColor = Config.OutlineColor;
+                OutlineComponents.effectDistance =
+                    new Vector2(Config.OutlineWidth, Config.OutlineWidth);
+            }
+        }
+    }
+
 
     /// <summary>
     ///     更新字幕配置
@@ -225,15 +253,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     public string GetText()
     {
         return TextComponent?.text ?? string.Empty;
-    }
-
-    /// <summary>
-    ///     获取当前说话者名称
-    /// </summary>
-    /// <returns>当前说话者名称</returns>
-    public string GetSpeakerName()
-    {
-        return SpeakerName ?? string.Empty;
     }
 
     /// <summary>
@@ -393,14 +412,16 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     private void SetText(string text, string speakerName, string speakerColor,
         bool enableSpeakerName)
     {
+        if (TextComponent == null)
+            return;
+
         var displayText = text;
         // 但人名需要被翻译
         if (!string.IsNullOrEmpty(speakerName) && enableSpeakerName)
         {
-            if (string.IsNullOrEmpty(_translatedSpeakerName))
-                TextTranslateManger.GetTranslateText(speakerName, out _translatedSpeakerName);
+            TextTranslateManger.GetTranslateText(speakerName, out var translatedSpeakerName);
 
-            displayText = $"<color=#{speakerColor}>{_translatedSpeakerName}</color>: {text}";
+            displayText = $"<color=#{speakerColor}>{translatedSpeakerName}</color>: {text}";
 
             // 记录以避免被 XUAT 翻译
             TextTranslateManger.MarkTranslated(displayText);
@@ -489,6 +510,12 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
             StopCoroutine(AnimationCoroutine);
             AnimationCoroutine = null;
         }
+
+        if (AnimationAutoHideCoroutine != null)
+        {
+            StopCoroutine(AnimationAutoHideCoroutine);
+            AnimationAutoHideCoroutine = null;
+        }
     }
 
     /// <summary>
@@ -541,8 +568,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         if (duration <= 0f)
         {
             SetAlpha(0f);
-            SetActive(false);
             AnimationCoroutine = null;
+            SetActive(false);
             yield break;
         }
 
@@ -560,8 +587,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         SetAlpha(0f);
-        SetActive(false);
         AnimationCoroutine = null;
+        SetActive(false);
     }
 
     /// <summary>
@@ -571,6 +598,7 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     protected virtual IEnumerator AutoHide(float delay)
     {
         yield return new WaitForSeconds(delay);
+        AnimationAutoHideCoroutine = null;
         HideSubtitle();
     }
 

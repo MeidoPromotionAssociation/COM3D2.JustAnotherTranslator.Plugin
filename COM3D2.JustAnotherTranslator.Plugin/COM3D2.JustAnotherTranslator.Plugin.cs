@@ -1621,7 +1621,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         // 注册UI精灵图替换启用状态变更事件
         EnableUISpriteReplace.SettingChanged += (_, _) =>
         {
-            if (EnableUITextTranslation.Value)
+            if (EnableUISpriteReplace.Value)
             {
                 LogManager.Info("UI Sprite Replace Enabled/UI 精灵图替换已启用");
                 UITranslateManager.Unload();
@@ -2759,14 +2759,16 @@ public class JustAnotherTranslator : BaseUnityPlugin
         // 注册DumpTerm启用状态变更事件
         EnableTermDump.SettingChanged += (_, _) =>
         {
-            if (EnableTermDump.Value || EnableUITextTranslation.Value)
+            if (EnableTermDump.Value)
             {
+                if (!EnableUITextTranslation.Value)
+                    LogManager.Info(
+                        "Term dumping is enabled, but the UI translation module is not enabled, so it will not take effect./已启用Term转储，但未开启UI翻译模块，因此不会生效");
+
                 UITranslateManager.Unload();
                 UITranslateManager.Init();
-                LogManager.Info(
-                    "Term dump enabled, will be exported when playing dances/启用Term转储");
             }
-            else if (!EnableTermDump.Value && EnableUITextTranslation.Value)
+            else if (!EnableTermDump.Value && !EnableUITextTranslation.Value)
             {
                 UITranslateManager.Unload();
                 UITranslateManager.Init();

@@ -229,6 +229,12 @@ public static class TextTranslateManger
                 .OrderByDescending(k => k.Length);
             // 转义特殊字符，用 | 拼接
             var escapedKeys = validKeys.Select(k => Regex.Escape(k)).ToArray();
+            if (escapedKeys.Length == 0)
+            {
+                _keywordReplaceRegex = null;
+                return;
+            }
+
             var pattern = string.Join("|", escapedKeys);
 
             _keywordReplaceRegex = new Regex(pattern, RegexOptions.Compiled);

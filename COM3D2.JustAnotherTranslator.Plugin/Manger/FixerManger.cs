@@ -105,7 +105,7 @@ public static class FixerManger
                 _maidCafeDlcCommentTranslatePatch = new Harmony(
                     "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.fixer.maidcafedlccommenttranslatepatch");
                 MaidCafeDlcLineBreakCommentFix.ApplyTranslatePatches(
-                    _maidCafeDlcLineBreakCommentFixPatch);
+                    _maidCafeDlcCommentTranslatePatch);
 
                 // 英文弹幕模式
                 if (JustAnotherTranslator.EnableNoneCjkFix.Value)

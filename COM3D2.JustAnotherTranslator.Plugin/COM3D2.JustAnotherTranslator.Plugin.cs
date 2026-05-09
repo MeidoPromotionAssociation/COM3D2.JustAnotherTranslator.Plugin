@@ -87,6 +87,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<bool> EnableUITextExtraPatch;
     public static ConfigEntry<bool> EnableUISpriteReplace;
     public static ConfigEntry<bool> EnableTextureReplace;
+    public static ConfigEntry<bool> EnableKeywordReplace;
     public static ConfigEntry<MaidNameStyleEnum> MaidNameStyle;
     public static ConfigEntry<LogLevel> LogLevelConfig;
     public static ConfigEntry<bool> AllowFilesInZipLoadInOrder;
@@ -247,6 +248,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static string SpriteDumpPath;
     public static string TermDumpPath;
     public static string SubtitleColorsConfigPath;
+    public static string KeywordReplaceTextPath;
 
     private void Awake()
     {
@@ -315,6 +317,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
         SpriteDumpPath = Path.Combine(DumpUIPath, "Sprite");
         TermDumpPath = Path.Combine(DumpUIPath, "Text");
         SubtitleColorsConfigPath = Path.Combine(TranslationRootPath, "SubtitleColors.json");
+        KeywordReplaceTextPath = Path.Combine(TranslationRootPath, "KeywordReplaceText.json");
 
         EnableGeneralTextTranslation = Config.Bind("2General",
             "EnableGeneralTextTranslation/启用通用文本翻译",
@@ -340,13 +343,21 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription("Enable UI Translation/启用 UI 精灵图替换", null,
                 new ConfigurationManagerAttributes { Order = 1950 }));
 
+        EnableKeywordReplace = Config.Bind("2General",
+            "EnableKeywordReplace/启用关键词替换",
+            false,
+            new ConfigDescription(
+                "Enable dynamic keyword replacement, which allows keywords to be dynamically replaced during the translation process, relying on GeneralTextTranslation/启用关键词动态替换，可在翻译过程中动态替换关键词，依赖通用文本翻译",
+                null,
+                new ConfigurationManagerAttributes { Order = 1940 }));
+
         EnableUITextExtraPatch = Config.Bind("2General",
             "EnableUITextExtraPatch/启用UI文本翻译额外补丁",
             true,
             new ConfigDescription(
-                "Enable patches that cover UI translations not translated by the UI translation module depending on whether the game is a multilingual version/启用用于覆盖因游戏是否为多语言版本而未被 UI 翻译模块翻译的补丁",
+                "Enabling more UI translation patches (covering more translation paths) may pose certain risks./启用更多 UI 翻译补丁（覆盖更多翻译路径），可能有一定危险性",
                 null,
-                new ConfigurationManagerAttributes { Order = 1940 }));
+                new ConfigurationManagerAttributes { Order = 1930 }));
 
         AllowFilesInZipLoadInOrder = Config.Bind("2General",
             "AllowFilesInZipLoadInOrder/允许 ZIP 文件内文件按顺序加载",
@@ -354,21 +365,21 @@ public class JustAnotherTranslator : BaseUnityPlugin
             new ConfigDescription(
                 "Allow files In zip Load in order, This will lower the loading speed/允许 ZIP 文件内文件按顺序加载，这会降低加载速度",
                 null,
-                new ConfigurationManagerAttributes { Order = 1940 }));
+                new ConfigurationManagerAttributes { Order = 1920 }));
 
         MaidNameStyle = Config.Bind("2General",
             "MaidNameStyle/女仆名字样式",
             MaidNameStyleEnum.JpStyle,
             new ConfigDescription(
                 "Maid Name Style, JpStyle is family name first and given name last, English style is opposite, cannot change at runtime/女仆名字样式，日式姓前名后，英式相反。无法在运行时更改",
-                null, new ConfigurationManagerAttributes { Order = 1930 }));
+                null, new ConfigurationManagerAttributes { Order = 1910 }));
 
         ReloadTranslateResourceShortcut = Config.Bind("2General",
             "ReloadTranslateResource/重载翻译资源",
             new KeyboardShortcut(),
             new ConfigDescription(
                 "Press this shortcut to hot reload all translation resources/按下此快捷键来热重载所有翻译资源",
-                null, new ConfigurationManagerAttributes { Order = 1920 }));
+                null, new ConfigurationManagerAttributes { Order = 1909 }));
 
         // 声明后才能使用日志
         LogLevelConfig = Config.Bind("2General",
@@ -376,7 +387,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogLevel.Info,
             new ConfigDescription("Log Level, DEBUG will log more information/日志级别，DEBUG 级别将记录详细信息",
                 null,
-                new ConfigurationManagerAttributes { Order = 1910 }));
+                new ConfigurationManagerAttributes { Order = 1908 }));
 
         # endregion
 
@@ -1243,6 +1254,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             Directory.CreateDirectory(TermDumpPath);
             if (!File.Exists(SubtitleColorsConfigPath))
                 File.WriteAllText(SubtitleColorsConfigPath, "{}");
+            if (!File.Exists(KeywordReplaceTextPath))
+                File.WriteAllText(KeywordReplaceTextPath, "{}");
         }
         catch (Exception e)
         {
@@ -1271,9 +1284,19 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogManager.Info("UI Translation Disabled/UI 翻译已禁用");
         }
 
+        if (EnableKeywordReplace.Value)
+        {
+            if (!EnableGeneralTextTranslation.Value)
+                LogManager.Info(
+                    "Keyword replacement is enabled, but general text translation is not enabled, so it will not work/关键词替换已启用，但通用文本翻译未启用，因此不会生效");
+            else
+                LogManager.Info("Keyword Replace Enabled/关键词替换已启用");
+        }
+
         if (EnableUITextExtraPatch.Value)
         {
-            LogManager.Info("UI Translation Extra Patch Enabled/UI 翻译额外补丁已启用");
+            LogManager.Info(
+                "UI Translation Extra Patch Enabled(In extreme cases, abnormalities may occur)/UI 翻译额外补丁已启用（极端情况下可能会导致异常）");
             UITranslateManager.Init();
         }
         else
@@ -1303,7 +1326,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         if (EnableBaseSubtitle.Value)
         {
-            LogManager.Info("Base Subtitle Enabled/基础字幕已启用");
+            if (!EnableGeneralTextTranslation.Value)
+                LogManager.Info(
+                    "Basic subtitle is enabled, but the general text translation module is not enabled, so it may not work/基础字幕已启用，但未启用通用文本翻译模块，因此可能不会生效");
+            else
+                LogManager.Info("Base Subtitle Enabled/基础字幕已启用");
+
             SubtitleManager.Init();
         }
         else
@@ -1313,7 +1341,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         if (EnableYotogiSubtitle.Value)
         {
-            LogManager.Info("Yotogi Subtitle Enabled/夜伽字幕已启用");
+            if (!EnableGeneralTextTranslation.Value)
+                LogManager.Info(
+                    "Yotogi Subtitle is enabled, but the general text translation module is not enabled, so it may not work/夜伽字幕已启用，但未启用通用文本翻译模块，因此可能不会生效");
+            else
+                LogManager.Info("Yotogi Subtitle Enabled/夜伽字幕已启用");
+
             SubtitleManager.Init();
         }
         else
@@ -1323,7 +1356,12 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         if (EnableAdvSubtitle.Value)
         {
-            LogManager.Info("Adv Subtitle Enabled/ADV字幕已启用");
+            if (!EnableGeneralTextTranslation.Value)
+                LogManager.Info(
+                    "Adv Subtitle is enabled, but the general text translation module is not enabled, so it may not work/ADV字幕已启用，但未启用通用文本翻译模块，因此可能不会生效");
+            else
+                LogManager.Info("Adv Subtitle Enabled/Adv字幕已启用");
+
             SubtitleManager.Init();
         }
         else
@@ -1350,6 +1388,19 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             LogManager.Info("MaidCafeDlcLineBreakCommentFix Disabled/女仆咖啡厅DLC的弹幕不移动的修复已禁用");
         }
+
+        if (EnableNoneCjkFix.Value)
+            LogManager.Info("Non-Chinese, Japanese, and Korean language fix Enabled/非中日韩语言修复已启用");
+        else
+            LogManager.Info(
+                "Non-Chinese, Japanese, and Korean language fix Disabled. If you do not use these languages, it is recommended to enable them/非中日韩语言修复已禁用，非这些语言用户推荐启用");
+
+        if (EnableUIFontReplace.Value)
+            LogManager.Info("UI Font Replace Enabled/UI字体替换已启用");
+        else
+            LogManager.Info(
+                "UI Font Replace Disable，Recommended for Chinese users to enable/UI字体替换已禁用，推荐中文用户启用");
+
 
         // 注册通用变更事件
         RegisterGeneralConfigEvents();
@@ -1440,6 +1491,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             SpriteDumpPath = Path.Combine(DumpUIPath, "Sprite");
             TermDumpPath = Path.Combine(DumpUIPath, "UI");
             SubtitleColorsConfigPath = Path.Combine(TranslationRootPath, "SubtitleColors.json");
+            KeywordReplaceTextPath = Path.Combine(TranslationRootPath, "KeywordReplaceText.json");
             // 创建目录
             try
             {
@@ -1459,6 +1511,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 Directory.CreateDirectory(TermDumpPath);
                 if (!File.Exists(SubtitleColorsConfigPath))
                     File.WriteAllText(SubtitleColorsConfigPath, "{}");
+                if (!File.Exists(KeywordReplaceTextPath))
+                    File.WriteAllText(KeywordReplaceTextPath, "{}");
             }
             catch (Exception e)
             {
@@ -1528,6 +1582,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
             }
         };
 
+        // 注册UI文本翻译额外补丁启用状态变更事件
         EnableUITextExtraPatch.SettingChanged += (_, _) =>
         {
             if (EnableUITextExtraPatch.Value)
@@ -1541,6 +1596,25 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 LogManager.Info("UI Translation Extra Patch Disabled/UI 文本翻译额外补丁已禁用");
                 UITranslateManager.Unload();
                 UITranslateManager.Init();
+            }
+        };
+
+        // 注册关键词替换启用状态变更事件
+        EnableKeywordReplace.SettingChanged += (_, _) =>
+        {
+            if (EnableKeywordReplace.Value)
+            {
+                LogManager.Info("Keyword Replace Enabled/关键词替换已启用");
+                TextTranslateManger.Init();
+                XUATInterop.Init();
+            }
+            else
+                LogManager.Info("Keyword Replace Disable/关键词替换已禁用");
+            {
+                TextTranslateManger.Unload();
+                XUATInterop.Unload();
+                TextTranslateManger.Init();
+                XUATInterop.Init();
             }
         };
 

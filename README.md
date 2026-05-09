@@ -32,6 +32,9 @@ If you like it, please light up the Star~
 - JAT recursively loads translation files from the translation folder, sorting both files and folders by Unicode character order. Translations loaded later will override those loaded earlier.
 - Users can create folders like `01-MachineTrans`, `02-AITrans`, `03-Proofread`, `99-PersonalFixes` to precisely control translation priority, easily managing and layering translations of different quality.
 
+**Keyword Replacement**
+- Optional `KeywordReplaceText.json` post-processing can replace repeated keywords in translated text after general text translation, which is useful for personal terms, names, or package-wide wording fixes without editing every translation entry. For example, replacing "guest" with "goshujin".
+
 **Lyrics and Subtitles**
 - A completely self-implemented subtitle system: The subtitle feature (including general subtitles and dance lyrics) is fully implemented by JAT and does not depend on any in-game resources or official systems, requiring no official support.
 - It can provide subtitles in various scenes that lack them, such as dances, the fishing minigame, VR karaoke, the shooting minigame, night scenes (Yotogi), etc.
@@ -156,7 +159,8 @@ COM3D2/            (Game root)
 │     │       └─ _Karaoke/                       (Karaoke Mode Dedicated Lyrics Folder)
 │     │             └─ danceInfosKaraoke.csv     (Karaoke Mode Dedicated Lyrics Information Dump)
 │     ├─ Dump/                                   (For translators)
-│     └─ SubtitleColors.json                    (Subtitle and speaker colors)
+│     ├─ KeywordReplaceText.json                 (Keyword replacement configuration)
+│     └─ SubtitleColors.json                     (Subtitle and speaker colors)
 └─ COM3D2.exe                                    (Game Launcher)
 ```
 
@@ -248,6 +252,9 @@ There are 4 main folders in the translation folder of the corresponding language
 - The `Lyric` folder is for files dedicated to lyric subtitles.
 - The `UI` folder is a dedicated folder for interface translation. Sprite is used to replace a single sprite, and Text
   is used to translate UI text.
+- `SubtitleColors.json` file is located in the root directory of `JustAnotherTranslator`. It allows you to adjust the subtitle color for each speaker as well as the prefix color for the subtitle name.
+- `KeywordReplaceText.json` is stored in the `JustAnotherTranslator` root folder and is shared across target language folders. It is an optional keyword replacement configuration used after general text translation.
+
 
 ## Frequently Asked Questions
 
@@ -295,6 +302,9 @@ There are 4 main folders in the translation folder of the corresponding language
 灵活的翻译覆盖系统：
 - JAT 会递归加载翻译文件夹内的翻译文件，并根据 Unicode 字符顺序对文件和文件夹进行排序。后加载的翻译会覆盖先加载的。
 - 用户可以通过创建如 `01-机翻`, `02-AI翻译`, `03-人工校对`, `99-个人修正` 这样的文件夹，来精确控制翻译的优先级，轻松管理和分层不同质量的翻译。
+
+关键词替换：
+- 可选的 `KeywordReplaceText.json` 后处理可以在通用文本翻译完成后替换译文中的重复关键词，适合处理个人称呼、名称或整包术语修正，而无需逐条修改翻译文本。例如将 “客人” 替换为 “主人”。
 
 歌词与字幕：
 - 完全自实现的字幕系统：字幕功能（包括普通字幕和舞蹈歌词）完全由 JAT 实现，不依赖任何游戏内资源或官方系统，无需官方系统支持。
@@ -413,7 +423,8 @@ COM3D2/        (游戏文件夹根目录)
 │     │       └─ _Karaoke/                  (卡拉OK模式专用歌词文件夹)
 │     │            └─danceInfosKaraoke.csv  (卡拉OK模式专用歌词信息转储)
 │     ├─ Dump/                              (翻译人员专用)
-│     └─ SubtitleColors.json               (字幕及说话人颜色)
+│     ├─ KeywordReplaceText.json            (关键词替换配置)
+│     └─ SubtitleColors.json                (字幕及说话人颜色)
 └─ COM3D2.exe                               (游戏启动器)
 ```
 
@@ -502,6 +513,8 @@ COM3D2\BepInEx\JustAnotherTranslator\<你设置的目标语言>
 - `Texture` 文件夹用于替换游戏内纹理（各种图片）
 - `Lyric` 文件夹放置歌词字幕专用的文件。
 - `UI` 文件夹是界面翻译专用的文件夹，Sprite 用于替换单个精灵图、Text 则用于翻译 UI 文本。
+- `SubtitleColors.json` 位于 `JustAnotherTranslator` 根目录。它可以让您调整每个说话人的字幕颜色以及字幕名字前缀颜色。
+- `KeywordReplaceText.json` 位于 `JustAnotherTranslator` 根目录，并在所有目标语言文件夹之间共享。它是通用文本翻译完成后使用的可选关键词替换配置。
 
 ## 常见问题
 

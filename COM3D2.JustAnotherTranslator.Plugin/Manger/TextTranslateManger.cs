@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
 using COM3D2.JustAnotherTranslator.Plugin.Loader;
 using COM3D2.JustAnotherTranslator.Plugin.Loader.Processor;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
+using Newtonsoft.Json;
 using UnityEngine.SceneManagement;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Manger;
@@ -25,6 +27,13 @@ public static class TextTranslateManger
 
     /// 正则表达式翻译字典
     private static Dictionary<Regex, string> _regexTranslationDict = new(); // regex -> translation
+
+    // 关键词替换字典
+    private static Dictionary<string, string>
+        _keywordReplaceDict = new(); // keyword -> replace word
+
+    // 关键词替换正则表达式缓存
+    private static Regex _keywordReplaceRegex;
 
     /// 异步加载器
     private static IAsyncTranslationLoader _asyncTextLoader;
@@ -69,6 +78,9 @@ public static class TextTranslateManger
         LoadTextAsync();
         RegisterPatch();
 
+        if (JustAnotherTranslator.EnableKeywordReplace.Value)
+            LoadKeywordReplaceText();
+
         SceneManager.sceneUnloaded += OnSceneUnloaded;
 
         _initialized = true;
@@ -95,6 +107,8 @@ public static class TextTranslateManger
         TranslatedTextPatterns.Clear();
 
         LoadTextAsync();
+        if (JustAnotherTranslator.EnableKeywordReplace.Value)
+            LoadKeywordReplaceText();
     }
 
     public static void Unload()
@@ -114,6 +128,8 @@ public static class TextTranslateManger
 
         _translationDict.Clear();
         _regexTranslationDict.Clear();
+        _keywordReplaceDict.Clear();
+        _keywordReplaceRegex = null;
         _isTranslationLoaded = false;
 
         TranslatedTexts.Clear();
@@ -149,6 +165,78 @@ public static class TextTranslateManger
         LogManager.Info("Starting asynchronous translation loading/开始异步加载翻译");
 
         _asyncTextLoader.StartLoading();
+    }
+
+    /// <summary>
+    ///     加载关键词替换配置文件。
+    ///     如果文件不存在，则创建空文件；如果加载成功，将同时初始化正则表达式。
+    /// </summary>
+    private static void LoadKeywordReplaceText()
+    {
+        try
+        {
+            if (!File.Exists(JustAnotherTranslator.KeywordReplaceTextPath))
+            {
+                _keywordReplaceDict = new Dictionary<string, string>();
+                SaveKeywordReplaceText(); // 文件不存在时，创建一个空的占位
+                UpdateKeywordReplaceRegex(); // 初始化空的正则
+                return;
+            }
+
+            var json = File.ReadAllText(JustAnotherTranslator.KeywordReplaceTextPath);
+            var loaded = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            _keywordReplaceDict = loaded ?? new Dictionary<string, string>();
+
+            UpdateKeywordReplaceRegex();
+            LogManager.Info(
+                $"Loaded keyword replace config, Count: {_keywordReplaceDict.Count}/加载了 {_keywordReplaceDict.Count} 个关键词替换");
+        }
+        catch (Exception e)
+        {
+            _keywordReplaceDict = new Dictionary<string, string>();
+            UpdateKeywordReplaceRegex();
+            LogManager.Warning($"Failed to load keyword config/加载关键词配置失败: {e.Message}");
+        }
+    }
+
+    /// <summary>
+    ///     保存当前的关键词配置到本地 JSON 文件
+    /// </summary>
+    private static void SaveKeywordReplaceText()
+    {
+        try
+        {
+            var json = JsonConvert.SerializeObject(_keywordReplaceDict, Formatting.Indented);
+            File.WriteAllText(JustAnotherTranslator.KeywordReplaceTextPath, json);
+        }
+        catch (Exception e)
+        {
+            LogManager.Warning($"Failed to save keyword config/保存关键词配置失败: {e.Message}");
+        }
+    }
+
+
+    /// <summary>
+    ///     根据当前字典生成正则表达式
+    /// </summary>
+    private static void UpdateKeywordReplaceRegex()
+    {
+        if (_keywordReplaceDict != null && _keywordReplaceDict.Count > 0)
+        {
+            // 移除空键（防止破坏正则），并按长度降序（长词优先匹配）
+            var validKeys = _keywordReplaceDict.Keys
+                .Where(k => !string.IsNullOrEmpty(k))
+                .OrderByDescending(k => k.Length);
+            // 转义特殊字符，用 | 拼接
+            var escapedKeys = validKeys.Select(k => Regex.Escape(k)).ToArray();
+            var pattern = string.Join("|", escapedKeys);
+
+            _keywordReplaceRegex = new Regex(pattern, RegexOptions.Compiled);
+        }
+        else
+        {
+            _keywordReplaceRegex = null;
+        }
     }
 
 
@@ -321,6 +409,7 @@ public static class TextTranslateManger
             return false;
         }
 
+        // JAT 翻译过的文本标记为翻译成功
         if (IsJatTranslatedText(original))
         {
             LogManager.Debug($"Text already translated by JAT, skipping: {original}");
@@ -328,7 +417,7 @@ public static class TextTranslateManger
         }
 
         // 注意：翻译到纯 [HF] 时如果被添加了特殊标记，会导致游戏崩溃，游戏还有其他的特殊标记，因此这里直接检查 []
-        if (original.StartsWith("[") & original.EndsWith("]"))
+        if (original.StartsWith("[") && original.EndsWith("]"))
         {
             LogManager.Debug($"Text StartsWith special mark [], skipping: {original}");
             return false;
@@ -336,7 +425,7 @@ public static class TextTranslateManger
 
         if (_translationDict.TryGetValue(original, out var value))
         {
-            translated = value;
+            translated = ReplaceKeyword(value);
             MarkTranslated(translated);
             LogManager.Debug($"Translated {original}    =>    {translated}");
             return true;
@@ -349,7 +438,7 @@ public static class TextTranslateManger
 
         if (_translationDict.TryGetValue(normalizedOriginal, out var lowerValue2))
         {
-            translated = lowerValue2;
+            translated = ReplaceKeyword(lowerValue2);
             MarkTranslated(translated);
             LogManager.Debug(
                 $"Translated (upper, replace and trimmed) {normalizedOriginal}    =>    {translated}");
@@ -403,6 +492,7 @@ public static class TextTranslateManger
                 return capturedString;
             });
 
+            translated = ReplaceKeyword(translated);
             MarkTranslated(translated);
             LogManager.Debug(
                 $"Translated (Regex) {keyValuePair.Key}:{keyValuePair.Value}    =>    {translated}");
@@ -415,7 +505,30 @@ public static class TextTranslateManger
 
 
     /// <summary>
-    ///     导出未翻译的文本
+    ///  替换关键词
+    /// </summary>
+    /// <param name="text">待替换的文本</param>
+    /// <returns>替换后的文本</returns>
+    private static string ReplaceKeyword(string text)
+    {
+        if (!JustAnotherTranslator.EnableKeywordReplace.Value)
+            return text;
+
+        if (string.IsNullOrEmpty(text) || _keywordReplaceRegex == null)
+            return text;
+
+        // 使用 MatchEvaluator 委托进行一次性替换
+        return _keywordReplaceRegex.Replace(text, match =>
+        {
+            if (_keywordReplaceDict.TryGetValue(match.Value, out var replacement))
+                return replacement;
+            return match.Value; // 如果没找到，原样返回
+        });
+    }
+
+
+    /// <summary>
+    ///     转储未翻译的文本
     /// </summary>
     /// <param name="text"></param>
     private static void DumpText(string text)

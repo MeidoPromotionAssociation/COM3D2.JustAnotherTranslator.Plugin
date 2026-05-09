@@ -15,6 +15,7 @@ repo url:  https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTransl
 JAT adopts a modular design, where each module can be enabled or disabled independently. However, the standard subtitles module depends on the general text translation module.
 
 - General Text Translation
+- Keyword Replacement
 - Texture Replacement
 - UI Translation
 - Lyrics Subtitles
@@ -63,6 +64,7 @@ After pressing the shortcut key, the following resources will be hot reloaded:
 - General Text Translation
 - Texture Replacement
 - UI Translation (Text and Sprites)
+- Keyword replacement configuration (KeywordReplaceText.json, requires General Text Translation and Keyword Replacement to be enabled)
 - Regular Subtitles (Current subtitles will be destroyed)
 - Speaker color configuration (SubtitleColors.json)
 
@@ -304,6 +306,56 @@ Note that this is a tab, not spaces.
 The [i18nEx guide](https://github.com/ghorsington/COM3D2.i18nEx/wiki/How-to-translate#script-translations) mentions replacing `<E>` with a tab. This seems to treat only the Japanese part as the original and the English part as the translation, without considering other languages.
 
 Once again, I believe this exposes the flaw of i18nEx being primarily aimed at English users.
+
+### 6. Keyword Replacement (`KeywordReplaceText.json`)
+
+Keyword replacement is an optional post-processing step for the General Text Translation module. It does not match the original game text directly. Instead, it runs after JAT has already found a general text translation and produced the translated text.
+
+How to enable it:
+
+1.  Enable `EnableKeywordReplace/启用关键词替换` in `[2General]`.
+2.  Make sure `EnableGeneralTextTranslation/启用通用文本翻译` is also enabled. Keyword replacement depends on General Text Translation and will not work without it.
+3.  Edit the root configuration file: `COM3D2\BepInEx\JustAnotherTranslator\KeywordReplaceText.json`.
+
+Note: `KeywordReplaceText.json` is stored in the `JustAnotherTranslator` root folder, not inside the `<Your_Language_Setting>` language folder. On first launch or when the target language is changed, the plugin automatically creates an empty `{}` file.
+
+The file format is a UTF-8 JSON object:
+
+```json
+{
+  "{player}": "Master",
+  "guest": "goshujin",
+  "VIP": "VIP Guest"
+}
+```
+
+If a general text translation file contains:
+
+```
+いらっしゃいませ	Welcome back, {player}
+本日はVIPイベントです	Today is a VIP event.
+いらっしゃいませ	Welcome back, guest
+```
+
+The final displayed text becomes:
+
+```
+Welcome back, Master
+Today is a VIP Guest event.
+Welcome back, goshujin
+```
+
+Scope and rules:
+
+-   It only applies to translated text returned by the General Text Translation module, including normal translations, normalized-match translations, and regex translation results. Regular subtitles that depend on General Text Translation can also use the replaced text.
+-   It does not apply to untranslated original text, UI text translation, UI sprite replacement, texture replacement, or lyric subtitle files.
+-   Keywords are matched literally, not as regular expressions; characters such as `(`, `[`, and `.` do not need extra escaping.
+-   Matching is case-sensitive.
+-   When keywords overlap, longer keywords are matched first. For example, `Masterpiece` is matched before `Master`.
+-   Empty keyword keys are ignored.
+-   The JSON must be valid JSON; comments and trailing commas are not supported. If loading fails, keyword replacement is treated as empty and a warning is written to the log.
+-   Replacement is performed once. Text inserted as a replacement is not scanned again, preventing replacement loops.
+-   After editing this file, use the `ReloadTranslateResource/重载翻译资源` shortcut to hot reload it, provided that both General Text Translation and Keyword Replacement are enabled.
 
 ## Performance recommendations and some notes
 

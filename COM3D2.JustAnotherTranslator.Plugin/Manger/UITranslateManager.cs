@@ -69,7 +69,8 @@ public static class UITranslateManager
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitexttranslatepatch");
 
         if (JustAnotherTranslator.EnableUITextExtraPatch.Value)
-            _uiTextTranslateExtraPatch = Harmony.CreateAndPatchAll(typeof(UITextTranslatePatch),
+            _uiTextTranslateExtraPatch = Harmony.CreateAndPatchAll(
+                typeof(UITextTranslateExtraPatch),
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitexttranslateextrapatch");
 
         if (JustAnotherTranslator.EnableUISpriteReplace.Value)

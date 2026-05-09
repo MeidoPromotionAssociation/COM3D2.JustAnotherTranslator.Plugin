@@ -505,7 +505,7 @@ public static class TextTranslateManger
 
 
     /// <summary>
-    ///  替换关键词
+    ///     替换关键词
     /// </summary>
     /// <param name="text">待替换的文本</param>
     /// <returns>替换后的文本</returns>

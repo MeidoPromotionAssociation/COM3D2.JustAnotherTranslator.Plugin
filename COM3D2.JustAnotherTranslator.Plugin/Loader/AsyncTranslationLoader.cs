@@ -108,6 +108,7 @@ public class AsyncTranslationLoader : IAsyncTranslationLoader
     public void Cancel()
     {
         _cancelRequested = true;
+        //TODO 并非真的取消了
     }
 
     /// <summary>

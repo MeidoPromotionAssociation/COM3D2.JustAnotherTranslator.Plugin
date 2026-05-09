@@ -15,11 +15,11 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
     // 销毁幂等保护
     private bool _isDestroyed;
 
-    // 动画协程
-    protected Coroutine AnimationCoroutine;
-
     // 自动隐藏协程
     protected Coroutine AnimationAutoHideCoroutine;
+
+    // 动画协程
+    protected Coroutine AnimationCoroutine;
 
     // 字幕背景图像组件
     protected Image BackgroundImageComponents;
@@ -171,7 +171,8 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         // 如果当前 Alpha 已经是 0，直接跳过
-        if (!gameObject.activeSelf || (CanvasGroupComponents is not null && CanvasGroupComponents.alpha <= 0.01f))
+        if (!gameObject.activeSelf ||
+            (CanvasGroupComponents is not null && CanvasGroupComponents.alpha <= 0.01f))
         {
             SetAlpha(0f);
             SetActive(false);
@@ -191,33 +192,6 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         }
 
         LogManager.Debug($"Hiding subtitle {gameObject.name}");
-    }
-
-    /// <summary>
-    ///     将字幕颜色重置回默认
-    /// </summary>
-    protected virtual void RestoreDefaultSubtitleColors()
-    {
-        if (Config == null)
-            return;
-
-        if (TextComponent != null)
-            TextComponent.color = Config.TextColor;
-
-        if (BackgroundImageComponents != null)
-            BackgroundImageComponents.color = Config.BackgroundColor;
-
-        if (OutlineComponents != null)
-        {
-            OutlineComponents.enabled = Config.EnableOutline;
-
-            if (Config.EnableOutline)
-            {
-                OutlineComponents.effectColor = Config.OutlineColor;
-                OutlineComponents.effectDistance =
-                    new Vector2(Config.OutlineWidth, Config.OutlineWidth);
-            }
-        }
     }
 
 
@@ -385,6 +359,33 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
         LogManager.Warning(
             "CanvasComponents is null, using default render mode ScreenSpaceOverlay/Canvas 为空，使用默认渲染模式 ScreenSpaceOverlay");
         return RenderMode.ScreenSpaceOverlay;
+    }
+
+    /// <summary>
+    ///     将字幕颜色重置回默认
+    /// </summary>
+    protected virtual void RestoreDefaultSubtitleColors()
+    {
+        if (Config == null)
+            return;
+
+        if (TextComponent != null)
+            TextComponent.color = Config.TextColor;
+
+        if (BackgroundImageComponents != null)
+            BackgroundImageComponents.color = Config.BackgroundColor;
+
+        if (OutlineComponents != null)
+        {
+            OutlineComponents.enabled = Config.EnableOutline;
+
+            if (Config.EnableOutline)
+            {
+                OutlineComponents.effectColor = Config.OutlineColor;
+                OutlineComponents.effectDistance =
+                    new Vector2(Config.OutlineWidth, Config.OutlineWidth);
+            }
+        }
     }
 
     /// <summary>

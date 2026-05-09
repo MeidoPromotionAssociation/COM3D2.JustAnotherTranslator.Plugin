@@ -128,7 +128,6 @@ public class AsyncTranslationLoader : IAsyncTranslationLoader
             {
                 LogManager.Warning(
                     $"[{_loaderName}] Translation directory not found, try to create/未找到翻译目录, 尝试创建: {_translationPath}");
-
                 try
                 {
                     Directory.CreateDirectory(_translationPath);
@@ -137,7 +136,6 @@ public class AsyncTranslationLoader : IAsyncTranslationLoader
                 {
                     LogManager.Error(
                         $"[{_loaderName}] Create translation folder failed, plugin may not work/创建翻译目录失败，插件可能无法运行: {e.Message}");
-                    _completionCallback?.Invoke(result);
                     return;
                 }
             }
@@ -152,7 +150,6 @@ public class AsyncTranslationLoader : IAsyncTranslationLoader
             if (totalFiles == 0)
             {
                 LogManager.Info($"[{_loaderName}] No translation files found/未找到翻译文件");
-                _completionCallback?.Invoke(result);
                 return;
             }
 

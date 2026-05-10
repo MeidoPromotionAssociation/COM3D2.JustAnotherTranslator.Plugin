@@ -21,6 +21,11 @@ public static class UITextDumpPatch
         // Keep track of patched types to avoid patching multiple times
         private static bool _patched;
 
+        public static void Reset()
+        {
+            _patched = false;
+        }
+
         public static void ApplyPatch(Harmony harmonyInstance)
         {
             try

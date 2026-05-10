@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
 using BepInEx.Logging;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 using COM3D2.JustAnotherTranslator.Plugin.Loader;
@@ -56,6 +57,9 @@ public static class UITranslateManager
 
     /// 加载状态
     private static bool _isLoading;
+
+    /// 异步加载代次，用于拒绝取消/重载后的旧回调
+    private static int _loadGeneration;
 
     public static void Init()
     {
@@ -112,6 +116,8 @@ public static class UITranslateManager
             return;
         }
 
+        Interlocked.Increment(ref _loadGeneration);
+
         // 如果异步加载正在进行，取消它
         if (_isLoading && _asyncUITextLoader != null)
             _asyncUITextLoader.Cancel();
@@ -128,6 +134,8 @@ public static class UITranslateManager
     public static void Unload()
     {
         if (!_initialized) return;
+
+        Interlocked.Increment(ref _loadGeneration);
 
         if (_isLoading && _asyncUITextLoader != null)
         {
@@ -147,9 +155,11 @@ public static class UITranslateManager
 
         _uiDebugPatch?.UnpatchSelf();
         _uiDebugPatch = null;
+        UIDebugPatch.LocalizeTargetPatcher.Reset();
 
         _uiTextDumpPatch?.UnpatchSelf();
         _uiTextDumpPatch = null;
+        UITextDumpPatch.LocalizeTargetPatcher.Reset();
 
         _translations.Clear();
         SpritePathCache.Clear();
@@ -319,9 +329,15 @@ public static class UITranslateManager
     /// </summary>
     private static void LoadTextTranslationsAsync()
     {
+        var loadGeneration = Interlocked.Increment(ref _loadGeneration);
+        _isLoading = true;
+
         _asyncUITextLoader =
-            new AsyncTranslationLoader("UI", JustAnotherTranslator.UITextPath, OnUiTextLoadProgress,
-                OnUiTextLoadComplete, new CsvTranslationFileProcessor());
+            new AsyncTranslationLoader("UI", JustAnotherTranslator.UITextPath,
+                (progress, filesProcessed, totalFiles) =>
+                    OnUiTextLoadProgress(progress, filesProcessed, totalFiles, loadGeneration),
+                result => OnUiTextLoadComplete(result, loadGeneration),
+                new CsvTranslationFileProcessor());
         _asyncUITextLoader.StartLoading();
     }
 
@@ -331,8 +347,13 @@ public static class UITranslateManager
     /// <param name="progress"></param>
     /// <param name="filesProcessed"></param>
     /// <param name="totalFiles"></param>
-    private static void OnUiTextLoadProgress(float progress, int filesProcessed, int totalFiles)
+    /// <param name="loadGeneration">加载代次</param>
+    private static void OnUiTextLoadProgress(float progress, int filesProcessed, int totalFiles,
+        int loadGeneration)
     {
+        if (loadGeneration != _loadGeneration)
+            return;
+
         // 进度变化超过 30% 时输出日志
         if ((int)(progress * 100) % 30 == 0)
             LogManager.Info(
@@ -344,8 +365,17 @@ public static class UITranslateManager
     ///     异步加载加载完成回调
     /// </summary>
     /// <param name="result">翻译加载结果</param>
-    private static void OnUiTextLoadComplete(TranslationLoadResult result)
+    /// <param name="loadGeneration">加载代次</param>
+    private static void OnUiTextLoadComplete(TranslationLoadResult result, int loadGeneration)
     {
+        if (loadGeneration != _loadGeneration)
+        {
+            LogManager.Debug("Ignoring stale UI translation loading result");
+            return;
+        }
+
+        _isLoading = false;
+        _asyncUITextLoader = null;
         _translations = result.Translations;
 
         if (result.TotalEntries > 0)

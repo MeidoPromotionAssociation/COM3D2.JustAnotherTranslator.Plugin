@@ -10,8 +10,18 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 /// </summary>
 public class VRTabletSubtitleComponent : BaseSubtitleComponent
 {
+    /// UI 未就绪时缓存最后一条字幕，避免初始化竞争导致字幕丢失
+    private bool _hasPendingSubtitle;
+
     /// 初始化协程
     private string _initCoroutineID;
+
+    private float _pendingDuration;
+    private string _pendingSpeakerName;
+    private string _pendingText;
+
+    /// UI 是否已经完成异步创建
+    private bool _uiReady;
 
     /// VR字幕的容器
     protected Transform VrSubtitleContainerTransform;
@@ -28,7 +38,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         // 跟随平板电脑可见性
         var isVisible = GameMain.Instance?.OvrMgr?.OvrCamera?.m_bUiToggle;
         if (isVisible == null) return;
-        SetActive(isVisible.Value);
+        SetTabletVisible(isVisible.Value);
     }
 
     /// <summary>
@@ -57,6 +67,7 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         {
             LogManager.Warning(
                 "Failed to find VR tablet object, subtitle will not be displayed, please report this issue/没有找到平板电脑物体，字幕将无法显示，请报告此问题");
+            _initCoroutineID = null;
             yield break;
         }
 
@@ -147,7 +158,56 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
         OutlineComponents.effectColor = new Color(0, 0, 0, 0.5f); // 黑色描边颜色
         OutlineComponents.effectDistance = new Vector2(1, 1); // 描边宽度
 
+        ApplyConfig();
+        _uiReady = true;
+        _initCoroutineID = null;
+
         LogManager.Debug("VRTabletSubtitleComponent Subtitle UI created");
+
+        if (_hasPendingSubtitle)
+        {
+            var pendingText = _pendingText;
+            var pendingSpeakerName = _pendingSpeakerName;
+            var pendingDuration = _pendingDuration;
+            ClearPendingSubtitle();
+            base.ShowSubtitle(pendingText, pendingSpeakerName, pendingDuration);
+        }
+        else
+        {
+            SetAlpha(0f);
+            SetActive(false);
+        }
+    }
+
+    /// <summary>
+    ///     显示字幕
+    /// </summary>
+    /// <param name="text">要显示的文本</param>
+    /// <param name="speakerName">说话者名称，可为空</param>
+    /// <param name="duration">显示持续时间，0表示持续显示</param>
+    public override void ShowSubtitle(string text, string speakerName, float duration)
+    {
+        if (!_uiReady)
+        {
+            _pendingText = text;
+            _pendingSpeakerName = speakerName;
+            _pendingDuration = duration;
+            _hasPendingSubtitle = true;
+            CreateSubtitleUI();
+            LogManager.Debug("VR tablet subtitle UI is not ready, queued subtitle display");
+            return;
+        }
+
+        base.ShowSubtitle(text, speakerName, duration);
+    }
+
+    /// <summary>
+    ///     隐藏字幕
+    /// </summary>
+    public override void HideSubtitle(bool skipAnimation = false)
+    {
+        ClearPendingSubtitle();
+        base.HideSubtitle(skipAnimation);
     }
 
     /// <summary>
@@ -278,12 +338,39 @@ public class VRTabletSubtitleComponent : BaseSubtitleComponent
     /// </summary>
     protected override void DestroySubtitleUI()
     {
+        _uiReady = false;
+        ClearPendingSubtitle();
+
+        if (!string.IsNullOrEmpty(_initCoroutineID))
+        {
+            CoroutineManager.StopCoroutine(_initCoroutineID);
+            _initCoroutineID = null;
+        }
+
         if (VrSubtitleContainerTransform != null)
         {
             Destroy(VrSubtitleContainerTransform.gameObject);
             VrSubtitleContainerTransform = null;
         }
 
+        VRTabletTransform = null;
         base.DestroySubtitleUI();
+    }
+
+    private void SetTabletVisible(bool active)
+    {
+        if (VrSubtitleContainerTransform is not null)
+            VrSubtitleContainerTransform.gameObject.SetActive(active);
+
+        if (CanvasComponents is not null)
+            CanvasComponents.gameObject.SetActive(active);
+    }
+
+    private void ClearPendingSubtitle()
+    {
+        _hasPendingSubtitle = false;
+        _pendingText = null;
+        _pendingSpeakerName = null;
+        _pendingDuration = 0f;
     }
 }

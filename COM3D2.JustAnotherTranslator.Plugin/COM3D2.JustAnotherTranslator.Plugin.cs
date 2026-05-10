@@ -1602,20 +1602,20 @@ public class JustAnotherTranslator : BaseUnityPlugin
         // 注册关键词替换启用状态变更事件
         EnableKeywordReplace.SettingChanged += (_, _) =>
         {
+            if (!EnableGeneralTextTranslation.Value)
+            {
+                LogManager.Info(
+                    "Keyword replacement setting changed, but general text translation is not enabled, so it will not work/关键词替换设置已变更，但通用文本翻译未启用，因此不会生效");
+                return;
+            }
+
             if (EnableKeywordReplace.Value)
-            {
                 LogManager.Info("Keyword Replace Enabled/关键词替换已启用");
-                TextTranslateManger.Init();
-                XUATInterop.Init();
-            }
             else
-            {
                 LogManager.Info("Keyword Replace Disable/关键词替换已禁用");
-                TextTranslateManger.Unload();
-                XUATInterop.Unload();
-                TextTranslateManger.Init();
-                XUATInterop.Init();
-            }
+
+            TextTranslateManger.Reload();
+            XUATInterop.Init();
         };
 
         // 注册UI精灵图替换启用状态变更事件
@@ -2761,19 +2761,21 @@ public class JustAnotherTranslator : BaseUnityPlugin
         {
             if (EnableTermDump.Value)
             {
+                LogManager.Info("Term dump enabled/启用term转储");
+
                 if (!EnableUITextTranslation.Value)
                     LogManager.Info(
-                        "Term dumping is enabled, but the UI translation module is not enabled, so it will not take effect./已启用Term转储，但未开启UI翻译模块，因此不会生效");
-
-                UITranslateManager.Unload();
-                UITranslateManager.Init();
+                        "Term dumping is enabled without UI translation; only the dump patch will be rebuilt/已启用Term转储但未开启UI翻译，将仅重建转储补丁");
             }
-            else if (!EnableTermDump.Value && !EnableUITextTranslation.Value)
+            else
             {
-                UITranslateManager.Unload();
-                UITranslateManager.Init();
                 LogManager.Info("Term dump disabled/禁用term转储");
             }
+
+            UITranslateManager.Unload();
+            if (EnableUITextTranslation.Value || EnableUITextExtraPatch.Value ||
+                EnableUISpriteReplace.Value || EnableTermDump.Value || EnableSpriteDump.Value)
+                UITranslateManager.Init();
         };
 
         // 注册DumpTerm阈值变更事件

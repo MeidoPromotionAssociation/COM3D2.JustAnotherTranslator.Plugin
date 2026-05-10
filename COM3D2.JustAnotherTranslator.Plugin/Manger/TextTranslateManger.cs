@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using COM3D2.JustAnotherTranslator.Plugin.Hooks.Text;
 using COM3D2.JustAnotherTranslator.Plugin.Loader;
 using COM3D2.JustAnotherTranslator.Plugin.Loader.Processor;
@@ -69,6 +70,9 @@ public static class TextTranslateManger
     /// 加载状态
     private static bool _isLoading;
 
+    /// 异步加载代次，用于拒绝取消/重载后的旧回调
+    private static int _loadGeneration;
+
     public static void Init()
     {
         if (_initialized) return;
@@ -98,6 +102,8 @@ public static class TextTranslateManger
             return;
         }
 
+        Interlocked.Increment(ref _loadGeneration);
+
         // 如果异步加载正在进行，取消它
         if (_isLoading && _asyncTextLoader != null)
             _asyncTextLoader.Cancel();
@@ -114,6 +120,8 @@ public static class TextTranslateManger
     public static void Unload()
     {
         if (!_initialized) return;
+
+        Interlocked.Increment(ref _loadGeneration);
 
         // 如果异步加载正在进行，取消它
         if (_isLoading && _asyncTextLoader != null)
@@ -151,14 +159,16 @@ public static class TextTranslateManger
     /// </summary>
     private static void LoadTextAsync()
     {
+        var loadGeneration = Interlocked.Increment(ref _loadGeneration);
         _isLoading = true;
 
         // 创建异步加载器
         _asyncTextLoader = new AsyncTranslationLoader(
             "Text",
             JustAnotherTranslator.TranslationTextPath,
-            OnLoadingProgress,
-            OnLoadingComplete,
+            (progress, filesProcessed, totalFiles) =>
+                OnLoadingProgress(progress, filesProcessed, totalFiles, loadGeneration),
+            result => OnLoadingComplete(result, loadGeneration),
             new TxtTranslationFileProcessor()
         );
 
@@ -264,8 +274,13 @@ public static class TextTranslateManger
     /// <param name="progress"></param>
     /// <param name="filesProcessed"></param>
     /// <param name="totalFiles"></param>
-    private static void OnLoadingProgress(float progress, int filesProcessed, int totalFiles)
+    /// <param name="loadGeneration">加载代次</param>
+    private static void OnLoadingProgress(float progress, int filesProcessed, int totalFiles,
+        int loadGeneration)
     {
+        if (loadGeneration != _loadGeneration)
+            return;
+
         // 进度变化超过 30% 时输出日志
         if ((int)(progress * 100) % 30 == 0)
             LogManager.Info(
@@ -276,9 +291,17 @@ public static class TextTranslateManger
     ///     异步加载加载完成回调
     /// </summary>
     /// <param name="result">翻译加载结果</param>
-    private static void OnLoadingComplete(TranslationLoadResult result)
+    /// <param name="loadGeneration">加载代次</param>
+    private static void OnLoadingComplete(TranslationLoadResult result, int loadGeneration)
     {
+        if (loadGeneration != _loadGeneration)
+        {
+            LogManager.Debug("Ignoring stale text translation loading result");
+            return;
+        }
+
         _isLoading = false;
+        _asyncTextLoader = null;
         _isTranslationLoaded = true;
 
         // 更新翻译字典

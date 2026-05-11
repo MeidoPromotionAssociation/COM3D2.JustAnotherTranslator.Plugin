@@ -1292,6 +1292,10 @@ public class JustAnotherTranslator : BaseUnityPlugin
             else
                 LogManager.Info("Keyword Replace Enabled/关键词替换已启用");
         }
+        else
+        {
+            LogManager.Info("Keyword Replace Disabled/关键词替换已禁用");
+        }
 
         if (EnableUITextExtraPatch.Value)
         {

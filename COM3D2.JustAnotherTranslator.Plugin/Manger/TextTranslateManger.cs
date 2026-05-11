@@ -547,12 +547,19 @@ public static class TextTranslateManger
             return text;
 
         // 使用 MatchEvaluator 委托进行一次性替换
-        return _keywordReplaceRegex.Replace(text, match =>
+        var result = _keywordReplaceRegex.Replace(text, match =>
         {
             if (_keywordReplaceDict.TryGetValue(match.Value, out var replacement))
+            {
+                LogManager.Debug($"keyword hit: {match.Value} replaced with {replacement}");
                 return replacement;
-            return match.Value; // 如果没找到，原样返回
+            }
+
+            return match.Value;
         });
+        if (result != text) LogManager.Debug($"Replaced keyword: {text} -> {result}");
+
+        return result;
     }
 
 

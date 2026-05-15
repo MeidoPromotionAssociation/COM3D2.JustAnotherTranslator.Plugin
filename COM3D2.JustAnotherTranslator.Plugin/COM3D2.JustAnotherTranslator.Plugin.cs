@@ -85,6 +85,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
     public static ConfigEntry<bool> EnableGeneralTextTranslation;
     public static ConfigEntry<bool> EnableUITextTranslation;
     public static ConfigEntry<bool> EnableUITextExtraPatch;
+    public static ConfigEntry<bool> EnableUITextDangerPatch;
     public static ConfigEntry<bool> EnableUISpriteReplace;
     public static ConfigEntry<bool> EnableTextureReplace;
     public static ConfigEntry<bool> EnableKeywordReplace;
@@ -358,6 +359,14 @@ public class JustAnotherTranslator : BaseUnityPlugin
                 "Enabling more UI translation patches (covering more translation paths) may pose certain risks./启用更多 UI 翻译补丁（覆盖更多翻译路径），可能有一定危险性",
                 null,
                 new ConfigurationManagerAttributes { Order = 1930 }));
+
+        EnableUITextDangerPatch = Config.Bind("2General",
+            "EnableUITextDangerPatch/启用UI文本翻译危险补丁",
+            false,
+            new ConfigDescription(
+                "Enable UI translation patches that depend on private fields, concrete UI hierarchy, or version-specific game implementation details. Keep disabled unless you know you need these paths./启用依赖私有字段、具体 UI 层级或特定游戏版本实现细节的 UI 翻译补丁。除非确实需要这些路径，否则建议保持关闭",
+                null,
+                new ConfigurationManagerAttributes { Order = 1925, IsAdvanced = true }));
 
         AllowFilesInZipLoadInOrder = Config.Bind("2General",
             "AllowFilesInZipLoadInOrder/允许 ZIP 文件内文件按顺序加载",
@@ -1308,6 +1317,17 @@ public class JustAnotherTranslator : BaseUnityPlugin
             LogManager.Info("UI Translation Extra Patch Disabled/UI 翻译额外补丁已禁用");
         }
 
+        if (EnableUITextDangerPatch.Value)
+        {
+            LogManager.Info(
+                "UI Translation Danger Patch Enabled, it depends on game implementation details and may break after game updates/UI 翻译危险补丁已启用，它依赖游戏实现细节，游戏更新后可能失效");
+            UITranslateManager.Init();
+        }
+        else
+        {
+            LogManager.Info("UI Translation Danger Patch Disabled/UI 翻译危险补丁已禁用");
+        }
+
         if (EnableUISpriteReplace.Value)
         {
             LogManager.Info("UI Sprite Replace Enabled/UI 精灵图替换已启用");
@@ -1445,7 +1465,8 @@ public class JustAnotherTranslator : BaseUnityPlugin
             if (EnableTextureReplace.Value)
                 TextureReplaceManger.Reload();
 
-            if (EnableUITextTranslation.Value || EnableUISpriteReplace.Value)
+            if (EnableUITextTranslation.Value || EnableUITextExtraPatch.Value ||
+                EnableUITextDangerPatch.Value || EnableUISpriteReplace.Value)
                 UITranslateManager.Reload();
 
             if (EnableBaseSubtitle.Value || EnableYotogiSubtitle.Value || EnableAdvSubtitle.Value)
@@ -1598,6 +1619,25 @@ public class JustAnotherTranslator : BaseUnityPlugin
             else
             {
                 LogManager.Info("UI Translation Extra Patch Disabled/UI 文本翻译额外补丁已禁用");
+                UITranslateManager.Unload();
+                UITranslateManager.Init();
+            }
+        };
+
+        // 注册UI文本翻译危险补丁启用状态变更事件
+        EnableUITextDangerPatch.SettingChanged += (_, _) =>
+        {
+            if (EnableUITextDangerPatch.Value)
+            {
+                LogManager.Info(
+                    "UI Translation Danger Patch Enabled/UI 文本翻译危险补丁已启用");
+                UITranslateManager.Unload();
+                UITranslateManager.Init();
+            }
+            else
+            {
+                LogManager.Info(
+                    "UI Translation Danger Patch Disabled/UI 文本翻译危险补丁已禁用");
                 UITranslateManager.Unload();
                 UITranslateManager.Init();
             }
@@ -2778,6 +2818,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
             UITranslateManager.Unload();
             if (EnableUITextTranslation.Value || EnableUITextExtraPatch.Value ||
+                EnableUITextDangerPatch.Value ||
                 EnableUISpriteReplace.Value || EnableTermDump.Value || EnableSpriteDump.Value)
                 UITranslateManager.Init();
         };

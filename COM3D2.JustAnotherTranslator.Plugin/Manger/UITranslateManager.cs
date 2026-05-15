@@ -24,6 +24,7 @@ public static class UITranslateManager
 {
     private static Harmony _uiTextTranslatePatch;
     private static Harmony _uiTextTranslateExtraPatch;
+    private static Harmony _uiTextTranslateDangerPatch;
     private static Harmony _uiSpriteReplacePatch;
     private static Harmony _uiDebugPatch;
     private static Harmony _uiTextDumpPatch;
@@ -77,6 +78,11 @@ public static class UITranslateManager
                 typeof(UITextTranslateExtraPatch),
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitexttranslateextrapatch");
 
+        if (JustAnotherTranslator.EnableUITextDangerPatch.Value)
+            _uiTextTranslateDangerPatch = Harmony.CreateAndPatchAll(
+                typeof(UITextTranslateDangerPatch),
+                "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitexttranslatedangerpatch");
+
         if (JustAnotherTranslator.EnableUISpriteReplace.Value)
             _uiSpriteReplacePatch = Harmony.CreateAndPatchAll(typeof(UISpriteReplacePatch),
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uispritereplacepatch");
@@ -122,11 +128,8 @@ public static class UITranslateManager
         if (_isLoading && _asyncUITextLoader != null)
             _asyncUITextLoader.Cancel();
 
-        // 重新异步加载文本翻译
-        LoadTextTranslationsAsync();
-
-        // 重新扫描精灵图（同步，内部会清除旧缓存）
-        LoadSpriteTextures();
+        Unload();
+        Init();
 
         LogManager.Info("Starting UI translation reload/开始重载 UI 翻译");
     }
@@ -149,6 +152,9 @@ public static class UITranslateManager
 
         _uiTextTranslateExtraPatch?.UnpatchSelf();
         _uiTextTranslateExtraPatch = null;
+
+        _uiTextTranslateDangerPatch?.UnpatchSelf();
+        _uiTextTranslateDangerPatch = null;
 
         _uiSpriteReplacePatch?.UnpatchSelf();
         _uiSpriteReplacePatch = null;

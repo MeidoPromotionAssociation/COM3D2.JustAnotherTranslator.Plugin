@@ -249,6 +249,44 @@ public static class UITextTranslateExtraPatch
 
     #endregion
 
+    #region YotogiParamScroll
+
+    /// <summary>
+    ///     YotogiParamScroll.SetLabelText 在 JP 版（!Product.supportMultiLanguage）
+    ///     跳过 Localize term 设置，导致夜伽参数名不走 I2 翻译路径。
+    ///     此 Postfix 复制多语言分支逻辑，设置 TermArgs 和 term。
+    /// </summary>
+    [HarmonyPatch(typeof(YotogiParamScroll), "SetLabelText",
+        typeof(YotogiParamScroll.LabelAndLocalize), typeof(string), typeof(int))]
+    [HarmonyPostfix]
+#pragma warning disable Harmony003
+    private static void YotogiParamScroll_SetLabelText_Postfix(
+        YotogiParamScroll.LabelAndLocalize labelAndLocalize, string text, int num)
+    {
+        try
+        {
+            if (Product.supportMultiLanguage)
+                return;
+
+            var localize = labelAndLocalize.localize;
+            if (localize == null)
+                return;
+
+            localize.TermArgs = new Localize.ArgsPair[2];
+            localize.TermArgs[0] = Localize.ArgsPair.Create("  {0}", false);
+            localize.TermArgs[1] = Localize.ArgsPair.Create(num.ToString(), false);
+            localize.SetTerm("MaidStatus/" + text);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"YotogiParamScroll_SetLabelText_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+        }
+    }
+#pragma warning restore Harmony003
+
+    #endregion
+
     #region YotogiSkillCommands
 
     /// <summary>

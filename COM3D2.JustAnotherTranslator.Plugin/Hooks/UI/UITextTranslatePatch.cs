@@ -229,4 +229,30 @@ public static class UITextTranslatePatch
             return true;
         }
     }
+
+    /// <summary>
+    ///     强制将 wf.Utility.SetLocalizeTermAddComponent 的 forceApply 设为 true
+    ///     与 SetLocalizeTerm 类似，该方法也有 supportMultiLanguage 检查。
+    ///     影响 MaidTraining（客人名、话题、技能描述）和 PhotoBooth（分类、按钮）等场景。
+    /// </summary>
+    [HarmonyPatch(typeof(Utility), "SetLocalizeTermAddComponent",
+        typeof(Component),
+        typeof(string),
+        typeof(bool))]
+    [HarmonyPrefix]
+    public static bool WF_Utility_SetLocalizeTermAddComponent_Prefix(Component obj, string term,
+        ref bool forceApply)
+    {
+        try
+        {
+            forceApply = true;
+            return true;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"WF_Utility_SetLocalizeTermAddComponent_Prefix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+            return true;
+        }
+    }
 }

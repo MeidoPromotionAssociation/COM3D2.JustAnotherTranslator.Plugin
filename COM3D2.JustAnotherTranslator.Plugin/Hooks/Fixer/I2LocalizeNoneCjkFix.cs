@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
@@ -266,6 +267,7 @@ public static class I2LocalizeNoneCjkFix
     /// <summary>
     ///     Postfix: MaidManagementMain 仍会按 Product.supportMultiLanguage 记录 status_panel_。
     ///     启用补丁后，将其改为 localized 状态表，确保按钮逻辑和显示状态一致。
+    ///     同时把按钮 UILabel 的 spacingX 重置为 0，避免日文版预设的负 spacingX 导致英文字符重叠。
     /// </summary>
     [HarmonyPatch(typeof(MaidManagementMain), "Awake")]
     [HarmonyPostfix]
@@ -273,6 +275,8 @@ public static class I2LocalizeNoneCjkFix
     {
         try
         {
+            ResetButtonLabelSpacing(__instance);
+
             var statusMgr =
                 Traverse.Create(__instance).Field("status_mgr_").GetValue<CharaSelectStatusMgr>();
             if (!ShouldUseLocalizedStatusPanel(statusMgr))
@@ -289,6 +293,31 @@ public static class I2LocalizeNoneCjkFix
         {
             LogManager.Error(
                 $"MaidManagementMain_Awake_Postfix unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    private static void ResetButtonLabelSpacing(MaidManagementMain instance)
+    {
+        var buttonDic = Traverse.Create(instance).Field("button_dic_")
+            .GetValue<Dictionary<string, UIButton>>();
+        if (buttonDic == null)
+            return;
+
+        foreach (var pair in buttonDic)
+        {
+            if (pair.Value == null)
+                continue;
+
+            foreach (var label in pair.Value.GetComponentsInChildren<UILabel>(true))
+            {
+                if (label == null)
+                    continue;
+
+                if (label.useFloatSpacing)
+                    label.floatSpacingX = 0f;
+                else
+                    label.spacingX = 0;
+            }
         }
     }
 
@@ -417,6 +446,97 @@ public static class I2LocalizeNoneCjkFix
         {
             LogManager.Error(
                 $"ProfileCtrl_Init_SpacingFix_Postfix unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    #endregion
+
+    #region MaidPlate contract type label position fix
+
+    /// <summary>
+    ///     Postfix: 将 MaidPlate 的合同类型标签 x 坐标移到 78f。
+    ///     原方法仅在 !Product.isPublic && !Product.isJapan 时执行（MaidPlate.cs:77-81），
+    ///     日文版跳过导致英文合同类型文字与名字重叠。
+    /// </summary>
+    [HarmonyPatch(typeof(MaidPlate), "Start")]
+    [HarmonyPostfix]
+    public static void MaidPlate_Start_Postfix(MaidPlate __instance)
+    {
+        try
+        {
+            if (Product.isPublic)
+                return;
+
+            var transform =
+                __instance.transform.Find("LeftPlate/FrameBaseData/TextTypeName");
+            if (transform == null)
+                return;
+
+            var pos = transform.localPosition;
+            transform.localPosition = new Vector3(78f, pos.y, pos.z);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"MaidPlate_Start_Postfix unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     Postfix: 将 MaidPlateForTeikokusou 的合同类型标签 x 坐标覆盖为 168f。
+    ///     原方法仅在 !Product.isPublic && !Product.isJapan 时执行（MaidPlateForTeikokusou.cs:15-19），
+    ///     基类 MaidPlate.Start 的 Postfix 会先把 x 设为 78f，这里再覆盖为 168f 保持原样布局。
+    /// </summary>
+    [HarmonyPatch(typeof(MaidPlateForTeikokusou), "Start")]
+    [HarmonyPostfix]
+    public static void MaidPlateForTeikokusou_Start_Postfix(MaidPlateForTeikokusou __instance)
+    {
+        try
+        {
+            if (Product.isPublic)
+                return;
+
+            var transform =
+                __instance.transform.Find("LeftPlate/FrameBaseData/TextTypeName");
+            if (transform == null)
+                return;
+
+            var pos = transform.localPosition;
+            transform.localPosition = new Vector3(168f, pos.y, pos.z);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"MaidPlateForTeikokusou_Start_Postfix unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     Postfix: 将 ScheduleCtrl.SetMaidStatus 中的合同类型标签 x 坐标移到 182f。
+    ///     原方法仅在 !Product.isPublic && !Product.isJapan 时执行（ScheduleCtrl.cs:382-386），
+    ///     日文版跳过导致排程面板的英文合同类型文字重叠。
+    /// </summary>
+    [HarmonyPatch(typeof(ScheduleCtrl), "SetMaidStatus")]
+    [HarmonyPostfix]
+    public static void ScheduleCtrl_SetMaidStatus_Postfix(GameObject maidStatus)
+    {
+        try
+        {
+            if (Product.isPublic || maidStatus == null)
+                return;
+
+            var label = UTY.GetChildObject(maidStatus, "Status/ContractType/Value", false)
+                ?.GetComponent<UILabel>();
+            if (label == null)
+                return;
+
+            var pos = label.transform.localPosition;
+            label.transform.localPosition = new Vector3(182f, pos.y, pos.z);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"ScheduleCtrl_SetMaidStatus_Postfix unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
         }
     }
 

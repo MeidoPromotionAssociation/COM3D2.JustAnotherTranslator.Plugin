@@ -79,9 +79,13 @@ public static class UITranslateManager
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitexttranslateextrapatch");
 
         if (JustAnotherTranslator.EnableUITextDangerPatch.Value)
+        {
             _uiTextTranslateDangerPatch = Harmony.CreateAndPatchAll(
                 typeof(UITextTranslateDangerPatch),
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitexttranslatedangerpatch");
+            UITextTranslateDangerPatch.MaidProfileCommentPatcher.ApplyPatch(
+                _uiTextTranslateDangerPatch);
+        }
 
         if (JustAnotherTranslator.EnableUISpriteReplace.Value)
             _uiSpriteReplacePatch = Harmony.CreateAndPatchAll(typeof(UISpriteReplacePatch),
@@ -153,19 +157,20 @@ public static class UITranslateManager
         _uiTextTranslateExtraPatch?.UnpatchSelf();
         _uiTextTranslateExtraPatch = null;
 
+        UITextTranslateDangerPatch.MaidProfileCommentPatcher.Reset();
         _uiTextTranslateDangerPatch?.UnpatchSelf();
         _uiTextTranslateDangerPatch = null;
 
         _uiSpriteReplacePatch?.UnpatchSelf();
         _uiSpriteReplacePatch = null;
 
+        UIDebugPatch.LocalizeTargetPatcher.Reset();
         _uiDebugPatch?.UnpatchSelf();
         _uiDebugPatch = null;
-        UIDebugPatch.LocalizeTargetPatcher.Reset();
 
+        UITextDumpPatch.LocalizeTargetPatcher.Reset();
         _uiTextDumpPatch?.UnpatchSelf();
         _uiTextDumpPatch = null;
-        UITextDumpPatch.LocalizeTargetPatcher.Reset();
 
         _translations.Clear();
         SpritePathCache.Clear();

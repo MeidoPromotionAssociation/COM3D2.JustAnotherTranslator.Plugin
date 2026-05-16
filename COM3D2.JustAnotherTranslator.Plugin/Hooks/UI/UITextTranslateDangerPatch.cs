@@ -1,8 +1,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
+using Edit;
 using HarmonyLib;
 using I2.Loc;
 using MaidStatus;
@@ -65,6 +68,139 @@ public static class UITextTranslateDangerPatch
 
     private static readonly MethodInfo SceneCasinoShopUpdateUIStateMethod =
         AccessTools.Method(typeof(SceneCasinoShop), "UpdateUIState");
+
+    #region MaidProfileComment
+
+    /// <summary>
+    ///     MaidProfile.Create 内部的 GetTranslation 委托在 JP 版（!Product.supportMultiLanguage）
+    ///     下直接返回 CSV 中的日文原文，不调用 I2 Localization。
+    ///     此 Patcher 通过运行时反射定位编译器生成的委托方法，用 Transpiler 移除
+    ///     Product.supportMultiLanguage 分支检查，使其始终走 I2 翻译路径。
+    /// </summary>
+    public static class MaidProfileCommentPatcher
+    {
+        private static bool _patched;
+
+        public static void Reset()
+        {
+            _patched = false;
+        }
+
+        public static void ApplyPatch(Harmony harmony)
+        {
+            try
+            {
+                if (_patched) return;
+
+                var targetMethod = FindGetTranslationMethod();
+                if (targetMethod == null)
+                {
+                    LogManager.Warning(
+                        "MaidProfileCommentPatcher: Could not find compiler-generated GetTranslation method in MaidProfile, skip patch/" +
+                        "无法找到 MaidProfile 中编译器生成的 GetTranslation 方法，跳过补丁");
+                    return;
+                }
+
+                var transpiler = new HarmonyMethod(typeof(MaidProfileCommentPatcher),
+                    nameof(GetTranslationTranspiler));
+                harmony.Patch(targetMethod, transpiler: transpiler);
+                _patched = true;
+
+                LogManager.Debug(
+                    $"MaidProfileCommentPatcher: Successfully patched {targetMethod.DeclaringType?.Name}.{targetMethod.Name}");
+            }
+            catch (Exception e)
+            {
+                LogManager.Error(
+                    $"MaidProfileCommentPatcher.ApplyPatch unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+            }
+        }
+
+        private static MethodInfo FindGetTranslationMethod()
+        {
+            var supportMultiLanguageGetter = AccessTools.PropertyGetter(
+                typeof(Product), "supportMultiLanguage");
+            if (supportMultiLanguageGetter == null)
+                return null;
+
+            var nestedTypes = typeof(MaidProfile).GetNestedTypes(
+                BindingFlags.NonPublic | BindingFlags.Public);
+
+            foreach (var type in nestedTypes)
+            {
+                var methods = type.GetMethods(
+                    BindingFlags.Instance | BindingFlags.Static |
+                    BindingFlags.NonPublic | BindingFlags.Public);
+
+                foreach (var method in methods)
+                {
+                    if (method.ReturnType != typeof(string))
+                        continue;
+
+                    var parameters = method.GetParameters();
+                    if (parameters.Length != 1 || parameters[0].ParameterType != typeof(string))
+                        continue;
+
+                    if (!MethodContainsCall(method, supportMultiLanguageGetter))
+                        continue;
+
+                    return method;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool MethodContainsCall(MethodInfo method, MethodInfo target)
+        {
+            try
+            {
+                var instructions = PatchProcessor.GetOriginalInstructions(method);
+                return instructions.Any(instr =>
+                    (instr.opcode == OpCodes.Call || instr.opcode == OpCodes.Callvirt) &&
+                    instr.operand is MethodInfo mi &&
+                    mi == target);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        // ReSharper disable once InconsistentNaming
+        private static IEnumerable<CodeInstruction> GetTranslationTranspiler(
+            IEnumerable<CodeInstruction> instructions)
+        {
+            var supportMultiLanguageGetter = AccessTools.PropertyGetter(
+                typeof(Product), "supportMultiLanguage");
+            var found = false;
+
+            foreach (var instruction in instructions)
+            {
+                if (!found &&
+                    (instruction.opcode == OpCodes.Call ||
+                     instruction.opcode == OpCodes.Callvirt) &&
+                    instruction.operand is MethodInfo mi &&
+                    mi == supportMultiLanguageGetter)
+                {
+                    instruction.opcode = OpCodes.Ldc_I4_1;
+                    instruction.operand = null;
+                    found = true;
+                    LogManager.Debug(
+                        "MaidProfileCommentPatcher: Replaced Product.supportMultiLanguage with constant true");
+                }
+
+                yield return instruction;
+            }
+
+            if (!found)
+                LogManager.Warning(
+                    "MaidProfileCommentPatcher: Could not find Product.supportMultiLanguage call in target method, transpiler had no effect/" +
+                    "在目标方法中未找到 Product.supportMultiLanguage 调用，Transpiler 未生效");
+        }
+    }
+
+    #endregion
 
     #region PopupAndTabList / PopupAndButtonList
 

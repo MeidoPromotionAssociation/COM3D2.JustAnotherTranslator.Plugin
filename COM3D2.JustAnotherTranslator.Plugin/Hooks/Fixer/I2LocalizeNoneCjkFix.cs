@@ -5,6 +5,7 @@ using HarmonyLib;
 using I2.Loc;
 using MaidCafe;
 using UnityEngine;
+using wf;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.Fixer;
 
@@ -373,6 +374,93 @@ public static class I2LocalizeNoneCjkFix
                 $"StatusCtrl_SetData_Postfix unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
         }
     }
+
+    #region ProfileCtrl spacing fix
+
+    private static readonly FieldInfo ProfileCtrlFreeCommentField =
+        AccessTools.Field(typeof(ProfileCtrl), "m_inFreeComment");
+
+    private static readonly FieldInfo ProfileCtrlProfileCommentField =
+        AccessTools.Field(typeof(ProfileCtrl), "m_lProfileComment");
+
+    /// <summary>
+    ///     Postfix: 将 ProfileCtrl 中 FreeComment 和 ProfileComment 的 spacingX 设为 0。
+    ///     原方法在 supportMultiLanguage 时执行此操作（ProfileCtrl.cs:222-224），
+    ///     日文版跳过导致英文文本字符间有不自然的间距。
+    /// </summary>
+    [HarmonyPatch(typeof(ProfileCtrl), "Init")]
+    [HarmonyPostfix]
+    public static void ProfileCtrl_Init_SpacingFix_Postfix(ProfileCtrl __instance)
+    {
+        try
+        {
+            if (ProfileCtrlFreeCommentField != null)
+            {
+                var freeComment = ProfileCtrlFreeCommentField.GetValue(__instance) as UIInput;
+                if (freeComment != null)
+                {
+                    var label = freeComment.GetComponentInChildren<UILabel>();
+                    if (label != null)
+                        label.spacingX = 0;
+                }
+            }
+
+            if (ProfileCtrlProfileCommentField != null)
+            {
+                var profileComment =
+                    ProfileCtrlProfileCommentField.GetValue(__instance) as UILabel;
+                if (profileComment != null)
+                    profileComment.spacingX = 0;
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"ProfileCtrl_Init_SpacingFix_Postfix unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    #endregion
+
+    #region YotogiParamScroll grid width fix
+
+    private static readonly FieldInfo YotogiParamScrollParentObjField =
+        AccessTools.Field(typeof(YotogiParamScroll), "parent_obj_");
+
+    /// <summary>
+    ///     Postfix: 将 YotogiParamScroll 的网格 cellWidth 设为 150f。
+    ///     原方法在 supportMultiLanguage 时执行此操作（YotogiParamScroll.cs:17-21），
+    ///     日文版跳过导致英文参数名因单元格过窄而重叠。
+    /// </summary>
+    [HarmonyPatch(typeof(YotogiParamScroll), "Awake")]
+    [HarmonyPostfix]
+    public static void YotogiParamScroll_Awake_Postfix(YotogiParamScroll __instance)
+    {
+        try
+        {
+            if (YotogiParamScrollParentObjField == null)
+                return;
+
+            var parentObj =
+                YotogiParamScrollParentObjField.GetValue(__instance) as GameObject;
+            if (parentObj == null)
+                return;
+
+            var grid = parentObj.GetComponent<UIGrid>();
+            if (grid != null)
+            {
+                grid.cellWidth = 150f;
+                Utility.ResetNGUI(grid);
+            }
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"YotogiParamScroll_Awake_Postfix unknow error, please report this issue/未知错误，请报告此错误: {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    #endregion
 }
 
 /// <summary>

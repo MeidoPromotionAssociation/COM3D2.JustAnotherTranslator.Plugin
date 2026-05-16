@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using HarmonyLib;
 using I2.Loc;
@@ -15,36 +16,6 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 /// </summary>
 public static class UITextTranslateExtraPatch
 {
-    #region Misc
-
-    /// <summary>
-    ///     Facility.Init Postfix
-    ///     原方法在 supportMultiLanguage 时通过 GetTranslation(termName) 翻译设施名称
-    ///     此 Postfix 重新获取 facilityStatus 并应用翻译
-    /// </summary>
-    [HarmonyPatch(typeof(Facility), "Init")]
-    [HarmonyPostfix]
-    private static void Facility_Init_Postfix(Facility __instance, int facilityTypeID)
-    {
-        try
-        {
-            var facilityStatus = FacilityDataTable.GetFacilityStatus(facilityTypeID);
-            if (facilityStatus == null || string.IsNullOrEmpty(facilityStatus.termName))
-                return;
-
-            var translation = LocalizationManager.GetTranslation(facilityStatus.termName);
-            if (!string.IsNullOrEmpty(translation))
-                __instance.param.name = translation;
-        }
-        catch (Exception e)
-        {
-            LogManager.Error(
-                $"Facility_Init_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
-        }
-    }
-
-    #endregion
-
     #region PhotoMode
 
     /// <summary>
@@ -284,6 +255,123 @@ public static class UITextTranslateExtraPatch
         }
     }
 #pragma warning restore Harmony003
+
+    #endregion
+
+    #region Misc
+
+    /// <summary>
+    ///     对 menuNameCurrentLanguage 进行了重写，取消了原始的 !=Product.Language.Japanese 检查
+    ///     以便使用 I2 对物品名称进行翻译
+    ///     请注意 CountryReplace 会被文本翻译模块处理
+    ///     term 为动态生成，表达式为 this.m_strCateName + "/" +
+    ///     Path.GetFileNameWithoutExtension(this.m_strMenuFileName).ToLower() + "|name"
+    ///     m_strCateName 是 menu 中的 category 命令的第一个参数，m_strMenuFileName 则是 .menu 文件的文件名
+    ///     例如 dress789_wear_i_.menu 的物品名 term 为 wear/dress789_wear_i_|name
+    ///     因此自行制作的 MOD 同样可以使用 term 进行翻译
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="__result"></param>
+    /// <returns></returns>
+    [HarmonyPatch(typeof(SceneEdit.SMenuItem), "menuNameCurrentLanguage", MethodType.Getter)]
+    [HarmonyPrefix]
+    private static bool SceneEdit_SMenuItem_GetMenuNameCurrentLanguage_Prefix(
+        SceneEdit.SMenuItem __instance,
+        ref string __result)
+    {
+        try
+        {
+            if (__instance == null)
+                return true;
+
+            var baseText = __instance.m_strMenuName ?? string.Empty;
+            var menuFileName = __instance.m_strMenuFileName ?? string.Empty;
+            var cateName = __instance.m_strCateName ?? string.Empty;
+            var term = cateName + "/" + Path.GetFileNameWithoutExtension(menuFileName).ToLower();
+            var translation = LocalizationManager.GetTranslation(term + "|name");
+            var text = !string.IsNullOrEmpty(translation)
+                ? translation.Replace("《改行》", "\n")
+                : baseText;
+            __result = __instance.CountryReplace(text);
+            return false;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"SceneEdit_SMenuItem_GetMenuNameCurrentLanguage_Prefix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+            return true;
+        }
+    }
+
+
+    /// <summary>
+    ///     对 infoTextCurrentLanguage 进行了重写，取消了原始的 !=Product.Language.Japanese 检查
+    ///     以便使用 I2 对物品说明进行翻译
+    ///     请注意 CountryReplace 会被文本翻译模块处理
+    ///     term 为动态生成，表达式为 this.m_strCateName + "/" +
+    ///     Path.GetFileNameWithoutExtension(this.m_strMenuFileName).ToLower() + "|info"
+    ///     m_strCateName 是 menu 中的 category 命令的第一个参数，m_strMenuFileName 则是 .menu 文件的文件名
+    ///     例如 dress789_wear_i_.menu 的物品描述 term 为 wear/dress789_wear_i_|info
+    ///     因此自行制作的 MOD 同样可以使用 term 进行翻译
+    /// </summary>
+    /// <param name="__instance"></param>
+    /// <param name="__result"></param>
+    /// <returns></returns>
+    [HarmonyPatch(typeof(SceneEdit.SMenuItem), "infoTextCurrentLanguage", MethodType.Getter)]
+    [HarmonyPrefix]
+    private static bool SceneEdit_SMenuItem_GetInfoTextCurrentLanguage_Prefix(
+        SceneEdit.SMenuItem __instance,
+        ref string __result)
+    {
+        try
+        {
+            if (__instance == null)
+                return true;
+
+            var baseText = __instance.m_strInfo ?? string.Empty;
+            var menuFileName = __instance.m_strMenuFileName ?? string.Empty;
+            var cateName = __instance.m_strCateName ?? string.Empty;
+            var term = cateName + "/" + Path.GetFileNameWithoutExtension(menuFileName).ToLower();
+            var translation = LocalizationManager.GetTranslation(term + "|info");
+            var text = !string.IsNullOrEmpty(translation)
+                ? translation.Replace("《改行》", "\n")
+                : baseText;
+            __result = __instance.CountryReplace(text);
+            return false;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"SceneEdit_SMenuItem_GetInfoTextCurrentLanguage_Prefix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+            return true;
+        }
+    }
+
+    /// <summary>
+    ///     Facility.Init Postfix
+    ///     原方法在 supportMultiLanguage 时通过 GetTranslation(termName) 翻译设施名称
+    ///     此 Postfix 重新获取 facilityStatus 并应用翻译
+    /// </summary>
+    [HarmonyPatch(typeof(Facility), "Init")]
+    [HarmonyPostfix]
+    private static void Facility_Init_Postfix(Facility __instance, int facilityTypeID)
+    {
+        try
+        {
+            var facilityStatus = FacilityDataTable.GetFacilityStatus(facilityTypeID);
+            if (facilityStatus == null || string.IsNullOrEmpty(facilityStatus.termName))
+                return;
+
+            var translation = LocalizationManager.GetTranslation(facilityStatus.termName);
+            if (!string.IsNullOrEmpty(translation))
+                __instance.param.name = translation;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"Facility_Init_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+        }
+    }
 
     #endregion
 

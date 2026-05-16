@@ -141,16 +141,31 @@ public static class UITextTranslatePatch
             return true;
         }
     }
+}
 
-    /// <summary>
-    ///     强制将 wf.Utility.SetLocalizeTermAddComponent 的 forceApply 设为 true
-    ///     与 SetLocalizeTerm 类似，该方法也有 supportMultiLanguage 检查。
-    ///     影响 MaidTraining（客人名、话题、技能描述）和 PhotoBooth（分类、按钮）等场景。
-    /// </summary>
-    [HarmonyPatch(typeof(Utility), "SetLocalizeTermAddComponent",
-        typeof(Component),
-        typeof(string),
-        typeof(bool))]
+/// <summary>
+///     强制将 wf.Utility.SetLocalizeTermAddComponent 的 forceApply 设为 true
+///     与 SetLocalizeTerm 类似，该方法也有 supportMultiLanguage 检查。
+///     影响 MaidTraining（客人名、话题、技能描述）和 PhotoBooth（分类、按钮）等场景。
+///     该方法在低版本游戏中可能不存在，故拆分为独立类并通过 Prepare() 做运行时检查，
+///     避免目标方法缺失时整批 patch 应用失败。
+/// </summary>
+[HarmonyPatch(typeof(Utility), "SetLocalizeTermAddComponent",
+    typeof(Component),
+    typeof(string),
+    typeof(bool))]
+public static class UITextTranslatePatchSetLocalizeTermAddComponent
+{
+    public static bool Prepare()
+    {
+        var method = AccessTools.Method(typeof(Utility), "SetLocalizeTermAddComponent",
+            new[] { typeof(Component), typeof(string), typeof(bool) });
+        if (method != null) return true;
+        LogManager.Warning(
+            "wf.Utility.SetLocalizeTermAddComponent not found, skipping patch (older game version?)/未找到该方法，跳过此 patch（可能是低版本游戏）");
+        return false;
+    }
+
     [HarmonyPrefix]
     public static bool WF_Utility_SetLocalizeTermAddComponent_Prefix(Component obj, string term,
         ref bool forceApply)

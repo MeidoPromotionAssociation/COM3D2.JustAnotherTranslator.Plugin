@@ -525,7 +525,7 @@ public static class I2LocalizeNoneCjkFix
             if (Product.isPublic || maidStatus == null)
                 return;
 
-            var label = UTY.GetChildObject(maidStatus, "Status/ContractType/Value", false)
+            var label = UTY.GetChildObject(maidStatus, "Status/ContractType/Value")
                 ?.GetComponent<UILabel>();
             if (label == null)
                 return;

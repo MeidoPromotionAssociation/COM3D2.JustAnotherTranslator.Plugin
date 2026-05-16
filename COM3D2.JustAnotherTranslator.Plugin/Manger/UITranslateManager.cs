@@ -70,8 +70,12 @@ public static class UITranslateManager
         LoadSpriteTextures();
 
         if (JustAnotherTranslator.EnableUITextTranslation.Value)
+        {
             _uiTextTranslatePatch = Harmony.CreateAndPatchAll(typeof(UITextTranslatePatch),
                 "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitexttranslatepatch");
+            Harmony.CreateAndPatchAll(typeof(UITextTranslatePatchSetLocalizeTermAddComponent),
+                "github.meidopromotionassociation.com3d2.justanothertranslator.plugin.hooks.ui.uitexttranslatepatch");
+        }
 
         if (JustAnotherTranslator.EnableUITextExtraPatch.Value)
             _uiTextTranslateExtraPatch = Harmony.CreateAndPatchAll(

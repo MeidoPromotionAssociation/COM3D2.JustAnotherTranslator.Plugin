@@ -152,7 +152,7 @@ public static class FontTool
             var fonts = Font.GetOSInstalledFontNames();
 
             LogManager.Info("OS Installed Font Name:/系统内已安装的字体名称:");
-            
+
             foreach (var font in fonts)
                 LogManager.Info(font);
         }

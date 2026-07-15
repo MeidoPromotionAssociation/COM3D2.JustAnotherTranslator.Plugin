@@ -44,6 +44,12 @@ public static class UITextTranslatePatch
     {
         try
         {
+            // JAT 的 UI 字典不携带语言维度，不能满足显式的跨语言查询。
+            // 游戏会用 overrideLanguage=Japanese 取得日文业务键（例如 DanceSetting.SetUIMode
+            // 对“モード”的判断）；如果在这里替换成当前 JAT 译文，会破坏后续游戏逻辑。
+            if (overrideLanguage != null)
+                return;
+
             LogManager.Debug(
                 $"LocalizationManager_TryGetTranslation_Postfix: Term {Term}, Translation {Translation}, FixForRTL {FixForRTL}, maxLineLengthForRTL {maxLineLengthForRTL}, ignoreRTLnumbers {ignoreRTLnumbers}, applyParameters {applyParameters}, localParametersRoot {localParametersRoot}, overrideLanguage {overrideLanguage}, __result {__result}");
 

@@ -7,7 +7,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using wf;
 using Yotogis;
-using Math = System.Math;
 
 namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 
@@ -62,69 +61,55 @@ public static class UITextTranslateExtraPatch
     ///     JP 版 Product.supportMultiLanguage 为 false，因此 Dropdown 只会得到日文 OptionData，
     ///     后续不会再进入 I2 Localization。
     ///     这个补丁放在 ExtraPatch 而不是 DangerPatch 的原因：
-    ///     1. 只使用 Show 的公开参数 id/facility 和 Unity 公开组件 Dropdown/LocalizeDropdown；
+    ///     1. 只使用 Unity 公开组件 Dropdown/LocalizeDropdown；
     ///     2. 不读取或写入游戏私有字段；
-    ///     3. 不改变 facility 的实际素材选择数据，只替换 Dropdown.options 的显示文本；
-    ///     4. 如果没有翻译，LocalizationManager.GetTranslation 仍会回退为空，LocalizeDropdown
-    ///     会保留同数量选项，不影响 Dropdown.value 对应的素材索引。
+    ///     3. 以每个 Dropdown 已有的 OptionData 为准，逐项生成 term，不推测组件遍历顺序与
+    ///     materialCategoryIDArray 的对应关系；
+    ///     4. term 的数量和顺序始终与游戏已建立的 options 相同，不改变 Dropdown.value 对应的
+    ///     素材索引。
     /// </summary>
     [HarmonyPatch(typeof(FacilityUIPowerUpMaterialList), "Show")]
     [HarmonyPostfix]
     private static void FacilityUIPowerUpMaterialList_Show_Postfix(
-        FacilityUIPowerUpMaterialList __instance,
-        int id,
-        Facility facility)
+        FacilityUIPowerUpMaterialList __instance)
     {
         try
         {
-            if (__instance == null || facility == null)
+            // 多语言版本会由游戏原逻辑完整设置 LocalizeDropdown，无需重复处理。
+            if (__instance == null || Product.supportMultiLanguage)
                 return;
 
-            var recipe = FacilityDataTable.GetFacilityPowerUpRecipe(id);
-            if (recipe == null || recipe.materialCategoryIDArray == null)
-                return;
-
-            var dropdowns = __instance.GetComponentsInChildren<Dropdown>(true);
+            // 不包含非激活的列表模板；uGUIListViewer 创建的实际条目在 Show 返回前均已激活。
+            var dropdowns = __instance.GetComponentsInChildren<Dropdown>();
             if (dropdowns == null || dropdowns.Length == 0)
                 return;
 
-            var count = Math.Min(recipe.materialCategoryIDArray.Length, dropdowns.Length);
-            for (var i = 0; i < count; i++)
+            foreach (var dropdown in dropdowns)
             {
-                var dropdown = dropdowns[i];
-                if (dropdown == null)
+                if (dropdown == null || dropdown.options == null || dropdown.options.Count == 0)
                     continue;
 
-                var selected = dropdown.value;
-                var materialCategoryId = recipe.materialCategoryIDArray[i];
-                var materialArray =
-                    GameMain.Instance.FacilityMgr.GetFacilityPowerUpItemEnableArray(
-                        materialCategoryId);
+                // AddComponent/启用 LocalizeDropdown 会立即触发 OnEnable，并可能重建 options。
+                // 因此必须先快照游戏刚刚建立的原始选项，保证数量、顺序和回调索引完全一致。
+                var terms = new string[dropdown.options.Count];
+                for (var optionIndex = 0; optionIndex < dropdown.options.Count; optionIndex++)
+                {
+                    var option = dropdown.options[optionIndex];
+                    terms[optionIndex] = "SceneFacilityManagement/強化素材/" +
+                                         (option?.text ?? string.Empty);
+                }
 
                 var localizeDropdown = dropdown.GetComponent<LocalizeDropdown>();
                 if (localizeDropdown == null)
                     localizeDropdown = dropdown.gameObject.AddComponent<LocalizeDropdown>();
 
-                localizeDropdown.enabled = true;
                 localizeDropdown._Terms.Clear();
+                localizeDropdown._Terms.AddRange(terms);
 
-                if (materialArray != null && materialArray.Length > 0)
-                    foreach (var material in materialArray)
-                    {
-                        if (material == null || string.IsNullOrEmpty(material.name))
-                            continue;
-
-                        localizeDropdown._Terms.Add(
-                            "SceneFacilityManagement/強化素材/" + material.name);
-                    }
-                else
-                    localizeDropdown._Terms.Add("SceneFacilityManagement/強化素材/無し");
-
+                localizeDropdown.enabled = true;
                 localizeDropdown.UpdateLocalization();
 
-                if (dropdown.options.Count > 0)
-                    dropdown.value = Math.Min(selected, dropdown.options.Count - 1);
-
+                // 不写入 Dropdown.value，避免触发游戏捕获 materialArray 的 onValueChanged 回调。
                 dropdown.RefreshShownValue();
             }
         }

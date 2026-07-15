@@ -51,7 +51,7 @@ public static class YotogiSubtitlePatch
                 SubtitleManager.SetSubtitleType(JustAnotherTranslator.SubtitleTypeEnum.Yotogi);
                 SubtitleManager.SetCurrentVoiceId(voiceId);
                 SubtitleManager.SetCurrentSpeaker(speakingMaid);
-                SubtitleManager.StartMaidMonitoringCoroutine(speakingMaid);
+                SubtitleManager.StartYotogiMaidMonitoringCoroutine(speakingMaid);
 
                 LogManager.Debug(
                     $"YotogiKagManager_TagTalk_Postfix tag_data name: {tag_data.GetTagProperty("name").AsString()}");
@@ -64,6 +64,61 @@ public static class YotogiSubtitlePatch
         {
             LogManager.Error(
                 $"YotogiKagManager_TagTalk_Postfix unknown error, please report this issue/未知错误，请报告此错误 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     新夜伽模式暂停 Play 并跳回 ADV KAG 时结束夜伽字幕。
+    ///     学习剧情等 skl 脚本正是通过该路径在夜伽后继续播放普通对话。
+    /// </summary>
+    [HarmonyPatch(typeof(YotogiPlayManager), "Suspend")]
+    [HarmonyPostfix]
+    public static void YotogiPlayManager_Suspend_Postfix()
+    {
+        EndYotogiSubtitleSession("YotogiPlayManager.Suspend");
+    }
+
+    /// <summary>
+    ///     当前新夜伽技能结束或切换下一技能时结束对应字幕监控。
+    /// </summary>
+    [HarmonyPatch(typeof(YotogiPlayManager), "OnNextSkillMove")]
+    [HarmonyPostfix]
+    public static void YotogiPlayManager_OnNextSkillMove_Postfix()
+    {
+        EndYotogiSubtitleSession("YotogiPlayManager.OnNextSkillMove");
+    }
+
+    /// <summary>
+    ///     旧夜伽模式的同等技能结束边界。
+    /// </summary>
+    [HarmonyPatch(typeof(YotogiOldPlayManager), "OnNextSkillMove")]
+    [HarmonyPostfix]
+    public static void YotogiOldPlayManager_OnNextSkillMove_Postfix()
+    {
+        EndYotogiSubtitleSession("YotogiOldPlayManager.OnNextSkillMove");
+    }
+
+    private static void EndYotogiSubtitleSession(string callBy)
+    {
+        try
+        {
+            // Suspend/OnNextSkillMove 存在提前返回路径；只有游戏确实禁用了 Yotogi KAG，
+            // 才把它视为字幕会话边界。
+            var yotogiKag = GameMain.Instance?.ScriptMgr?.yotogi_kag;
+            if (yotogiKag != null && yotogiKag.enabled)
+            {
+                LogManager.Debug(
+                    $"Skipping Yotogi subtitle session cleanup from {callBy}: Yotogi KAG is still enabled");
+                return;
+            }
+
+            LogManager.Debug($"Ending Yotogi subtitle session from {callBy}");
+            SubtitleManager.EndYotogiSubtitleSession();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"EndYotogiSubtitleSession called by {callBy} failed/结束夜伽字幕会话失败 {e.Message}\n{e.StackTrace}");
         }
     }
 

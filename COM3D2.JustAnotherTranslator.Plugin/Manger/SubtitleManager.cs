@@ -25,6 +25,10 @@ public static class SubtitleManager
     private static readonly Dictionary<Maid, string>
         MaidMonitorCoroutineIds = new(); // maid -> coroutineId
 
+    /// 记录由 Yotogi 补丁启动监控的 Maid，供夜伽切换到 ADV/下一技能时精确结束对应字幕
+    private static readonly Dictionary<Maid, string>
+        YotogiMonitorSpeakerNames = new(); // maid -> speakerName
+
     /// 存储 voiceId 与文本的映射关系
     private static readonly Dictionary<string, string> VoiceIdToTextMap = new(); // voiceId -> text
 
@@ -187,6 +191,7 @@ public static class SubtitleManager
     {
         // 清理所有 Maid 监听协程
         CleanupAllMaidMonitorCoroutines();
+        YotogiMonitorSpeakerNames.Clear();
 
         // 销毁所有字幕
         SubtitleComponentManager.DestroyAllSubtitleComponents();
@@ -237,11 +242,56 @@ public static class SubtitleManager
     }
 
     /// <summary>
+    ///     启动由 Yotogi KAG 驱动的 Maid 语音监控。
+    ///     与通用入口分开记录生命周期，避免夜伽暂停并切回 ADV 后继续监听后续对话语音。
+    /// </summary>
+    public static void StartYotogiMaidMonitoringCoroutine(Maid maid)
+    {
+        if (maid is null)
+            return;
+
+        YotogiMonitorSpeakerNames[maid] = MaidInfo.GetMaidFullName(maid);
+        StartMaidMonitoringCoroutine(maid);
+    }
+
+    /// <summary>
+    ///     结束当前夜伽字幕会话。
+    ///     停止所有由 Yotogi 补丁登记的监控，并隐藏对应字幕，防止其进入后续 ADV 对话。
+    /// </summary>
+    public static void EndYotogiSubtitleSession()
+    {
+        if (YotogiMonitorSpeakerNames.Count == 0)
+            return;
+
+        var monitorEntries = new List<KeyValuePair<Maid, string>>(YotogiMonitorSpeakerNames);
+        foreach (var entry in monitorEntries)
+        {
+            StopMaidMonitoringCoroutine(entry.Key);
+            SubtitleComponentManager.HideSubtitleBySpeakerName(entry.Value, true);
+        }
+
+        YotogiMonitorSpeakerNames.Clear();
+
+        if (_currentSubtitleType == JustAnotherTranslator.SubtitleTypeEnum.Yotogi)
+        {
+            _currentSpeaker = null;
+            _currentVoiceId = null;
+        }
+
+        LogManager.Debug($"Ended Yotogi subtitle session, stopped {monitorEntries.Count} monitor(s)");
+    }
+
+    /// <summary>
     ///     停止某个 Maid 的监听协程
     /// </summary>
     public static void StopMaidMonitoringCoroutine(Maid maid)
     {
-        if (maid is null || !MaidMonitorCoroutineIds.ContainsKey(maid))
+        if (maid is null)
+            return;
+
+        YotogiMonitorSpeakerNames.Remove(maid);
+
+        if (!MaidMonitorCoroutineIds.ContainsKey(maid))
             return;
 
         var coroutineId = MaidMonitorCoroutineIds[maid];
@@ -305,12 +355,17 @@ public static class SubtitleManager
                 // 如果语音ID发生变化，重置foundText状态
                 if (voiceChanged)
                 {
+                    // 若两段语音无空隙直接切换，轮询可能观察不到 isPlaying=false。
+                    // 必须在重置 foundText 前隐藏上一条字幕；否则新语音没有文本映射时，
+                    // 旧字幕仍显示，但后续停止分支会因 foundText=false 永远不再隐藏它。
+                    if (foundText)
+                        SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName, true);
+
                     foundText = false;
                     // 如果上一个语音还没结束就切换了
                     if (!string.IsNullOrEmpty(lastPlayingVoiceId))
                         LogManager.Debug(
                             $"Voice changed from {lastPlayingVoiceId} to {currentVoiceId}");
-                    //SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
                     LogManager.Debug(
                         $"Maid {speakerName} is now playing new voice: {currentVoiceId}");
                 }
@@ -395,6 +450,7 @@ public static class SubtitleManager
         {
             SubtitleComponentManager.HideSubtitleBySpeakerName(speakerName);
             MaidMonitorCoroutineIds.Remove(maid);
+            YotogiMonitorSpeakerNames.Remove(maid);
             // 重新创建字幕以重新排序
             SubtitleComponentManager.UpdateSubtitleConfigBySpeakerName(speakerName);
         }

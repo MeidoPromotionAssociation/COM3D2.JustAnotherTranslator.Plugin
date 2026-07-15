@@ -168,11 +168,21 @@ public static class SubtitleComponentManager
     /// <param name="subtitleId">字幕ID</param>
     public static void HideSubtitleById(string subtitleId)
     {
+        HideSubtitleById(subtitleId, false);
+    }
+
+    /// <summary>
+    ///     隐藏特定 ID 的字幕，并可选择跳过淡出动画。
+    /// </summary>
+    /// <param name="subtitleId">字幕ID</param>
+    /// <param name="skipAnimation">是否立即隐藏</param>
+    public static void HideSubtitleById(string subtitleId, bool skipAnimation)
+    {
         if (string.IsNullOrEmpty(subtitleId))
             return;
 
         if (SubtitleIdComponentsMap.TryGetValue(subtitleId, out var subtitleComponent))
-            subtitleComponent.HideSubtitle();
+            subtitleComponent.HideSubtitle(skipAnimation);
 
         ActiveSubtitles.RemoveAll(s => s.Id == subtitleId);
     }
@@ -183,8 +193,18 @@ public static class SubtitleComponentManager
     /// <param name="speakerName">说话者名称</param>
     public static void HideSubtitleBySpeakerName(string speakerName)
     {
+        HideSubtitleBySpeakerName(speakerName, false);
+    }
+
+    /// <summary>
+    ///     隐藏特定 speakerName 的字幕，并可选择跳过淡出动画。
+    /// </summary>
+    /// <param name="speakerName">说话者名称</param>
+    /// <param name="skipAnimation">是否立即隐藏</param>
+    public static void HideSubtitleBySpeakerName(string speakerName, bool skipAnimation)
+    {
         var subtitleId = GetSpeakerSubtitleId(speakerName);
-        HideSubtitleById(subtitleId);
+        HideSubtitleById(subtitleId, skipAnimation);
     }
 
     /// <summary>

@@ -87,15 +87,20 @@ public static class CoroutineManager
         /// </summary>
         public string RunCoroutine(IEnumerator coroutine)
         {
+            var id = Guid.NewGuid().ToString();
             try
             {
-                var id = Guid.NewGuid().ToString();
+                // 先登记占位。若目标枚举器在 StartCoroutine 的首次推进中同步结束，
+                // WrapCoroutine 会移除该 ID，下面便不会把已经结束的 handle 重新写回字典。
+                _runningCoroutines[id] = null;
                 var handle = StartCoroutine(WrapCoroutine(coroutine, id));
-                _runningCoroutines[id] = handle;
+                if (_runningCoroutines.ContainsKey(id))
+                    _runningCoroutines[id] = handle;
                 return id;
             }
             catch (Exception e)
             {
+                _runningCoroutines.Remove(id);
                 LogManager.Error($"Failed to start coroutine/启动协程失败 {e.Message}\n{e.StackTrace}");
                 return null;
             }
@@ -150,10 +155,19 @@ public static class CoroutineManager
         /// </summary>
         private IEnumerator WrapCoroutine(IEnumerator coroutine, string id)
         {
-            yield return StartCoroutine(coroutine);
-
-            // 协程完成后，从字典中移除
-            _runningCoroutines.Remove(id);
+            try
+            {
+                // 直接推进目标枚举器，使字典中保存的 handle 就是实际执行链的唯一根协程。
+                // 若在这里再次 StartCoroutine，停止外层 handle 时，独立启动的子协程仍可能继续运行。
+                while (coroutine.MoveNext())
+                    yield return coroutine.Current;
+            }
+            finally
+            {
+                // 协程正常完成、异常退出或被停止时都释放枚举器并移除记录。
+                (coroutine as IDisposable)?.Dispose();
+                _runningCoroutines.Remove(id);
+            }
         }
     }
 }

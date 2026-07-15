@@ -124,6 +124,13 @@ public static class UITextTranslateExtraPatch
 
     #region YotogiSkillHover
 
+    private const string YotogiSkillNameFormatTerm =
+        "SceneYotogi/スキル選択スキル名表記";
+
+    private const string YotogiExpLockTerm = "SceneYotogi/(EXPロック)";
+
+    private const string YotogiExpLockFallback = "(EXPロック)";
+
     /// <summary>
     ///     夜伽技能名 hover 浮层的 term 补全。
     ///     原方法 YotogiSkillNameHoverPlate.SetName 会先写入日文 skillName，
@@ -138,12 +145,14 @@ public static class UITextTranslateExtraPatch
     [HarmonyPostfix]
     private static void YotogiSkillNameHoverPlate_SetName_Postfix(
         YotogiSkillNameHoverPlate __instance,
+        string skillName,
         string skillNameTerm,
         bool isExpLock)
     {
         try
         {
-            if (__instance == null || string.IsNullOrEmpty(skillNameTerm))
+            // 多语言版本已经由游戏原方法完成本地化、回退和尺寸事件注册。
+            if (__instance == null || Product.supportMultiLanguage)
                 return;
 
             var label = __instance.GetComponent<UILabel>();
@@ -154,22 +163,80 @@ public static class UITextTranslateExtraPatch
             if (localize == null)
                 localize = label.gameObject.AddComponent<Localize>();
 
+            var fallbackSkillName = !StringTool.IsNullOrWhiteSpace(skillName)
+                ? skillName
+                : Utility.GetTermLastWord(skillNameTerm);
+            var fallbackText = fallbackSkillName +
+                               (isExpLock ? YotogiExpLockFallback : string.Empty);
+            var support = label.GetComponent<YotogiSkillNameLocalizeSupport>();
+            if (support == null)
+                support = label.gameObject.AddComponent<YotogiSkillNameLocalizeSupport>();
+
+            // support 会且只会注册一次 LocalizeEventExecEnd，并在每次 I2 更新完成后
+            // 保证空翻译回退到游戏原文，再调用 LabelPixelPerfect 刷新背景宽度。
+            support.Configure(__instance, label, localize, fallbackText);
+
             localize.TermArgs = new[]
             {
-                Localize.ArgsPair.Create(skillNameTerm, true),
+                CreateTermArgumentWithFallback(skillNameTerm, fallbackSkillName),
                 !isExpLock
                     ? Localize.ArgsPair.Create(string.Empty, false)
-                    : Localize.ArgsPair.Create("SceneYotogi/(EXPロック)", true)
+                    : CreateTermArgumentWithFallback(YotogiExpLockTerm,
+                        YotogiExpLockFallback)
             };
-            localize.SetTerm("SceneYotogi/スキル選択スキル名表記");
+            localize.SetTerm(YotogiSkillNameFormatTerm);
+            localize.enabled = true;
 
-            __instance.LabelPixelPerfect();
+            // CurrentLanguage 尚未初始化等情况下 SetTerm 可能不会触发完成事件。
+            support.EnsureFallbackAndResize();
         }
         catch (Exception e)
         {
             LogManager.Error(
                 $"YotogiSkillNameHoverPlate_SetName_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
         }
+    }
+
+    /// <summary>
+    ///     清空复用槽位时，同时停用并清除 JAT 写入的 Localize 状态，避免旧技能 term 在
+    ///     LocalizationManager.LocalizeAll 等后续本地化事件中重新写回标签。
+    /// </summary>
+    [HarmonyPatch(typeof(YotogiSkillNameHoverPlate), "ClearName")]
+    [HarmonyPostfix]
+    private static void YotogiSkillNameHoverPlate_ClearName_Postfix(
+        YotogiSkillNameHoverPlate __instance)
+    {
+        try
+        {
+            if (__instance == null || Product.supportMultiLanguage)
+                return;
+
+            var support = __instance.GetComponent<YotogiSkillNameLocalizeSupport>();
+            if (support != null)
+                support.ClearLocalizationState();
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"YotogiSkillNameHoverPlate_ClearName_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     只有 term 当前确实能得到非空翻译时才把它交给 I2 继续解析；否则使用游戏已经
+    ///     提供的原文作为普通参数，避免 I2 将缺失 term 格式化为空字符串。
+    /// </summary>
+    private static Localize.ArgsPair CreateTermArgumentWithFallback(string term,
+        string fallback)
+    {
+        if (!string.IsNullOrEmpty(term))
+        {
+            var translation = LocalizationManager.GetTranslation(term);
+            if (!StringTool.IsNullOrWhiteSpace(translation))
+                return Localize.ArgsPair.Create(term, true);
+        }
+
+        return Localize.ArgsPair.Create(fallback ?? string.Empty, false);
     }
 
     #endregion
@@ -479,4 +546,93 @@ public static class UITextTranslateExtraPatch
     }
 
     #endregion
+}
+
+/// <summary>
+///     保存 JAT 为夜伽技能名悬停标签添加的本地化状态。
+///     该组件不修改游戏数据，只负责空翻译回退、背景尺寸刷新和复用槽位清理。
+/// </summary>
+internal sealed class YotogiSkillNameLocalizeSupport : MonoBehaviour
+{
+    private YotogiSkillNameHoverPlate _hoverPlate;
+    private UILabel _label;
+    private Localize _localize;
+    private string _fallbackText = string.Empty;
+    private bool _listenerRegistered;
+
+    /// <summary>
+    ///     为当前槽位更新引用和原文回退，并确保本地化完成事件只注册一次。
+    /// </summary>
+    public void Configure(YotogiSkillNameHoverPlate hoverPlate, UILabel label,
+        Localize localize, string fallbackText)
+    {
+        if (_localize != localize)
+        {
+            RemoveLocalizationListener();
+            _localize = localize;
+        }
+
+        _hoverPlate = hoverPlate;
+        _label = label;
+        _fallbackText = fallbackText ?? string.Empty;
+
+        if (_localize != null && !_listenerRegistered)
+        {
+            _localize.LocalizeEventExecEnd.AddListener(OnLocalizationFinished);
+            _listenerRegistered = true;
+        }
+    }
+
+    /// <summary>
+    ///     I2 没有产生可见文本时恢复游戏原文，并在最终文本确定后更新背景宽度。
+    /// </summary>
+    public void EnsureFallbackAndResize()
+    {
+        if (_label == null)
+            return;
+
+        if (StringTool.IsNullOrWhiteSpace(_label.text) &&
+            !StringTool.IsNullOrWhiteSpace(_fallbackText))
+            _label.text = _fallbackText;
+
+        if (_hoverPlate != null)
+            _hoverPlate.LabelPixelPerfect();
+    }
+
+    /// <summary>
+    ///     槽位被清空时停用 Localize 并删除动态 term，防止复用对象响应后续全局本地化事件。
+    /// </summary>
+    public void ClearLocalizationState()
+    {
+        _fallbackText = string.Empty;
+        RemoveLocalizationListener();
+
+        if (_localize == null)
+            return;
+
+        _localize.enabled = false;
+        _localize.TermArgs = null;
+        _localize.mTerm = string.Empty;
+        _localize.mTermSecondary = string.Empty;
+        _localize.FinalTerm = string.Empty;
+        _localize.FinalSecondaryTerm = string.Empty;
+    }
+
+    private void OnLocalizationFinished()
+    {
+        EnsureFallbackAndResize();
+    }
+
+    private void OnDestroy()
+    {
+        RemoveLocalizationListener();
+    }
+
+    private void RemoveLocalizationListener()
+    {
+        if (_localize != null && _listenerRegistered)
+            _localize.LocalizeEventExecEnd.RemoveListener(OnLocalizationFinished);
+
+        _listenerRegistered = false;
+    }
 }

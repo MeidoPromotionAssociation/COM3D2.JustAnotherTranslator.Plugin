@@ -574,6 +574,7 @@ public static class UITextTranslateDangerPatch
             __instance.PopupAndTabList.popup_term_list = hasFaceData
                 ? PhotoFaceData.popup_category_term_list
                 : null;
+            RefreshPhotoPopupSelectionLabel(__instance.PopupAndTabList);
         }
         catch (Exception e)
         {
@@ -599,17 +600,86 @@ public static class UITextTranslateDangerPatch
             if (maid == null)
             {
                 __instance.PopupAndTabList.popup_term_list = null;
+                RefreshPhotoPopupSelectionLabel(__instance.PopupAndTabList);
                 return;
             }
 
             __instance.PopupAndTabList.popup_term_list = maid.boMAN
                 ? PhotoMotionData.popup_category_term_list_for_man
                 : PhotoMotionData.popup_category_term_list;
+            RefreshPhotoPopupSelectionLabel(__instance.PopupAndTabList);
         }
         catch (Exception e)
         {
             LogManager.Error(
                 $"MotionWindow_OnMaidChangeEvent_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     Refreshes only the UILabel callback installed by UIPopupList.Start. Reassigning
+    ///     UIPopupList.value would also replay every photo-window category callback and can
+    ///     rebuild tabs or mutate the current selection a second time.
+    /// </summary>
+    private static void RefreshPhotoPopupSelectionLabel(PopupAndTabList popupAndTabList)
+    {
+        var popup = popupAndTabList?.PopUpList?.PopupList;
+        if (popup?.onChange == null)
+            return;
+
+        UILabel selectionLabel = null;
+        foreach (var callback in popup.onChange)
+        {
+            if (callback?.target is UILabel label &&
+                callback.methodName == nameof(UILabel.SetCurrentSelection))
+            {
+                selectionLabel = label;
+                break;
+            }
+        }
+
+        // Before UIPopupList.Start, the serialized textLabel has not been moved to onChange.
+        // Start will perform its own value assignment later and pick up the terms just written.
+        if (selectionLabel == null)
+            return;
+
+        var fallback = popup.value ?? string.Empty;
+        var previousPopup = UIPopupList.current;
+        try
+        {
+            UIPopupList.current = popup;
+            selectionLabel.SetCurrentSelection();
+
+            var localize = selectionLabel.GetComponent<Localize>();
+            if (popup.isLocalized)
+            {
+                // SetCurrentSelection calls SetTerm before this point. Enable afterwards so a
+                // previously disabled component cannot apply its old term from OnEnable first.
+                if (localize != null)
+                    localize.enabled = true;
+                if (StringTool.IsNullOrWhiteSpace(selectionLabel.text))
+                    selectionLabel.text = fallback;
+                return;
+            }
+
+            // A previous maid/category can leave behind the Localize dynamically added by
+            // UILabel.SetCurrentSelection. Disable and clear it before returning to raw JP text.
+            if (localize != null)
+            {
+                localize.enabled = false;
+                localize.TermArgs = null;
+                localize.TermSuffix = string.Empty;
+                localize.mTerm = string.Empty;
+                localize.mTermSecondary = string.Empty;
+                localize.FinalTerm = string.Empty;
+                localize.FinalSecondaryTerm = string.Empty;
+            }
+
+            selectionLabel.text = fallback;
+        }
+        finally
+        {
+            UIPopupList.current = previousPopup;
         }
     }
 

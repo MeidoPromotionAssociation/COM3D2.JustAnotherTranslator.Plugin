@@ -1293,9 +1293,18 @@ public static class UITextTranslateDangerPatch
             var mz = __instance.mapSizeZ;
             var us = __instance.unitSize;
 
-            ApplyCreativeRoomSize(tx, mx, us, "SceneCreativeRoom/横幅", "横幅");
-            ApplyCreativeRoomSize(tz, mz, us, "SceneCreativeRoom/奥行", "奥行");
-            ApplyCreativeRoomSize(ty, my, us, "SceneCreativeRoom/高さ", "高さ");
+            // Resolve every fallible dictionary lookup before changing any label or Localize
+            // component. A lookup failure can then safely fall through to the untouched method.
+            var translationX = LocalizationManager.GetTranslation("SceneCreativeRoom/横幅");
+            var translationZ = LocalizationManager.GetTranslation("SceneCreativeRoom/奥行");
+            var translationY = LocalizationManager.GetTranslation("SceneCreativeRoom/高さ");
+
+            ApplyCreativeRoomSize(tx, mx, us, "SceneCreativeRoom/横幅", "横幅",
+                translationX);
+            ApplyCreativeRoomSize(tz, mz, us, "SceneCreativeRoom/奥行", "奥行",
+                translationZ);
+            ApplyCreativeRoomSize(ty, my, us, "SceneCreativeRoom/高さ", "高さ",
+                translationY);
 
             return false;
         }
@@ -1312,43 +1321,59 @@ public static class UITextTranslateDangerPatch
         int mapSize,
         float unitSize,
         string term,
-        string fallbackPrefix)
+        string fallbackPrefix,
+        string translation)
     {
         if (textComponent == null) return;
 
         var value = string.Format("{0:#0.##}", mapSize * unitSize);
         var suffix = ":" + value + "m";
         var fallback = fallbackPrefix + "：" + value + "m";
-        textComponent.text = fallback;
-
-        var localize = textComponent.GetComponent<Localize>();
-        var translation = LocalizationManager.GetTranslation(term);
-        if (StringTool.IsNullOrWhiteSpace(translation))
+        Localize localize = null;
+        try
         {
-            if (localize != null)
+            textComponent.text = fallback;
+            localize = textComponent.GetComponent<Localize>();
+            if (StringTool.IsNullOrWhiteSpace(translation))
             {
-                localize.enabled = false;
-                localize.TermArgs = null;
-                localize.TermSuffix = string.Empty;
-                localize.mTerm = string.Empty;
-                localize.mTermSecondary = string.Empty;
-                localize.FinalTerm = string.Empty;
-                localize.FinalSecondaryTerm = string.Empty;
+                ClearCreativeRoomLocalize(localize);
+                return;
             }
 
-            return;
-        }
+            textComponent.text = translation + suffix;
+            if (localize == null)
+                return;
 
-        textComponent.text = translation + suffix;
+            localize.TermArgs = null;
+            localize.TermSuffix = suffix;
+            localize.SetTerm(term);
+            localize.enabled = true;
+            if (StringTool.IsNullOrWhiteSpace(textComponent.text))
+                textComponent.text = fallback;
+        }
+        catch (Exception e)
+        {
+            // Keep this label self-consistent and continue with the other dimensions. Returning
+            // to the original method after another label succeeded would leave enabled stale terms.
+            textComponent.text = fallback;
+            ClearCreativeRoomLocalize(localize);
+            LogManager.Error(
+                $"ApplyCreativeRoomSize failed for {term}, preserving original text/保留原文 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    private static void ClearCreativeRoomLocalize(Localize localize)
+    {
         if (localize == null)
             return;
 
+        localize.enabled = false;
         localize.TermArgs = null;
-        localize.TermSuffix = suffix;
-        localize.SetTerm(term);
-        localize.enabled = true;
-        if (StringTool.IsNullOrWhiteSpace(textComponent.text))
-            textComponent.text = fallback;
+        localize.TermSuffix = string.Empty;
+        localize.mTerm = string.Empty;
+        localize.mTermSecondary = string.Empty;
+        localize.FinalTerm = string.Empty;
+        localize.FinalSecondaryTerm = string.Empty;
     }
 
     #endregion

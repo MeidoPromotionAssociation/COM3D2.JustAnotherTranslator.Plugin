@@ -33,6 +33,9 @@ public static class UITextTranslateExtraPatch
     {
         try
         {
+            if (Product.supportMultiLanguage)
+                return;
+
             if (__instance?.addButtonList?.PopUpList?.PopupList == null ||
                 PhotoBGObjectData.popup_category_term_list == null)
                 return;
@@ -61,12 +64,12 @@ public static class UITextTranslateExtraPatch
     ///     JP 版 Product.supportMultiLanguage 为 false，因此 Dropdown 只会得到日文 OptionData，
     ///     后续不会再进入 I2 Localization。
     ///     这个补丁放在 ExtraPatch 而不是 DangerPatch 的原因：
-    ///     1. 只使用 Unity 公开组件 Dropdown/LocalizeDropdown；
+    ///     1. 只使用 Unity 公开组件 Dropdown；
     ///     2. 不读取或写入游戏私有字段；
     ///     3. 以每个 Dropdown 已有的 OptionData 为准，逐项生成 term，不推测组件遍历顺序与
     ///     materialCategoryIDArray 的对应关系；
-    ///     4. term 的数量和顺序始终与游戏已建立的 options 相同，不改变 Dropdown.value 对应的
-    ///     素材索引。
+    ///     4. 只修改现有 OptionData.text，不重建 options，也不改变 Dropdown.value 对应的素材索引；
+    ///     5. 单个 term 缺失时保留该项原文，避免 LocalizeDropdown 把 null 翻译写成空选项。
     /// </summary>
     [HarmonyPatch(typeof(FacilityUIPowerUpMaterialList), "Show")]
     [HarmonyPostfix]
@@ -89,25 +92,27 @@ public static class UITextTranslateExtraPatch
                 if (dropdown == null || dropdown.options == null || dropdown.options.Count == 0)
                     continue;
 
-                // AddComponent/启用 LocalizeDropdown 会立即触发 OnEnable，并可能重建 options。
-                // 因此必须先快照游戏刚刚建立的原始选项，保证数量、顺序和回调索引完全一致。
-                var terms = new string[dropdown.options.Count];
+                // JP prefab 可能已经带有被禁用的 LocalizeDropdown，旧版 JAT 也可能曾启用它。
+                // 该组件会在本地化事件中清空并重建 options，缺失 term 会产生空 OptionData；
+                // 在此路径禁用它，完全保留游戏刚建立的选项集合和回调索引。
+                var localizeDropdown = dropdown.GetComponent<LocalizeDropdown>();
+                if (localizeDropdown != null)
+                {
+                    localizeDropdown.enabled = false;
+                    localizeDropdown._Terms.Clear();
+                }
+
                 for (var optionIndex = 0; optionIndex < dropdown.options.Count; optionIndex++)
                 {
                     var option = dropdown.options[optionIndex];
-                    terms[optionIndex] = "SceneFacilityManagement/強化素材/" +
-                                         (option?.text ?? string.Empty);
+                    if (option == null || string.IsNullOrEmpty(option.text))
+                        continue;
+
+                    var term = "SceneFacilityManagement/強化素材/" + option.text;
+                    var translation = LocalizationManager.GetTranslation(term);
+                    if (!StringTool.IsNullOrWhiteSpace(translation))
+                        option.text = translation;
                 }
-
-                var localizeDropdown = dropdown.GetComponent<LocalizeDropdown>();
-                if (localizeDropdown == null)
-                    localizeDropdown = dropdown.gameObject.AddComponent<LocalizeDropdown>();
-
-                localizeDropdown._Terms.Clear();
-                localizeDropdown._Terms.AddRange(terms);
-
-                localizeDropdown.enabled = true;
-                localizeDropdown.UpdateLocalization();
 
                 // 不写入 Dropdown.value，避免触发游戏捕获 materialArray 的 onValueChanged 回调。
                 dropdown.RefreshShownValue();
@@ -119,6 +124,75 @@ public static class UITextTranslateExtraPatch
                 $"FacilityUIPowerUpMaterialList_Show_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
         }
     }
+
+    #endregion
+
+
+    #region CharaSelectStatus
+
+    /// <summary>
+    ///     CharaSelectStatusMgr.Init 在 JP 版选择非本地化的 statusCtrl prefab，
+    ///     导致整个 status 面板上的子 UI 都不走 I2。
+    ///     此 Prefix 在 Init 执行前把 statusCtrl 重定向到 statusLocalizeCtrl，
+    ///     让条件表达式 (supportMultiLanguage ? statusLocalizeCtrl : statusCtrl)
+    ///     的两个分支都指向 localize 版本。
+    /// </summary>
+    [HarmonyPatch(typeof(CharaSelectStatusMgr), "Init")]
+    [HarmonyPrefix]
+    private static void CharaSelectStatusMgr_Init_Prefix(CharaSelectStatusMgr __instance)
+    {
+        try
+        {
+            if (__instance == null) return;
+            if (Product.supportMultiLanguage) return;
+            if (__instance.statusLocalizeCtrl == null) return;
+
+            __instance.statusCtrl = __instance.statusLocalizeCtrl;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"CharaSelectStatusMgr_Init_Prefix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    #endregion
+
+    #region YotogiParamScroll
+
+    /// <summary>
+    ///     YotogiParamScroll.SetLabelText 在 JP 版（!Product.supportMultiLanguage）
+    ///     跳过 Localize term 设置，导致夜伽参数名不走 I2 翻译路径。
+    ///     此 Postfix 复制多语言分支逻辑，设置 TermArgs 和 term。
+    /// </summary>
+    [HarmonyPatch(typeof(YotogiParamScroll), "SetLabelText",
+        typeof(YotogiParamScroll.LabelAndLocalize), typeof(string), typeof(int))]
+    [HarmonyPostfix]
+#pragma warning disable Harmony003
+    private static void YotogiParamScroll_SetLabelText_Postfix(
+        YotogiParamScroll.LabelAndLocalize labelAndLocalize, string text, int num)
+    {
+        try
+        {
+            if (Product.supportMultiLanguage)
+                return;
+
+            var localize = labelAndLocalize.localize;
+            if (localize == null)
+                return;
+
+            localize.TermArgs = new Localize.ArgsPair[2];
+            localize.TermArgs[0] = Localize.ArgsPair.Create("  {0}", false);
+            localize.TermArgs[1] = Localize.ArgsPair.Create(num.ToString(), false);
+            localize.SetTerm("MaidStatus/" + text);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"YotogiParamScroll_SetLabelText_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+        }
+    }
+#pragma warning restore Harmony003
 
     #endregion
 
@@ -241,75 +315,6 @@ public static class UITextTranslateExtraPatch
 
     #endregion
 
-
-    #region CharaSelectStatus
-
-    /// <summary>
-    ///     CharaSelectStatusMgr.Init 在 JP 版选择非本地化的 statusCtrl prefab，
-    ///     导致整个 status 面板上的子 UI 都不走 I2。
-    ///     此 Prefix 在 Init 执行前把 statusCtrl 重定向到 statusLocalizeCtrl，
-    ///     让条件表达式 (supportMultiLanguage ? statusLocalizeCtrl : statusCtrl)
-    ///     的两个分支都指向 localize 版本。
-    /// </summary>
-    [HarmonyPatch(typeof(CharaSelectStatusMgr), "Init")]
-    [HarmonyPrefix]
-    private static void CharaSelectStatusMgr_Init_Prefix(CharaSelectStatusMgr __instance)
-    {
-        try
-        {
-            if (__instance == null) return;
-            if (Product.supportMultiLanguage) return;
-            if (__instance.statusLocalizeCtrl == null) return;
-
-            __instance.statusCtrl = __instance.statusLocalizeCtrl;
-        }
-        catch (Exception e)
-        {
-            LogManager.Error(
-                $"CharaSelectStatusMgr_Init_Prefix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
-        }
-    }
-
-    #endregion
-
-    #region YotogiParamScroll
-
-    /// <summary>
-    ///     YotogiParamScroll.SetLabelText 在 JP 版（!Product.supportMultiLanguage）
-    ///     跳过 Localize term 设置，导致夜伽参数名不走 I2 翻译路径。
-    ///     此 Postfix 复制多语言分支逻辑，设置 TermArgs 和 term。
-    /// </summary>
-    [HarmonyPatch(typeof(YotogiParamScroll), "SetLabelText",
-        typeof(YotogiParamScroll.LabelAndLocalize), typeof(string), typeof(int))]
-    [HarmonyPostfix]
-#pragma warning disable Harmony003
-    private static void YotogiParamScroll_SetLabelText_Postfix(
-        YotogiParamScroll.LabelAndLocalize labelAndLocalize, string text, int num)
-    {
-        try
-        {
-            if (Product.supportMultiLanguage)
-                return;
-
-            var localize = labelAndLocalize.localize;
-            if (localize == null)
-                return;
-
-            localize.TermArgs = new Localize.ArgsPair[2];
-            localize.TermArgs[0] = Localize.ArgsPair.Create("  {0}", false);
-            localize.TermArgs[1] = Localize.ArgsPair.Create(num.ToString(), false);
-            localize.SetTerm("MaidStatus/" + text);
-        }
-        catch (Exception e)
-        {
-            LogManager.Error(
-                $"YotogiParamScroll_SetLabelText_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
-        }
-    }
-#pragma warning restore Harmony003
-
-    #endregion
-
     #region Misc
 
     /// <summary>
@@ -333,7 +338,7 @@ public static class UITextTranslateExtraPatch
     {
         try
         {
-            if (__instance == null)
+            if (Product.supportMultiLanguage || __instance == null)
                 return true;
 
             var baseText = __instance.m_strMenuName ?? string.Empty;
@@ -341,9 +346,10 @@ public static class UITextTranslateExtraPatch
             var cateName = __instance.m_strCateName ?? string.Empty;
             var term = cateName + "/" + Path.GetFileNameWithoutExtension(menuFileName).ToLower();
             var translation = LocalizationManager.GetTranslation(term + "|name");
-            var text = !string.IsNullOrEmpty(translation)
-                ? translation.Replace("《改行》", "\n")
-                : baseText;
+            var translatedText = translation?.Replace("《改行》", "\n");
+            var text = StringTool.IsNullOrWhiteSpace(translatedText)
+                ? baseText
+                : translatedText;
             __result = __instance.CountryReplace(text);
             return false;
         }
@@ -377,7 +383,7 @@ public static class UITextTranslateExtraPatch
     {
         try
         {
-            if (__instance == null)
+            if (Product.supportMultiLanguage || __instance == null)
                 return true;
 
             var baseText = __instance.m_strInfo ?? string.Empty;
@@ -385,9 +391,10 @@ public static class UITextTranslateExtraPatch
             var cateName = __instance.m_strCateName ?? string.Empty;
             var term = cateName + "/" + Path.GetFileNameWithoutExtension(menuFileName).ToLower();
             var translation = LocalizationManager.GetTranslation(term + "|info");
-            var text = !string.IsNullOrEmpty(translation)
-                ? translation.Replace("《改行》", "\n")
-                : baseText;
+            var translatedText = translation?.Replace("《改行》", "\n");
+            var text = StringTool.IsNullOrWhiteSpace(translatedText)
+                ? baseText
+                : translatedText;
             __result = __instance.CountryReplace(text);
             return false;
         }
@@ -410,12 +417,15 @@ public static class UITextTranslateExtraPatch
     {
         try
         {
+            if (Product.supportMultiLanguage)
+                return;
+
             var facilityStatus = FacilityDataTable.GetFacilityStatus(facilityTypeID);
             if (facilityStatus == null || string.IsNullOrEmpty(facilityStatus.termName))
                 return;
 
             var translation = LocalizationManager.GetTranslation(facilityStatus.termName);
-            if (!string.IsNullOrEmpty(translation))
+            if (!StringTool.IsNullOrWhiteSpace(translation))
                 __instance.param.name = translation;
         }
         catch (Exception e)
@@ -430,9 +440,9 @@ public static class UITextTranslateExtraPatch
     #region YotogiSkillCommands
 
     /// <summary>
-    ///     强制 YotogiCommandFactory.GetGroupName 返回 I2 term 而非原始日文名称
+    ///     在 JP 版让 YotogiCommandFactory.GetGroupName 返回 I2 term 而非原始日文名称
     ///     原方法在 !Product.supportMultiLanguage 时返回 basic.group_name（日文）
-    ///     修改为始终返回 basic.termGroupName（I2 term）
+    ///     此 Postfix 仅在该分支返回 basic.termGroupName（I2 term）
     /// </summary>
     [HarmonyPatch(typeof(YotogiCommandFactory), "GetGroupName")]
     [HarmonyPostfix]
@@ -442,6 +452,9 @@ public static class UITextTranslateExtraPatch
     {
         try
         {
+            if (Product.supportMultiLanguage)
+                return;
+
             if (commandDataBasic != null && !string.IsNullOrEmpty(commandDataBasic.termGroupName))
                 __result = commandDataBasic.termGroupName;
         }
@@ -453,9 +466,9 @@ public static class UITextTranslateExtraPatch
     }
 
     /// <summary>
-    ///     强制 YotogiCommandFactory.GetCommandName 返回 I2 term 而非原始日文名称
+    ///     在 JP 版让 YotogiCommandFactory.GetCommandName 返回 I2 term 而非原始日文名称
     ///     原方法在 !Product.supportMultiLanguage 时返回 basic.name（日文）
-    ///     修改为始终返回 basic.termName（I2 term）
+    ///     此 Postfix 仅在该分支返回 basic.termName（I2 term）
     /// </summary>
     [HarmonyPatch(typeof(YotogiCommandFactory), "GetCommandName")]
     [HarmonyPostfix]
@@ -465,6 +478,9 @@ public static class UITextTranslateExtraPatch
     {
         try
         {
+            if (Product.supportMultiLanguage)
+                return;
+
             if (commandDataBasic != null && !string.IsNullOrEmpty(commandDataBasic.termName))
                 __result = commandDataBasic.termName;
         }
@@ -478,8 +494,8 @@ public static class UITextTranslateExtraPatch
     /// <summary>
     ///     在 YotogiCommandFactory.CreateCommand 创建技能指令按钮后，强制对按钮文本进行本地化
     ///     原方法中 Product.supportMultiLanguage 为 false 时跳过 Localize.SetTerm 调用
-    ///     此 Postfix 通过 GetTranslation 直接获取翻译
-    ///     回退逻辑：无翻译时使用 GetTermLastWord 提取原始日文名
+    ///     此 Postfix 为 JP 路径补上同等的 Localize term，并在无翻译时使用
+    ///     GetTermLastWord 提取原始日文名。
     /// </summary>
     [HarmonyPatch(typeof(YotogiCommandFactory), "CreateCommand")]
     [HarmonyPostfix]
@@ -489,18 +505,15 @@ public static class UITextTranslateExtraPatch
     {
         try
         {
-            if (__result == null || string.IsNullOrEmpty(name))
+            if (__result == null || string.IsNullOrEmpty(name) ||
+                Product.supportMultiLanguage)
                 return;
 
             var label = UTY.GetChildObject(__result, "Name")?.GetComponent<UILabel>();
             if (label == null)
                 return;
 
-            var translation = LocalizationManager.GetTranslation(name);
-            if (!string.IsNullOrEmpty(translation))
-                label.text = translation;
-            else
-                label.text = Utility.GetTermLastWord(name);
+            ApplyYotogiCommandTerm(label, name);
         }
         catch (Exception e)
         {
@@ -510,10 +523,9 @@ public static class UITextTranslateExtraPatch
     }
 
     /// <summary>
-    ///     YotogiCommandFactory.CreateTitle 的安全回退
-    ///     原方法中 Utility.SetLocalizeTerm 失败时，
-    ///     会将 component.text 设为 name（此时为 I2 term 路径）
-    ///     此 Postfix 检测到此情况时，通过 GetTranslation 获取翻译或提取原始日文名作为回退
+    ///     YotogiCommandFactory.CreateTitle 的 JP 本地化补全。
+    ///     ExtraPatch 可以独立于基础 UI Patch 启用，因此不能依赖后者把
+    ///     Utility.SetLocalizeTerm 的 forceApply 改为 true；这里直接设置 Localize term。
     /// </summary>
     [HarmonyPatch(typeof(YotogiCommandFactory), "CreateTitle")]
     [HarmonyPostfix]
@@ -523,26 +535,45 @@ public static class UITextTranslateExtraPatch
     {
         try
         {
-            if (__result == null || string.IsNullOrEmpty(name))
+            if (__result == null || string.IsNullOrEmpty(name) ||
+                Product.supportMultiLanguage)
                 return;
 
             var label = __result.GetComponent<UILabel>();
             if (label == null)
                 return;
 
-            if (label.text == name && name.Contains("/"))
-            {
-                var translation = LocalizationManager.GetTranslation(name);
-                label.text = !string.IsNullOrEmpty(translation)
-                    ? translation
-                    : Utility.GetTermLastWord(name);
-            }
+            ApplyYotogiCommandTerm(label, name);
         }
         catch (Exception e)
         {
             LogManager.Error(
                 $"YotogiCommandFactory_CreateTitle_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
         }
+    }
+
+    /// <summary>
+    ///     将夜伽指令 term 同步到 prefab 自带（或补建）的 Localize 组件。
+    ///     先写入原文回退，确保 I2 查不到 term 或返回空白时不会留下空标签；保持 Localize
+    ///     启用则可让后续全局本地化继续使用正确 term，而不是 prefab 的旧状态。
+    /// </summary>
+    private static void ApplyYotogiCommandTerm(UILabel label, string term)
+    {
+        if (label == null || string.IsNullOrEmpty(term))
+            return;
+
+        var fallback = Utility.GetTermLastWord(term);
+        label.text = fallback;
+
+        var localize = label.GetComponent<Localize>();
+        if (localize == null)
+            localize = label.gameObject.AddComponent<Localize>();
+
+        localize.SetTerm(term);
+        localize.enabled = true;
+
+        if (StringTool.IsNullOrWhiteSpace(label.text))
+            label.text = fallback;
     }
 
     #endregion
@@ -554,11 +585,16 @@ public static class UITextTranslateExtraPatch
 /// </summary>
 internal sealed class YotogiSkillNameLocalizeSupport : MonoBehaviour
 {
+    private string _fallbackText = string.Empty;
     private YotogiSkillNameHoverPlate _hoverPlate;
     private UILabel _label;
-    private Localize _localize;
-    private string _fallbackText = string.Empty;
     private bool _listenerRegistered;
+    private Localize _localize;
+
+    private void OnDestroy()
+    {
+        RemoveLocalizationListener();
+    }
 
     /// <summary>
     ///     为当前槽位更新引用和原文回退，并确保本地化完成事件只注册一次。
@@ -621,11 +657,6 @@ internal sealed class YotogiSkillNameLocalizeSupport : MonoBehaviour
     private void OnLocalizationFinished()
     {
         EnsureFallbackAndResize();
-    }
-
-    private void OnDestroy()
-    {
-        RemoveLocalizationListener();
     }
 
     private void RemoveLocalizationListener()

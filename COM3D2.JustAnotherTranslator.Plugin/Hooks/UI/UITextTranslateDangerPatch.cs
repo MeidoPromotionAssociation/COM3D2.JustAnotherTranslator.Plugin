@@ -54,6 +54,9 @@ public static class UITextTranslateDangerPatch
     private static readonly MethodInfo UIWFConditionListHeightSetter =
         AccessTools.PropertySetter(typeof(UIWFConditionList), "height");
 
+    private static readonly FieldInfo UIWFConditionListHeightBackingField =
+        AccessTools.Field(typeof(UIWFConditionList), "<height>k__BackingField");
+
     private static readonly FieldInfo ShopItemInfoWindowField =
         AccessTools.Field(typeof(ShopItem), "info_window_");
 
@@ -74,8 +77,9 @@ public static class UITextTranslateDangerPatch
     /// <summary>
     ///     MaidProfile.Create 内部的 GetTranslation 委托在 JP 版（!Product.supportMultiLanguage）
     ///     下直接返回 CSV 中的日文原文，不调用 I2 Localization。
-    ///     此 Patcher 通过运行时反射定位编译器生成的委托方法，用 Transpiler 移除
-    ///     Product.supportMultiLanguage 分支检查，使其始终走 I2 翻译路径。
+    ///     此 Patcher 通过运行时反射定位编译器生成的委托方法，并在返回后用当前 JAT/I2
+    ///     翻译替换结果。不能伪造 supportMultiLanguage=true：原生多语言分支显式请求
+    ///     Product.systemLanguage，而 JAT 的单语言 UI 字典不应覆盖这种 overrideLanguage 查询。
     /// </summary>
     public static class MaidProfileCommentPatcher
     {
@@ -101,9 +105,9 @@ public static class UITextTranslateDangerPatch
                     return;
                 }
 
-                var transpiler = new HarmonyMethod(typeof(MaidProfileCommentPatcher),
-                    nameof(GetTranslationTranspiler));
-                harmony.Patch(targetMethod, transpiler: transpiler);
+                var postfix = new HarmonyMethod(typeof(MaidProfileCommentPatcher),
+                    nameof(GetTranslationPostfix));
+                harmony.Patch(targetMethod, postfix: postfix);
                 _patched = true;
 
                 LogManager.Debug(
@@ -167,36 +171,28 @@ public static class UITextTranslateDangerPatch
             }
         }
 
-        // ReSharper disable once InconsistentNaming
-        private static IEnumerable<CodeInstruction> GetTranslationTranspiler(
-            IEnumerable<CodeInstruction> instructions)
+        // 编译器生成方法的参数名可能随编译器版本变化，使用 __args 按位置读取 termSuffix。
+        private static void GetTranslationPostfix(object[] __args, ref string __result)
         {
-            var supportMultiLanguageGetter = AccessTools.PropertyGetter(
-                typeof(Product), "supportMultiLanguage");
-            var found = false;
-
-            foreach (var instruction in instructions)
+            var originalResult = __result;
+            try
             {
-                if (!found &&
-                    (instruction.opcode == OpCodes.Call ||
-                     instruction.opcode == OpCodes.Callvirt) &&
-                    instruction.operand is MethodInfo mi &&
-                    mi == supportMultiLanguageGetter)
-                {
-                    instruction.opcode = OpCodes.Ldc_I4_1;
-                    instruction.operand = null;
-                    found = true;
-                    LogManager.Debug(
-                        "MaidProfileCommentPatcher: Replaced Product.supportMultiLanguage with constant true");
-                }
+                if (Product.supportMultiLanguage || __args == null || __args.Length == 0)
+                    return;
 
-                yield return instruction;
+                var termSuffix = __args[0] as string;
+                if (string.IsNullOrEmpty(termSuffix))
+                    return;
+
+                __result = TranslateTermOrFallback("ProfileComment/" + termSuffix,
+                    originalResult);
             }
-
-            if (!found)
-                LogManager.Warning(
-                    "MaidProfileCommentPatcher: Could not find Product.supportMultiLanguage call in target method, transpiler had no effect/" +
-                    "在目标方法中未找到 Product.supportMultiLanguage 调用，Transpiler 未生效");
+            catch (Exception e)
+            {
+                __result = originalResult;
+                LogManager.Error(
+                    $"MaidProfileCommentPatcher.GetTranslationPostfix unknown error, preserving original text/未知错误，保留原文 {e.Message}\n{e.StackTrace}");
+            }
         }
     }
 
@@ -219,6 +215,9 @@ public static class UITextTranslateDangerPatch
     {
         try
         {
+            if (Product.supportMultiLanguage)
+                return;
+
             FillPopupElementTerms(__instance, PopupAndTabListDataField);
         }
         catch (Exception e)
@@ -239,6 +238,9 @@ public static class UITextTranslateDangerPatch
     {
         try
         {
+            if (Product.supportMultiLanguage)
+                return;
+
             FillPopupElementTerms(__instance, PopupAndTabListDataField);
         }
         catch (Exception e)
@@ -264,7 +266,8 @@ public static class UITextTranslateDangerPatch
     {
         try
         {
-            if (__instance == null || __instance.TabPanel == null)
+            if (Product.supportMultiLanguage || __instance == null ||
+                __instance.TabPanel == null)
                 return;
 
             // Harmony003 is a false positive here: we only read popup_val.Key, never assign to it.
@@ -302,6 +305,9 @@ public static class UITextTranslateDangerPatch
     {
         try
         {
+            if (Product.supportMultiLanguage)
+                return;
+
             FillPopupElementTerms(__instance, PopupAndButtonListDataField);
         }
         catch (Exception e)
@@ -321,6 +327,9 @@ public static class UITextTranslateDangerPatch
     {
         try
         {
+            if (Product.supportMultiLanguage)
+                return;
+
             FillPopupElementTerms(__instance, PopupAndButtonListDataField);
         }
         catch (Exception e)
@@ -343,7 +352,8 @@ public static class UITextTranslateDangerPatch
     {
         try
         {
-            if (__instance == null || __instance.Grid == null)
+            if (Product.supportMultiLanguage || __instance == null ||
+                __instance.Grid == null)
                 return;
 
             // Harmony003 is a false positive here: we only read popup_val.Key, never assign to it.
@@ -440,15 +450,28 @@ public static class UITextTranslateDangerPatch
             if (string.IsNullOrEmpty(term))
             {
                 if (localize != null)
+                {
                     localize.enabled = false;
+                    localize.TermArgs = null;
+                    localize.mTerm = string.Empty;
+                    localize.mTermSecondary = string.Empty;
+                    localize.FinalTerm = string.Empty;
+                    localize.FinalSecondaryTerm = string.Empty;
+                }
+
                 continue;
             }
 
             if (localize == null)
                 localize = label.gameObject.AddComponent<Localize>();
 
-            localize.enabled = true;
+            var fallback = label.text;
+            // SetTerm forces one localization pass even while the component is disabled. Doing it
+            // before enabling prevents OnEnable from applying the previous category's stale term.
             localize.SetTerm(term);
+            localize.enabled = true;
+            if (StringTool.IsNullOrWhiteSpace(label.text))
+                label.text = fallback;
         }
     }
 
@@ -514,6 +537,9 @@ public static class UITextTranslateDangerPatch
     {
         try
         {
+            if (Product.supportMultiLanguage)
+                return;
+
             if (__instance?.PopupAndTabList != null && PhotoBGData.popup_category_term_list != null)
                 __instance.PopupAndTabList.popup_term_list = PhotoBGData.popup_category_term_list;
         }
@@ -526,8 +552,9 @@ public static class UITextTranslateDangerPatch
 
     /// <summary>
     ///     照片模式表情窗口分类下拉框 term。
-    ///     原方法在 maid 有效且不是男性时才写入表情分类数据，但 JP 版仍会把 term 列表置空。
-    ///     这里在同一时机写回 PhotoFaceData.popup_category_term_list；maid 为 null 或男性时清空，
+    ///     原方法在 maid 使用 PhotoFaceData 时写入表情分类数据，但 JP 版仍会把 term 列表置空。
+    ///     COM3D2 只允许非男性，COM3D2.5 还允许 IsNowRealMan 的真实男性。
+    ///     这里按各版本相同条件写回 PhotoFaceData.popup_category_term_list；没有表情数据时清空，
     ///     避免 UIPopupList.items 与 itemTerms 数量不一致。
     /// </summary>
     [HarmonyPatch(typeof(FaceWindow), "OnMaidChangeEvent")]
@@ -536,11 +563,17 @@ public static class UITextTranslateDangerPatch
     {
         try
         {
-            if (__instance?.PopupAndTabList == null)
+            if (Product.supportMultiLanguage || __instance?.PopupAndTabList == null)
                 return;
 
-            __instance.PopupAndTabList.popup_term_list =
-                maid != null && !maid.boMAN ? PhotoFaceData.popup_category_term_list : null;
+#if COM3D25_UNITY_2022
+            var hasFaceData = maid != null && (!maid.boMAN || maid.IsNowRealMan);
+#else
+            var hasFaceData = maid != null && !maid.boMAN;
+#endif
+            __instance.PopupAndTabList.popup_term_list = hasFaceData
+                ? PhotoFaceData.popup_category_term_list
+                : null;
         }
         catch (Exception e)
         {
@@ -560,7 +593,7 @@ public static class UITextTranslateDangerPatch
     {
         try
         {
-            if (__instance?.PopupAndTabList == null)
+            if (Product.supportMultiLanguage || __instance?.PopupAndTabList == null)
                 return;
 
             if (maid == null)
@@ -608,22 +641,37 @@ public static class UITextTranslateDangerPatch
         KeyValuePair<string[], Color>[] texts,
         int limitTextWidth)
     {
+        var replacementStarted = false;
         try
         {
             if (__instance == null || texts == null)
                 return true;
+            if (Product.supportMultiLanguage)
+                return true;
 
             if (!TryEnsureConditionListAwake(__instance))
+                return true;
+
+            if (UIWFConditionListLocalizesField == null ||
+                UIWFConditionListLastLimitTextWidthField == null ||
+                UIWFConditionListUpdateFlagField == null ||
+                (UIWFConditionListHeightSetter == null &&
+                 UIWFConditionListHeightBackingField == null))
                 return true;
 
             if (!(UIWFConditionListLabelsField?.GetValue(__instance) is List<UILabel> labels) ||
                 labels.Count == 0)
                 return true;
 
-            var localizes =
-                UIWFConditionListLocalizesField?.GetValue(__instance) as List<Localize>;
+            if (!(UIWFConditionListLocalizesField.GetValue(__instance)
+                    is List<Localize> localizes) || localizes.Count < labels.Count)
+                return true;
 
-            UIWFConditionListLastLimitTextWidthField?.SetValue(__instance, limitTextWidth);
+            // Validate every row and build every translated string before mutating the component.
+            // If reflection or the prefab shape has drifted, the untouched game method can run.
+            var rows = new Transform[labels.Count];
+            var translatedTexts = new string[labels.Count];
+            var colors = new Color[labels.Count];
 
             var firstY = 0f;
             var lastBottomY = 0f;
@@ -631,44 +679,57 @@ public static class UITextTranslateDangerPatch
             {
                 var label = labels[i];
                 if (label == null || label.transform == null || label.transform.parent == null)
-                    continue;
-
-                if (localizes != null && i < localizes.Count && localizes[i] != null)
-                {
-                    localizes[i].LocalizeEvent.RemoveAllListeners();
-                    localizes[i].enabled = false;
-                }
+                    return true;
 
                 var row = label.transform.parent;
+                rows[i] = row;
                 if (i < texts.Length)
                 {
+                    var widget = row.gameObject.GetComponent<UIWidget>();
+                    if (widget == null)
+                        return true;
+
                     if (i == 0)
                         firstY = Mathf.Abs(row.localPosition.y);
 
-                    row.gameObject.SetActive(true);
-                    label.text = BuildConditionText(texts[i].Key);
-                    label.color = texts[i].Value;
+                    translatedTexts[i] = BuildConditionText(texts[i].Key);
+                    colors[i] = texts[i].Value;
+                    lastBottomY = Mathf.Abs(row.localPosition.y) + widget.height;
+                }
+            }
 
-                    var widget = row.gameObject.GetComponent<UIWidget>();
-                    if (widget != null)
-                        lastBottomY = Mathf.Abs(row.localPosition.y) + widget.height;
+            UIWFConditionListLastLimitTextWidthField.SetValue(__instance, limitTextWidth);
+            replacementStarted = true;
+            for (var i = 0; i < labels.Count; i++)
+            {
+                // Disabling is sufficient to stop a later I2 event from overwriting the direct
+                // JP-path translation. Preserve every existing runtime and persistent listener.
+                if (localizes[i] != null)
+                    localizes[i].enabled = false;
+
+                if (i < texts.Length)
+                {
+                    rows[i].gameObject.SetActive(true);
+                    labels[i].text = translatedTexts[i];
+                    labels[i].color = colors[i];
                 }
                 else
                 {
-                    row.gameObject.SetActive(false);
+                    rows[i].gameObject.SetActive(false);
                 }
             }
 
             SetConditionListHeight(__instance, (int)(lastBottomY - firstY));
             __instance.ResizeUI(limitTextWidth);
-            UIWFConditionListUpdateFlagField?.SetValue(__instance, false);
+            UIWFConditionListUpdateFlagField.SetValue(__instance, false);
             return false;
         }
         catch (Exception e)
         {
             LogManager.Error(
-                $"UIWFConditionList_SetTexts_Prefix unknown error, fallback to original/未知错误，回退原方法 {e.Message}\n{e.StackTrace}");
-            return true;
+                $"UIWFConditionList_SetTexts_Prefix unknown error/未知错误 " +
+                $"(replacementStarted={replacementStarted}) {e.Message}\n{e.StackTrace}");
+            return !replacementStarted;
         }
     }
 
@@ -692,9 +753,7 @@ public static class UITextTranslateDangerPatch
             return;
         }
 
-        var backingField = AccessTools.Field(typeof(UIWFConditionList),
-            "<height>k__BackingField");
-        backingField?.SetValue(instance, height);
+        UIWFConditionListHeightBackingField.SetValue(instance, height);
     }
 
     private static string BuildConditionText(string[] terms)
@@ -706,9 +765,15 @@ public static class UITextTranslateDangerPatch
             return TranslateTermOrLastWord(terms[0]);
 
         var format = TranslateTermOrLastWord(terms[0]);
+        var argumentsAreTerms = ConditionArgumentsAreTerms(terms[0]);
         var args = new string[terms.Length - 1];
         for (var i = 1; i < terms.Length; i++)
-            args[i - 1] = TranslateTermArgument(terms[i]);
+        {
+            var argument = terms[i] ?? string.Empty;
+            args[i - 1] = argumentsAreTerms
+                ? TranslateTermOrLastWord(argument)
+                : argument;
+        }
 
         try
         {
@@ -720,15 +785,13 @@ public static class UITextTranslateDangerPatch
         }
     }
 
-    private static string TranslateTermArgument(string value)
+    private static bool ConditionArgumentsAreTerms(string formatTerm)
     {
-        if (string.IsNullOrEmpty(value))
-            return string.Empty;
-
-        if (!IsLikelyTerm(value))
-            return value;
-
-        return TranslateTermOrLastWord(value);
+        return !string.IsNullOrEmpty(formatTerm) &&
+               (formatTerm.Contains("性経験") ||
+                formatTerm.Contains("契約タイプ") ||
+                formatTerm.Contains("性癖") ||
+                formatTerm.Contains("ヒロインタイプ"));
     }
 
     #endregion
@@ -745,8 +808,12 @@ public static class UITextTranslateDangerPatch
     [HarmonyPrefix]
     private static bool ShopItem_OnHoverOver_Prefix(ShopItem __instance)
     {
+        var replacementStarted = false;
         try
         {
+            if (Product.supportMultiLanguage)
+                return true;
+
             if (__instance == null || ShopItemInfoWindowField == null ||
                 ShopItemIconSpriteField == null)
                 return true;
@@ -757,12 +824,20 @@ public static class UITextTranslateDangerPatch
             if (itemData == null || infoWindow == null || iconSprite?.sprite2D?.texture == null)
                 return true;
 
+            var baseObject = UTY.GetChildObject(infoWindow.gameObject, "Base", false);
+            if (baseObject == null)
+                return true;
+
             var position = __instance.transform.position;
             var title = TranslateShopItemName(itemData);
             var info = TranslateShopItemDescription(itemData);
+            var transform = baseObject.transform;
+
+            // Open mutates the shared info window. Once it has been attempted, never run the
+            // original method as a fallback or the same window can be opened a second time.
+            replacementStarted = true;
             infoWindow.Open(position, iconSprite.sprite2D.texture, title, info);
 
-            var transform = UTY.GetChildObject(infoWindow.gameObject, "Base").transform;
             transform.position = position;
             var y = transform.localPosition.y;
             transform.localPosition = infoWindow.m_vecOffsetPos + new Vector3(-337f, y, 0f);
@@ -778,8 +853,9 @@ public static class UITextTranslateDangerPatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"ShopItem_OnHoverOver_Prefix unknown error, fallback to original/未知错误，回退原方法 {e.Message}\n{e.StackTrace}");
-            return true;
+                $"ShopItem_OnHoverOver_Prefix unknown error/未知错误 " +
+                $"(replacementStarted={replacementStarted}) {e.Message}\n{e.StackTrace}");
+            return !replacementStarted;
         }
     }
 
@@ -793,8 +869,12 @@ public static class UITextTranslateDangerPatch
     [HarmonyPrefix]
     private static bool ShopItem_OnClick_Prefix(ShopItem __instance)
     {
+        var replacementStarted = false;
         try
         {
+            if (Product.supportMultiLanguage)
+                return true;
+
             if (__instance == null || ShopItemClickEventField == null)
                 return true;
 
@@ -806,6 +886,7 @@ public static class UITextTranslateDangerPatch
                 GameMain.Instance.CharacterMgr.status.money - itemData.price;
             if (remainingMoney < 0L)
             {
+                replacementStarted = true;
                 GameMain.Instance.SysDlg.ShowFromLanguageTerm("Dialog/ショップ/資金が不足しています。",
                     null, SystemDialog.TYPE.OK);
                 return false;
@@ -816,6 +897,7 @@ public static class UITextTranslateDangerPatch
                 TranslateShopItemName(itemData),
                 Utility.ConvertMoneyText(itemData.price)
             };
+            replacementStarted = true;
             GameMain.Instance.SysDlg.ShowFromLanguageTerm(
                 "Dialog/ショップ/{0}を購入しますか?資金 -{1}CR",
                 args,
@@ -826,8 +908,9 @@ public static class UITextTranslateDangerPatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"ShopItem_OnClick_Prefix unknown error, fallback to original/未知错误，回退原方法 {e.Message}\n{e.StackTrace}");
-            return true;
+                $"ShopItem_OnClick_Prefix unknown error/未知错误 " +
+                $"(replacementStarted={replacementStarted}) {e.Message}\n{e.StackTrace}");
+            return !replacementStarted;
         }
     }
 
@@ -839,31 +922,52 @@ public static class UITextTranslateDangerPatch
     [HarmonyPrefix]
     private static bool ShopItem_CallOnClickEvent_Prefix(ShopItem __instance)
     {
+        var clickEventDispatched = false;
         try
         {
+            if (Product.supportMultiLanguage)
+                return true;
+
             if (__instance == null || ShopItemClickEventField == null ||
                 __instance.item_data == null)
                 return true;
 
-            RunShopItemClickEvent(__instance);
+            // Resolve every fallible display value before the purchase callback. If the callback
+            // is attempted, it must have at-most-once semantics even when it or the dialog throws.
+            var translatedName = TranslateShopItemName(__instance.item_data);
+            var clickEvent = ShopItemClickEventField.GetValue(__instance) as ShopItem.OnClickEvent;
+            if (clickEvent != null)
+            {
+                clickEventDispatched = true;
+                clickEvent.Invoke(__instance);
+            }
+
+            GameMain.Instance.SysDlg.ShowFromLanguageTerm(
+                "Dialog/ショップ/{0}を購入しました",
+                new[] { translatedName },
+                SystemDialog.TYPE.OK);
             return false;
         }
         catch (Exception e)
         {
             LogManager.Error(
-                $"ShopItem_CallOnClickEvent_Prefix unknown error, fallback to original/未知错误，回退原方法 {e.Message}\n{e.StackTrace}");
-            return true;
+                $"ShopItem_CallOnClickEvent_Prefix unknown error/未知错误 " +
+                $"(clickEventDispatched={clickEventDispatched}) {e.Message}\n{e.StackTrace}");
+            return !clickEventDispatched;
         }
     }
 
     private static void RunShopItemClickEvent(ShopItem instance)
     {
+        // Translate before invoking the callback because the callback performs the purchase.
+        // Translation failures must not occur after that irreversible business operation.
+        var translatedName = TranslateShopItemName(instance.item_data);
         var clickEvent = ShopItemClickEventField.GetValue(instance) as ShopItem.OnClickEvent;
         clickEvent?.Invoke(instance);
 
         GameMain.Instance.SysDlg.ShowFromLanguageTerm(
             "Dialog/ショップ/{0}を購入しました",
-            new[] { TranslateShopItemName(instance.item_data) },
+            new[] { translatedName },
             SystemDialog.TYPE.OK);
     }
 
@@ -898,8 +1002,12 @@ public static class UITextTranslateDangerPatch
     [HarmonyPrefix]
     private static bool CasinoItemUI_ItemBuy_Prefix(CasinoItemUI __instance)
     {
+        var replacementStarted = false;
         try
         {
+            if (Product.supportMultiLanguage)
+                return true;
+
             if (__instance == null || CasinoItemUIItemDataField == null)
                 return true;
 
@@ -909,6 +1017,7 @@ public static class UITextTranslateDangerPatch
 
             if (!itemData.IsCanBuy)
             {
+                replacementStarted = true;
                 GameMain.Instance.SysDlg.ShowFromLanguageTerm(
                     "SceneCasino/ダイアログ/カジノコインが不足しています。",
                     null,
@@ -921,6 +1030,7 @@ public static class UITextTranslateDangerPatch
                 TranslateCasinoItemName(itemData),
                 Utility.ConvertMoneyText(itemData.Price)
             };
+            replacementStarted = true;
             GameMain.Instance.SysDlg.ShowFromLanguageTerm(
                 "SceneCasino/ダイアログ/{0}を購入しますか?",
                 args,
@@ -931,8 +1041,9 @@ public static class UITextTranslateDangerPatch
         catch (Exception e)
         {
             LogManager.Error(
-                $"CasinoItemUI_ItemBuy_Prefix unknown error, fallback to original/未知错误，回退原方法 {e.Message}\n{e.StackTrace}");
-            return true;
+                $"CasinoItemUI_ItemBuy_Prefix unknown error/未知错误 " +
+                $"(replacementStarted={replacementStarted}) {e.Message}\n{e.StackTrace}");
+            return !replacementStarted;
         }
     }
 
@@ -948,28 +1059,37 @@ public static class UITextTranslateDangerPatch
         SceneCasinoShop __instance,
         CasinoShopItem item_data)
     {
+        var purchaseStarted = false;
         try
         {
+            if (Product.supportMultiLanguage)
+                return true;
+
             if (__instance == null || item_data == null ||
                 SceneCasinoShopUpdateUIStateMethod == null)
                 return true;
 
+            // Resolve the display-only value before changing coins or inventory. From the first
+            // mutation onward the original method must never be replayed as an exception fallback.
+            var translatedName = TranslateCasinoItemName(item_data);
             var status = GameMain.Instance.CharacterMgr.status;
+            purchaseStarted = true;
             status.casinoCoin -= item_data.Price;
             item_data.ItemBuy();
             SceneCasinoShopUpdateUIStateMethod.Invoke(__instance, null);
 
             GameMain.Instance.SysDlg.ShowFromLanguageTerm(
                 "SceneCasino/ダイアログ/{0}を購入しました",
-                new[] { TranslateCasinoItemName(item_data) },
+                new[] { translatedName },
                 SystemDialog.TYPE.OK);
             return false;
         }
         catch (Exception e)
         {
             LogManager.Error(
-                $"SceneCasinoShop_ItemBuy_Prefix unknown error, fallback to original/未知错误，回退原方法 {e.Message}\n{e.StackTrace}");
-            return true;
+                $"SceneCasinoShop_ItemBuy_Prefix unknown error/未知错误 " +
+                $"(purchaseStarted={purchaseStarted}) {e.Message}\n{e.StackTrace}");
+            return !purchaseStarted;
         }
     }
 
@@ -991,10 +1111,8 @@ public static class UITextTranslateDangerPatch
     /// <summary>
     ///     DanceSingPartSettingUI.SetUpUI 在 JP 版用 vocalJPName 填 popup.items 并把
     ///     label.text 设为日文，跳过 itemTerms 和 Localize 路径。
-    ///     此 Postfix 重建 popup：
-    ///     1) 用 vocalNameTerm 填 items 和 itemTerms；
-    ///     2) 强制 isLocalized = true 并 SetTerm；
-    ///     3) 替换 onChange 委托，让用户切换时也走 Localize.SetTerm。
+    ///     此 Postfix 保留 vocalJPName 业务值及其原始索引，只建立同长度的 itemTerms，
+    ///     并替换 onChange 委托，让显示标签按索引使用对应的 vocalNameTerm。
     ///     依赖：私有字段 PopupUITupleDic（Dictionary&lt;UIPopupList, Tuple&lt;UILabel, Localize&gt;&gt;）。
     /// </summary>
     [HarmonyPatch(typeof(DanceSingPartSettingUI), "SetUpUI")]
@@ -1028,50 +1146,63 @@ public static class UITextTranslateDangerPatch
                     continue;
                 }
 
+                var label = tuple.Item1;
                 var loc = tuple.Item2;
-                if (loc == null)
+                if (label == null || loc == null ||
+                    popup.items.Count != dance_data.singPartList.Count)
                 {
                     i++;
                     continue;
                 }
 
-                popup.items.Clear();
-                popup.itemTerms.Clear();
+                if (popup.itemTerms == null)
+                    popup.itemTerms = new List<string>();
+                else
+                    popup.itemTerms.Clear();
+
+                var hasTerm = false;
                 foreach (var part in dance_data.singPartList)
                 {
-                    if (part == null || string.IsNullOrEmpty(part.vocalNameTerm)) continue;
-                    popup.items.Add(part.vocalNameTerm);
-                    popup.itemTerms.Add(part.vocalNameTerm);
+                    var term = part?.vocalNameTerm;
+                    if (StringTool.IsNullOrWhiteSpace(term))
+                    {
+                        popup.itemTerms.Add(string.Empty);
+                        continue;
+                    }
+
+                    popup.itemTerms.Add(term);
+                    hasTerm = true;
                 }
 
-                popup.isLocalized = true;
+                popup.isLocalized = hasTerm;
 
                 var idx = i < settingData.partDataIndexList.Count
                     ? settingData.partDataIndexList[i]
                     : 0;
                 if (idx < 0 || idx >= dance_data.singPartList.Count) idx = 0;
-                var currentTerm = dance_data.singPartList[idx].vocalNameTerm;
-                if (!string.IsNullOrEmpty(currentTerm))
-                {
-                    popup.value = currentTerm;
-                    loc.SetTerm(currentTerm);
-                }
+                ApplyDanceSingPartLabel(label, loc, dance_data.singPartList[idx]);
 
                 var capturedPopup = popup;
+                var capturedLabel = label;
                 var capturedLoc = loc;
                 var capturedIdx = i;
                 var capturedSetting = settingData;
+                var capturedParts = dance_data.singPartList;
                 EventDelegate.Set(popup.onChange, delegate
                 {
                     try
                     {
-                        var num = Mathf.Max(
-                            capturedPopup.items.IndexOf(capturedPopup.value), 0);
-                        if (capturedSetting.partDataIndexList.Count > capturedIdx)
-                            capturedSetting.partDataIndexList[capturedIdx] = num;
-                        else
-                            capturedSetting.partDataIndexList.Add(num);
-                        capturedLoc.SetTerm(capturedPopup.value);
+                        var num = capturedPopup.items.IndexOf(capturedPopup.value);
+                        if (num < 0 || num >= capturedParts.Count)
+                            num = 0;
+
+                        while (capturedSetting.partDataIndexList.Count <= capturedIdx)
+                            capturedSetting.partDataIndexList.Add(0);
+                        capturedSetting.partDataIndexList[capturedIdx] = num;
+                        ApplyDanceSingPartLabel(
+                            capturedLabel,
+                            capturedLoc,
+                            capturedParts[num]);
                     }
                     catch (Exception ex)
                     {
@@ -1090,6 +1221,36 @@ public static class UITextTranslateDangerPatch
         }
     }
 
+    private static void ApplyDanceSingPartLabel(
+        UILabel label,
+        Localize localize,
+        DanceSingPartData part)
+    {
+        if (label == null || localize == null)
+            return;
+
+        var fallback = part?.vocalJPName ?? string.Empty;
+        var term = part?.vocalNameTerm;
+        label.text = fallback;
+
+        if (StringTool.IsNullOrWhiteSpace(term))
+        {
+            localize.enabled = false;
+            localize.TermArgs = null;
+            localize.mTerm = string.Empty;
+            localize.mTermSecondary = string.Empty;
+            localize.FinalTerm = string.Empty;
+            localize.FinalSecondaryTerm = string.Empty;
+            return;
+        }
+
+        localize.TermArgs = null;
+        localize.SetTerm(term);
+        localize.enabled = true;
+        if (StringTool.IsNullOrWhiteSpace(label.text))
+            label.text = fallback;
+    }
+
     #endregion
 
     #region CreativeRoomSize
@@ -1103,24 +1264,12 @@ public static class UITextTranslateDangerPatch
     private static readonly FieldInfo CreativeRoomZTextField =
         AccessTools.Field(typeof(CreativeRoom), "m_UITextRoomSizeZ");
 
-    private static readonly FieldInfo CreativeRoomMapXField =
-        AccessTools.Field(typeof(CreativeRoom), "m_MapSizeX");
-
-    private static readonly FieldInfo CreativeRoomMapYField =
-        AccessTools.Field(typeof(CreativeRoom), "m_MapSizeY");
-
-    private static readonly FieldInfo CreativeRoomMapZField =
-        AccessTools.Field(typeof(CreativeRoom), "m_MapSizeZ");
-
-    private static readonly FieldInfo CreativeRoomUnitSizeField =
-        AccessTools.Field(typeof(CreativeRoom), "m_UnitSize");
-
     /// <summary>
     ///     CreativeRoom.UpdateRoomSizeText 在 JP 版直接拼接日文 "横幅：" / "奥行：" / "高さ："
     ///     到 m_UITextRoomSizeX/Y/Z.text，跳过 Localize + TermSuffix 路径。
-    ///     此 Prefix 在 JP 版下完全替换为多语言分支逻辑：用 Utility.SetLocalizeTerm 走 I2 term，
-    ///     并设置 TermSuffix 为 ":{数值}m"。
-    ///     依赖：私有字段 m_UITextRoomSizeX/Y/Z (UnityEngine.UI.Text)、mapSizeX/Y/Z、unitSize。
+    ///     此 Prefix 在 JP 版下为每个标签先写完整日文回退；翻译存在时再设置 I2 term
+    ///     和 TermSuffix。尺寸值直接读取游戏公开的 mapSizeX/Y/Z、unitSize 属性。
+    ///     依赖：私有字段 m_UITextRoomSizeX/Y/Z (UnityEngine.UI.Text)。
     /// </summary>
     [HarmonyPatch(typeof(CreativeRoom), "UpdateRoomSizeText")]
     [HarmonyPrefix]
@@ -1130,20 +1279,23 @@ public static class UITextTranslateDangerPatch
         {
             if (__instance == null) return true;
             if (Product.supportMultiLanguage) return true; // 原方法已走 I2
+            if (CreativeRoomXTextField == null || CreativeRoomYTextField == null ||
+                CreativeRoomZTextField == null)
+                return true;
 
-            var tx = CreativeRoomXTextField?.GetValue(__instance) as UnityText;
-            var ty = CreativeRoomYTextField?.GetValue(__instance) as UnityText;
-            var tz = CreativeRoomZTextField?.GetValue(__instance) as UnityText;
-            if (tx == null && ty == null && tz == null) return true;
+            var tx = CreativeRoomXTextField.GetValue(__instance) as UnityText;
+            var ty = CreativeRoomYTextField.GetValue(__instance) as UnityText;
+            var tz = CreativeRoomZTextField.GetValue(__instance) as UnityText;
+            if (tx == null || ty == null || tz == null) return true;
 
-            var mx = CreativeRoomMapXField?.GetValue(__instance) as int? ?? 0;
-            var my = CreativeRoomMapYField?.GetValue(__instance) as int? ?? 0;
-            var mz = CreativeRoomMapZField?.GetValue(__instance) as int? ?? 0;
-            var us = CreativeRoomUnitSizeField?.GetValue(__instance) as float? ?? 0f;
+            var mx = __instance.mapSizeX;
+            var my = __instance.mapSizeY;
+            var mz = __instance.mapSizeZ;
+            var us = __instance.unitSize;
 
-            ApplyCreativeRoomSize(tx, mx, us, "SceneCreativeRoom/横幅");
-            ApplyCreativeRoomSize(tz, mz, us, "SceneCreativeRoom/奥行");
-            ApplyCreativeRoomSize(ty, my, us, "SceneCreativeRoom/高さ");
+            ApplyCreativeRoomSize(tx, mx, us, "SceneCreativeRoom/横幅", "横幅");
+            ApplyCreativeRoomSize(tz, mz, us, "SceneCreativeRoom/奥行", "奥行");
+            ApplyCreativeRoomSize(ty, my, us, "SceneCreativeRoom/高さ", "高さ");
 
             return false;
         }
@@ -1156,24 +1308,47 @@ public static class UITextTranslateDangerPatch
     }
 
     private static void ApplyCreativeRoomSize(
-        UnityText textComponent, int mapSize, float unitSize, string term)
+        UnityText textComponent,
+        int mapSize,
+        float unitSize,
+        string term,
+        string fallbackPrefix)
     {
         if (textComponent == null) return;
 
-        var suffix = ":" + string.Format("{0:#0.##}", mapSize * unitSize) + "m";
+        var value = string.Format("{0:#0.##}", mapSize * unitSize);
+        var suffix = ":" + value + "m";
+        var fallback = fallbackPrefix + "：" + value + "m";
+        textComponent.text = fallback;
+
         var localize = textComponent.GetComponent<Localize>();
-        if (localize != null)
+        var translation = LocalizationManager.GetTranslation(term);
+        if (StringTool.IsNullOrWhiteSpace(translation))
         {
-            localize.enabled = true;
-            localize.TermSuffix = suffix;
-            Utility.SetLocalizeTerm(localize, term);
+            if (localize != null)
+            {
+                localize.enabled = false;
+                localize.TermArgs = null;
+                localize.TermSuffix = string.Empty;
+                localize.mTerm = string.Empty;
+                localize.mTermSecondary = string.Empty;
+                localize.FinalTerm = string.Empty;
+                localize.FinalSecondaryTerm = string.Empty;
+            }
+
             return;
         }
 
-        // 无 Localize 组件：直接查表，命中则覆盖，否则由 Graphic.SetVerticesDirty Prefix 兜底
-        var translation = LocalizationManager.GetTranslation(term);
-        if (!string.IsNullOrEmpty(translation))
-            textComponent.text = translation + suffix;
+        textComponent.text = translation + suffix;
+        if (localize == null)
+            return;
+
+        localize.TermArgs = null;
+        localize.TermSuffix = suffix;
+        localize.SetTerm(term);
+        localize.enabled = true;
+        if (StringTool.IsNullOrWhiteSpace(textComponent.text))
+            textComponent.text = fallback;
     }
 
     #endregion
@@ -1219,7 +1394,7 @@ public static class UITextTranslateDangerPatch
 
             var fmt = LocalizationManager.GetTranslation(
                 "SceneDanceSelect/ダンスを行うメイドを{0}人選択してください。");
-            if (!string.IsNullOrEmpty(fmt))
+            if (!StringTool.IsNullOrWhiteSpace(fmt))
                 try
                 {
                     label.text = string.Format(fmt, num);
@@ -1232,7 +1407,7 @@ public static class UITextTranslateDangerPatch
 
             var exact = LocalizationManager.GetTranslation(
                 "SceneDanceSelect/ダンスを行うメイドを" + num + "人選択してください。");
-            if (!string.IsNullOrEmpty(exact))
+            if (!StringTool.IsNullOrWhiteSpace(exact))
                 label.text = exact;
         }
         catch (Exception e)
@@ -1246,13 +1421,6 @@ public static class UITextTranslateDangerPatch
 
     #region TranslationHelpers
 
-    private static bool IsLikelyTerm(string value)
-    {
-        return !string.IsNullOrEmpty(value) &&
-               (value.IndexOf("/", StringComparison.Ordinal) >= 0 ||
-                value.IndexOf("|", StringComparison.Ordinal) >= 0);
-    }
-
     private static string TranslateTermOrLastWord(string term)
     {
         return TranslateTermOrFallback(term, Utility.GetTermLastWord(term));
@@ -1264,9 +1432,13 @@ public static class UITextTranslateDangerPatch
             return fallback ?? string.Empty;
 
         var translation = LocalizationManager.GetTranslation(term);
-        return !string.IsNullOrEmpty(translation)
-            ? translation.Replace("《改行》", "\n")
-            : fallback ?? string.Empty;
+        if (StringTool.IsNullOrWhiteSpace(translation))
+            return fallback ?? string.Empty;
+
+        var translatedText = translation.Replace("《改行》", "\n");
+        return StringTool.IsNullOrWhiteSpace(translatedText)
+            ? fallback ?? string.Empty
+            : translatedText;
     }
 
     #endregion
@@ -1277,6 +1449,9 @@ public static class UITextTranslateDangerPatch
     private static readonly FieldInfo OnHoverTaskIconLabelNameField =
         AccessTools.Field(typeof(OnHoverTaskIcon), "labelName");
 
+    private static readonly FieldInfo OnHoverTaskIconSpritePlateField =
+        AccessTools.Field(typeof(OnHoverTaskIcon), "spritePlate");
+
     /// <summary>
     ///     スケジュール画面任务图标的 hover 提示翻译。
     ///     原方法 OnHoverTaskIcon.SetText 在 !Product.supportMultiLanguage 分支直接
@@ -1285,7 +1460,8 @@ public static class UITextTranslateDangerPatch
     ///     1) SceneDaily/スケジュール/項目/{message}（× 替换为 _）
     ///     2) 回退到 SceneFacilityManagement/施設名/{message}
     ///     3) 人数提示 SceneDaily/あと{0}人必要です
-    ///     如果 I2 没有命中，则不动 labelName.text，由 NGUIText.WrapText 兜底翻译。
+    ///     如果主 term 没有命中，则不动 labelName.text；主 term 命中时也只替换首行，
+    ///     其余原始行会保留，人数 term 有效时才替换原人数行。
     /// </summary>
     [HarmonyPatch(typeof(OnHoverTaskIcon), "SetText")]
     [HarmonyPostfix]
@@ -1307,36 +1483,54 @@ public static class UITextTranslateDangerPatch
             if (label == null)
                 return;
 
-            var head = message;
-            if (message.IndexOf('\n') != -1)
-                head = message.Split('\n')[0];
+            var newlineIndex = message.IndexOf('\n');
+            var head = newlineIndex < 0 ? message : message.Substring(0, newlineIndex);
+            var hasTail = newlineIndex >= 0;
+            var tail = hasTail ? message.Substring(newlineIndex + 1) : string.Empty;
 
             var translated = LocalizationManager.GetTranslation(
                 "SceneDaily/スケジュール/項目/" + head.Replace("×", "_"));
-            if (string.IsNullOrEmpty(translated))
+            if (StringTool.IsNullOrWhiteSpace(translated))
                 translated = LocalizationManager.GetTranslation(
                     "SceneFacilityManagement/施設名/" + head);
-            if (string.IsNullOrEmpty(translated))
+            if (StringTool.IsNullOrWhiteSpace(translated))
                 return;
 
-            var final = translated;
             if (needNum != -1)
             {
                 var fmt = LocalizationManager.GetTranslation(
                     "SceneDaily/あと{0}人必要です");
-                if (!string.IsNullOrEmpty(fmt))
+                if (!StringTool.IsNullOrWhiteSpace(fmt))
                     try
                     {
-                        final = translated + "\n" + string.Format(fmt, needNum);
+                        var remainingLinesIndex = tail.IndexOf('\n');
+                        var remainingLines = remainingLinesIndex >= 0
+                            ? tail.Substring(remainingLinesIndex)
+                            : string.Empty;
+                        tail = string.Format(fmt, needNum) + remainingLines;
+                        hasTail = true;
                     }
                     catch (FormatException)
                     {
-                        // 保留 translated
+                        // 保留 message 中完整的原始人数提示及其它后续行。
                     }
             }
 
+            var final = hasTail ? translated + "\n" + tail : translated;
             label.text = final;
             label.MakePixelPerfect();
+
+            var plate = OnHoverTaskIconSpritePlateField?.GetValue(__instance) as UISprite;
+            if (plate != null)
+            {
+                var lineCount = 1;
+                for (var i = 0; i < final.Length; i++)
+                    if (final[i] == '\n')
+                        lineCount++;
+
+                plate.width = label.width + 15;
+                plate.height = lineCount * 33;
+            }
         }
         catch (Exception e)
         {
@@ -1391,12 +1585,12 @@ public static class UITextTranslateDangerPatch
             {
                 var prefix = LocalizationManager.GetTranslation(
                     "ScenePhotoMode/プレイヤー名/男");
-                translation = string.IsNullOrEmpty(prefix)
+                translation = StringTool.IsNullOrWhiteSpace(prefix)
                     ? null
                     : prefix + maid.ActiveSlotNo;
             }
 
-            if (!string.IsNullOrEmpty(translation))
+            if (!StringTool.IsNullOrWhiteSpace(translation))
                 label.text = translation;
         }
         catch (Exception e)
@@ -1414,6 +1608,9 @@ public static class UITextTranslateDangerPatch
     private static readonly FieldInfo ProfileCtrlPPersonalField =
         AccessTools.Field(typeof(ProfileCtrl), "m_pPersonal");
 
+    private static readonly FieldInfo ProfileCtrlLPersonalField =
+        AccessTools.Field(typeof(ProfileCtrl), "m_lPersonal");
+
     private static readonly FieldInfo ProfileCtrlMaidStatusField =
         AccessTools.Field(typeof(ProfileCtrl), "m_maidStatus");
 
@@ -1427,10 +1624,10 @@ public static class UITextTranslateDangerPatch
         AccessTools.Field(typeof(ProfileCtrl), "m_dicPersonal");
 
     /// <summary>
-    ///     ProfileCtrl.Init 在 JP 版用 drawName 填 m_pPersonal.items 并把 m_dicPersonal
-    ///     的键设为 drawName，UIPopupList 不走 I2。此 Postfix 把 items 和 m_dicPersonal
-    ///     的键替换为 termName，并开启 isLocalized，让下拉框走 I2。
-    ///     注意 SetPersonal(selectValue) 用 m_dicPersonal[selectValue] 取数据，所以两者必须同步替换。
+    ///     ProfileCtrl.Init 在 JP 版用 drawName 填 m_pPersonal.items，并把 m_dicPersonal
+    ///     的键设为 drawName，UIPopupList 不走 I2。此 Postfix 保留这些业务值，只按 items
+    ///     的既有顺序把 Personal.Data.termName 写入 itemTerms，让下拉框仅翻译显示文本。
+    ///     SetPersonal(selectValue) 继续接收原始 drawName，因此不会因空/重复 term 丢失性格。
     /// </summary>
     [HarmonyPatch(typeof(ProfileCtrl), "Init")]
     [HarmonyPostfix]
@@ -1450,23 +1647,46 @@ public static class UITextTranslateDangerPatch
                 ProfileCtrlDicPersonalField.GetValue(null) as Dictionary<string, Personal.Data>;
             if (oldDic == null || oldDic.Count == 0) return;
 
-            var newDic = new Dictionary<string, Personal.Data>();
-            var newItems = new List<string>();
-            foreach (var kvp in oldDic)
+            var terms = new List<string>(popup.items.Count);
+            var hasTerm = false;
+            foreach (var item in popup.items)
             {
-                var data = kvp.Value;
-                if (data == null || string.IsNullOrEmpty(data.termName)) continue;
-                if (newDic.ContainsKey(data.termName)) continue;
-                newDic[data.termName] = data;
-                newItems.Add(data.termName);
+                Personal.Data data;
+                var term = item != null && oldDic.TryGetValue(item, out data) && data != null
+                    ? data.termName
+                    : null;
+                if (StringTool.IsNullOrWhiteSpace(term))
+                {
+                    terms.Add(string.Empty);
+                    continue;
+                }
+
+                terms.Add(term);
+                hasTerm = true;
             }
 
-            if (newDic.Count == 0) return;
+            if (popup.itemTerms == null)
+                popup.itemTerms = new List<string>();
+            else
+                popup.itemTerms.Clear();
+            popup.itemTerms.AddRange(terms);
+            popup.isLocalized = hasTerm;
 
-            ProfileCtrlDicPersonalField.SetValue(null, newDic);
-            popup.items.Clear();
-            popup.items.AddRange(newItems);
-            popup.isLocalized = true;
+            // LoadMaidParamData selected the current raw drawName before this postfix ran.
+            // Update only its display label; assigning popup.value would replay every business
+            // and third-party onChange callback even though the selected value did not change.
+            var selectedIndex = popup.items.IndexOf(popup.value);
+            if (hasTerm && selectedIndex >= 0 && selectedIndex < terms.Count)
+            {
+                var label = ProfileCtrlLPersonalField?.GetValue(__instance) as UILabel;
+                if (label != null)
+                {
+                    label.text = popup.items[selectedIndex] ?? string.Empty;
+                    var selectedTerm = terms[selectedIndex];
+                    if (!StringTool.IsNullOrWhiteSpace(selectedTerm))
+                        EnableLocalizeIfTermExists(label, selectedTerm);
+                }
+            }
         }
         catch (Exception e)
         {
@@ -1510,11 +1730,19 @@ public static class UITextTranslateDangerPatch
                     ProfileCtrlLRelationField.GetValue(__instance) as UILabel;
                 if (relationLabel != null)
                 {
-                    var relationTerm = EnumConvert.GetTerm(
-                        status.contract,
-                        status.relation,
-                        status.additionalRelation,
-                        status.specialRelation);
+                    // JP ProfileCtrl deliberately suppresses its generic relation term when an
+                    // imported OldStatus exists because it may have replaced the visible value
+                    // with legacy-only labels such as "嫁" or "新妻". Derive that case from the
+                    // final game-written label instead of overwriting it from the new enum state.
+                    var relationTerm = status.OldStatus != null
+                        ? (StringTool.IsNullOrWhiteSpace(relationLabel.text)
+                            ? null
+                            : "MaidStatus/関係タイプ/" + relationLabel.text)
+                        : EnumConvert.GetTerm(
+                            status.contract,
+                            status.relation,
+                            status.additionalRelation,
+                            status.specialRelation);
                     if (!string.IsNullOrEmpty(relationTerm))
                         EnableLocalizeIfTermExists(relationLabel, relationTerm);
                 }
@@ -1531,13 +1759,16 @@ public static class UITextTranslateDangerPatch
     {
         if (label == null || string.IsNullOrEmpty(term)) return;
         var translation = LocalizationManager.GetTranslation(term);
-        if (string.IsNullOrEmpty(translation)) return;
+        if (StringTool.IsNullOrWhiteSpace(translation)) return;
 
+        var fallback = label.text;
         var localize = label.GetComponent<Localize>();
         if (localize == null)
             localize = label.gameObject.AddComponent<Localize>();
-        localize.enabled = true;
         localize.SetTerm(term);
+        localize.enabled = true;
+        if (StringTool.IsNullOrWhiteSpace(label.text))
+            label.text = fallback;
     }
 
     #endregion

@@ -50,32 +50,32 @@ public static class UITextTranslatePatch
             if (overrideLanguage != null)
                 return;
 
-            LogManager.Debug(
-                $"LocalizationManager_TryGetTranslation_Postfix: Term {Term}, Translation {Translation}, FixForRTL {FixForRTL}, maxLineLengthForRTL {maxLineLengthForRTL}, ignoreRTLnumbers {ignoreRTLnumbers}, applyParameters {applyParameters}, localParametersRoot {localParametersRoot}, overrideLanguage {overrideLanguage}, __result {__result}");
-
             // 如果原方法已经找到翻译，尝试替换
             if (!UITranslateManager.HandleTextTermTranslation(Term, out var customTranslation))
                 return;
 
-            // 如果有自定义翻译，替换它
-            if (!string.IsNullOrEmpty(customTranslation))
-            {
-                // 应用参数
-                if (applyParameters)
-                    LocalizationManager.ApplyLocalizationParams(ref customTranslation,
-                        localParametersRoot);
+            if (StringTool.IsNullOrWhiteSpace(customTranslation))
+                return;
 
-                // 应用 RTL 修正（如果需要）
-                if (LocalizationManager.IsRight2Left && FixForRTL)
-                    customTranslation = LocalizationManager.ApplyRTLfix(customTranslation,
-                        maxLineLengthForRTL, ignoreRTLnumbers);
+            // 应用参数
+            if (applyParameters)
+                LocalizationManager.ApplyLocalizationParams(ref customTranslation,
+                    localParametersRoot);
 
-                LogManager.Debug(
-                    $"LocalizationManager_TryGetTranslation_Postfix: Translation replaced {Translation}    =>    {customTranslation}");
+            // 应用 RTL 修正（如果需要）
+            if (LocalizationManager.IsRight2Left && FixForRTL)
+                customTranslation = LocalizationManager.ApplyRTLfix(customTranslation,
+                    maxLineLengthForRTL, ignoreRTLnumbers);
 
-                Translation = customTranslation;
-                __result = true;
-            }
+            // 参数替换也可能把一个非空模板变成不可见文本。
+            if (StringTool.IsNullOrWhiteSpace(customTranslation))
+                return;
+
+            LogManager.Debug(
+                $"LocalizationManager_TryGetTranslation_Postfix: Translation replaced {Translation}    =>    {customTranslation}");
+
+            Translation = customTranslation;
+            __result = true;
         }
         catch (Exception e)
         {

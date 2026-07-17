@@ -30,6 +30,155 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 /// </summary>
 public static class UITextTranslateDangerPatch
 {
+    #region CharaSelectStatus
+
+    // 先解析所有后续同步面板所需的字段；任一字段在新版游戏中消失时，Prefix 会保持
+    // 游戏原始 statusCtrl，不进入“管理器控制 localized、界面状态检查 original”的半修改状态。
+    private static readonly FieldInfo MaidManagementStatusManagerField =
+        AccessTools.Field(typeof(MaidManagementMain), "status_mgr_");
+
+    private static readonly FieldInfo MaidManagementStatusPanelField =
+        AccessTools.Field(typeof(MaidManagementMain), "status_panel_");
+
+    private static readonly FieldInfo MaidTransferStatusManagerField =
+        AccessTools.Field(typeof(MaidTransferMain), "statusMgr");
+
+    private sealed class CharaSelectStatusRedirectState
+    {
+        public bool Redirected;
+        public StatusCtrl OriginalStatusCtrl;
+    }
+
+    /// <summary>
+    ///     CharaSelectStatusMgr.Init 在 JP 版选择非本地化的 statusCtrl prefab，
+    ///     导致整个 status 面板上的子 UI 都不走 I2。
+    ///     此 Prefix 仅在 Init 执行期间把 statusCtrl 临时重定向到 statusLocalizeCtrl，
+    ///     让 COM3D2 2.48.0 与 COM3D2.5 3.48.0 各自写法不同但语义相同的条件表达式
+    ///     都选择 localize 版本。原始字段会由 Finalizer 恢复，避免后续游戏逻辑把
+    ///     statusCtrl 和 statusLocalizeCtrl 误当成同一个面板。
+    /// </summary>
+    [HarmonyPatch(typeof(CharaSelectStatusMgr), "Init")]
+    [HarmonyPrefix]
+    private static void CharaSelectStatusMgr_Init_Prefix(CharaSelectStatusMgr __instance,
+        out CharaSelectStatusRedirectState __state)
+    {
+        __state = null;
+        try
+        {
+            if (__instance == null || Product.supportMultiLanguage ||
+                __instance.statusLocalizeCtrl == null ||
+                __instance.statusCtrl == __instance.statusLocalizeCtrl)
+                return;
+
+            if (MaidManagementStatusManagerField == null ||
+                MaidManagementStatusPanelField == null ||
+                MaidTransferStatusManagerField == null)
+                return;
+
+            __state = new CharaSelectStatusRedirectState
+            {
+                OriginalStatusCtrl = __instance.statusCtrl,
+                Redirected = true
+            };
+            __instance.statusCtrl = __instance.statusLocalizeCtrl;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"CharaSelectStatusMgr_Init_Prefix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     恢复 CharaSelectStatusMgr 的序列化 statusCtrl 引用。
+    ///     Finalizer 会在原方法成功、被其他 Prefix 跳过或抛出异常时执行，
+    ///     因此不会把临时别名泄漏给 MaidManagementMain 等后续消费者。
+    /// </summary>
+    [HarmonyPatch(typeof(CharaSelectStatusMgr), "Init")]
+    [HarmonyFinalizer]
+    private static void CharaSelectStatusMgr_Init_Finalizer(CharaSelectStatusMgr __instance,
+        CharaSelectStatusRedirectState __state)
+    {
+        try
+        {
+            if (__instance == null || __state == null || !__state.Redirected) return;
+
+            __instance.statusCtrl = __state.OriginalStatusCtrl;
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"CharaSelectStatusMgr_Init_Finalizer unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     MaidManagementMain.Awake 在 JP 版始终把 status_panel_ 设为日文 StatusPanel，
+    ///     但 CharaSelectStatusMgr 实际控制的是 StatusPanel_localize。
+    ///     两版的 VisibleStatusPanel 和 OnSelectChara 都依赖 status_panel_.activeSelf；
+    ///     若两者不一致，从属性面板切换到夜伽情报时属性面板不会关闭，切换女仆时也不会刷新。
+    /// </summary>
+    [HarmonyPatch(typeof(MaidManagementMain), "Awake")]
+    [HarmonyPostfix]
+    private static void MaidManagementMain_Awake_Postfix(MaidManagementMain __instance)
+    {
+        try
+        {
+            if (__instance == null || Product.supportMultiLanguage ||
+                MaidManagementStatusManagerField == null ||
+                MaidManagementStatusPanelField == null)
+                return;
+
+            var statusMgr =
+                MaidManagementStatusManagerField.GetValue(__instance) as CharaSelectStatusMgr;
+            var localizedPanel = statusMgr?.statusLocalizeCtrl?.gameObject;
+            if (localizedPanel == null) return;
+
+            var originalPanel =
+                MaidManagementStatusPanelField.GetValue(__instance) as GameObject;
+            if (originalPanel != null && originalPanel != localizedPanel)
+                originalPanel.SetActive(false);
+
+            MaidManagementStatusPanelField.SetValue(__instance, localizedPanel);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"MaidManagementMain_Awake_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    /// <summary>
+    ///     两版 MaidTransferMain.Awake 都会在 CharaSelectStatusMgr.Init 返回后再次按
+    ///     Product.supportMultiLanguage 激活面板。临时重定向已经恢复 statusCtrl，
+    ///     因此在 JP 版需要把最终显示切回 StatusPanel_localize。
+    /// </summary>
+    [HarmonyPatch(typeof(MaidTransferMain), "Awake")]
+    [HarmonyPostfix]
+    private static void MaidTransferMain_Awake_Postfix(MaidTransferMain __instance)
+    {
+        try
+        {
+            if (__instance == null || Product.supportMultiLanguage ||
+                MaidTransferStatusManagerField == null)
+                return;
+
+            var statusMgr =
+                MaidTransferStatusManagerField.GetValue(__instance) as CharaSelectStatusMgr;
+            if (statusMgr?.statusLocalizeCtrl == null) return;
+
+            statusMgr.statusCtrl?.gameObject.SetActive(false);
+            statusMgr.statusLocalizeCtrl.gameObject.SetActive(true);
+        }
+        catch (Exception e)
+        {
+            LogManager.Error(
+                $"MaidTransferMain_Awake_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+        }
+    }
+
+    #endregion
+
     private static readonly FieldInfo PopupAndTabListDataField =
         AccessTools.Field(typeof(PopupAndTabList), "popup_and_button_name_list_");
 

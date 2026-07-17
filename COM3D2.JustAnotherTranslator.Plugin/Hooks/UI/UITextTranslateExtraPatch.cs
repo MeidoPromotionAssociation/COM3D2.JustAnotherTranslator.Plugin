@@ -128,36 +128,6 @@ public static class UITextTranslateExtraPatch
     #endregion
 
 
-    #region CharaSelectStatus
-
-    /// <summary>
-    ///     CharaSelectStatusMgr.Init 在 JP 版选择非本地化的 statusCtrl prefab，
-    ///     导致整个 status 面板上的子 UI 都不走 I2。
-    ///     此 Prefix 在 Init 执行前把 statusCtrl 重定向到 statusLocalizeCtrl，
-    ///     让条件表达式 (supportMultiLanguage ? statusLocalizeCtrl : statusCtrl)
-    ///     的两个分支都指向 localize 版本。
-    /// </summary>
-    [HarmonyPatch(typeof(CharaSelectStatusMgr), "Init")]
-    [HarmonyPrefix]
-    private static void CharaSelectStatusMgr_Init_Prefix(CharaSelectStatusMgr __instance)
-    {
-        try
-        {
-            if (__instance == null) return;
-            if (Product.supportMultiLanguage) return;
-            if (__instance.statusLocalizeCtrl == null) return;
-
-            __instance.statusCtrl = __instance.statusLocalizeCtrl;
-        }
-        catch (Exception e)
-        {
-            LogManager.Error(
-                $"CharaSelectStatusMgr_Init_Prefix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
-        }
-    }
-
-    #endregion
-
     #region YotogiParamScroll
 
     /// <summary>

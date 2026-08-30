@@ -158,22 +158,43 @@ public class AsyncTranslationLoader : IAsyncTranslationLoader
 
             result.TotalFiles = totalFiles;
 
-            // 处理所有文件
-            foreach (var file in allFiles)
+            // 计算翻译文件签名并确定缓存文件路径，用于二次启动时跳过翻译文件的重复解析
+            var cacheSignature = TranslationCache.ComputeSignature(allFiles);
+            var cacheFilePath = TranslationCache.GetCacheFilePath(_loaderName);
+
+            // 尝试从磁盘缓存加载翻译，命中时无需重新解析翻译文件
+            var usedCache = cacheSignature != null &&
+                            TranslationCache.TryLoad(cacheFilePath, cacheSignature, result);
+            if (usedCache)
             {
-                if (_cancelRequested)
+                filesProcessed = totalFiles;
+                LogManager.Info(
+                    $"[{_loaderName}] Loaded translation from cache/从缓存加载翻译: {cacheFilePath}");
+            }
+
+            // 处理所有文件
+            if (!usedCache)
+            {
+                foreach (var file in allFiles)
                 {
-                    LogManager.Info(
-                        $"[{_loaderName}] Translation loading cancelled/翻译加载已被取消");
-                    break;
+                    if (_cancelRequested)
+                    {
+                        LogManager.Info(
+                            $"[{_loaderName}] Translation loading cancelled/翻译加载已被取消");
+                        break;
+                    }
+
+                    var entriesInFile = ProcessTranslationFile(file, result);
+                    result.TotalEntries += entriesInFile;
+                    filesProcessed++;
+
+                    var progress = (float)filesProcessed / totalFiles;
+                    _progressCallback?.Invoke(progress, filesProcessed, totalFiles);
                 }
 
-                var entriesInFile = ProcessTranslationFile(file, result);
-                result.TotalEntries += entriesInFile;
-                filesProcessed++;
-
-                var progress = (float)filesProcessed / totalFiles;
-                _progressCallback?.Invoke(progress, filesProcessed, totalFiles);
+                // 仅在完整处理完所有文件（未被取消）时保存缓存，避免将不完整的解析结果写入缓存
+                if (!_cancelRequested)
+                    TranslationCache.Save(cacheFilePath, cacheSignature, result);
             }
         }
         catch (Exception e)

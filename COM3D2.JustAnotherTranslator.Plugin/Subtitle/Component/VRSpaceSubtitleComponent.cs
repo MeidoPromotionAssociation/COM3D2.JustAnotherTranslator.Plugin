@@ -18,14 +18,14 @@ public class VRSpaceSubtitleComponent : BaseSubtitleComponent
 
     private const float RotationThreshold = 0.1f;
 
-    /// 初始化失败计数器
-    private int _initFailureCount;
-
     /// VR头部，用于跟随头部运动
     protected Transform VRHeadTransform;
 
     /// 世界空间VR字幕的容器
     protected Transform VrSubtitleContainerTransform;
+
+    /// 初始化失败计数器
+    private int _initFailureCount;
 
 
     /// <summary>

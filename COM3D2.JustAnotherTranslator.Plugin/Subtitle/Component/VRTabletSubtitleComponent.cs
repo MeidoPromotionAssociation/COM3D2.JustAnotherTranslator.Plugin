@@ -10,14 +10,14 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 /// </summary>
 public class VRTabletSubtitleComponent : BaseSubtitleComponent
 {
-    /// 初始化协程
-    private string _initCoroutineID;
+    /// 平板电脑物体
+    protected Transform VRTabletTransform;
 
     /// VR字幕的容器
     protected Transform VrSubtitleContainerTransform;
 
-    /// 平板电脑物体
-    protected Transform VRTabletTransform;
+    /// 初始化协程
+    private string _initCoroutineID;
 
 
     /// <summary>

@@ -278,7 +278,8 @@ public static class SubtitleManager
             _currentVoiceId = null;
         }
 
-        LogManager.Debug($"Ended Yotogi subtitle session, stopped {monitorEntries.Count} monitor(s)");
+        LogManager.Debug(
+            $"Ended Yotogi subtitle session, stopped {monitorEntries.Count} monitor(s)");
     }
 
     /// <summary>

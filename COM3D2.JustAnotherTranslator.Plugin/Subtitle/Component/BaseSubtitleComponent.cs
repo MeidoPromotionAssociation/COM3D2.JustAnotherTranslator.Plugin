@@ -12,9 +12,6 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Subtitle.Component;
 /// </summary>
 public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 {
-    // 销毁幂等保护
-    private bool _isDestroyed;
-
     // 自动隐藏协程
     protected Coroutine AnimationAutoHideCoroutine;
 
@@ -41,6 +38,9 @@ public abstract class BaseSubtitleComponent : MonoBehaviour, ISubtitleComponent
 
     // 字幕文本组件
     protected Text TextComponent;
+
+    // 销毁幂等保护
+    private bool _isDestroyed;
 
     /// <summary>
     ///     销毁字幕组件

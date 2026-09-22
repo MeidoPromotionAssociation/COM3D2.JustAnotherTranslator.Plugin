@@ -1,9 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
+using COM3D2.JustAnotherTranslator.Plugin.Manger;
 using COM3D2.JustAnotherTranslator.Plugin.Utils;
 using Edit;
 using HarmonyLib;
@@ -30,6 +29,223 @@ namespace COM3D2.JustAnotherTranslator.Plugin.Hooks.UI;
 /// </summary>
 public static class UITextTranslateDangerPatch
 {
+    private static readonly FieldInfo PopupAndTabListDataField =
+        AccessTools.Field(typeof(PopupAndTabList), "popup_and_button_name_list_");
+
+    private static readonly FieldInfo PopupAndButtonListDataField =
+        AccessTools.Field(typeof(PopupAndButtonList), "popup_and_button_name_list_");
+
+    private static readonly MethodInfo UIWFConditionListAwakeMethod =
+        AccessTools.Method(typeof(UIWFConditionList), "Awake");
+
+    private static readonly FieldInfo UIWFConditionListLabelsField =
+        AccessTools.Field(typeof(UIWFConditionList), "condition_label_list_");
+
+    private static readonly FieldInfo UIWFConditionListLocalizesField =
+        AccessTools.Field(typeof(UIWFConditionList), "condition_label_localize_list_");
+
+    private static readonly FieldInfo UIWFConditionListLastLimitTextWidthField =
+        AccessTools.Field(typeof(UIWFConditionList), "lastLimitTextWidth");
+
+    private static readonly FieldInfo UIWFConditionListUpdateFlagField =
+        AccessTools.Field(typeof(UIWFConditionList), "updateFlag");
+
+    private static readonly MethodInfo UIWFConditionListHeightSetter =
+        AccessTools.PropertySetter(typeof(UIWFConditionList), "height");
+
+    private static readonly FieldInfo UIWFConditionListHeightBackingField =
+        AccessTools.Field(typeof(UIWFConditionList), "<height>k__BackingField");
+
+    private static readonly FieldInfo ShopItemInfoWindowField =
+        AccessTools.Field(typeof(ShopItem), "info_window_");
+
+    private static readonly FieldInfo ShopItemIconSpriteField =
+        AccessTools.Field(typeof(ShopItem), "icon_sprite_");
+
+    private static readonly FieldInfo ShopItemClickEventField =
+        AccessTools.Field(typeof(ShopItem), "click_event_");
+
+    private static readonly FieldInfo CasinoItemUIItemDataField =
+        AccessTools.Field(typeof(CasinoItemUI), "m_ItemData");
+
+    private static readonly MethodInfo SceneCasinoShopUpdateUIStateMethod =
+        AccessTools.Method(typeof(SceneCasinoShop), "UpdateUIState");
+
+    #region MaidProfileComment
+
+    /// <summary>
+    ///     MaidProfile.Create 内部的 GetTranslation 委托在 JP 版（!Product.supportMultiLanguage）
+    ///     下直接返回 CSV 中的日文原文，不调用 I2 Localization。
+    ///     此 Patcher 定位编译器为这个 lambda 生成的方法，并在其返回后用当前 JAT/I2 翻译替换结果。
+    ///     两个版本 C# 编译器生成的代码不一样，因此使用特殊方式查找
+    ///     定位方式：在 MaidProfile 自身 + 全部嵌套类型中，找名字以 "Create" 开头、
+    ///     签名为 string(string) 的方法。
+    ///     不能设置 supportMultiLanguage=true：原生多语言分支会显式传非 null 的 overrideLanguage，
+    ///     而 JAT 挂在 LocalizationManager.TryGetTranslation 上的 postfix 对非 null overrideLanguage
+    ///     直接放行（那是给游戏自己的跨语言业务查询用的），结果仍然拿回日文原文。
+    /// </summary>
+    public static class MaidProfileCommentPatcher
+    {
+        /// <summary>
+        ///     编译器为 Create 内 lambda 生成的命名前缀，形如 &lt;Create&gt;m__0 / &lt;Create&gt;b__1_0。
+        /// </summary>
+        private const string CreateLambdaNamePrefix = "<Create>";
+
+        /// <summary>
+        ///     I2 词条前缀。翻译文件里 Term = 该前缀 + 游戏 CSV 单元格原文。
+        /// </summary>
+        private const string ProfileCommentTermPrefix = "ProfileComment/";
+
+        private static bool _patched;
+
+        public static void Reset()
+        {
+            _patched = false;
+        }
+
+        public static void ApplyPatch(Harmony harmony)
+        {
+            try
+            {
+                if (_patched) return;
+
+                var targetMethod = FindGetTranslationMethod();
+                if (targetMethod == null)
+                {
+                    LogManager.Warning(
+                        "MaidProfileCommentPatcher: no \"" + CreateLambdaNamePrefix +
+                        "\" lambda with signature " +
+                        "string(string) found in MaidProfile or its nested types, skip patch/" +
+                        "未在 MaidProfile 及其嵌套类型中找到以 \"" + CreateLambdaNamePrefix +
+                        "\" 开头、签名 string(string) 的 lambda，跳过补丁");
+                    return;
+                }
+
+                harmony.Patch(targetMethod,
+                    postfix: new HarmonyMethod(typeof(MaidProfileCommentPatcher),
+                        nameof(GetTranslationPostfix)));
+                _patched = true;
+
+                LogManager.Debug(
+                    $"MaidProfileCommentPatcher: patched {targetMethod.DeclaringType?.Name}.{targetMethod.Name}");
+            }
+            catch (Exception e)
+            {
+                LogManager.Error(
+                    $"MaidProfileCommentPatcher.ApplyPatch unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
+            }
+        }
+
+        /// <summary>
+        ///     在 MaidProfile 自身 + 全部嵌套类型里找编译器为 Create 内 lambda 生成的方法。
+        ///     命名规则由 C# 编译器保证（生成名必须包含 &lt; &gt;，因此不可能与用户标识符冲突），
+        ///     mcs 与 Roslyn 一致，所以不需要读 IL。
+        /// </summary>
+        private static MethodInfo FindGetTranslationMethod()
+        {
+            var candidateTypes = new List<Type> { typeof(MaidProfile) };
+            candidateTypes.AddRange(typeof(MaidProfile).GetNestedTypes(
+                BindingFlags.NonPublic | BindingFlags.Public));
+
+            var matches = new List<MethodInfo>();
+
+            foreach (var type in candidateTypes)
+            {
+                MethodInfo[] methods;
+                try
+                {
+                    methods = type.GetMethods(
+                        BindingFlags.Instance | BindingFlags.Static |
+                        BindingFlags.NonPublic | BindingFlags.Public |
+                        BindingFlags.DeclaredOnly);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                foreach (var method in methods)
+                {
+                    if (method.IsAbstract ||
+                        !method.Name.StartsWith(CreateLambdaNamePrefix, StringComparison.Ordinal) ||
+                        method.ReturnType != typeof(string))
+                        continue;
+
+                    var parameters = method.GetParameters();
+                    if (parameters.Length != 1 || parameters[0].ParameterType != typeof(string))
+                        continue;
+
+                    matches.Add(method);
+                }
+            }
+
+            if (matches.Count <= 1)
+                return matches.Count == 1 ? matches[0] : null;
+
+            // 出现多个候选说明 Create 里新增了别的 string(string) lambda，无法再确定哪一个是
+            // GetTranslation。此时仍挑一个用（挑错只会导致查不到词条而回退原文，不会出错），
+            // 但必须让用户看见这个歧义。
+            var picked = matches[0];
+            var names = new List<string>();
+            foreach (var method in matches)
+            {
+                // 不捕获外部变量的 lambda 在两个编译器下都是 static，优先它。
+                if (method.IsStatic && !picked.IsStatic)
+                    picked = method;
+                names.Add(method.DeclaringType?.Name + "." + method.Name);
+            }
+
+            LogManager.Warning(
+                "MaidProfileCommentPatcher: " + matches.Count + " candidates match \"" +
+                CreateLambdaNamePrefix +
+                "\" + string(string), ambiguous. Picked " + picked.DeclaringType?.Name + "." +
+                picked.Name +
+                ", others: " + string.Join(", ", names.ToArray()) +
+                "/MaidProfile 范围内匹配到 " + matches.Count + " 个候选，存在歧义。已选用 " +
+                picked.DeclaringType?.Name + "." + picked.Name + "，其余：" +
+                string.Join(", ", names.ToArray()));
+
+            return picked;
+        }
+
+        // 编译器生成方法的参数名会随编译器版本变化，所以用 __args 按位置读取 termSuffix。
+        // 实测两个编译器给出的目标形态不同：mcs 是 static 的 MaidProfile.<Create>m__0，
+        // Roslyn 是 <>c 上的实例方法 <Create>b__1_0（签名都是 string(string)）。
+        // 因此取最后一个参数而不是固定的 [0]：无论 Harmony 是否把 this 放进 __args，
+        // 这个写法对 static 与实例两种形态都成立。
+        private static void GetTranslationPostfix(object[] __args, ref string __result)
+        {
+            var originalResult = __result;
+            try
+            {
+                if (Product.supportMultiLanguage || __args == null || __args.Length == 0)
+                    return;
+
+                var termSuffix = __args[__args.Length - 1] as string;
+                if (string.IsNullOrEmpty(termSuffix))
+                    return;
+
+                var term = ProfileCommentTermPrefix + termSuffix;
+                var translated = TranslateTermOrFallback(term, originalResult);
+
+                // 资料页文本是 MaidProfile.Create 拼出来的裸字符串，不经过 I2 的 Localize 组件，
+                // 所以 UITextDumpPatch 看不到它：词条缺失时既不转储也不留日志，只会静默显示日文。
+                if (translated == originalResult)
+                    UITranslateManager.DumpTerm(term, originalResult);
+
+                __result = translated;
+            }
+            catch (Exception e)
+            {
+                __result = originalResult;
+                LogManager.Error(
+                    $"MaidProfileCommentPatcher.GetTranslationPostfix unknown error, preserving original text/未知错误，保留原文 {e.Message}\n{e.StackTrace}");
+            }
+        }
+    }
+
+    #endregion
+
     #region CharaSelectStatus
 
     // 先解析所有后续同步面板所需的字段；任一字段在新版游戏中消失时，Prefix 会保持
@@ -45,8 +261,8 @@ public static class UITextTranslateDangerPatch
 
     private sealed class CharaSelectStatusRedirectState
     {
-        public bool Redirected;
         public StatusCtrl OriginalStatusCtrl;
+        public bool Redirected;
     }
 
     /// <summary>
@@ -174,174 +390,6 @@ public static class UITextTranslateDangerPatch
         {
             LogManager.Error(
                 $"MaidTransferMain_Awake_Postfix unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
-        }
-    }
-
-    #endregion
-
-    private static readonly FieldInfo PopupAndTabListDataField =
-        AccessTools.Field(typeof(PopupAndTabList), "popup_and_button_name_list_");
-
-    private static readonly FieldInfo PopupAndButtonListDataField =
-        AccessTools.Field(typeof(PopupAndButtonList), "popup_and_button_name_list_");
-
-    private static readonly MethodInfo UIWFConditionListAwakeMethod =
-        AccessTools.Method(typeof(UIWFConditionList), "Awake");
-
-    private static readonly FieldInfo UIWFConditionListLabelsField =
-        AccessTools.Field(typeof(UIWFConditionList), "condition_label_list_");
-
-    private static readonly FieldInfo UIWFConditionListLocalizesField =
-        AccessTools.Field(typeof(UIWFConditionList), "condition_label_localize_list_");
-
-    private static readonly FieldInfo UIWFConditionListLastLimitTextWidthField =
-        AccessTools.Field(typeof(UIWFConditionList), "lastLimitTextWidth");
-
-    private static readonly FieldInfo UIWFConditionListUpdateFlagField =
-        AccessTools.Field(typeof(UIWFConditionList), "updateFlag");
-
-    private static readonly MethodInfo UIWFConditionListHeightSetter =
-        AccessTools.PropertySetter(typeof(UIWFConditionList), "height");
-
-    private static readonly FieldInfo UIWFConditionListHeightBackingField =
-        AccessTools.Field(typeof(UIWFConditionList), "<height>k__BackingField");
-
-    private static readonly FieldInfo ShopItemInfoWindowField =
-        AccessTools.Field(typeof(ShopItem), "info_window_");
-
-    private static readonly FieldInfo ShopItemIconSpriteField =
-        AccessTools.Field(typeof(ShopItem), "icon_sprite_");
-
-    private static readonly FieldInfo ShopItemClickEventField =
-        AccessTools.Field(typeof(ShopItem), "click_event_");
-
-    private static readonly FieldInfo CasinoItemUIItemDataField =
-        AccessTools.Field(typeof(CasinoItemUI), "m_ItemData");
-
-    private static readonly MethodInfo SceneCasinoShopUpdateUIStateMethod =
-        AccessTools.Method(typeof(SceneCasinoShop), "UpdateUIState");
-
-    #region MaidProfileComment
-
-    /// <summary>
-    ///     MaidProfile.Create 内部的 GetTranslation 委托在 JP 版（!Product.supportMultiLanguage）
-    ///     下直接返回 CSV 中的日文原文，不调用 I2 Localization。
-    ///     此 Patcher 通过运行时反射定位编译器生成的委托方法，并在返回后用当前 JAT/I2
-    ///     翻译替换结果。不能伪造 supportMultiLanguage=true：原生多语言分支显式请求
-    ///     Product.systemLanguage，而 JAT 的单语言 UI 字典不应覆盖这种 overrideLanguage 查询。
-    /// </summary>
-    public static class MaidProfileCommentPatcher
-    {
-        private static bool _patched;
-
-        public static void Reset()
-        {
-            _patched = false;
-        }
-
-        public static void ApplyPatch(Harmony harmony)
-        {
-            try
-            {
-                if (_patched) return;
-
-                var targetMethod = FindGetTranslationMethod();
-                if (targetMethod == null)
-                {
-                    LogManager.Warning(
-                        "MaidProfileCommentPatcher: Could not find compiler-generated GetTranslation method in MaidProfile, skip patch/" +
-                        "无法找到 MaidProfile 中编译器生成的 GetTranslation 方法，跳过补丁");
-                    return;
-                }
-
-                var postfix = new HarmonyMethod(typeof(MaidProfileCommentPatcher),
-                    nameof(GetTranslationPostfix));
-                harmony.Patch(targetMethod, postfix: postfix);
-                _patched = true;
-
-                LogManager.Debug(
-                    $"MaidProfileCommentPatcher: Successfully patched {targetMethod.DeclaringType?.Name}.{targetMethod.Name}");
-            }
-            catch (Exception e)
-            {
-                LogManager.Error(
-                    $"MaidProfileCommentPatcher.ApplyPatch unknown error, please report this issue/未知错误，请报告此问题 {e.Message}\n{e.StackTrace}");
-            }
-        }
-
-        private static MethodInfo FindGetTranslationMethod()
-        {
-            var supportMultiLanguageGetter = AccessTools.PropertyGetter(
-                typeof(Product), "supportMultiLanguage");
-            if (supportMultiLanguageGetter == null)
-                return null;
-
-            var nestedTypes = typeof(MaidProfile).GetNestedTypes(
-                BindingFlags.NonPublic | BindingFlags.Public);
-
-            foreach (var type in nestedTypes)
-            {
-                var methods = type.GetMethods(
-                    BindingFlags.Instance | BindingFlags.Static |
-                    BindingFlags.NonPublic | BindingFlags.Public);
-
-                foreach (var method in methods)
-                {
-                    if (method.ReturnType != typeof(string))
-                        continue;
-
-                    var parameters = method.GetParameters();
-                    if (parameters.Length != 1 || parameters[0].ParameterType != typeof(string))
-                        continue;
-
-                    if (!MethodContainsCall(method, supportMultiLanguageGetter))
-                        continue;
-
-                    return method;
-                }
-            }
-
-            return null;
-        }
-
-        private static bool MethodContainsCall(MethodInfo method, MethodInfo target)
-        {
-            try
-            {
-                var instructions = PatchProcessor.GetOriginalInstructions(method);
-                return instructions.Any(instr =>
-                    (instr.opcode == OpCodes.Call || instr.opcode == OpCodes.Callvirt) &&
-                    instr.operand is MethodInfo mi &&
-                    mi == target);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        // 编译器生成方法的参数名可能随编译器版本变化，使用 __args 按位置读取 termSuffix。
-        private static void GetTranslationPostfix(object[] __args, ref string __result)
-        {
-            var originalResult = __result;
-            try
-            {
-                if (Product.supportMultiLanguage || __args == null || __args.Length == 0)
-                    return;
-
-                var termSuffix = __args[0] as string;
-                if (string.IsNullOrEmpty(termSuffix))
-                    return;
-
-                __result = TranslateTermOrFallback("ProfileComment/" + termSuffix,
-                    originalResult);
-            }
-            catch (Exception e)
-            {
-                __result = originalResult;
-                LogManager.Error(
-                    $"MaidProfileCommentPatcher.GetTranslationPostfix unknown error, preserving original text/未知错误，保留原文 {e.Message}\n{e.StackTrace}");
-            }
         }
     }
 
@@ -778,14 +826,12 @@ public static class UITextTranslateDangerPatch
 
         UILabel selectionLabel = null;
         foreach (var callback in popup.onChange)
-        {
             if (callback?.target is UILabel label &&
                 callback.methodName == nameof(UILabel.SetCurrentSelection))
             {
                 selectionLabel = label;
                 break;
             }
-        }
 
         // Before UIPopupList.Start, the serialized textLabel has not been moved to onChange.
         // Start will perform its own value assignment later and pick up the terms just written.
@@ -1043,7 +1089,7 @@ public static class UITextTranslateDangerPatch
             if (itemData == null || infoWindow == null || iconSprite?.sprite2D?.texture == null)
                 return true;
 
-            var baseObject = UTY.GetChildObject(infoWindow.gameObject, "Base", false);
+            var baseObject = UTY.GetChildObject(infoWindow.gameObject, "Base");
             if (baseObject == null)
                 return true;
 
@@ -1979,9 +2025,9 @@ public static class UITextTranslateDangerPatch
                     // with legacy-only labels such as "嫁" or "新妻". Derive that case from the
                     // final game-written label instead of overwriting it from the new enum state.
                     var relationTerm = status.OldStatus != null
-                        ? (StringTool.IsNullOrWhiteSpace(relationLabel.text)
+                        ? StringTool.IsNullOrWhiteSpace(relationLabel.text)
                             ? null
-                            : "MaidStatus/関係タイプ/" + relationLabel.text)
+                            : "MaidStatus/関係タイプ/" + relationLabel.text
                         : EnumConvert.GetTerm(
                             status.contract,
                             status.relation,

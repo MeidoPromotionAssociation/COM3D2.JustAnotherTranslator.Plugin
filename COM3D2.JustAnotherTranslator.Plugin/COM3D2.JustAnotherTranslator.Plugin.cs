@@ -385,7 +385,7 @@ public class JustAnotherTranslator : BaseUnityPlugin
 
         ReloadTranslateResourceShortcut = Config.Bind("2General",
             "ReloadTranslateResource/重载翻译资源",
-            new KeyboardShortcut(),
+            KeyboardShortcut.Empty,
             new ConfigDescription(
                 "Press this shortcut to hot reload all translation resources/按下此快捷键来热重载所有翻译资源",
                 null, new ConfigurationManagerAttributes { Order = 1909 }));

@@ -10,3 +10,4 @@ qodana.yaml
 *.pyc
 /COM3D2.5
 /.claude
+/dist

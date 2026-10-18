@@ -1,0 +1,190 @@
+name: Release
+
+# 打 tag 即发版；也可以在 Actions 页面手动补发一个已存在的 tag
+# Pushing a tag publishes a release; an existing tag can also be re-published manually from the Actions tab
+on:
+  push:
+    tags: [ "v*" ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "要发布的 tag，必须已存在于仓库中（例如 v0.5.7）/ Tag to publish, must already exist (e.g. v0.5.7)"
+        required: true
+        type: string
+
+# 默认不给 GITHUB_TOKEN 任何权限，由各 job 单独声明自己需要的最小权限
+# GITHUB_TOKEN gets no permission by default, each job declares the minimum it needs
+permissions: { }
+
+# 同一个 tag 只允许一个发布流程在跑，避免 push 和手动触发同时创建 release
+# Only one release run per tag, so a push and a manual dispatch cannot create the release twice
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  # 编译阶段只有读权限，即使某个依赖或 action 被污染也改不了仓库内容
+  # The build stage is read-only, so a compromised dependency or action cannot write anything back
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      version: ${{ steps.meta.outputs.version }}
+      prerelease: ${{ steps.meta.outputs.prerelease }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+          fetch-depth: 0
+          # 不把 token 存进 .git/config，编译过程中的代码就读不到它
+          # Keep the token out of .git/config, so code running during the build cannot read it
+          persist-credentials: false
+
+      - name: Resolve Release Metadata
+        id: meta
+        env:
+          INPUT_TAG: ${{ github.event.inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          TAG="${INPUT_TAG:-$REF_NAME}"
+          if ! git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "::error::tag ${TAG} does not exist in this repository"
+            exit 1
+          fi
+          # 版本号的唯一来源是 [BepInPlugin] 特性里的版本字符串，游戏里显示的插件版本取的就是它，
+          # 和 tag 不一致就是漏改了版本号，这里直接拦住
+          # The [BepInPlugin] attribute is the single source of the version, a mismatch means it was
+          # forgotten, so stop here instead of shipping a wrong version
+          VERSION="$(python3 .github/scripts/version.py)"
+          if [ -z "${VERSION}" ]; then
+            echo "::error::cannot read version from the BepInPlugin attribute"
+            exit 1
+          fi
+          if [ "v${VERSION}" != "${TAG}" ]; then
+            echo "::error::BepInPlugin version is ${VERSION}, does not match tag ${TAG}"
+            exit 1
+          fi
+          # 带连字符的版本号（v1.2.0-rc1 之类）视为预发布
+          # A tag containing a hyphen (v1.2.0-rc1 and the like) is treated as a prerelease
+          if [[ "${TAG}" == *-* ]]; then
+            PRERELEASE=true
+          else
+            PRERELEASE=false
+          fi
+          {
+            echo "tag=${TAG}"
+            echo "version=${VERSION}"
+            echo "prerelease=${PRERELEASE}"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      # 两个目标框架都要编：COM3D2 是 Unity 5.6 / net35，COM3D2.5 是 Unity 2022 / net48
+      # Both target frameworks are built: COM3D2 is Unity 5.6 / net35, COM3D2.5 is Unity 2022 / net48
+      - name: Build COM3D2
+        run: dotnet build -c COM3D2-Release
+
+      - name: Build COM3D25
+        run: dotnet build -c COM3D25_UNITY_2022-Release
+
+      # 打包内容：插件 DLL 与依赖、I18N 程序集、本地文档、README。
+      # 歌词数据不在仓库里，也不进这个包，它以单独的 Lyric.zip 发布
+      # Packaged: plugin dll and dependencies, I18N assemblies, local docs, README.
+      # Lyric data is neither in the repo nor in this archive, it ships as a separate Lyric.zip
+      - name: Package Release Archives
+        run: |
+          python3 .github/scripts/package.py \
+            --target COM3D2 \
+            --version "${{ steps.meta.outputs.version }}" \
+            --build-root COM3D2.JustAnotherTranslator.Plugin/bin/Release \
+            --output-dir dist
+          python3 .github/scripts/package.py \
+            --target COM3D25 \
+            --version "${{ steps.meta.outputs.version }}" \
+            --build-root COM3D2.JustAnotherTranslator.Plugin/bin/Release \
+            --output-dir dist
+          ls -l dist/
+
+      - name: Upload Archives
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-archives
+          path: dist/*.zip
+          retention-days: 1
+          if-no-files-found: error
+
+  # 只有这个 job 拿到写权限，它不编译任何东西，只生成正文并调用 gh 发布
+  # Only this job holds write access, it builds nothing and merely renders the body and calls gh
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      # 这里故意不指定 ref，用触发 workflow 的那个 ref，保证脚本和模板与 workflow 定义同源
+      # push tag 触发时取自 tag，手动补发旧 tag 时取自默认分支（旧 tag 上可能还没有这些文件）
+      # The ref is intentionally left out so the scripts and template come from the same ref as the
+      # workflow definition itself, the tag on a tag push, or the default branch when manually
+      # re-releasing an old tag that does not carry these files yet
+      #
+      # 提交列表来自 fetch-depth: 0 拉下来的完整历史和 tag，与检出哪个 ref 无关
+      # The commit list comes from the full history and tags fetched by fetch-depth: 0,
+      # which does not depend on the checked out ref
+      - name: Checkout Code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download Archives
+        uses: actions/download-artifact@v7
+        with:
+          name: release-archives
+          path: dist
+
+      - name: Generate Release Notes
+        env:
+          TAG: ${{ needs.build.outputs.tag }}
+        run: |
+          python3 .github/scripts/release_notes.py \
+            --tag "${TAG}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --template .github/release-notes/template.md \
+            --output release-notes.md
+
+      # 只上传我们自己构建的两个 zip。歌词包（Lyric.zip）由维护者单独上传，
+      # 这里既不生成也不覆盖它，重复发版不会把它删掉
+      # Only the two archives we built are uploaded. Lyric.zip is uploaded separately by the
+      # maintainer, so it is neither generated nor clobbered here and survives a re-release
+      - name: Publish Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.build.outputs.tag }}
+          PRERELEASE: ${{ needs.build.outputs.prerelease }}
+        run: |
+          ASSETS=(dist/*.zip)
+          # release 已存在时更新它，便于手动重跑同一个 tag
+          # Update the release when it already exists, so the same tag can be re-run manually
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release edit "${TAG}" \
+              --title "${TAG}" \
+              --notes-file release-notes.md \
+              --prerelease="${PRERELEASE}"
+            gh release upload "${TAG}" "${ASSETS[@]}" --clobber
+          else
+            gh release create "${TAG}" \
+              --verify-tag \
+              --title "${TAG}" \
+              --notes-file release-notes.md \
+              --prerelease="${PRERELEASE}" \
+              "${ASSETS[@]}"
+          fi
+          gh release view "${TAG}" --json assets --jq '.assets[].name'

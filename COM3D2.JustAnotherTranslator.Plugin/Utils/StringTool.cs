@@ -199,20 +199,47 @@ public static class StringTool
     }
 
     /// <summary>
+    ///     占位符在模式中最多匹配的字符数。
+    ///     占位符会被游戏替换成角色名（[HLF] 是全名，玩家名 [SF] 由用户自定义），
+    ///     因此需要留出余量，但必须是有限长度，不能退化成 ".*"。
+    ///     就算真的超了，后果也只是这句在显示层被当成未翻译（可能进转储），
+    ///     正文不受影响——正文在 KagScript.GetText 阶段就已经翻好了。
+    /// </summary>
+    private const int TokenPlaceholderMaxLength = 48;
+
+    /// <summary>
+    ///     生成 token 模式所要求的固定文本最小长度。
+    ///     固定文本过短的模式几乎没有约束力：例如译文 "[HF]。" 会生成 "^.+。$"，
+    ///     它可以匹配任意以句号结尾的台词。这种模式一旦进入已翻译记录，
+    ///     IsJatTranslatedText 就会把整类台词判成“已翻译”，导致它们永远不被翻译。
+    /// </summary>
+    private const int TokenPatternMinFixedLength = 6;
+
+    /// <summary>
     ///     为含有角色名占位符的已翻译文本构建正则匹配模式。
-    ///     占位符位置将匹配任意字符序列，固定部分进行转义。
-    ///     例如 "...为什么[HF]的状态..." → 模式 ^...为什么.+的状态...$
+    ///     占位符位置将匹配有限长度的任意字符序列，固定部分进行转义。
+    ///     例如 "...为什么[HF]的状态..." → 模式 ^...为什么.{1,48}的状态...$
+    ///     固定文本过短时返回 null（调用方应放弃该模式），避免生成近乎万能的正则。
     /// </summary>
     public static Regex BuildTokenPattern(string normalizedText)
     {
         var parts = CharaNameTokenRegex.Split(normalizedText);
         var matches = CharaNameTokenRegex.Matches(normalizedText);
+
+        // 只统计固定文本（占位符之外的部分），用它判断模式是否足够具体
+        var fixedLength = 0;
+        foreach (var part in parts)
+            fixedLength += part.Length;
+
+        if (fixedLength < TokenPatternMinFixedLength)
+            return null;
+
         var sb = new StringBuilder("^");
         for (var i = 0; i < parts.Length; i++)
         {
             sb.Append(Regex.Escape(parts[i]));
             if (i < matches.Count)
-                sb.Append(".+");
+                sb.Append(".{1,").Append(TokenPlaceholderMaxLength).Append('}');
         }
 
         sb.Append("$");

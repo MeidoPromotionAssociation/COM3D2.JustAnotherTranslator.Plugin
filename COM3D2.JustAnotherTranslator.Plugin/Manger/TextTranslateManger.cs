@@ -323,7 +323,11 @@ public static class TextTranslateManger
         if (!_isTranslationLoaded)
             return false;
 
+        if (StringTool.IsNullOrWhiteSpace(text))
+            return false;
+
         // 字典精确匹配
+        // 翻译文件里「原文=译文」的条目是有效的，不应该视为无效
         if (_translationDict.ContainsKey(text))
             return true;
 
@@ -395,9 +399,14 @@ public static class TextTranslateManger
         var cleanText = StringTool.NormalizeText(text.Replace(XUATInterop.XuatSpicalMaker, ""));
         TranslatedTexts.Add(cleanText);
 
-        // 若文本含角色名占位符（如 [HF]），构建正则模式以匹配游戏替换角色名后的版本
+        // 若文本含角色名占位符（如 [HF]），构建正则模式以匹配游戏替换角色名后的版本。
+        // 固定文本过短时 BuildTokenPattern 会返回 null（那类模式会匹配到几乎所有文本），此时放弃。
         if (StringTool.CharaNameTokenRegex.IsMatch(cleanText))
-            TranslatedTextPatterns.Add(StringTool.BuildTokenPattern(cleanText));
+        {
+            var pattern = StringTool.BuildTokenPattern(cleanText);
+            if (pattern != null)
+                TranslatedTextPatterns.Add(pattern);
+        }
     }
 
     /// <summary>

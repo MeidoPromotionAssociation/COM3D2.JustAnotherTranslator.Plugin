@@ -368,9 +368,15 @@ public static class TextTranslateManger
             return true;
 
         // 检查角色名替换后的文本是否匹配已翻译文本的模式
+        // 这条日志用于区分"自己翻译过"（上面的精确匹配）和"被别的译文生成的角色名模式命中"，
+        // 后者是整类文本被误判成已翻译时的唯一线索。
         foreach (var pattern in TranslatedTextPatterns)
             if (pattern.IsMatch(normalizedText))
+            {
+                LogManager.Debug(
+                    $"Text matched translated pattern, skipping: {pattern} | {text}");
                 return true;
+            }
 
         return false;
     }

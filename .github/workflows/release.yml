@@ -11,6 +11,11 @@ on:
         description: "要发布的 tag，必须已存在于仓库中（例如 v0.5.7）/ Tag to publish, must already exist (e.g. v0.5.7)"
         required: true
         type: string
+      regenerate_notes:
+        description: "release 已存在时是否重新生成正文（会覆盖手动编辑）/ Regenerate the body of an existing release (overwrites manual edits)"
+        required: false
+        type: boolean
+        default: false
 
 # 默认不给 GITHUB_TOKEN 任何权限，由各 job 单独声明自己需要的最小权限
 # GITHUB_TOKEN gets no permission by default, each job declares the minimum it needs
@@ -169,15 +174,25 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.build.outputs.tag }}
           PRERELEASE: ${{ needs.build.outputs.prerelease }}
+          REGENERATE_NOTES: ${{ github.event.inputs.regenerate_notes || 'false' }}
         run: |
           ASSETS=(dist/*.zip)
           # release 已存在时更新它，便于手动重跑同一个 tag
           # Update the release when it already exists, so the same tag can be re-run manually
           if gh release view "${TAG}" >/dev/null 2>&1; then
-            gh release edit "${TAG}" \
-              --title "${TAG}" \
-              --notes-file release-notes.md \
-              --prerelease="${PRERELEASE}"
+            # 正文在 GitHub 上手动改过时，重跑不该把它冲掉，只有明确要求才重新生成
+            # A hand-edited body must survive a re-run, so only regenerate when explicitly asked
+            if [ "${REGENERATE_NOTES}" = "true" ]; then
+              gh release edit "${TAG}" \
+                --title "${TAG}" \
+                --notes-file release-notes.md \
+                --prerelease="${PRERELEASE}"
+            else
+              echo "keeping the existing release body (regenerate_notes=false)"
+              gh release edit "${TAG}" \
+                --title "${TAG}" \
+                --prerelease="${PRERELEASE}"
+            fi
             gh release upload "${TAG}" "${ASSETS[@]}" --clobber
           else
             gh release create "${TAG}" \

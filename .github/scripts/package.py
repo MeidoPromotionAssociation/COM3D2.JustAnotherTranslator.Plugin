@@ -149,6 +149,10 @@ def main():
         add_file(zf, readme_md, f"BepInEx/plugins/{plugin_dir}/JAT-README.md")
         add_file(zf, readme_txt, f"BepInEx/plugins/{plugin_dir}/JAT-README.txt")
 
+        # 第三方声明跟插件 DLL 放在一起，包里带了谁的 DLL 就写清谁的许可
+        # Third-party notices sit next to the plugin dlls, so whatever dll is in the archive is covered
+        add_file(zf, notices, f"BepInEx/plugins/{plugin_dir}/THIRD-PARTY-NOTICES.md")
+
         # 本地文档 / local documentation
         add_tree(zf, docs_src, f"{TRANSLATION_ROOT}/{DOC_FOLDER_NAME}")
 
@@ -158,9 +162,6 @@ def main():
         # 顶层再放一份，方便解压前阅读 / one more copy at the archive root
         add_file(zf, readme_md, "JAT-README.md")
         add_file(zf, readme_txt, "JAT-README.txt")
-
-        # 第三方声明跟文档放在一起 / third-party notices live next to the docs
-        add_file(zf, notices, f"{TRANSLATION_ROOT}/THIRD-PARTY-NOTICES.md")
 
     # 自检：不允许出现 pdb，也不允许出现歌词目录
     # Sanity check: no pdb, no lyric folder

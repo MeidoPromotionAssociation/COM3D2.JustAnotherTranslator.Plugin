@@ -53,7 +53,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ```
 
-Project: https://github.com/mono/mono
+Project: https://github.com/mono/mono & https://github.com/Unity-Technologies/mono
 
 ## Microsoft Public License (MS-PL)
 
@@ -155,7 +155,7 @@ CsvHelper 本身是双许可，本分发采用其中的 MS-PL，Apache-2.0 备�
 两种许可的全文见上文英文部分。Mono 的 LICENSE 原文为
 “In general, the runtime and its class libraries are licensed under the terms of the MIT license”，
 各源文件的版权声明保留在 Mono 仓库对应文件中。
-项目地址：https://github.com/mono/mono
+项目地址：https://github.com/mono/mono & https://github.com/Unity-Technologies/mono
 
 ## Mono 的 I18N 程序集
 

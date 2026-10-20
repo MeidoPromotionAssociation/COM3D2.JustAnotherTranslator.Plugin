@@ -10,8 +10,7 @@ using COM3D2.JustAnotherTranslator.Plugin.Utils;
 
 namespace COM3D2.JustAnotherTranslator.Plugin;
 
-[BepInPlugin("Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin",
-    "COM3D2.JustAnotherTranslator.Plugin", "0.5.8")]
+[BepInPlugin(PluginGuid, PluginName, PluginVersion)]
 public class JustAnotherTranslator : BaseUnityPlugin
 {
     // To discover this plugin
@@ -20,6 +19,15 @@ public class JustAnotherTranslator : BaseUnityPlugin
     // The Subtitle folder contains subtitle manager, configuration, components
     // The Utils folder contains helper functions
     // This file is mainly for configuration
+
+    public const string PluginGuid = "Github.MeidoPromotionAssociation.COM3D2.JustAnotherTranslator.Plugin";
+    public const string PluginName = "COM3D2.JustAnotherTranslator.Plugin";
+
+    // 版本号的唯一来源：BepInPlugin 元数据和游戏里显示的版本取它，
+    // 程序集版本由 csproj 用同样的正则从这里推导，发版时只改这一处。
+    // The single source of the version: BepInPlugin metadata and the in-game version read it,
+    // and the csproj derives the assembly version from it with the same regex.
+    public const string PluginVersion = "0.5.8";
 
     public enum LyricSubtitleTypeEnum
     {

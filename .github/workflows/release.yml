@@ -60,17 +60,17 @@ jobs:
             echo "::error::tag ${TAG} does not exist in this repository"
             exit 1
           fi
-          # 版本号的唯一来源是 [BepInPlugin] 特性里的版本字符串，游戏里显示的插件版本取的就是它，
+          # 版本号的唯一来源是插件主类里的 PluginVersion 常量，游戏里显示的插件版本取的就是它，
           # 和 tag 不一致就是漏改了版本号，这里直接拦住
-          # The [BepInPlugin] attribute is the single source of the version, a mismatch means it was
+          # The PluginVersion constant is the single source of the version, a mismatch means it was
           # forgotten, so stop here instead of shipping a wrong version
           VERSION="$(python3 .github/scripts/version.py)"
           if [ -z "${VERSION}" ]; then
-            echo "::error::cannot read version from the BepInPlugin attribute"
+            echo "::error::cannot read version from the PluginVersion constant"
             exit 1
           fi
           if [ "v${VERSION}" != "${TAG}" ]; then
-            echo "::error::BepInPlugin version is ${VERSION}, does not match tag ${TAG}"
+            echo "::error::PluginVersion is ${VERSION}, does not match tag ${TAG}"
             exit 1
           fi
           # 带连字符的版本号（v1.2.0-rc1 之类）视为预发布

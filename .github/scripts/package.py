@@ -21,6 +21,7 @@ Lyric data is intentionally NOT part of this archive; it ships as its own asset.
 import argparse
 import os
 import sys
+import time
 import zipfile
 
 # 目标定义 / Target definitions
@@ -39,22 +40,31 @@ TARGETS = {
     },
 }
 
-# 固定时间戳，保证同样的输入产出同样的 zip / Fixed timestamp so identical inputs give identical zips
-FIXED_DATE_TIME = (2020, 1, 1, 0, 0, 0)
-
 DOC_FOLDER_NAME = "Document-文档"
 TRANSLATION_ROOT = "BepInEx/JustAnotherTranslator"
 
 
+def zip_date_time(path=None):
+    """zip 条目时间戳：文件用自己的修改时间，目录用打包时刻。
+    Timestamp for a zip entry: a file keeps its own modification time, a directory gets
+    the packaging time."""
+    stamp = os.path.getmtime(path) if path else time.time()
+    local = time.localtime(stamp)
+    # zip 的时间字段最早只能表示 1980 年 / the zip timestamp cannot represent years before 1980
+    if local.tm_year < 1980:
+        return (1980, 1, 1, 0, 0, 0)
+    return local[:6]
+
+
 def add_dir(zf, name):
-    info = zipfile.ZipInfo(name.rstrip("/") + "/", date_time=FIXED_DATE_TIME)
+    info = zipfile.ZipInfo(name.rstrip("/") + "/", date_time=zip_date_time())
     info.external_attr = (0o40755 << 16) | 0x10
     info.compress_type = zipfile.ZIP_STORED
     zf.writestr(info, b"")
 
 
 def add_file(zf, src, arcname):
-    info = zipfile.ZipInfo(arcname, date_time=FIXED_DATE_TIME)
+    info = zipfile.ZipInfo(arcname, date_time=zip_date_time(src))
     info.external_attr = 0o100644 << 16
     info.compress_type = zipfile.ZIP_DEFLATED
     with open(src, "rb") as f:

@@ -111,6 +111,13 @@
       https://nuget.samboy.dev/v3/index.json
     </RestoreAdditionalProjectSources>
     <RootNamespace>COM3D2.JustAnotherTranslator.Plugin</RootNamespace>
+
+    <!-- 版本号唯一来源是插件主类里的 PluginVersion 常量，csproj 和源码里都不再重复写。
+         AssemblyVersion / FileVersion / MyPluginInfo.PLUGIN_VERSION 由 SDK 从下面的 <Version> 推导。
+         The PluginVersion constant in the plugin class is the single source of the version;
+         the SDK derives AssemblyVersion / FileVersion / MyPluginInfo.PLUGIN_VERSION from <Version>. -->
+    <PluginVersionFromSource>$([System.Text.RegularExpressions.Regex]::Match($([System.IO.File]::ReadAllText('$(MSBuildProjectDirectory)/COM3D2.JustAnotherTranslator.Plugin.cs')), 'PluginVersion\s*=\s*&quot;([0-9][0-9.]*)&quot;').Groups[1].Value)</PluginVersionFromSource>
+    <Version Condition="'$(PluginVersionFromSource)' != ''">$(PluginVersionFromSource)</Version>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -120,4 +127,11 @@
     <Description>https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin</Description>
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>  <!-- For BepInEx.ConfigurationManager -->
   </PropertyGroup>
+
+  <!-- 常量读不出来时给出可读报错，而不是悄悄编出 1.0.0.0
+       Fail loudly when the constant cannot be read instead of silently building 1.0.0.0 -->
+  <Target Name="CheckPluginVersion" BeforeTargets="BeforeBuild"
+          Condition="'$(PluginVersionFromSource)' == ''">
+    <Error Text="无法从 COM3D2.JustAnotherTranslator.Plugin.cs 的 PluginVersion 常量读取版本号，请检查它是否形如 public const string PluginVersion = &quot;0.5.8&quot;。" />
+  </Target>
 </Project>

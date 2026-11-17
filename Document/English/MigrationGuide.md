@@ -83,7 +83,32 @@ Copy the files from `COM3D2\LBWtranslation\Texture` to `COM3D2\BepInEx\JustAnoth
 
 You may not need to migrate this, as JAT is released with lyrics included.
 
-Find the `COM3D2\LBWtranslation` folder.
+**Note: since JAT v0.3.0 the lyric folder is named after the song ID, not the song internal name.** The old instruction "just convert LBW's `csv_rhythm_action` and copy it over" no longer works.
+
+LBW keeps its lyrics in `COM3D2\LBWtranslation\DanceSubtitle\csv_rhythm_action\<song internal name>\`, while JAT now expects:
+
+`COM3D2\BepInEx\JustAnotherTranslator\<your language>\Lyric\<song ID>\lyric.csv`
+
+There is no direct conversion between `<song internal name>` and `<song ID>`, so the conversion script needs a "song internal name -> song ID" mapping table.
+
+#### Step 1: Prepare a mapping table
+
+Option 1 (recommended): let JAT generate `danceInfos.csv`
+
+-   The file is located at `COM3D2\BepInEx\JustAnotherTranslator\<your language>\Lyric\danceInfos.csv`
+-   JAT writes a row for a song as soon as you enter dance mode with it, no extra setting is required (`EnableDumpDanceInfo` is enabled by default)
+-   So: let JAT take over first, then enter each song whose lyrics you want to migrate once (entering dance mode is enough, you do not have to finish the dance)
+-   In `danceInfos.csv`, the `MusicName` column is LBW's folder name and the `Id` column is JAT's folder name
+
+Option 2: generate it from `dance_setting.nei`
+
+-   Extract `dance_setting.nei` from `COM3D2\GameData\csv.arc` and convert it to `dance_setting.csv` with [MeidoSerialization](https://github.com/MeidoPromotionAssociation/MeidoSerialization)
+-   Its `譜面とかのcsvフォルダ名` column is LBW's folder name
+-   Downside: this column is empty for the base songs (their folder name is baked into the scene assets), so it only covers DLC songs
+
+Both options can be used together, the script merges the mappings.
+
+#### Step 2: Run the conversion script
 
 Download the conversion script `lyric_csv_format_convert_English.py`
 
@@ -91,10 +116,19 @@ Download the conversion script `lyric_csv_format_convert_English.py`
 
 - Make sure you have Python 3 installed.
 - Right-click in the blank area next to the script and select Open in Terminal.
-- In the terminal, enter `python lyric_csv_format_convert_English.py COM3D2/LBWtranslation/DanceSubtitle/csv_rhythm_action COM3D2/BepInEx/JustAnotherTranslator/<your language>/Lyric`.
+- In the terminal, enter `python lyric_csv_format_convert_English.py COM3D2/LBWtranslation/DanceSubtitle/csv_rhythm_action COM3D2/BepInEx/JustAnotherTranslator/<your language>/Lyric --mapping COM3D2/BepInEx/JustAnotherTranslator/<your language>/Lyric/danceInfos.csv`.
 - Remember to replace the path with your actual path.
-- For example, `python lyric_csv_format_convert_English.py X:/HG/maid/COM3D2/LBWtranslation/DanceSubtitle/csv_rhythm_action X:/HG/maid/COM3D2/BepInEx/JustAnotherTranslator/<your language>/Lyric`.
+- For example, `python lyric_csv_format_convert_English.py X:/HG/maid/COM3D2/LBWtranslation/DanceSubtitle/csv_rhythm_action X:/HG/maid/COM3D2/BepInEx/JustAnotherTranslator/English/Lyric --mapping X:/HG/maid/COM3D2/BepInEx/JustAnotherTranslator/English/Lyric/danceInfos.csv`.
+- If you also prepared `dance_setting.csv`, add another `--mapping dance_setting.csv`.
 - You can just run `python lyric_csv_format_convert_English.py` and it will give you some instructions
+
+#### Notes
+
+-   One LBW folder may map to several IDs (the normal, theater and DLC versions of a song share the same chart), the script writes the same lyrics into every matching ID folder.
+-   Folders that cannot be mapped are written to `Lyric\_Unmapped\<folder name>\lyric.csv`, which JAT never reads. The script lists them at the end; add the missing mapping and run it again.
+-   If you migrated with the old script before, folders like `Lyric\<song internal name>\` are no longer read and can be deleted.
+-   VR karaoke lyrics live in `Lyric\_Karaoke\<KaraokeMusicId>\lyric.csv`, the mapping table is `danceInfosKaraoke.csv`, and you should pass `--karaoke`.
+-   If you still use a JAT version older than v0.3.0, add `--legacy` to keep the old behaviour of naming folders after the source folder.
 
 For most users, using Python scripts can be daunting. If you don't know how, copy the script contents to AI and let it teach you.
 

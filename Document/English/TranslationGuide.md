@@ -750,6 +750,12 @@ Please note that you need to convert the .nei file to a .csv file first, and the
 
 To convert a .nei file to a .csv file, you can use either [COM3D2 MOD EDITOR V2](https://github.com/MeidoPromotionAssociation/COM3D2_MOD_EDITOR) or [MeidoSerialization CLI](https://github.com/MeidoPromotionAssociation/MeidoSerialization).
 
+The script names the output folder after the song `ID`, while the timeline file sits in a folder named after the song internal name, and the two have no direct conversion. So for batch conversion you must pass a mapping table (`danceInfos.csv` or `dance_setting.csv`) with `--mapping`:
+
+`python lyric_csv_format_convert_English.py <csv_rhythm_action folder> <Lyric folder> --mapping <Lyric folder>/danceInfos.csv`
+
+When converting a single file no mapping is needed; the script writes one csv that you can move to `Lyric\<song ID>\lyric.csv` by hand.
+
 <br>
 
 For Dance Mode:

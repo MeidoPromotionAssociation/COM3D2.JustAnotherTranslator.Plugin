@@ -250,7 +250,7 @@ There are 4 main folders in the translation folder of the corresponding language
 - The `Text` folder is where the main text translations are located. The translatable content includes daily ADV
   dialogues, NGUI text, uGUI text, and in-game multi-language support text.
 - The `Texture` folder is used to replace in-game textures (various images).
-- The `Lyric` folder is for files dedicated to lyric subtitles.
+- The `Lyric` folder is for files dedicated to lyric subtitles. The `Lyric.zip` attached to the v0.5.8 release already contains the lyrics and their Chinese translations for some songs (songs without official lyrics only get an empty placeholder plus a `ThisLyricIsEmpty_这个歌词是空的.txt` note); extract it into this folder and it works out of the box.
 - The `UI` folder is a dedicated folder for interface translation. Sprite is used to replace a single sprite, and Text
   is used to translate UI text.
 - `SubtitleColors.json` file is located in the root directory of `JustAnotherTranslator`. It allows you to adjust the subtitle color for each speaker as well as the prefix color for the subtitle name.
@@ -513,7 +513,7 @@ COM3D2\BepInEx\JustAnotherTranslator\<你设置的目标语言>
 
 - `Text` 文件夹是主要的文本翻译所在，可翻译内容包括日常 ADV 对话、NGUI 文本、uGUI 文本、游戏内置多语言支持文本。
 - `Texture` 文件夹用于替换游戏内纹理（各种图片）
-- `Lyric` 文件夹放置歌词字幕专用的文件。
+- `Lyric` 文件夹放置歌词字幕专用的文件。v0.5.8 的 release 附带的 `Lyric.zip` 已包含部分歌曲的歌词与翻译（官方没有歌词的歌曲只有空占位符和 `ThisLyricIsEmpty_这个歌词是空的.txt`），解压到该文件夹即可直接使用。
 - `UI` 文件夹是界面翻译专用的文件夹，Sprite 用于替换单个精灵图、Text 则用于翻译 UI 文本。
 - `SubtitleColors.json` 位于 `JustAnotherTranslator` 根目录。它可以让您调整每个说话人的字幕颜色以及字幕名字前缀颜色。
 - `KeywordReplaceText.json` 位于 `JustAnotherTranslator` 根目录，并在所有目标语言文件夹之间共享。它是通用文本翻译完成后使用的可选关键词替换配置。

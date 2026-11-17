@@ -81,7 +81,19 @@ Copy the files from `COM3D2\LBWtranslation\Texture` to `COM3D2\BepInEx\JustAnoth
 
 ### Dance Lyric Subtitles
 
-You may not need to migrate this, as JAT is released with lyrics included.
+> **In most cases you do not need to migrate LBW's dance lyric subtitles at all.**
+>
+> The v0.5.8 release ships a `Lyric.zip` that already contains the lyric timelines of some songs together with their translations (the translations are in Chinese).
+>
+> How to use it: extract the contents of `Lyric.zip` into `COM3D2\BepInEx\JustAnotherTranslator\<your language>\Lyric\`. Inside the archive there are `<song ID>\lyric.csv` and `_Karaoke\<KaraokeMusicId>\lyric.csv` directly, **without** an outer `Lyric` folder, so make sure you extract into the `Lyric` directory, not into its parent.
+>
+> What is inside: every song that the game itself provides lyrics for (`dance_subtitle.nei`) is included. Songs without official lyrics (for example the various `-カラオケ` and `-ハイテンション` versions, and VR karaoke mode) only keep a header-only empty `lyric.csv` as a placeholder, with a `ThisLyricIsEmpty_这个歌词是空的.txt` note next to it; if you see that file, the timeline of that song still has to be built by hand.
+>
+> If `Lyric.zip` is missing from the current release, download it from the [v0.5.8 release](https://github.com/MeidoPromotionAssociation/COM3D2.JustAnotherTranslator.Plugin/releases/tag/v0.5.8).
+>
+> Only continue with the migration steps below if you are sure that `Lyric.zip` does not contain the songs you need, or if your LBW lyrics are of higher quality and you want to override the bundled ones.
+>
+> Note: extracting overwrites files with the same name. Back up any `lyric.csv` you have already translated yourself.
 
 **Note: since JAT v0.3.0 the lyric folder is named after the song ID, not the song internal name.** The old instruction "just convert LBW's `csv_rhythm_action` and copy it over" no longer works.
 
@@ -125,6 +137,7 @@ Download the conversion script `lyric_csv_format_convert_English.py`
 #### Notes
 
 -   One LBW folder may map to several IDs (the normal, theater and DLC versions of a song share the same chart), the script writes the same lyrics into every matching ID folder.
+-   The script also overwrites the `lyric.csv` of the same ID that came from `Lyric.zip`; back it up first if you want to keep the bundled version.
 -   Folders that cannot be mapped are written to `Lyric\_Unmapped\<folder name>\lyric.csv`, which JAT never reads. The script lists them at the end; add the missing mapping and run it again.
 -   If you migrated with the old script before, folders like `Lyric\<song internal name>\` are no longer read and can be deleted.
 -   VR karaoke lyrics live in `Lyric\_Karaoke\<KaraokeMusicId>\lyric.csv`, the mapping table is `danceInfosKaraoke.csv`, and you should pass `--karaoke`.

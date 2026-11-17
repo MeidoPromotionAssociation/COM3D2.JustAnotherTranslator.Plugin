@@ -699,6 +699,12 @@ However, like other parts, JAT does not use any in-game resources. The dance sub
 
 ## 1. File Location
 
+The v0.5.8 release ships a `Lyric.zip` that already contains the lyric timelines of some songs together with their translations (the translations are in Chinese); basically every song the game itself provides a timeline for is included. Extract its contents into `COM3D2\BepInEx\JustAnotherTranslator\<your language>\Lyric\` (inside the archive there are `<song ID>\lyric.csv` and `_Karaoke\<KaraokeMusicId>\lyric.csv` directly, without an outer `Lyric` folder) and it just works; you normally do not have to build timelines from scratch.
+
+For songs without official lyrics the archive only holds a placeholder: a header-only `lyric.csv` plus a `ThisLyricIsEmpty_这个歌词是空的.txt` note. Seeing that file means the timeline of that song has to be built by hand, see below.
+
+The rest of this section documents the file format and how to create lyrics for songs that are not in `Lyric.zip`.
+
 The dance mode lyrics translation file should be placed in the following directory:
 
 `COM3D2\BepInEx\JustAnotherTranslator\<your language>\Lyric\<song ID>\lyric.csv`
